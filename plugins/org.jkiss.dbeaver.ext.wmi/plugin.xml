@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
-              description="WMI connector"
-              icon="icons/wmi_icon.png"
-              id="wmi"
-              label="WMI">
+            class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
+            description="WMI connector"
+            icon="icons/wmi_icon.png"
+            id="wmi"
+            label="WMI"
+            dialect="wmi">
             <tree
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
@@ -110,6 +111,11 @@
             <type name="*"/>
 
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="wmi" parent="basic" class="org.jkiss.dbeaver.ext.wmi.model.WMIDialect" label="WMI" description="WMI SQL dialect." icon="icons/wmi_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

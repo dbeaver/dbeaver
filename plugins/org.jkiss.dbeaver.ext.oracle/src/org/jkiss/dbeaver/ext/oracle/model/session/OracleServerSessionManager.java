@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,8 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 sql.append("DISCONNECT SESSION ");
             }
             sql.append("'").append(sessionType.getSid()).append(',').append(sessionType.getSerial());
-            if (sessionType.getInstId() != 0) {
+            if (sessionType.getInstId() != 0 && sessionType.getInstId() != 1) {
+                // INSET_ID = 1 is hardcoded constant, means no RAC
                 sql.append(",@").append(sessionType.getInstId());
             }
             sql.append("'");
@@ -154,6 +155,34 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 return OracleServerLongOp.class;
             }
         });
+        extDetails.add(new AbstractServerSessionDetails("Display Exec Plan", "Displays execute plan from dbms_xplan by SqlId and ChildNumber", DBIcon.TYPE_TEXT) {
+            @Override
+            public List<OracleServerExecutePlan> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException {
+                try {
+                    try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
+                        "SELECT PLAN_TABLE_OUTPUT FROM TABLE(dbms_xplan.display_cursor(sql_id => ?, cursor_child_no => ?))"))
+                    {
+                        dbStat.setString(1, ((OracleServerSession) serverSession).getSqlId());
+                        dbStat.setLong(2, ((OracleServerSession) serverSession).getSqlChildNumber());
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) 
+                        {
+							List<OracleServerExecutePlan> planItems = new ArrayList<>();
+							while (dbResult.next()) {
+                                planItems.add(new OracleServerExecutePlan(dbResult));
+                            }
+							return planItems;
+						}
+                    }							
+                } catch (SQLException e) {
+                    throw new DBException(e, session.getDataSource());
+                }
+            }
+
+            @Override
+            public Class<? extends DBPObject> getDetailsType() {
+                return OracleServerExecutePlan.class;
+            }
+        });      
         return extDetails;
     }
 }

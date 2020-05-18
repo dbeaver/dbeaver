@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -26,16 +28,31 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 public class AsyncServerOutputReader extends DefaultServerOutputReader {
+    private static final Log log = Log.getLog(AsyncServerOutputReader.class);
+
         @Override
         public boolean isAsyncOutputReadSupported() {
             return true;
         }
 
         @Override
-        public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, SQLQueryResult queryResult, DBCStatement statement, PrintWriter output) throws DBCException {
+        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, SQLQueryResult queryResult, DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
             if (statement == null) {
                 super.readServerOutput(monitor, context, queryResult, null, output);
             } else {
+                // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
+                // See #7885
+/*
+                try {
+                    SQLWarning connWarning = ((JDBCSession) statement.getSession()).getWarnings();
+                    if (connWarning != null) {
+                        dumpWarnings(output, Collections.singletonList(connWarning));
+                    }
+                } catch (SQLException e) {
+                    log.debug(e);
+                }
+*/
+
                 Throwable[] statementWarnings = statement.getStatementWarnings();
                 if (statementWarnings != null && statementWarnings.length > 0) {
                     dumpWarnings(output, Arrays.asList(statementWarnings));

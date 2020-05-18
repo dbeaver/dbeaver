@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, IAdaptable {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
 
@@ -89,7 +89,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        activeDatabaseName = getContainer().getConnectionConfiguration().getBootstrap().getDefaultCatalogName();
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        }
         if (CommonUtils.isEmpty(activeDatabaseName)) {
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
@@ -102,47 +105,57 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
             dbList.add(defDatabase);
         } else {
-            // Make initial connection to read database list
-            final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-            StringBuilder catalogQuery = new StringBuilder(
-                    "SELECT db.oid,db.*" +
-                            "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-            if (!showTemplates) {
-                catalogQuery.append(" AND NOT datistemplate ");
-            }
-            DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
-            }
-            catalogQuery.append("\nORDER BY db.datname");
-            try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
-                try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
-                    if (catalogFilters != null) {
-                        JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
-                    }
-                    try (ResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
-                            dbList.add(database);
-                        }
-                    }
-                }
-                if (activeDatabaseName == null) {
-                    try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
-                        try (ResultSet rs = stat.executeQuery()) {
-                            if (rs.next()) {
-                                activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
-                            }
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBException("Can't connect ot remote PostgreSQL server", e);
-            }
+            loadAvailableDatabases(monitor, configuration, dbList);
         }
         databaseCache.setCache(dbList);
         // Initiate default context
         getDefaultInstance().checkInstanceConnection(monitor);
+    }
+
+    private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
+        // Make initial connection to read database list
+        final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+        StringBuilder catalogQuery = new StringBuilder(
+                "SELECT db.oid,db.*" +
+                        "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
+        if (!showTemplates) {
+            catalogQuery.append(" AND NOT datistemplate ");
+        }
+        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
+        if (catalogFilters != null) {
+            JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
+        }
+        catalogQuery.append("\nORDER BY db.datname");
+        DBExecUtils.startContextInitiation(getContainer());
+        try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
+            // Read server version info here - it is needed during database metadata fetch (#8061)
+            getDataSource().readDatabaseServerVersion(bootstrapConnection.getMetaData());
+            // Get all databases
+            try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
+                if (catalogFilters != null) {
+                    JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+                }
+                try (ResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
+                        dbList.add(database);
+                    }
+                }
+            }
+            if (activeDatabaseName == null) {
+                try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
+                    try (ResultSet rs = stat.executeQuery()) {
+                        if (rs.next()) {
+                            activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't connect ot remote PostgreSQL server", e);
+        } finally {
+            DBExecUtils.finishContextInitiation(getContainer());
+        }
     }
 
     @Override
@@ -189,25 +202,20 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
-        if (setActiveObject) {
-            PostgreDatabase activeDatabase = getDefaultObject();
-            if (activeDatabase != null) {
-                final PostgreSchema activeSchema = activeDatabase.getDefaultObject();
-                if (activeSchema != null) {
+    @Override
+    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new PostgreExecutionContext((PostgreDatabase) instance, type);
+    }
 
-                    // Check default active schema
-                    String curDefSchema;
-                    try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Get context active schema")) {
-                        curDefSchema = JDBCUtils.queryString(session, "SELECT current_schema()");
-                    } catch (SQLException e) {
-                        throw new DBCException(e, getDataSource());
-                    }
-                    if (curDefSchema == null || !curDefSchema.equals(activeSchema.getName())) {
-                        activeDatabase.setSearchPath(monitor, activeSchema, context);
-                    }
-                }
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        if (initFrom != null) {
+            ((PostgreExecutionContext)context).setDefaultsFrom((PostgreExecutionContext) initFrom);
+            final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
+            if (activeSchema != null) {
+                ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
+        } else {
+            ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
@@ -287,60 +295,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         databaseCache.getAllObjects(monitor, this);
     }
 
-    @Override
-    public boolean supportsDefaultChange()
-    {
-        return true;
-    }
-
-    ////////////////////////////////////////////////////
-    // Default schema and search path
-
-    @Override
-    public PostgreDatabase getDefaultObject()
-    {
-        return getDefaultInstance();
-    }
-
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException
-    {
-        final PostgreDatabase oldDatabase = getDefaultObject();
-        if (!(object instanceof PostgreDatabase)) {
-            throw new IllegalArgumentException("Invalid object type: " + object);
-        }
-        final PostgreDatabase newDatabase = (PostgreDatabase) object;
-        if (oldDatabase == newDatabase) {
-            // The same
-            return;
-        }
-
-        PostgreDatabase oldActiveInstance = getDefaultInstance();
-
-        PostgreDatabase newActiveInstance = (PostgreDatabase) object;
-        newActiveInstance.initializeMetaContext(monitor);
-        newActiveInstance.cacheDataTypes(monitor, false);
-
-        activeDatabaseName = newActiveInstance.getName();
-
-        // Notify UI
-        if (oldDatabase != null) {
-            DBUtils.fireObjectSelect(oldDatabase, false);
-        }
-        DBUtils.fireObjectSelect(newDatabase, true);
-
-        if (oldActiveInstance != newActiveInstance) {
-            // Close all database connections but meta (we need it to browse metadata like navigator tree)
-            oldActiveInstance.shutdown(monitor, true);
-        }
-    }
-
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        return true;
-    }
-
     ////////////////////////////////////////////
     // Connections
 
@@ -361,8 +315,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
             try {
                 // Patch URL with new database name
-                conConfig.setDatabaseName(instance.getName());
-                conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+                if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
+                    conConfig.setDatabaseName(instance.getName());
+                    conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+                } else {
+                    //String url = conConfig.getUrl();
+                }
 
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
@@ -441,7 +399,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
             if (allDatabases.isEmpty()) {
                 // Looks like we are not connected or in connection process right now - no instance then
-                throw new IllegalStateException("No databases fond on the server");
+                throw new IllegalStateException("No databases found on the server");
             }
             defDatabase = allDatabases.get(0);
         }
@@ -452,6 +410,42 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public List<PostgreDatabase> getAvailableInstances() {
         return databaseCache.getCachedObjects();
+    }
+
+    /**
+     * Deprecated. Database change is not supported (as it is ambiguous)
+     */
+    @Deprecated
+    public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
+        throws DBException
+    {
+        final PostgreDatabase oldDatabase = getDefaultInstance();
+        if (oldDatabase != newDatabase) {
+            newDatabase.initializeMetaContext(monitor);
+            newDatabase.cacheDataTypes(monitor, false);
+        }
+
+        PostgreSchema oldDefaultSchema = null;
+        if (schema != null) {
+            oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
+            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false);
+        }
+
+        activeDatabaseName = newDatabase.getName();
+
+        // Notify UI
+        DBUtils.fireObjectSelect(oldDatabase, false);
+        DBUtils.fireObjectSelect(newDatabase, true);
+
+        if (schema != null && schema != oldDefaultSchema) {
+            if (oldDefaultSchema != null) {
+                DBUtils.fireObjectSelect(oldDefaultSchema, false);
+            }
+            DBUtils.fireObjectSelect(schema, true);
+        }
+
+        // Close all database connections but meta (we need it to browse metadata like navigator tree)
+        oldDatabase.shutdown(monitor, true);
     }
 
     public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {

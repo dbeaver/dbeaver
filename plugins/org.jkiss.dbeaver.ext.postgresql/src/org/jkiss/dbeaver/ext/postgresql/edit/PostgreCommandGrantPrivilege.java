@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -52,7 +54,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
     {
         boolean withGrantOption = false;
         StringBuilder privName = new StringBuilder();
@@ -89,14 +91,16 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             objectType = PostgreUtils.getObjectTypeName(object);
         }
-        String grantScript =
-            grant ?
-                (object instanceof PostgreTableColumn ?
-                    "GRANT " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " TO " + roleName :
-                    "GRANT " + privName + " ON " + objectType + " " + objectName + " TO " + roleName) :
-                (object instanceof PostgreTableColumn ?
-                    "REVOKE " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " FROM " + roleName :
-                    "REVOKE " + privName + " ON " + objectType + " " + objectName + " FROM " + roleName);
+
+        String grantedCols = "", grantedTypedObject = "";
+        if (object instanceof PostgreTableColumn) {
+            grantedCols = "(" + DBUtils.getQuotedIdentifier(object) + ")";
+            grantedTypedObject = ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        } else {
+            grantedTypedObject = objectType + " " + objectName;
+        }
+
+        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols + " ON " + grantedTypedObject + (grant ? " TO " : " FROM ") + roleName;
         if (grant && withGrantOption) {
             grantScript += " WITH GRANT OPTION";
         }
@@ -112,7 +116,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     {
         if (prevCommand instanceof PostgreCommandGrantPrivilege) {
             PostgreCommandGrantPrivilege prevGrant = (PostgreCommandGrantPrivilege)prevCommand;
-            if (prevGrant.permission == permission && prevGrant.privilege == privilege) {
+            if (prevGrant.permission == permission && Arrays.equals(prevGrant.privilege, privilege)) {
                 if (prevGrant.grant == grant) {
                     return prevCommand;
                 } else {

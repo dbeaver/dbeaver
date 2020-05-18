@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,12 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -120,7 +118,7 @@ public class RuntimeUtils {
         if (!dumpBinary.exists()) {
             dumpBinary = new File(home.getPath(), binName);
             if (!dumpBinary.exists()) {
-                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
+                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "' (" + home.getPath().getAbsolutePath() + ")");
             }
         }
         return dumpBinary;
@@ -196,10 +194,8 @@ public class RuntimeUtils {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
         Job monitorJob = new AbstractJob(taskName) {
             {
-                if (hidden) {
-                    setSystem(true);
-                    setUser(false);
-                }
+                setSystem(hidden);
+                setUser(!hidden);
             }
 
             @Override
@@ -226,6 +222,7 @@ public class RuntimeUtils {
             }
             try {
                 Thread.sleep(50);
+                DBWorkbench.getPlatformUI().readAndDispatchEvents();
             } catch (InterruptedException e) {
                 log.debug("Task '" + taskName + "' was interrupted");
                 break;
@@ -241,19 +238,37 @@ public class RuntimeUtils {
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
             Process p = Runtime.getRuntime().exec(cmd);
             try {
-                try (BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                    String line;
-                    if ((line = input.readLine()) != null) {
-                        return line;
-                    }
+                StringBuilder out = new StringBuilder();
+                readStringToBuffer(p.getInputStream(), out);
+
+                if (out.length() == 0) {
+                    StringBuilder err = new StringBuilder();
+                    readStringToBuffer(p.getErrorStream(), err);
+                    return err.toString();
                 }
-                return null;
+
+                return out.length() == 0 ? null: out.toString();
             } finally {
                 p.destroy();
             }
         }
         catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
+            for (;;) {
+                String line = input.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (out.length() > 0) {
+                    out.append("\n");
+                }
+                out.append(line);
+            }
         }
     }
 

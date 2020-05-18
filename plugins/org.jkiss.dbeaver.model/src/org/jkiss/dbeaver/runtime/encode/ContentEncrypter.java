@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,26 @@ package org.jkiss.dbeaver.runtime.encode;
 
 import org.jkiss.utils.IOUtils;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Content encryption/description
  */
 public class ContentEncrypter {
+
+    public static final String CIPHER_NAME = "AES/CBC/PKCS5Padding";
+    public static final String KEY_ALGORITHM = "AES";
 
     private SecretKey secretKey;
     private Cipher cipher;
@@ -37,7 +45,7 @@ public class ContentEncrypter {
     public ContentEncrypter(SecretKey secretKey) {
         this.secretKey = secretKey;
         try {
-            this.cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            this.cipher = Cipher.getInstance(CIPHER_NAME);
         } catch (Exception e) {
             throw new IllegalStateException("Internal error during encrypted init", e);
         }

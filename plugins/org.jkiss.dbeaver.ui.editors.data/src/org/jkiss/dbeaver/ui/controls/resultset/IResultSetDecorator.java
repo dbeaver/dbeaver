@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * ResultSet decorator.
@@ -29,16 +31,33 @@ public interface IResultSetDecorator {
     long FEATURE_STATUS_BAR         = 2;
     long FEATURE_PANELS             = 4;
     long FEATURE_EDIT               = 8;
+    long FEATURE_PRESENTATIONS      = 16;
+    long FEATURE_LINKS              = 32;
 
     long getDecoratorFeatures();
 
+    /**
+     * Primary presentation ID.
+     * @return presentation ID or null.
+     */
+    @Nullable
+    String getPreferredPresentation();
+
+    @Nullable
     String getEmptyDataMessage();
 
+    @Nullable
     String getEmptyDataDescription();
 
-    void fillContributions(IContributionManager contributionManager);
+    IResultSetLabelProvider getDataLabelProvider();
 
-    void registerDragAndDrop(IResultSetPresentation presentation);
+    /**
+     * Fill additional menu actions
+     */
+    void fillContributions(@NotNull IContributionManager contributionManager);
 
+    void registerDragAndDrop(@NotNull IResultSetPresentation presentation);
+
+    @Nullable
     Boolean getAutoRecordMode();
 }

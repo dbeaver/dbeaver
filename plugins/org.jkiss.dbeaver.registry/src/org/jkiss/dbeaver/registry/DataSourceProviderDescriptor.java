@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -48,6 +51,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
+    public static final DataSourceProviderDescriptor NULL_PROVIDER = new DataSourceProviderDescriptor(null, "NULL");
+
     private DataSourceProviderRegistry registry;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
@@ -63,6 +68,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
+    @NotNull
+    private SQLDialectMetadata scriptDialect;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -85,6 +92,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
+        }
+        String dialectId = config.getAttribute(RegistryConstants.ATTR_DIALECT);
+        if (CommonUtils.isEmpty(dialectId)) {
+            log.debug("No SQL dialect specified for data source provider '" + this.id + "'. Use default.");
+            dialectId = BasicSQLDialect.ID;
+        }
+        this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(dialectId);
+        if (this.scriptDialect == null) {
+            log.debug("Script dialect '" + dialectId + "' not found in registry (for data source provider " + id + "). Use default.");
+            this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
         }
 
         {
@@ -152,6 +169,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.implType = new ObjectType(DBPDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeDescriptor = new DBXTreeItem(this, null, null, id, id, false, true, false, false, true, null, null);
+        this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
     }
 
     void patchConfigurationFrom(IConfigurationElement config) {
@@ -226,6 +244,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectMetadata getScriptDialect() {
+        return scriptDialect;
     }
 
     @Override

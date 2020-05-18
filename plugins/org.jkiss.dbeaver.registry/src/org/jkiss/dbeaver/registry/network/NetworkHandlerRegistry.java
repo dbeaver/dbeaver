@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,10 +87,11 @@ public class NetworkHandlerRegistry {
 */
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(dataSource.getDriver().getDataSourceProvider())) {
+            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(dataSource)) {
                 result.add(d);
             }
         }
         return result;
     }
+
 }

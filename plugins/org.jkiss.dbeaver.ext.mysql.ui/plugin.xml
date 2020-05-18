@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,12 +131,6 @@
         </editor>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
-        </factory>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <toolGroup
@@ -150,7 +144,6 @@
                 label="Dump database"
                 icon="#export"
                 singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource"/>
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
             </tool>
@@ -221,6 +214,12 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLSSLConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.task.ui">
+        <configurator type="mysqlDatabaseBackup" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+        <configurator type="mysqlDatabaseRestore" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
+        <configurator type="mysqlScriptExecute" class="org.jkiss.dbeaver.ext.mysql.tools.MySQLTaskConfigurator"/>
     </extension>
 
 </plugin>

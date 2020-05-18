@@ -5,8 +5,6 @@
 
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.ChangeEvent;
-import org.eclipse.draw2d.ChangeListener;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.Toggle;
 import org.eclipse.swt.graphics.Image;

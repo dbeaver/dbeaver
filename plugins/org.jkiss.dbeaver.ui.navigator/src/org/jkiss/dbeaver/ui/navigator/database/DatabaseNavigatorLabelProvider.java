@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -148,18 +146,6 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Color getBackground(Object element)
     {
-        if (element instanceof DBNDatabaseNode) {
-            DBPDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
-            if (ds != null) {
-                Color color = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
-                if (color != null) {
-                    final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-                    if (element instanceof DBNDataSource || prefStore.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES)) {
-                        return color;
-                    }
-                }
-            }
-        }
         return null;
     }
 
@@ -202,18 +188,27 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return info.toString().trim();
 
             }
-        } else if (element instanceof DBNDatabaseNode) {
-            final String description = ((DBNDatabaseNode) element).getNodeDescription();
+        } else if (element instanceof DBNNode) {
+            final String description = ((DBNNode) element).getNodeDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
             }
+            return ((DBNNode) element).getNodeName();
+        }
+        return null;
+    }
+
+    @Override
+    public Image getToolTipImage(Object element) {
+        if (element instanceof DBNNode) {
+            return DBeaverIcons.getImage(((DBNNode) element).getNodeIconDefault());
         }
         return null;
     }
 
     @Override
     public int getToolTipDisplayDelayTime(Object object) {
-        return 500;
+        return 0;
     }
 
     @Override

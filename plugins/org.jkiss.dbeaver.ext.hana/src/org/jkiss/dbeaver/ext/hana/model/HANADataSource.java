@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
@@ -51,6 +52,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     private static final Log log = Log.getLog(HANADataSource.class);
     private static final String PROP_APPLICATION_NAME = "SESSIONVARIABLE:APPLICATION";
     private static final String PROP_READONLY = "READONLY";
+    private static final String PROP_SPATIAL_OUTPUT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_OUTPUT_REPRESENTATION";
+    private static final String VALUE_SPATIAL_OUTPUT_REPRESENTATION = "EWKB";
+    private static final String PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "SESSIONVARIABLE:SPATIAL_WKB_EMPTY_POINT_REPRESENTATION";
+    private static final String VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION = "NAN_COORDINATES";
     
 
     private HashMap<String, String> sysViewColumnUnits; 
@@ -81,14 +86,16 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     /*
      * explain
      */
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
     throws DBCException {
         HANAPlanAnalyser plan = new HANAPlanAnalyser(this, query);
         plan.explain(session);
         return plan;
     }
 
+    @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
@@ -112,6 +119,10 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         if (getContainer().isConnectionReadOnly()) {
             props.put(PROP_READONLY, "TRUE");
         }
+        // Represent geometries as EWKB (instead of as WKB) so that we can extract the SRID
+        props.put(PROP_SPATIAL_OUTPUT_REPRESENTATION, VALUE_SPATIAL_OUTPUT_REPRESENTATION);
+        // Represent empty points using NaN-coordinates
+        props.put(PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION, VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION);
         return props;
     }
     

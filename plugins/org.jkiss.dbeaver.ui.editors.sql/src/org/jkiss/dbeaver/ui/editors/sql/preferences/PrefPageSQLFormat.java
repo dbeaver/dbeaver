@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -80,6 +81,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     // Formatter
     private Combo formatterSelector;
+    private Button formatCurrentQueryCheck;
 
     private SQLEditorBase sqlViewer;
     private Composite formatterConfigPlaceholder;
@@ -111,7 +113,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 3, 5);
 
         formatterSelector = UIUtils.createLabelCombo(composite, SQLEditorMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -129,9 +131,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
         });
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
+        formatCurrentQueryCheck = UIUtils.createCheckbox(composite, "Format active query only", "Formats only active query or selected text. Otherwise formats entire SQL script", true, 1);
+
         Composite formatterGroup = UIUtils.createPlaceholder(composite, 1, 5);
         formatterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
+        ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 3;
 
 /*
         {
@@ -228,6 +232,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
+        formatCurrentQueryCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY));
 
         String formatterId = store.getString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
         for (int i = 0; i < formatters.size(); i++) {
@@ -249,6 +254,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS, styleBoldKeywords.getSelection());
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY, formatCurrentQueryCheck.getSelection());
 
         store.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER,
             formatters.get(formatterSelector.getSelectionIndex()).getId().toUpperCase(Locale.ENGLISH));
@@ -299,7 +305,10 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 curConfigurator = GeneralUtils.adapt(sqlFormatter, SQLFormatterConfigurator.class);
             }
             if (curConfigurator instanceof IDialogPage) {
-                curConfigurator.configure(selFormatter);
+                curConfigurator.configure(selFormatter, () -> {
+                    curConfigurator.saveSettings(getTargetPreferenceStore());
+                    formatSQL();
+                });
                 ((IDialogPage)curConfigurator).createControl(formatterConfigPlaceholder);
                 curConfigurator.loadSettings(getTargetPreferenceStore());
             }
@@ -320,12 +329,15 @@ public class PrefPageSQLFormat extends TargetPrefPage
             try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
                 final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
                 sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
+
+                sqlViewer.getTextViewer().setSelection(new TextSelection(0, sqlText.length()));
+                sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
+                sqlViewer.getTextViewer().setSelection(new TextSelection(0, 0));
+                sqlViewer.reloadSyntaxRules();
             }
         } catch (Exception e) {
             log.error(e);
         }
-        sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
-        sqlViewer.reloadSyntaxRules();
     }
 
 }

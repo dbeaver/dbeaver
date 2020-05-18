@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.internal.GenericMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,20 +42,22 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * GenericConnectionPage
  */
-public class GenericConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
+public class GenericConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
 {
+    private static final Log log = Log.getLog(GenericConnectionPage.class);
+
     // Host/port
     private Text hostText;
     private Text portText;
@@ -62,9 +65,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     private Text serverText;
     private Text dbText;
     private Text pathText;
-    // Login
-    private Text userNameText;
-    private Text passwordText;
     // URL
     private Text urlText;
 
@@ -93,13 +93,14 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             }
         };
 
-        settingsGroup = new Composite(composite, SWT.NONE);
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        settingsGroup.setLayout(gl);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
+        addrGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
-        settingsGroup.setLayoutData(gd);
+        addrGroup.setLayoutData(gd);
+
+        settingsGroup = UIUtils.createControlGroup(addrGroup, GenericMessages.dialog_connection_general_tab, 4, GridData.FILL_HORIZONTAL, 0);
+        GridLayout gl = new GridLayout(4, false);
+        settingsGroup.setLayout(gl);
 
         {
             Label urlLabel = new Label(settingsGroup, SWT.NONE);
@@ -135,7 +136,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
             portText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.CENTER);
-            gd.widthHint = 60;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             //portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
             portText.addModifyListener(textListener);
@@ -260,44 +261,19 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         {
-            Label userNameLabel = new Label(settingsGroup, SWT.NONE);
-            userNameLabel.setText(GenericMessages.dialog_connection_user_name_label);
-            userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            userNameText = new Text(settingsGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            userNameText.setLayoutData(gd);
-            userNameText.addModifyListener(textListener);
-
-            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
-
-            Label passwordLabel = new Label(settingsGroup, SWT.NONE);
-            passwordLabel.setText(GenericMessages.dialog_connection_password_label);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
-            passwordText.addModifyListener(textListener);
-
-            createSavePasswordButton(settingsGroup, 2);
-
-            addControlToGroup(GROUP_LOGIN, userNameLabel);
-            addControlToGroup(GROUP_LOGIN, userNameText);
-            addControlToGroup(GROUP_LOGIN, emptyLabel);
-            addControlToGroup(GROUP_LOGIN, passwordLabel);
-            addControlToGroup(GROUP_LOGIN, passwordText);
-            addControlToGroup(GROUP_LOGIN, savePasswordCheck);
+            createAuthPanel(addrGroup, 4);
+            addControlToGroup(GROUP_LOGIN, getAuthPanelComposite());
         }
 
-        createDriverPanel(settingsGroup);
-        setControl(settingsGroup);
+        createDriverPanel(addrGroup);
+        setControl(addrGroup);
     }
 
     @Override
     protected void updateDriverInfo(DBPDriver driver) {
+        if (!isCustom) {
+            site.getActiveDataSource().getConnectionConfiguration().setUrl(null);
+        }
         parseSampleURL(driver);
         saveAndUpdate();
     }
@@ -340,11 +316,15 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             DBPDriver driver = getSite().getDriver();
             DBPImage iconBig = driver.getIconBig();
             if (iconBig != null) {
-                ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
-                if (imageDescriptor.getImageData().width >= 64) {
-                    setImageDescriptor(imageDescriptor);
-                } else {
-                    setImageDescriptor(null);
+                try {
+                    ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
+                    if (imageDescriptor.getImageData().width >= 64) {
+                        setImageDescriptor(imageDescriptor);
+                    } else {
+                        setImageDescriptor(null);
+                    }
+                } catch (Exception e) {
+                    log.error(e);
                 }
             }
         }
@@ -385,12 +365,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             dbText.setText(""); //$NON-NLS-1$
             pathText.setText(""); //$NON-NLS-1$
         }
-        if (userNameText != null) {
-            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-        }
 
         if (urlText != null) {
             if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
@@ -421,8 +395,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 dbText.setFocus();
             } else  if (pathText != null && pathText.isVisible()) {
                 pathText.setFocus();
-            } else  if (userNameText != null && userNameText.isVisible()) {
-                userNameText.setFocus();
             }
         });
 
@@ -449,13 +421,9 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         if (pathText != null && (properties.contains(JDBCConstants.PROP_FOLDER) || properties.contains(JDBCConstants.PROP_FILE))) {
             connectionInfo.setDatabaseName(pathText.getText().trim());
         }
-        if (userNameText != null) {
-            connectionInfo.setUserName(userNameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
-        }
+
         super.saveSettings(dataSource);
+
         if (isCustom) {
             if (urlText != null) {
                 connectionInfo.setUrl(urlText.getText().trim());
@@ -497,8 +465,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
         updateCreateButton(driver);
 
-
-        settingsGroup.layout();
+        settingsGroup.getParent().layout();
     }
 
     private void updateCreateButton(DBPDriver driver) {
@@ -523,7 +490,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
         saveSettings(testDataSource);
         DBPConnectionConfiguration cfg = testDataSource.getConnectionConfiguration();
-        cfg.setUrl(cfg.getUrl() + paramCreate);
+        cfg.setDatabaseName(cfg.getDatabaseName() + paramCreate);
         String databaseName = cfg.getDatabaseName();
         testDataSource.setName(databaseName);
 
@@ -572,12 +539,14 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         List<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
-                GridData gd = (GridData)control.getLayoutData();
+                Object gd = control.getLayoutData();
                 if (gd == null) {
                     gd = new GridData(GridData.BEGINNING);
                     control.setLayoutData(gd);
                 }
-                gd.exclude = !show;
+                if (gd instanceof GridData) {
+                    ((GridData)gd).exclude = !show;
+                }
                 control.setVisible(show);
             }
         }
@@ -585,16 +554,14 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
     private void addControlToGroup(String group, Control control)
     {
-        List<Control> controlList = propGroupMap.get(group);
-        if (controlList == null) {
-            controlList = new ArrayList<>();
-            propGroupMap.put(group, controlList);
-        }
+        List<Control> controlList = propGroupMap.computeIfAbsent(
+            group,
+            k -> new ArrayList<>());
         controlList.add(control);
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)

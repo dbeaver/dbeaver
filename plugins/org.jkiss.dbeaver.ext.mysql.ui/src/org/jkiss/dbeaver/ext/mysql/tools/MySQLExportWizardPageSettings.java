@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,27 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 
 
-class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard>
-{
+class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard> {
 
     private Text outputFolderText;
     private Text outputFileText;
@@ -59,7 +62,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getOutputFolder() != null;
+        return super.isPageComplete() && wizard.getSettings().getOutputFolder() != null;
     }
 
     @Override
@@ -80,84 +83,99 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_online_backup);
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_lock_tables);
         methodCombo.add(MySQLUIMessages.tools_db_export_wizard_page_settings_combo_item_normal);
-        methodCombo.select(wizard.method.ordinal());
+        methodCombo.select(wizard.getSettings().getMethod().ordinal());
         methodCombo.addSelectionListener(changeListener);
 
         Group settingsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
-        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
+        noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.getSettings().isNoCreateStatements());
         noCreateStatementsCheck.addSelectionListener(changeListener);
-        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
+        addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.getSettings().isAddDropStatements());
         addDropStatementsCheck.addSelectionListener(changeListener);
-        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
+        disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.getSettings().isDisableKeys());
         disableKeysCheck.addSelectionListener(changeListener);
-        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
+        extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.getSettings().isExtendedInserts());
         extendedInsertsCheck.addSelectionListener(changeListener);
-        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
+        dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.getSettings().isDumpEvents());
         dumpEventsCheck.addSelectionListener(changeListener);
-        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
+        commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.getSettings().isComments());
         commentsCheck.addSelectionListener(changeListener);
-        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
+        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.getSettings().isRemoveDefiner());
         removeDefiner.addSelectionListener(changeListener);
-        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.binariesInHex);
+        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.getSettings().isBinariesInHex());
         binaryInHex.addSelectionListener(changeListener);
-        noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.noData);
+        noData = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_data, wizard.getSettings().isNoData());
         noData.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
-        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
+        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getSettings().getOutputFilePattern());
         UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern",
-            AbstractImportExportWizard.VARIABLE_HOST,
-            AbstractImportExportWizard.VARIABLE_DATABASE,
-            AbstractImportExportWizard.VARIABLE_TABLE,
-            AbstractImportExportWizard.VARIABLE_DATE,
-            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
-        UIUtils.installContentProposal(
+            NativeToolUtils.VARIABLE_HOST,
+            NativeToolUtils.VARIABLE_DATABASE,
+            NativeToolUtils.VARIABLE_TABLE,
+            NativeToolUtils.VARIABLE_DATE,
+            NativeToolUtils.VARIABLE_TIMESTAMP);
+        ContentAssistUtils.installContentProposal(
             outputFileText,
-            new TextContentAdapter(),
-            new SimpleContentProposalProvider(new String[] {
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
-                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
-                }
-            ));
-        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
+            new SmartTextContentAdapter(),
+            new StringContentProposalProvider(
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_HOST),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP)));
 
         createExtraArgsInput(outputGroup);
 
-        if (wizard.getOutputFolder() != null) {
-            outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
+        if (wizard.getSettings().getOutputFolder() != null) {
+            outputFolderText.setText(wizard.getSettings().getOutputFolder().getAbsolutePath());
         }
 
-        createSecurityGroup(composite);
+        outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
+
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
     }
 
     @Override
+    public void saveState() {
+        super.saveState();
+
+        MySQLExportSettings settings = wizard.getSettings();
+
+        String fileName = outputFolderText.getText();
+        wizard.getSettings().setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        settings.setOutputFilePattern(outputFileText.getText());
+
+        switch (methodCombo.getSelectionIndex()) {
+            case 0:
+                settings.setMethod(MySQLExportSettings.DumpMethod.ONLINE);
+                break;
+            case 1:
+                settings.setMethod(MySQLExportSettings.DumpMethod.LOCK_ALL_TABLES);
+                break;
+            default:
+                settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL);
+                break;
+        }
+        settings.setNoCreateStatements(noCreateStatementsCheck.getSelection());
+        settings.setAddDropStatements(addDropStatementsCheck.getSelection());
+        settings.setDisableKeys(disableKeysCheck.getSelection());
+        settings.setExtendedInserts(extendedInsertsCheck.getSelection());
+        settings.setDumpEvents(dumpEventsCheck.getSelection());
+        settings.setComments(commentsCheck.getSelection());
+        settings.setRemoveDefiner(removeDefiner.getSelection());
+        settings.setBinariesInHex(binaryInHex.getSelection());
+        settings.setNoData(noData.getSelection());
+    }
+
+    @Override
     protected void updateState()
     {
-        String fileName = outputFolderText.getText();
-        wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
-        wizard.setOutputFilePattern(outputFileText.getText());
-        wizard.setExtraCommandArgs(extraCommandArgsText.getText());
-        switch (methodCombo.getSelectionIndex()) {
-            case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
-            case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
-            default: wizard.method = MySQLExportWizard.DumpMethod.NORMAL; break;
-        }
-        wizard.noCreateStatements = noCreateStatementsCheck.getSelection();
-        wizard.addDropStatements = addDropStatementsCheck.getSelection();
-        wizard.disableKeys = disableKeysCheck.getSelection();
-        wizard.extendedInserts = extendedInsertsCheck.getSelection();
-        wizard.dumpEvents = dumpEventsCheck.getSelection();
-        wizard.comments = commentsCheck.getSelection();
-        wizard.removeDefiner = removeDefiner.getSelection();
-        wizard.binariesInHex = binaryInHex.getSelection();
-        wizard.noData = noData.getSelection();
-
+        saveState();
         getContainer().updateButtons();
     }
 

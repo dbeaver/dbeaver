@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -51,11 +52,19 @@ public interface DBTTaskManager {
     DBTTaskType[] getExistingTaskTypes();
 
     @NotNull
-    DBTTask createTaskConfiguration(
+    DBTTask createTask(
         @NotNull DBTTaskType task,
         @NotNull String label,
         @Nullable String description,
-        @NotNull Map<String, Object> properties);
+        @NotNull Map<String, Object> properties) throws DBException;
+
+    /**
+     * Temporary tasks can be used to execute some task without adding to task manager registry
+     */
+    @NotNull
+    DBTTask createTemporaryTask(
+        @NotNull DBTTaskType task,
+        @NotNull String label);
 
     void updateTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
@@ -64,6 +73,6 @@ public interface DBTTaskManager {
     @NotNull
     File getStatisticsFolder();
 
-    void runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
+    Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) throws DBException;
 
 }

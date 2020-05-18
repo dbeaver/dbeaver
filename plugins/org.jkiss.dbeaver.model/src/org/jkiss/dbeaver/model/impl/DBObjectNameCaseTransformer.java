@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ModelPreferences;
 
 /**
  * Object name case transformer
@@ -49,21 +48,18 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-        if (!(dataSource instanceof SQLDataSource)) {
-            return value;
-        }
 
-        final SQLDialect dialect = ((SQLDataSource)dataSource).getSQLDialect();
+        final SQLDialect dialect = dataSource.getSQLDialect();
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE) ||
             dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED;
         if (isNameCaseSensitive) {
             return value;
         }
         if (DBUtils.isQuotedIdentifier(dataSource, value)) {
-            value = DBUtils.getUnQuotedIdentifier(dataSource, value);
             if (dialect.supportsQuotedMixedCase() || dialect.supportsUnquotedMixedCase()) {
                 return value;
             }
+            value = DBUtils.getUnQuotedIdentifier(dataSource, value);
         } else {
             if (dialect.supportsUnquotedMixedCase() || dialect.storesUnquotedCase() == null) {
                 return value;

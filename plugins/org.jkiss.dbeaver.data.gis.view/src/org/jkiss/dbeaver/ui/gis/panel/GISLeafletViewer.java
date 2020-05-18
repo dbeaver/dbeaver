@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -56,7 +57,9 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
+import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -79,7 +82,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
     private static final String PROP_SRID = "gis.srid";
 
-    private static final Gson gson = new GsonBuilder().create();
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
     private final IValueController valueController;
     private final Browser browser;
@@ -188,6 +192,15 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         saveAttributeSettings();
     }
 
+    @Override
+    public void refresh() {
+        try {
+            reloadGeometryData(lastValue, true);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
+        }
+    }
+
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
         reloadGeometryData(values, false);
     }
@@ -229,6 +242,17 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
             scriptFile = File.createTempFile("view", "gis.html", tempDir);
         }
+
+        int attributeSrid = GisConstants.SRID_SIMPLE;
+        if (valueController != null && valueController.getValueType() instanceof GisAttribute) {
+            try {
+                attributeSrid = ((GisAttribute) valueController.getValueType())
+                        .getAttributeGeometrySRID(new VoidProgressMonitor());
+            } catch (DBCException e) {
+                log.error(e);
+            }
+        }
+
         List<String> geomValues = new ArrayList<>();
         List<String> geomTipValues = new ArrayList<>();
         boolean showMap = false;
@@ -246,6 +270,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
+            if (srid == GisConstants.SRID_SIMPLE) {
+                srid = attributeSrid;
+            }
             if (srid == GisConstants.SRID_SIMPLE) {
                 showMap = false;
                 actualSourceSRID = srid;
@@ -282,15 +309,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 geomTipValues.add(gson.toJson(value.getProperties()));
             }
         }
-        if (actualSourceSRID == GisConstants.SRID_SIMPLE) {
-            if (valueController != null && valueController.getValueType() instanceof GisAttribute) {
-                try {
-                    actualSourceSRID = ((GisAttribute) valueController.getValueType()).getAttributeGeometrySRID(new VoidProgressMonitor());
-                } catch (DBCException e) {
-                    log.error(e);
-                }
-            }
-        }
         this.defaultSRID = actualSourceSRID;
         String geomValuesString = String.join(",", geomValues);
         String geomTipValuesString = String.join(",", geomTipValues);
@@ -317,6 +335,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         return String.valueOf(toolsVisible);
                     case "geomCRS":
                         return geomCRS;
+                    case "defaultTiles":
+                        return GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
                 }
                 return null;
             });
@@ -375,13 +395,13 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
     private void updateToolbar() {
         toolBarManager.removeAll();
-        toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
                 UIUtils.launchProgram(scriptFile.getAbsolutePath());
             }
         });
-        toolBarManager.add(new Action("Copy as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
             @Override
             public void run() {
                 Image image = new Image(Display.getDefault(), browser.getBounds());
@@ -396,7 +416,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
             }
         });
-        toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_save_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
             @Override
             public void run() {
                 final Shell shell = browser.getShell();
@@ -443,7 +463,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
         });
 
-        toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_print, DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
             @Override
             public void run() {
                 GC gc = new GC(browser.getDisplay());
@@ -460,9 +480,12 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
 
-        toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
+        Action tilesSelectorAction = new SelectTilesAction(this);
+        toolBarManager.add(ActionUtils.makeActionContribution(tilesSelectorAction, true));
+
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_flip, Action.AS_CHECK_BOX) {
             {
-                setToolTipText("Flip latitude/longitude coordinates in source data");
+                setToolTipText(GISMessages.panel_leaflet_viewer_tool_bar_action_tool_tip_text_flip);
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
             }
 
@@ -486,7 +509,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
         toolBarManager.add(new Separator());
 
-        toolBarManager.add(new Action("Show/Hide controls", Action.AS_CHECK_BOX) {
+        toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_show_hide, Action.AS_CHECK_BOX) {
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PALETTE));
             }

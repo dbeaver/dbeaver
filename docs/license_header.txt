@@ -1,5 +1,5 @@
    DBeaver - Universal Database Manager
-   Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+   Copyright (C) 2010-2020 DBeaver Corp and others
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,3 +12,10 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+   Contributors:
+      Serge Rider - initial API and implementation
+      John Smith - German localization
+
+   Notes:
+      Any important notes (legal or implementation related)

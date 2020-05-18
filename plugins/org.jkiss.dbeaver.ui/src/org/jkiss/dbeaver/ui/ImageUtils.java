@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Control;
 
 /**
@@ -384,6 +385,14 @@ public class ImageUtils {
         }
 
         return colours;
+    }
+
+    public static ImageData getImageDataAtCurrentZoom(Image image) {
+        try {
+            return image.getImageData(DPIUtil.getDeviceZoom());
+        } catch (Exception e) {
+            return image.getImageData();
+        }
     }
 
 }

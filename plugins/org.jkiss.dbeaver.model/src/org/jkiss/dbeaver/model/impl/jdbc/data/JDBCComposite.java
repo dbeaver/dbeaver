@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,6 +183,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         return values[position];
     }
 
+    public Object getAttributeValue(@NotNull String attrName) throws DBCException {
+        DBSEntityAttribute attribute = DBUtils.findObject(attributes, attrName);
+        return attribute == null ? null : getAttributeValue(attribute);
+    }
+
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
         if (!CommonUtils.equalObjects(values[attribute.getOrdinalPosition()], value)) {
@@ -299,7 +304,10 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
         @Override
         public int hashCode() {
-            return (int) (name.hashCode() + valueType + maxLength + scale + precision + typeName.hashCode() + ordinalPosition);
+            return (int) ((name == null ? 0 : name.hashCode()) +
+                valueType + maxLength + CommonUtils.toInt(scale) + CommonUtils.toInt(precision) +
+                (typeName == null ? 0 : typeName.hashCode()) +
+                ordinalPosition);
         }
 
         @Nullable

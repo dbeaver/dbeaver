@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -19,10 +19,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jkiss.dbeaver.debug.DBGSessionInfo;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSessionInfo implements DBGSessionInfo {

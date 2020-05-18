@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBPVirtualObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -29,12 +30,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject
+public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject
 {
     @Nullable
     private GenericCatalog catalog;
     @NotNull
     private String schemaName;
+    private boolean virtualSchema;
 
     public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName)
     {
@@ -95,4 +97,14 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
     public boolean isSystem() {
         return getDataSource().getMetaModel().isSystemSchema(this);
     }
+
+    @Override
+    public boolean isVirtual() {
+        return virtualSchema;
+    }
+
+    public void setVirtual(boolean nullSchema) {
+        this.virtualSchema = nullSchema;
+    }
+
 }

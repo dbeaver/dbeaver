@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -52,6 +53,7 @@ import java.util.*;
 public abstract class GenericTableBase extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject
 {
     private static final Log log = Log.getLog(GenericTableBase.class);
+    public static final String CAT_STATISTICS = "Statistics";
 
     private String tableType;
     private boolean isSystem;
@@ -122,6 +124,10 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return this.isSystem;
     }
 
+    public void setSystem(boolean system) {
+        isSystem = system;
+    }
+
     @Property(viewable = true, order = 2)
     public String getTableType()
     {
@@ -168,19 +174,19 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
             // ensure all columns are already cached
             getAttributes(monitor);
-            return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
+            return getContainer().getConstraintKeysCache().getObjects(monitor, getContainer(), this);
         }
         return null;
     }
 
-    void addUniqueKey(GenericPrimaryKey constraint) {
-        getContainer().getPrimaryKeysCache().cacheObject(constraint);
+    void addUniqueKey(GenericUniqueKey constraint) {
+        getContainer().getConstraintKeysCache().cacheObject(constraint);
     }
 
     @Override
@@ -226,14 +232,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getIndexCache().clearObjectCache(this);
-        this.getContainer().getPrimaryKeysCache().clearObjectCache(this);
+        this.getContainer().getConstraintKeysCache().clearObjectCache(this);
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
         return this.getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
-    @Property(viewable = false, expensive = true, order = 5, category = "Statistics")
+    @Property(viewable = false, expensive = true, order = 5, category = CAT_STATISTICS)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
@@ -381,7 +387,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 }
 
                 // Find PK
-                GenericPrimaryKey pk = null;
+                GenericUniqueKey pk = null;
                 if (!CommonUtils.isEmpty(info.pkName)) {
                     pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
@@ -389,9 +395,9 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                     }
                 }
                 if (pk == null) {
-                    Collection<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
+                    Collection<GenericUniqueKey> uniqueKeys = this.getConstraints(monitor);
                     if (uniqueKeys != null) {
-                        for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                        for (GenericUniqueKey pkConstraint : uniqueKeys) {
                             if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
@@ -403,7 +409,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                     log.warn("Can't find unique key for table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
                     //String pkFullName = getFullyQualifiedName() + "." + info.pkName;
-                    pk = new GenericPrimaryKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    pk = new GenericUniqueKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
                     this.addUniqueKey(pk);
@@ -440,7 +446,12 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            if (ex instanceof SQLFeatureNotSupportedException) {
+                log.debug("Error reading references", ex);
+                return Collections.emptyList();
+            } else {
+                throw new DBException(ex, getDataSource());
+            }
         }
     }
 

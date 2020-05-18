@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 xml.addAttribute(RegistryConstants.ATTR_CATEGORY, driver.getCategory());
             }
             xml.addAttribute(RegistryConstants.ATTR_CATEGORIES, String.join(",", driver.getCategories()));
-            xml.addAttribute(RegistryConstants.ATTR_CUSTOM, driver.isCustom());
-            xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+
             xml.addAttribute(RegistryConstants.ATTR_NAME, driver.getName());
             xml.addAttribute(RegistryConstants.ATTR_CLASS, driver.getDriverClassName());
             if (!CommonUtils.isEmpty(driver.getSampleURL())) {
@@ -78,6 +77,19 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.notEmpty(driver.getDescription()));
             if (driver.isCustomDriverLoader()) {
                 xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, driver.isCustomDriverLoader());
+            }
+            xml.addAttribute(RegistryConstants.ATTR_CUSTOM, driver.isCustom());
+            if (driver.isEmbedded()) {
+                xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, driver.isEmbedded());
+            }
+            if (driver.isAnonymousAccess()) {
+                xml.addAttribute(RegistryConstants.ATTR_ANONYMOUS, driver.isAnonymousAccess());
+            }
+            if (driver.isAllowsEmptyPassword()) {
+                xml.addAttribute("allowsEmptyPassword", driver.isAllowsEmptyPassword());
+            }
+            if (!driver.isInstantiable()) {
+                xml.addAttribute(RegistryConstants.ATTR_INSTANTIABLE, driver.isInstantiable());
             }
 
             // Libraries
@@ -126,20 +138,20 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             }
 
             // Parameters
-            for (Map.Entry<Object, Object> paramEntry : driver.getCustomParameters().entrySet()) {
+            for (Map.Entry<String, Object> paramEntry : driver.getCustomParameters().entrySet()) {
                 if (!CommonUtils.equalObjects(paramEntry.getValue(), driver.getDefaultParameters().get(paramEntry.getKey()))) {
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
-                        xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(paramEntry.getKey()));
+                        xml.addAttribute(RegistryConstants.ATTR_NAME, paramEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                     }
                 }
             }
 
             // Properties
-            for (Map.Entry<Object, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
+            for (Map.Entry<String, Object> propEntry : driver.getCustomConnectionProperties().entrySet()) {
                 if (!CommonUtils.equalObjects(propEntry.getValue(), driver.getDefaultConnectionProperties().get(propEntry.getKey()))) {
                     try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_PROPERTY)) {
-                        xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(propEntry.getKey()));
+                        xml.addAttribute(RegistryConstants.ATTR_NAME, propEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(propEntry.getValue()));
                     }
                 }
@@ -149,9 +161,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
 
     public static class DriversParser implements SAXListener {
+        private final boolean providedDrivers;
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
+
+        public DriversParser(boolean provided) {
+            this.providedDrivers = provided;
+        }
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) {
@@ -191,20 +208,22 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);
                     }
-                    if (curProvider.isDriversManagable()) {
+                    if (providedDrivers || curProvider.isDriversManagable()) {
                         String category = atts.getValue(RegistryConstants.ATTR_CATEGORY);
                         if (!CommonUtils.isEmpty(category)) {
                             curDriver.setCategory(category);
                         }
-                        if (curDriver.isCustom()) {
-                            curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        if (providedDrivers || curDriver.isCustom()) {
+                            curDriver.setName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
-                        curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                        curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
-                        curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
-                        curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                        curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
-                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), false));
+                        curDriver.setDescription(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
+                        curDriver.setDriverClassName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setSampleURL(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
+                        curDriver.setDriverDefaultPort(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
+                        curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
+                        curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
+                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
+                        curDriver.setInstantiable(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));
                     }
                     if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
                         curDriver.setCustomDriverLoader((
@@ -231,12 +250,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (CommonUtils.isEmpty(typeStr)) {
                         type = DBPDriverLibrary.FileType.jar;
                     } else {
-                        try {
-                            type = DBPDriverLibrary.FileType.valueOf(typeStr);
-                        } catch (IllegalArgumentException e) {
-                            log.warn(e);
-                            type = DBPDriverLibrary.FileType.jar;
-                        }
+                        type = CommonUtils.valueOf(DBPDriverLibrary.FileType.class, typeStr, DBPDriverLibrary.FileType.jar);
                     }
                     String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
                     if (!CommonUtils.isEmpty(path)) {
@@ -245,7 +259,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
-                    if (!custom && lib == null) {
+                    if (!providedDrivers && !custom && lib == null) {
                         // Perhaps this library isn't included in driver bundle
                         // Or this is predefined library from some previous version - as it wasn't defined in plugin.xml
                         // so let's just skip it

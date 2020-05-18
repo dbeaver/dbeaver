@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.app;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,12 +40,12 @@ public class DefaultSecureStorage implements DBASecureStorage {
 
     @Override
     public ISecurePreferences getSecurePreferences() {
-        return SecurePreferencesFactory.getDefault();
+        return SecurePreferencesFactory.getDefault().node("dbeaver");
     }
 
     @Override
     public SecretKey getLocalSecretKey() {
-        return new SecretKeySpec(LOCAL_KEY_CACHE, "AES");
+        return new SecretKeySpec(LOCAL_KEY_CACHE, ContentEncrypter.KEY_ALGORITHM);
     }
 
 }

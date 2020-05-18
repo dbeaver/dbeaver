@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ExasolStructureAssistant implements DBSStructureAssistant {
+public class ExasolStructureAssistant implements DBSStructureAssistant<ExasolExecutionContext> {
 
 
     private static final Log LOG = Log.getLog(ExasolStructureAssistant.class);
@@ -55,10 +55,10 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
 
 
-    private static final String SQL_TABLES_ALL = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE IN (%s)";
-    private static final String SQL_TABLES_SCHEMA = "SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE ? AND TABLE_TYPE IN (%s)";
+    private static final String SQL_TABLES_ALL = "/*snapshot execution*/ SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE IN (%s)";
+    private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%%%s%%' AND TABLE_TYPE IN (%s)";
     //private static final String SQL_COLS_ALL = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE COLUMN_NAME LIKE '%s'";
-    private static final String SQL_COLS_SCHEMA = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM = '%s' and COLUMN_NAME LIKE '%s'";
+    private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM = '%s' and COLUMN_NAME LIKE '%%%s%%'";
 
 
     private ExasolDataSource dataSource;
@@ -100,9 +100,10 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
-                                                      DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
-                                                      int maxResults) throws DBException {
+    public List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor, @NotNull ExasolExecutionContext executionContext, DBSObject parentObject,
+        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
+        int maxResults) throws DBException {
         LOG.debug(objectNameMask);
 
 
@@ -111,11 +112,12 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
             exasolObjectTypes.add((ExasolObjectType) dbsObjectType);
         }
 
-
         ExasolSchema schema = parentObject instanceof ExasolSchema ? (ExasolSchema) parentObject : null;
+        if (schema == null) {
+            schema = executionContext.getContextDefaults().getDefaultSchema();
+        }
 
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, exasolObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);

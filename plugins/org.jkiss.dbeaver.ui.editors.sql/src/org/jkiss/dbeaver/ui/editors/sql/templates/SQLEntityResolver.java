@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -34,9 +33,9 @@ import java.util.List;
 /**
  * Entity resolver
  */
-public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
+class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
 
-    public SQLEntityResolver()
+    SQLEntityResolver()
     {
         super("table", "Database table");
     }
@@ -68,12 +67,9 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         }
         if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
             // Find container for specified schema/catalog
-            objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, null);
+            objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, null);
         } else {
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
-            if (objectSelector != null) {
-                objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
-            }
+            objectContainer = DBUtils.getSelectedObject(executionContext, DBSObjectContainer.class);
         }
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, objectContainer, entities);

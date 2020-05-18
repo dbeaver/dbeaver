@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.io.File;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * DBPWorkspace
@@ -34,11 +35,15 @@ public interface DBPProject extends DBPObject
 {
     String METADATA_FOLDER = ".dbeaver";
 
+    String PROP_SECURE_PROJECT = "secureProject";
+
     @NotNull
     DBPWorkspace getWorkspace();
 
     @NotNull
     String getName();
+
+    UUID getProjectID();
 
     @NotNull
     File getAbsolutePath();
@@ -62,9 +67,17 @@ public interface DBPProject extends DBPObject
     DBTTaskManager getTaskManager();
 
     @NotNull
-    ISecurePreferences getSecurePreferences();
+    DBASecureStorage getSecureStorage();
+
+    Object getProjectProperty(String propName);
+
+    void setProjectProperty(String propName, Object propValue);
 
     Object getResourceProperty(IResource resource, String propName);
+
+    Map<String, Object> getResourceProperties(IResource resource);
+
+    Map<String, Map<String, Object>> getResourceProperties();
 
     void setResourceProperty(IResource resource, String propName, Object propValue);
 

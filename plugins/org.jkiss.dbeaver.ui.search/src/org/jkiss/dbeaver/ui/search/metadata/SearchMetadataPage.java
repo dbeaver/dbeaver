@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class SearchMetadataPage extends AbstractSearchPage {
 
@@ -161,15 +161,20 @@ public class SearchMetadataPage extends AbstractSearchPage {
                         for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
                             if (node instanceof DBNDataSource) {
                                 DBNDataSource dsNode = (DBNDataSource) node;
-                                dsNode.initializeNode(null, status -> {
-                                    if (status.isOK()) {
-                                        UIUtils.asyncExec(() -> {
-                                            if (!dataSourceTree.isDisposed()) {
-                                                fillObjectTypes();
-                                            }
-                                        });
-                                    }
-                                });
+                                try {
+                                    dsNode.initializeNode(null, status -> {
+                                        if (status.isOK()) {
+                                            UIUtils.asyncExec(() -> {
+                                                if (!dataSourceTree.isDisposed()) {
+                                                    fillObjectTypes();
+                                                }
+                                            });
+                                        }
+                                    });
+                                } catch (DBException e) {
+                                    // shouldn't be here
+                                    log.error(e);
+                                }
                                 break;
                             }
                         }
@@ -342,10 +347,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 item.setData(objectType);
                 if (checkedTypes.contains(objectType)) {
                     item.setChecked(true);
-                } else if (savedTypeNames.contains(objectType.getTypeClass().getName())) {
+                } else if (savedTypeNames.contains(objectType.getTypeName())) {
                     item.setChecked(true);
                     checkedTypes.add(objectType);
-                    savedTypeNames.remove(objectType.getTypeClass().getName());
+                    savedTypeNames.remove(objectType.getTypeName());
                 }
             }
         }
@@ -459,7 +464,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 if (typesString.length() > 0) {
                     typesString.append("|"); //$NON-NLS-1$
                 }
-                typesString.append(type.getTypeClass().getName());
+                typesString.append(type.getTypeName());
             }
             store.setValue(PROP_OBJECT_TYPE, typesString.toString());
         }

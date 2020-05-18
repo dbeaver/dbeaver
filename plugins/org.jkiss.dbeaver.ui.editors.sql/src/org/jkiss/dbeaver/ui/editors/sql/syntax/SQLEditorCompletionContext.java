@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+
+import java.util.Map;
 
 /**
  * SQLContextInformer
@@ -44,6 +47,11 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     @Override
     public DBPDataSource getDataSource() {
         return editor.getDataSource();
+    }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return editor.getExecutionContext();
     }
 
     @Override
@@ -102,7 +110,16 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     }
 
     @Override
-    public SQLCompletionProposalBase createProposal(@NotNull SQLCompletionRequest request, @NotNull String displayString, @NotNull String replacementString, int cursorPosition, @Nullable DBPImage image, @NotNull DBPKeywordType proposalType, @Nullable String description, @Nullable DBPNamedObject object) {
+    public SQLCompletionProposalBase createProposal(
+        @NotNull SQLCompletionRequest request,
+        @NotNull String displayString,
+        @NotNull String replacementString,
+        int cursorPosition,
+        @Nullable DBPImage image,
+        @NotNull DBPKeywordType proposalType,
+        @Nullable String description,
+        @Nullable DBPNamedObject object,
+        @NotNull Map<String, Object> params) {
         return new SQLCompletionProposal(
             request,
             displayString,
@@ -111,7 +128,8 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
             image,
             proposalType,
             description,
-            object);
+            object,
+            params);
     }
 
     private DBPPreferenceStore getActivePreferenceStore() {

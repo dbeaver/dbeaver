@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * SelectObjectDialog
@@ -32,9 +34,13 @@ import org.jkiss.dbeaver.ui.*;
  */
 public abstract class AbstractPopupPanel extends Dialog {
 
-
     private final String title;
     private boolean modeless;
+    private static boolean popupOpen;
+
+    public static boolean isPopupOpen() {
+        return popupOpen;
+    }
 
     protected AbstractPopupPanel(Shell parentShell, String title)
     {
@@ -43,21 +49,43 @@ public abstract class AbstractPopupPanel extends Dialog {
     }
 
     @Override
+    protected Point getInitialSize() {
+        Point initialSize = super.getInitialSize();
+        Rectangle maxBounds = getParentShell().getDisplay().getBounds();
+        initialSize.x = Math.min(initialSize.x, maxBounds.width - maxBounds.width / 50);
+        return initialSize;
+    }
+
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
-    public boolean isModeless() {
+    protected boolean isModeless() {
         return modeless;
+    }
+
+    protected boolean isShowTitle() {
+        return true;
     }
 
     public void setModeless(boolean modeless) {
         this.modeless = modeless;
         if (modeless) {
-            setShellStyle(SWT.SHELL_TRIM);
+            setShellStyle(SWT.RESIZE | (isShowTitle() ? (SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.MAX) : SWT.NONE));
         } else {
             setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
+        }
+    }
+
+    @Override
+    public int open() {
+        popupOpen = true;
+        try {
+            return super.open();
+        } finally {
+            popupOpen = false;
         }
     }
 
@@ -81,9 +109,7 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     UIUtils.asyncExec(() -> {
-                        if (getShell() != null && !UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                            cancelPressed();
-                        }
+                        handleFocusLost(e);
                     });
                 }
             };
@@ -94,6 +120,18 @@ public abstract class AbstractPopupPanel extends Dialog {
             }
         }
 
+    }
+
+    private void handleFocusLost(FocusEvent e) {
+        Shell shell = getShell();
+        if (shell != null) {
+            Control focusControl = shell.getDisplay().getFocusControl();
+            if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
+                cancelPressed();
+            }
+        } else {
+            cancelPressed();
+        }
     }
 
 }

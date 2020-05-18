@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,8 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     private String rowEnd;
     private String transactionStartId;
     private String collationSchema;
-    private String collationNane;
+    private String collationName;
+    private int codePage;
 
     private String typeStringUnits;
     private Integer stringUnitsLength;
@@ -116,9 +117,10 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
+        this.codePage = JDBCUtils.safeGetInt(dbResult, "CODEPAGE");
         if (db2DataSource.isAtLeastV9_5()) {
             this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
-            this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+            this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
             this.nbQuantiles = JDBCUtils.safeGetInteger(dbResult, "NQUANTILES");
             this.nbMostFreq = JDBCUtils.safeGetInteger(dbResult, "NMOSTFREQ");
         }
@@ -209,7 +211,11 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     @Override
     public DBPDataKind getDataKind()
     {
-        return dataType.getDataKind();
+        DBPDataKind dataKind = dataType.getDataKind();
+        if (dataKind == DBPDataKind.STRING && this.codePage == 0) {
+            return DBPDataKind.CONTENT; // FOR BIT DATA
+        }
+        return dataKind;
     }
 
     @Override
@@ -440,9 +446,9 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     }
 
     @Property(viewable = false, order = 181, category = DB2Constants.CAT_COLLATION)
-    public String getCollationNane()
+    public String getcollationName()
     {
-        return collationNane;
+        return collationName;
     }
 
 }

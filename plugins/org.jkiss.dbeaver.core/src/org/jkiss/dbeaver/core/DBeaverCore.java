@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
@@ -61,12 +62,9 @@ public class DBeaverCore extends BasePlatformImpl {
 
     private static final Log log = Log.getLog(DBeaverCore.class);
 
-    private static final DBPApplication DEFAULT_APPLICATION = new EclipseApplication();
-
     static DBeaverCore instance;
 
     @NotNull
-    private static DBPApplication application = DEFAULT_APPLICATION;
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
@@ -118,11 +116,7 @@ public class DBeaverCore extends BasePlatformImpl {
     }
 
     public static boolean isStandalone() {
-        return application.isStandalone();
-    }
-
-    public static void setApplication(@NotNull DBPApplication app) {
-        application = app;
+        return BaseApplicationImpl.getInstance().isStandalone();
     }
 
     public static boolean isClosing() {
@@ -151,9 +145,6 @@ public class DBeaverCore extends BasePlatformImpl {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
-        // Validate that UI was initialized
-        DBeaverUI.getInstance();
-
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
             SecurityProviderUtils.registerSecurityProvider();
@@ -171,8 +162,6 @@ public class DBeaverCore extends BasePlatformImpl {
 
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
-
-        installProxySelector();
 
         super.initialize();
 
@@ -217,7 +206,6 @@ public class DBeaverCore extends BasePlatformImpl {
             tempFolder = null;
         }
 
-        DBeaverCore.application = DEFAULT_APPLICATION;
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
         System.gc();
@@ -239,7 +227,7 @@ public class DBeaverCore extends BasePlatformImpl {
     @NotNull
     @Override
     public DBPApplication getApplication() {
-        return application;
+        return BaseApplicationImpl.getInstance();
     }
 
 /*
@@ -279,7 +267,7 @@ public class DBeaverCore extends BasePlatformImpl {
     @NotNull
     @Override
     public DBASecureStorage getSecureStorage() {
-        return application.getSecureStorage();
+        return getApplication().getSecureStorage();
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -49,7 +49,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.ByteArrayInputStream;
@@ -80,7 +79,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     @Override
     public void saveDataSources(
         DBRProgressMonitor monitor,
-        DataSourceOrigin origin,
+        DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
         IFile configFile) throws DBException, IOException
     {
@@ -90,7 +89,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     // Folders (only for default origin)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(xml, folder);
@@ -106,7 +105,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 }
 
                 // Filters
-                if (origin.isDefault()) {
+                if (configurationStorage.isDefault()) {
                     try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
                         for (DBSObjectFilter cf : registry.getSavedFilters()) {
                             if (!cf.isEmpty()) {
@@ -135,14 +134,14 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(InputStream is, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(IFile configFile, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException, IOException
     {
-        SAXReader parser = new SAXReader(is);
         try {
-            final DataSourcesParser dsp = new DataSourcesParser(registry, origin, refresh, parseResults);
+            SAXReader parser = new SAXReader(configFile.getContents());
+            final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
             parser.parse(dsp);
-        } catch (XMLException ex) {
+        } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }
     }
@@ -170,12 +169,11 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.addAttribute(RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
         xml.addAttribute(RegistryConstants.ATTR_NAME, dataSource.getName());
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
-        if (dataSource.isShowSystemObjects()) {
-            xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
-        }
-        if (dataSource.isShowUtilityObjects()) {
-            xml.addAttribute(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
-        }
+
+        DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
+        if (navSettings.isShowSystemObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.isShowSystemObjects());
+        if (navSettings.isShowUtilityObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.isShowUtilityObjects());
+
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
         if (dataSource.getFolder() != null) {
             xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
@@ -203,8 +201,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 dataSource.getRegistry().getProject(),
                 dataSource,
                 null,
-                connectionInfo.getUserName(),
-                dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+                new SecureCredentials(dataSource));
 
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -265,8 +262,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                         dataSource.getRegistry().getProject(),
                         dataSource,
                         "network/" + configuration.getId(),
-                        configuration.getUserName(),
-                        configuration.isSavePassword() ? configuration.getPassword() : null);
+                        new SecureCredentials(configuration));
                 }
                 for (Map.Entry<String, Object> entry : configuration.getProperties().entrySet()) {
                     if (entry.getValue() == null) {
@@ -291,8 +287,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     if (bootstrap.getDefaultTransactionIsolation() != null) {
                         xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
                     }
-                    if (!CommonUtils.isEmpty(bootstrap.getDefaultObjectName())) {
-                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultObjectName());
+                    if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
+                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultCatalogName());
                     }
                     if (bootstrap.isIgnoreErrors()) {
                         xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
@@ -360,15 +356,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.endElement();
     }
 
-    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceRegistry.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
+    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, SecureCredentials creds) throws IOException {
+        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, creds);
         if (!saved) {
             try {
-                if (!CommonUtils.isEmpty(userName)) {
-                    xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(userName));
+                if (!CommonUtils.isEmpty(creds.getUserName())) {
+                    xml.addAttribute(RegistryConstants.ATTR_USER, creds.getUserName());
                 }
-                if (!CommonUtils.isEmpty(password)) {
-                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(password));
+                if (!CommonUtils.isEmpty(creds.getUserPassword())) {
+                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(creds.getUserPassword()));
                 }
             } catch (EncryptionException e) {
                 log.error("Error encrypting password", e);
@@ -423,7 +419,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     private class DataSourcesParser implements SAXListener {
         DataSourceRegistry registry;
         DataSourceDescriptor curDataSource;
-        DataSourceOrigin origin;
+        DBPDataSourceConfigurationStorage origin;
         boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -433,7 +429,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         private DataSourceRegistry.ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DataSourceOrigin origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
             this.registry = registry;
             this.origin = origin;
             this.refresh = refresh;
@@ -498,8 +494,16 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     }
                     curDataSource.setName(name);
                     curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
-                    curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
-                    curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
+
+                    DataSourceNavigatorSettings navSettings = curDataSource.getNavigatorSettings();
+                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
+                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
+                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
+                    navSettings.setHideFolders(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
+                    navSettings.setHideSchemas(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
+                    navSettings.setHideVirtualModel(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
+                    navSettings.setMergeEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
+
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
                     if (folderPath != null) {
@@ -576,7 +580,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                             config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
                         }
                         if (!CommonUtils.isEmpty(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
-                            config.getBootstrap().setDefaultObjectName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
+                            config.getBootstrap().setDefaultCatalogName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
                         }
                         if (atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
                             config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
@@ -643,7 +647,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                                 break;
                             case DataSourceRegistry.DEFAULT_ACTIVE_OBJECT:
                                 if (!CommonUtils.isEmpty(propValue)) {
-                                    curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
+                                    curDataSource.getConnectionConfiguration().getBootstrap().setDefaultCatalogName(propValue);
                                 }
                                 break;
                             default:
@@ -661,7 +665,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                             reader.setListener(EMPTY_LISTENER);
                             return;
                         }
-                        curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
+                        curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource);
                         curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
                         curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                         if (!passwordReadCanceled) {
@@ -717,8 +721,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         }
 
         @Override
-        public void saxText(SAXReader reader, String data)
-            throws XMLException {
+        public void saxText(SAXReader reader, String data) {
             if (isDescription && curDataSource != null) {
                 curDataSource.setDescription(data);
             } else if (curCommand != null) {
@@ -730,8 +733,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
-            throws XMLException {
+        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
             switch (localName) {
                 case RegistryConstants.TAG_DATA_SOURCE:
                     curDataSource = null;
@@ -754,7 +756,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
         private String[] readSecuredCredentials(Attributes xmlAttrs, DataSourceDescriptor dataSource, String subNode) {
             String[] creds = new String[2];
-            final DBASecureStorage secureStorage = DBWorkbench.getPlatform().getSecureStorage();
+            final DBASecureStorage secureStorage = dataSource.getProject().getSecureStorage();
             {
                 try {
                     if (secureStorage.useSecurePreferences()) {

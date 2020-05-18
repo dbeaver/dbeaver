@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -118,6 +118,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_group_auto_save;
     public static String pref_page_sql_editor_label_auto_save_on_close;
     public static String pref_page_sql_editor_label_save_on_query_execute;
+    public static String pref_page_sql_editor_label_save_active_schema;
+    public static String pref_page_sql_editor_label_save_active_schema_tip;
     public static String pref_page_sql_editor_group_result_view;
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
     public static String pref_page_sql_editor_label_results_orientation;

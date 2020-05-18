@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,15 +64,17 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     }
 
     protected SQLEditorBase editor;
-    protected IPartListener partListener;
+    private SQLContextInformer contextInformer;
+    private IPartListener partListener;
 
-    protected String currentPerspective;
+    private String currentPerspective;
     protected SQLAnnotationHover implementation;
-    protected IInformationControlCreator informationControlCreator;
+    private IInformationControlCreator informationControlCreator;
 
-    public SQLInformationProvider(SQLEditorBase editor)
+    public SQLInformationProvider(SQLEditorBase editor, SQLContextInformer contextInformer)
     {
         this.editor = editor;
+        this.contextInformer = contextInformer;
         implementation = new SQLAnnotationHover(editor);
 
         if (this.editor instanceof SQLEditor) {
@@ -142,14 +144,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             }
         }
         //SQLCompletionProposal proposal = new SQLCompletionProposal();
-        SQLContextInformer informer = new SQLContextInformer(editor, editor.getSyntaxManager());
-        informer.searchInformation(subject);
+        contextInformer.searchInformation(subject);
 
         DBSObject object = null;
-        if (informer.hasObjects()) {
+        if (contextInformer.hasObjects()) {
             // Make object description
             DBRProgressMonitor monitor = new VoidProgressMonitor();
-            final DBSObjectReference objectRef = informer.getObjectReferences().get(0);
+            final DBSObjectReference objectRef = contextInformer.getObjectReferences().get(0);
 
             try {
                 object = objectRef.resolveObject(monitor);
@@ -157,15 +158,15 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 // Can't resolve
                 return e.getMessage();
             }
-        } else if (ArrayUtils.isEmpty(informer.getKeywords())) {
+        } else if (ArrayUtils.isEmpty(contextInformer.getKeywords())) {
             return null;
         }
         return SQLCompletionHelper.readAdditionalProposalInfo(
             null,
             editor.getCompletionContext(),
             object,
-            informer.getKeywords(),
-            informer.getKeywordType());
+            contextInformer.getKeywords(),
+            contextInformer.getKeywordType());
     }
 
     /*

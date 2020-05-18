@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -145,6 +146,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                     mappingViewer.refresh();
                     updatePageCompletion();
+                    setMessage(null);
                 }
 
             };
@@ -374,7 +376,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    String newName = transformTargetName(mapping.getSource().getName());
+                    String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
                     setValue(element, newName);
                     return newName;
                 }
@@ -399,6 +401,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                        name = DBUtils.getQuotedIdentifier(dataSource, name);
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
@@ -501,7 +504,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(new VoidProgressMonitor())) {
                     if (child instanceof DBSDataManipulator) {
-                        items.add(transformTargetName(child.getName()));
+                        items.add(transformTargetName(DBUtils.getQuotedIdentifier(child)));
                     }
                 }
 
@@ -518,7 +521,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping.getParent().getTarget() instanceof DBSEntity) {
                 DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new VoidProgressMonitor())) {
-                    items.add(transformTargetName(attr.getName()));
+                    items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr)));
                 }
             }
 
@@ -701,7 +704,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             getContainer().run(true, true, monitor -> {
                 monitor.beginTask("Generate table DDL", 1);
                 try {
-                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(new DefaultProgressMonitor(monitor), dataSource, container, mapping);
+                    DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
+                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(new DefaultProgressMonitor(monitor), executionContext, container, mapping);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -720,7 +724,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 "Target DDL",
                 null,
                 ddl[0],
-                false);
+                false, false);
         }
     }
 
@@ -751,12 +755,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         settings.loadNode(getWizard().getRunnableContext(), producerContainer);
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
-            //DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
-            containerPanel.setContainerInfo(containerNode);
+            try {
+                containerPanel.checkValidContainerNode(containerNode);
+                containerPanel.setContainerInfo(containerNode);
+            } catch (DBException e) {
+                setErrorMessage(e.getMessage());
+            }
         }
 
         {
-            //Map<DBSDataContainer,DatabaseMappingContainer> dataMappings = settings.getDataMappings();
             List<DatabaseMappingContainer> model = new ArrayList<>();
 
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {

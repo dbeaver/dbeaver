@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,13 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     TRUNCATE('D', true, PostgreTableReal.class),
     REFERENCES('x', true, PostgreTableReal.class, PostgreTableColumn.class),
     TRIGGER('t', true, PostgreTableReal.class),
-    // SEQUENCE privs
-    USAGE('U', true, PostgreSequence.class),
 
+    CREATE('C', true, PostgreDatabase.class, PostgreSchema.class, PostgreTablespace.class),
+    // Misc
+    USAGE('U', true, PostgreSequence.class, PostgreDataType.class, PostgreSchema.class),
+
+    CONNECT('c', true, PostgreDatabase.class),
+    TEMPORARY('T', true, PostgreDatabase.class),
     EXECUTE('X', true, PostgreProcedure.class),
 
     UNKNOWN((char)0, false);

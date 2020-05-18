@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 
@@ -39,7 +39,7 @@ public class ProgressEditorPart extends EditorPart {
 
     private final IDatabaseEditor ownerEditor;
     private Composite parentControl;
-    private Canvas progressCanvas;
+    private Composite progressCanvas;
 
     public ProgressEditorPart(IDatabaseEditor ownerEditor) {
         this.ownerEditor = ownerEditor;
@@ -89,15 +89,15 @@ public class ProgressEditorPart extends EditorPart {
     }
 
     private void createProgressPane(final Composite parent) {
-        progressCanvas = new Canvas(parent, SWT.NONE);
+        progressCanvas = new Composite(parent, SWT.NONE);
         progressCanvas.addPaintListener(e ->
-            e.gc.drawText("Opening editor '" + getEditorInput().getDatabaseObject().getName() + "'...", 5, 5, true));
+            e.gc.drawText("Opening editor '" + getEditorInput().getName() + "'...", 5, 5, true));
 
         InitNodeService loadingService = new InitNodeService();
         LoadingJob<IDatabaseEditorInput> loadJob = LoadingJob.createService(
             loadingService,
             new InitNodeVisualizer(loadingService));
-        loadJob.schedule();
+        UIExecutionQueue.queueExec(loadJob::schedule);
     }
 
     private void initEntityEditor(IDatabaseEditorInput result) {

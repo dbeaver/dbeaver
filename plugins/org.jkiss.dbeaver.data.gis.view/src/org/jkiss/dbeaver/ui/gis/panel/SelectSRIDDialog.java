@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -53,7 +52,7 @@ public class SelectSRIDDialog extends BaseDialog {
     private Button detailsButton;
 
     public SelectSRIDDialog(Shell shell, int defCRS) {
-        super(shell, "Select Coordinate Reference System (CRS) Identifier", null);
+        super(shell, GISMessages.panel_select_srid_dialog_title, null);
         selectedSRID = defCRS;
         allSupportedCodes = GisTransformUtils.getSortedEPSGCodes();
     }
@@ -69,7 +68,7 @@ public class SelectSRIDDialog extends BaseDialog {
 
         Group crsGroup = UIUtils.createControlGroup(dialogArea, "CRS", 2, SWT.NONE, 0);
         crsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        sridCombo = UIUtils.createLabelCombo(crsGroup, "Source SRID", "ID of source CRS", SWT.BORDER | SWT.DROP_DOWN);
+        sridCombo = UIUtils.createLabelCombo(crsGroup, GISMessages.panel_select_srid_dialog_label_combo_source_srid, GISMessages.panel_select_srid_dialog_label_combo_tooltip_source_crs, SWT.BORDER | SWT.DROP_DOWN);
         sridCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         sridCombo.setItems();
@@ -89,11 +88,11 @@ public class SelectSRIDDialog extends BaseDialog {
             updateButtons();
         });
 
-        crsNameText = UIUtils.createLabelText(crsGroup, "Name", "", SWT.BORDER | SWT.READ_ONLY);
+        crsNameText = UIUtils.createLabelText(crsGroup, GISMessages.panel_select_srid_dialog_title_label_text_name, "", SWT.BORDER | SWT.READ_ONLY);
         crsNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         UIUtils.createEmptyLabel(crsGroup, 1, 1);
-        detailsButton = UIUtils.createPushButton(crsGroup, "Details ...", null);
+        detailsButton = UIUtils.createPushButton(crsGroup, GISMessages.panel_select_srid_dialog_button_label_details, null);
         detailsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         detailsButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -142,7 +141,7 @@ public class SelectSRIDDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, MANAGE_BUTTON_ID, "Manage ...", false);
+        createButton(parent, MANAGE_BUTTON_ID, GISMessages.panel_select_srid_dialog_button_label_manage, false);
         super.createButtonsForButtonBar(parent);
     }
 

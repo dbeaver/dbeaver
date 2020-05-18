@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class EntityAddCommand extends Command
             if (entity.getObject() == null) {
                 // Entity is not initialized
                 if (entity.getDataSource() != null) {
-                    DBSObject selectedObject = DBUtils.getSelectedObject(entity.getDataSource(), true);
+                    DBSObject selectedObject = DBUtils.getSelectedObject(DBUtils.getDefaultContext(entity.getDataSource(), false));
                     DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = DBWorkbench.getPlatformUI().selectObject(

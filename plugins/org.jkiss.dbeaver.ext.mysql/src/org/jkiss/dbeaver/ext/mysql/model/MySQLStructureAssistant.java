@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import java.util.Locale;
 /**
  * MySQLStructureAssistant
  */
-public class MySQLStructureAssistant extends JDBCStructureAssistant
+public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecutionContext>
 {
     private final MySQLDataSource dataSource;
 
@@ -87,11 +87,11 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(MySQLExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
         if (catalog == null && !globalSearch) {
-            catalog = dataSource.getDefaultObject();
+            catalog = executionContext.getContextDefaults().getDefaultCatalog();
         }
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, catalog, objectNameMask, maxResults, references);

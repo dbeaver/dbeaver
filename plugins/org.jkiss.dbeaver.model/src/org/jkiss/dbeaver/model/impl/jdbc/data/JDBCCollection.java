@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -198,7 +199,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 if (column instanceof DBCAttributeMetaData) {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
                     if (entityMetaData != null) {
-                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), dataSource, entityMetaData);
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), entityMetaData);
                         if (docEntity != null) {
                             DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) column).getName());
                             if (attribute instanceof DBSTypedObjectEx) {
@@ -245,23 +246,23 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 try {
                     return makeCollectionFromResultSet(session, array, null);
                 } catch (SQLException e) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
             }
             try {
                 return makeCollectionFromArray(session, array, elementType);
             } catch (SQLException e) {
                 if (array == null) {
-                    throw new DBCException(e, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e, session.getExecutionContext());
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, elementType);
                 } catch (SQLException e1) {
-                    throw new DBCException(e1, dataSource); //$NON-NLS-1$
+                    throw new DBCException(e1, session.getExecutionContext());
                 }
             }
         } catch (DBException e) {
-            throw new DBCException("Can't extract array data from JDBC array", e); //$NON-NLS-1$
+            throw new DBCException("Can't extract array data from JDBC array", e, session.getExecutionContext()); //$NON-NLS-1$
         }
     }
 
@@ -333,6 +334,33 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     }
 
     @NotNull
+    public static JDBCCollection makeCollectionFromJavaCollection(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Collection coll) throws DBCException {
+        DBPDataTypeProvider dataTypeProvider = session.getDataSource();
+        DBPDataKind dataKind = DBPDataKind.OBJECT;
+        DBSDataType elementType = dataTypeProvider.getLocalDataType(Types.STRUCT);
+        if (elementType == null) {
+            try {
+                String typeName = dataTypeProvider.getDefaultDataTypeName(dataKind);
+                if (typeName != null) {
+                    elementType = dataTypeProvider.getLocalDataType(typeName);
+                }
+            } catch (Exception e) {
+                throw new DBCException("Error resolving default data type", e);
+            }
+        }
+
+        try {
+            if (elementType == null) {
+                throw new DBCException("Can't resolve array element data type"); //$NON-NLS-1$
+            }
+            final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
+            return makeCollectionFromJavaArray(session, elementType, elementValueHandler, coll.toArray());
+        } catch (DBException e) {
+            throw new DBCException("Can't extract array data from Java array", e); //$NON-NLS-1$
+        }
+    }
+
+    @NotNull
     private static JDBCCollection makeCollectionFromResultSet(@NotNull JDBCSession session, @NotNull Array array, @Nullable DBSDataType elementType) throws SQLException, DBException {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
@@ -394,7 +422,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                 // This may happen in case of multidimensional array
                 itemValue = makeCollectionFromJavaArray(session, elementType, elementValueHandler, item);
             } else {
-                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false);
+                itemValue = elementValueHandler.getValueFromObject(session, elementType, item, false, true);
             }
             contents[i] = itemValue;
         }
@@ -404,14 +432,14 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     @NotNull
     public static DBDCollection makeCollectionFromString(@NotNull JDBCSession session, String value) throws DBCException {
         String stringType = DBUtils.getDefaultDataTypeName(session.getDataSource(), DBPDataKind.STRING);
-        if (stringType == null) {
-            throw new DBCException("String data type not supported by database");
-        }
         DBSDataType dataType = DBUtils.getLocalDataType(session.getDataSource(), stringType);
+        DBDValueHandler valueHandler;
         if (dataType == null) {
-            throw new DBCException("String data type '" + stringType + "' not supported by database");
+            log.debug("String data type '" + stringType + "' not supported by database");
+            valueHandler = session.getDataSource().getContainer().getDefaultValueHandler();
+        } else {
+            valueHandler = DBUtils.findValueHandler(session, dataType);
         }
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, dataType);
 
         // Try to divide on string elements
         if (!CommonUtils.isEmpty(value)) {

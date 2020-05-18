@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,36 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+
 /**
  * Scheduler
  */
 public interface DBTScheduler {
+
+    @NotNull
+    String getSchedulerName();
+
+    @NotNull
+    List<DBTTaskScheduleInfo> getAllScheduledTasks();
+
+    @Nullable
+    DBTTaskScheduleInfo getScheduledTaskInfo(@NotNull DBTTask task);
+
+    @Nullable
+    DBTTaskScheduleConfiguration getScheduledTaskConfiguration(@NotNull DBTTask task) throws DBException;
+
+    void setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
+
+    void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
+
+    void refreshScheduledTasks(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    void openSchedulerSettings() throws DBException;
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,19 +44,20 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
-            if (!dataSource.getSQLDialect().supportsSubqueries()) {
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect)sqlDialect).isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
-        } catch (DBException e) {
+        } catch (Throwable e) {
             log.debug("Error injecting count: " + e.getMessage());
             // Inject failed (most likely parser error)
         }
         return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+    private SQLQuery wrapSourceQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
         String queryText = null;
         try {
             // Remove orderings (#4652)
@@ -81,7 +83,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 
-    private SQLQuery tryInjectCount(SQLDataSource dataSource, SQLQuery query) throws DBException {
+    private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {

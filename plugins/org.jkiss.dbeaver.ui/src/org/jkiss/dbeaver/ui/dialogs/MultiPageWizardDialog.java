@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,7 +40,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -94,8 +92,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected int getShellStyle() {
-        return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
+    public int getShellStyle() {
+        if (isModalWizard() || UIUtils.isInDialog()) {
+            return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
+        }
+        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+    }
+
+    protected boolean isModalWizard() {
+        return true;
     }
 
     @Override
@@ -191,12 +196,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         // Ad sub pages
         if (page instanceof ICompositeDialogPage) {
-            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true);
+            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true, resizeHasOccurred);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);
                 }
-                item.setExpanded(true);
+                //item.setExpanded(true);
             }
         }
 
@@ -262,6 +267,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> UIUtils.resizeShell(getWizard().getContainer().getShell()));
             }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError("Page switch", "Error switching active page", e);
         } finally {
             pageArea.setRedraw(true);
         }
@@ -346,13 +353,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     public void updateTitleBar() {
-        setTitleImage(getCurrentPage().getImage());
+        //setTitleImage(getCurrentPage().getImage());
     }
 
     @Override
     public void updateWindowTitle() {
         getShell().setText(getWizard().getWindowTitle());
-        getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
+        // Do not update dialog icon. It can be disposed in the page and this will break connection dialog
+        //getShell().setImage(getWizard().getDefaultPageImage());//DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
         updateMessage();
     }

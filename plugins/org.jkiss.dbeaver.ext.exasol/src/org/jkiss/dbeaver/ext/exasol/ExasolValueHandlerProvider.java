@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2016-2019 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,23 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
+import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
-import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 
 public class ExasolValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences,
             DBSTypedObject typedObject) {
+        if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
+            return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
+        }
         String typeID = typedObject.getTypeName();
 
         switch (typeID) {

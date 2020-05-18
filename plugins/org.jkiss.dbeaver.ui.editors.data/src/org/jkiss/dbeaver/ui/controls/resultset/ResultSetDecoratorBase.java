@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
 
 /**
  * ResultSet decorator.
@@ -25,16 +26,26 @@ import org.eclipse.jface.action.IContributionManager;
 public abstract class ResultSetDecoratorBase implements IResultSetDecorator {
     @Override
     public long getDecoratorFeatures() {
-        return 0;
+        return FEATURE_NONE;
     }
 
     @Override
-    public void fillContributions(IContributionManager contributionManager) {
+    public String getPreferredPresentation() {
+        return null;
+    }
+
+    @Override
+    public IResultSetLabelProvider getDataLabelProvider() {
+        return null;
+    }
+
+    @Override
+    public void fillContributions(@NotNull IContributionManager contributionManager) {
 
     }
 
     @Override
-    public void registerDragAndDrop(IResultSetPresentation presentation) {
+    public void registerDragAndDrop(@NotNull IResultSetPresentation presentation) {
 
     }
 

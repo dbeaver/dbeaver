@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.ArrayUtils;
+
+import java.sql.Types;
 
 /**
  * DB2 Data Types provider
@@ -32,12 +35,22 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
 
+    private static final int[] NUMERIC_TYPES = {
+        Types.DECIMAL,
+        Types.NUMERIC,
+        Types.REAL,
+        Types.FLOAT,
+        Types.DOUBLE,
+    };
+
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         final String typeName = typedObject.getTypeName();
         if (DB2Constants.TYPE_NAME_DECFLOAT.equals(typeName)) {
             return new DB2DecFloatValueHandler(typedObject, preferences.getDataFormatterProfile());
+        } else if (ArrayUtils.contains(NUMERIC_TYPES, typedObject.getTypeID())) {
+            //return new DB2NumericValueHandler(typedObject, preferences.getDataFormatterProfile());
         } else if (typeName.contains("TIMESTAMP") || typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new DB2TimestampValueHandler(preferences.getDataFormatterProfile());
         }

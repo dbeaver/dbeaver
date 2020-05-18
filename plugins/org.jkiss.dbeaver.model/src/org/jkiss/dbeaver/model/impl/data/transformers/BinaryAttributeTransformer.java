@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -55,8 +54,8 @@ public class BinaryAttributeTransformer implements DBDAttributeTransformer {
         String formatterId = CommonUtils.toString(options.get(PROP_FORMAT), FORMAT_HEX);
 
         DBDBinaryFormatter formatter;
-        if (FORMAT_NATIVE.equals(formatterId) && dataSource instanceof SQLDataSource) {
-            formatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
+        if (FORMAT_NATIVE.equals(formatterId)) {
+            formatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
         } else {
             formatter = DBValueFormatting.getBinaryPresentation(formatterId);
         }

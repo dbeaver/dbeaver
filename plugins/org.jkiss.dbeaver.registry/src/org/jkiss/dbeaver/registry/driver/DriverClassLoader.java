@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 
 /**
  * DriverClassLoader
@@ -42,16 +44,25 @@ public class DriverClassLoader extends URLClassLoader
         String nativeName = System.mapLibraryName(libname);
         for (DBPDriverLibrary driverFile : driver.getDriverLibraries()) {
             if (driverFile.getType() == DBPDriverLibrary.FileType.lib && driverFile.matchesCurrentPlatform()) {
-                final File localFile = driverFile.getLocalFile();
+                File localFile = driverFile.getLocalFile();
+                if (localFile == null) {
+                    // Check library files cache
+                    List<DriverDescriptor.DriverFileInfo> cachedFiles = driver.getCachedFiles(driverFile);
+                    if (!CommonUtils.isEmpty(cachedFiles)) {
+                        for (DriverDescriptor.DriverFileInfo fileInfo : cachedFiles) {
+                            if (fileInfo.getFile() != null && fileInfo.getFile().getName().equalsIgnoreCase(nativeName)) {
+                                return fileInfo.getFile().getAbsolutePath();
+                            }
+                        }
+                    }
+                }
                 if (localFile != null && localFile.exists()) {
-                    final String fileName = localFile.getName();
-                    if (fileName.equalsIgnoreCase(nativeName)) {
+                    if (localFile.isDirectory()) {
+                        localFile = new File(localFile, nativeName);
+                    }
+                    if (localFile.getName().equalsIgnoreCase(nativeName)) {
                         return localFile.getAbsolutePath();
                     }
-//                    int dotPos = fileName.lastIndexOf('.');
-//                    if (dotPos != -1 && fileName.substring(0, dotPos).equalsIgnoreCase(libname)) {
-//                        return localFile.getAbsolutePath();
-//                    }
                 }
             }
         }

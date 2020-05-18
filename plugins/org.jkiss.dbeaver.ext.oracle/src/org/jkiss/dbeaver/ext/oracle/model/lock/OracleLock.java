@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.lock;
 
+import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 
 public class OracleLock implements DBAServerLock {
 	

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,11 @@
         </editor>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ext.oracle.ui.config.OracleAuthDatabaseNativeConfigurator"/>
+<!--        <propertyConfigurator class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS" uiClass="org.jkiss.dbeaver.ext.oracle.ui.config.OracleAuthOSConfigurator"/>-->
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="oracle"/>
@@ -189,6 +194,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass"/>
         </editor>
         <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSourceDefinitionEditor"
                 label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
@@ -200,7 +206,6 @@
                 label="%editor.scheduler.job.action.name" description="%editor.schedulerJob.action.description" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <editor id="source.ddl" class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleObjectDDLEditor"
                 label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
@@ -304,10 +309,8 @@
         </tools>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.ui.internal.OracleDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
-        </factory>
+    <extension point="org.jkiss.dbeaver.task.ui">
+        <configurator type="oracleScriptExecute" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>
     </extension>
 
 </plugin>

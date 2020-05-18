@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -67,6 +68,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean checkEnabled;
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
+    private boolean inlineRenameEnabled = false;
+    private DatabaseNavigatorItemRenderer itemRenderer;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -92,25 +95,52 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         });
 
         treeViewer = doCreateTreeViewer(this, style);
+//        treeViewer.getTree().addFocusListener(new FocusAdapter() {
+//            @Override
+//            public void focusGained(FocusEvent e) {
+//                super.focusGained(e);
+//            }
+//        });
 
-        treeViewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        Tree tree = treeViewer.getTree();
+        tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
 
         DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
-        // FIXME: can't add MeasureItem handler. It breaks zoomed tree/table renderers.
-        // FIXME: Although it shouldn't - see ObjectListControl trees.
-        //treeViewer.getTree().addListener(SWT.MeasureItem, event -> measureItem(event));
-        treeViewer.getTree().addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
+
+        if (false) {
+            // We don't need it
+            tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
+        }
 
         if (rootNode != null) {
             setInput(rootNode);
         }
 
-        ColumnViewerToolTipSupport.enableFor(treeViewer);
+        new DefaultViewerToolTipSupport(treeViewer);
 
         initEditor();
+
+        this.setItemRenderer(new DefaultNavigatorNodeRenderer());
+
+        {
+            tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
+        }
+    }
+
+    public void setItemRenderer(DatabaseNavigatorItemRenderer itemRenderer) {
+        this.itemRenderer = itemRenderer;
+    }
+
+    private void paintItem(Tree tree, Event event) {
+        if (itemRenderer != null) {
+            Object element = event.item.getData();
+            if (element instanceof DBNNode) {
+                itemRenderer.paintNodeDetails((DBNNode) element, tree, event.gc, event);
+            }
+        }
     }
 
     public void setInput(DBNNode rootNode) {
@@ -207,18 +237,19 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private void initEditor()
     {
-        Tree treeControl = this.treeViewer.getTree();
+        if (inlineRenameEnabled) {
+            Tree treeControl = this.treeViewer.getTree();
 
-        treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.LEFT;
-        treeEditor.verticalAlignment = SWT.TOP;
-        treeEditor.grabHorizontal = false;
-        treeEditor.minimumWidth = 50;
+            treeEditor = new TreeEditor(treeControl);
+            treeEditor.horizontalAlignment = SWT.LEFT;
+            treeEditor.verticalAlignment = SWT.TOP;
+            treeEditor.grabHorizontal = false;
+            treeEditor.minimumWidth = 50;
 
-        //treeControl.addSelectionListener(new TreeSelectionAdapter());
-        if (!checkEnabled) {
-            // Add rename listener only for non CHECK trees
-            treeControl.addMouseListener(new TreeSelectionAdapter());
+            if (!checkEnabled) {
+                // Add rename listener only for non CHECK trees
+                treeControl.addMouseListener(new TreeSelectionAdapter());
+            }
         }
     }
 
@@ -226,6 +257,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     public TreeViewer getViewer()
     {
         return treeViewer;
+    }
+
+    @NotNull
+    public CheckboxTreeViewer getCheckboxViewer() {
+        return (CheckboxTreeViewer) treeViewer;
     }
 
     @Override

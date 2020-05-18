@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDComplexValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.dialogs.ComplexObjectEditor;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.ui.data.dialogs.ComplexObjectEditor;
 */
 public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     private final IValueController controller;
-    ComplexObjectEditor editor;
+    protected ComplexObjectEditor editor;
 
     public ComplexValueInlineEditor(IValueController controller) {
         super(controller);

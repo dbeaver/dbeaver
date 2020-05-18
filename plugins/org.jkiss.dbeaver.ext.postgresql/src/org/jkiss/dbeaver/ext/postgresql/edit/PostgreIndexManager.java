@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -76,13 +77,22 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
+    public void deleteObject(DBECommandContext commandContext, PostgreIndex object, Map<String, Object> options) throws DBException {
+        if (object.isPrimaryKeyIndex()) {
+            throw new DBException("You can not drop constraint-based unique index.\n" +
+                "Try to drop constraint '" + object.getName() + "'.");
+        }
+        super.deleteObject(commandContext, object, options);
+    }
+
+    @Override
     protected String getDropIndexPattern(PostgreIndex index)
     {
         return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         boolean hasDDL = false;
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
@@ -99,7 +109,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             }
         }
         if (!hasDDL) {
-            super.addObjectCreateActions(monitor, actions, command, options);
+            super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         }
         if (!CommonUtils.isEmpty(index.getDescription())) {
             addIndexCommentAction(actions, index);

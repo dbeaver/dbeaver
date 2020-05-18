@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class AdvancedListItem extends Canvas {
     final TextLayout textLayout;
 
     public AdvancedListItem(AdvancedList list, Object item, ILabelProvider labelProvider) {
-        super(list.getContainer(), SWT.DOUBLE_BUFFERED);
+        super(list.getContainer(), SWT.NONE);
         this.labelProvider = labelProvider;
         this.list = list;
         this.list.addItem(this);

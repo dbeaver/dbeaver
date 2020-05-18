@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +45,8 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public abstract class BaseSQLDialog extends BaseDialog {
+
+    private static final Log log = Log.getLog(BaseSQLDialog.class);
 
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
@@ -122,15 +124,15 @@ public abstract class BaseSQLDialog extends BaseDialog {
         }
         sqlViewer.reloadSyntaxRules();
 
-        parent.addDisposeListener(e -> sqlViewer.dispose());
+        //parent.addDisposeListener(e -> sqlViewer.dispose());
 
         return panel;
     }
 
     protected SQLDialect getSQLDialect() {
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null && executionContext.getDataSource() instanceof SQLDataSource) {
-            return ((SQLDataSource) executionContext.getDataSource()).getSQLDialect();
+        if (executionContext != null) {
+            return executionContext.getDataSource().getSQLDialect();
         }
         return BasicSQLDialect.INSTANCE;
     }
@@ -163,8 +165,22 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        sqlInput.setText(sqlViewer.getTextViewer().getDocument().get());
+        if (sqlViewer != null && sqlViewer.getTextViewer() != null && sqlViewer.getTextViewer().getDocument() != null) {
+            sqlInput.setText(sqlViewer.getTextViewer().getDocument().get());
+        }
         super.okPressed();
+    }
+
+    @Override
+    public boolean close() {
+        if (sqlViewer != null) {
+            try {
+                sqlViewer.dispose();
+            } catch (Exception e) {
+                log.debug("Error disposing embedded SQL editor", e);
+            }
+        }
+        return super.close();
     }
 
     protected void updateSQL()

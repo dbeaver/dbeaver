@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,6 +200,9 @@ public class DBNModel implements IResourceChangeListener {
                 log.debug("Error dereferencing virtual entity", e);
             }
         }
+        if (object == null) {
+            return null;
+        }
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
             return node;
@@ -257,10 +260,26 @@ public class DBNModel implements IResourceChangeListener {
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         final NodePath nodePath = getNodePath(path);
         if (nodePath.type == DBNNode.NodePathType.database) {
+            boolean hasLazyProjects = false;
             for (DBNProject projectNode : getRoot().getProjects()) {
+                if (!projectNode.getProject().isRegistryLoaded()) {
+                    hasLazyProjects = true;
+                    continue;
+                }
                 DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
                 if (curNode != null) {
                     return findNodeByPath(monitor, nodePath, curNode, 1);
+                }
+            }
+            if (hasLazyProjects) {
+                // No try to search in uninitialized proejcts
+                for (DBNProject projectNode : getRoot().getProjects()) {
+                    if (!projectNode.getProject().isRegistryLoaded()) {
+                        DBNDataSource curNode = projectNode.getDatabases().getDataSource(nodePath.first());
+                        if (curNode != null) {
+                            return findNodeByPath(monitor, nodePath, curNode, 1);
+                        }
+                    }
                 }
             }
         } else {

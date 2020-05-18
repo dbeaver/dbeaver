@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,8 +363,14 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     public void createNewFolder(String folderName)
         throws DBException
     {
-        if (resource instanceof IFolder) {
-            try {
+        try {
+            if (resource instanceof IProject) {
+                IFolder newFolder = ((IProject)resource).getFolder(folderName);
+                if (newFolder.exists()) {
+                    throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
+                }
+                newFolder.create(true, true, new NullProgressMonitor());
+            } else if (resource instanceof IFolder) {
                 IFolder parentFolder = (IFolder) resource;
                 if (!parentFolder.exists()) {
                     parentFolder.create(true, true, new NullProgressMonitor());
@@ -374,9 +380,9 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                     throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
                 }
                 newFolder.create(true, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't create new folder", e);
             }
+        } catch (CoreException e) {
+            throw new DBException("Can't create new folder", e);
         }
     }
 

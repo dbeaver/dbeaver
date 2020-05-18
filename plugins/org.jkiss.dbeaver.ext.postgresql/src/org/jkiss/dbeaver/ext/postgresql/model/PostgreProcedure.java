@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,7 +205,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 int paramsAssigned = 0;
                 for (int i = params.size() - 1; i >= 0; i--) {
                     DBSProcedureParameterKind parameterKind = params.get(i).getParameterKind();
-                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.RETURN) {
+                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.TABLE || parameterKind == DBSProcedureParameterKind.RETURN) {
                         continue;
                     }
                     params.get(i).setDefaultValue(argDefaults[argDefaults.length - 1 - paramsAssigned]);
@@ -369,7 +369,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     {
         String procDDL;
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
-        if (!getDataSource().getServerType().supportFunctionDefRead() || omitHeader) {
+        if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader)) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
@@ -485,10 +485,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
             }
         }
-        String delimiter = "$$";//"$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
-        decl.append("AS ").append(delimiter).append(" ");
+        String delimiter = "$$";// + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        decl.append("AS ").append(delimiter).append("\n");
         if (!CommonUtils.isEmpty(functionBody)) {
-            decl.append("\t").append(functionBody).append(" ");
+            decl.append("\t").append(functionBody).append("\n");
         }
         decl.append(delimiter).append(lineSeparator);
 
@@ -609,7 +609,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     typeContainer.isPublicSchema() ||
                     typeContainer.isCatalogSchema())
                 {
-                    paramsSignature.append(DBUtils.getQuotedIdentifier(dataType));
+                    paramsSignature.append(dataType.getName());
                 } else {
                     paramsSignature.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
                 }

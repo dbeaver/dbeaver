@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2019 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,21 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolPriorityGroupDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -54,25 +51,12 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
     @Override
     protected ExasolPriorityGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                        Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        ExasolPriorityGroup group = new ExasolPriorityGroup((ExasolDataSource) container, "PG", null, 0);
-        return new UITask<ExasolPriorityGroup>() {
-            @Override
-            protected ExasolPriorityGroup runTask() {
-                ExasolPriorityGroupDialog dialog = new ExasolPriorityGroupDialog(UIUtils.getActiveWorkbenchShell(), group);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                group.setName(dialog.getName());
-                group.setDescription(dialog.getComment());
-                group.setWeight(dialog.getWeight());
-                return group;
-            }
-        }.execute();
+        return new ExasolPriorityGroup((ExasolDataSource) container, "PG", null, 0);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectCreateCommand command,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectCreateCommand command,
                                           Map<String, Object> options) {
         final ExasolPriorityGroup group = command.getObject();
 
@@ -96,8 +80,8 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
-                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectChangeCommand command,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
+                                          ObjectChangeCommand command,
                                           Map<String, Object> options) throws DBException {
         ExasolPriorityGroup group = command.getObject();
 
@@ -117,8 +101,8 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
 
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectDeleteCommand command,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectDeleteCommand command,
                                           Map<String, Object> options) {
 
         ExasolPriorityGroup group = command.getObject();
@@ -135,8 +119,8 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectRenameCommand command,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectRenameCommand command,
                                           Map<String, Object> options) {
         // TODO Auto-generated method stub
         ExasolPriorityGroup group = command.getObject();

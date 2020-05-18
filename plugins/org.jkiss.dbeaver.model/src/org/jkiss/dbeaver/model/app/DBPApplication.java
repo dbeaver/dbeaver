@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,22 @@ public interface DBPApplication
 {
     boolean isStandalone();
 
+    /**
+     * Primary instance if the first instance of application which locked the workspace.
+     * Other instances can be run over the same workspace but they can't lock it.
+     */
+    boolean isPrimaryInstance();
+
+    /**
+     * Headless mode - console interface or server-side mode
+     */
+    boolean isHeadlessMode();
+
     @NotNull
     DBASecureStorage getSecureStorage();
+
+    @NotNull
+    DBASecureStorage getProjectSecureStorage(DBPProject project);
 
     /**
      * Application information details.

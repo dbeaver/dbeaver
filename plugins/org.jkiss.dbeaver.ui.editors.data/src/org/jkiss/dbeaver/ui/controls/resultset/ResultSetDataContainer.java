@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
-        filterAttributes = proceedSelectedRowsOnly(flags);
-        if (filterAttributes || proceedSelectedColumnsOnly(flags)) {
+        filterAttributes = proceedSelectedColumnsOnly(flags);
+        if (filterAttributes || proceedSelectedRowsOnly(flags)) {
 
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();

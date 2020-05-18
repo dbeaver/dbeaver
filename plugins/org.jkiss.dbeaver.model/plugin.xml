@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,15 @@
             <propertyGroup label="Properties">
                 <property id="pattern" label="URL pattern" type="string" description="URL pattern. Variable ${value} will be replaced with real value." defaultValue="http://${value}" required="false"/>
             </propertyGroup>
+        </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.BooleanAttributeTransformer"
+                id="boolean"
+                name="Boolean"
+                description="Represents numbers as booleans"
+                applyByDefault="false"
+                custom="true">
+            <type kind="NUMERIC"/>
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDAttributeTransformer"

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -328,7 +327,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return null;
         }
 
-        IWorkspace eclipseWorkspace = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace();
+        IWorkspace eclipseWorkspace = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace();
         IProject project = eclipseWorkspace.getRoot().getProject(targetProjectName);
         if (project.exists()) {
             throw new DBException("Project '" + targetProjectName + "' already exists");

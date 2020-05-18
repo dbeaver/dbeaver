@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,7 +40,7 @@ import java.util.Date;
 /**
  * SQLiteValueHandler
  */
-public class SQLiteValueHandler extends JDBCAbstractValueHandler {
+public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDValueHandlerConfigurable {
 
     private static final Log log = Log.getLog(SQLiteValueHandler.class);
 
@@ -56,7 +59,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         Object object = resultSet.getObject(index);
-        return getValueFromObject(session, type, object, false);
+        return getValueFromObject(session, type, object, false, false);
     }
 
     @Override
@@ -72,7 +75,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         return object;
     }
 
@@ -109,4 +112,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.numberFormatter = null;
+        this.timestampFormatter = null;
+    }
 }

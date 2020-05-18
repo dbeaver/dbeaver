@@ -13,7 +13,8 @@
                 id="athena"
                 parent="generic"
                 label="Athena"
-                icon="icons/athena_icon.png">
+                icon="icons/athena_icon.png"
+                dialect="aws_athena">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
@@ -23,15 +24,15 @@
                         icon="icons/athena_icon.png"
                         iconBig="icons/athena_icon_big.png"
                         class="com.simba.athena.jdbc.Driver"
-                        sampleURL="jdbc:athena://AWSRegion=region;"
-                        defaultPort=""
+                        sampleURL="jdbc:athena://AWSRegion={region};"
+                        defaultPort="444"
                         description="%driver.athena.description"
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
-                        propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.7/docs/Simba+Athena+JDBC+Driver+Install+and+Configuration+Guide.pdf"
+                        propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.9/docs/Simba+Athena+JDBC+Driver+Install+and+Configuration+Guide.pdf"
                         categories="bigdata">
                     <replace provider="generic" driver="aws_athena_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.7/AthenaJDBC42_2.0.7.jar"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.9/AthenaJDBC42_2.0.9.jar"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
@@ -44,23 +45,9 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="athena"
-                label="%athena.dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.athena.views.AthenaConnectionPage"
-                icon="icons/aws_athena_icon.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.athena.views.AthenaConnectionPage"
-                icon="icons/aws_athena_icon.png"
-                id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
-                dataSource="athena"
-                label="%athena.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="aws_athena" parent="generic" class="org.jkiss.dbeaver.ext.athena.model.AthenaSQLDialect" label="Athena" description="AWS Athena dialect." icon="icons/athena_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.ext.exasol.editors;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 public class ExasolDialectAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { SQLRuleProvider.class };
+    private static final Class<?>[] CLASSES = new Class[] { TPRuleProvider.class };
     
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adaptableObject instanceof SQLDialect) {
-            if (adapterType == SQLRuleProvider.class) {
+            if (adapterType == TPRuleProvider.class) {
                 return adapterType.cast(new ExasolDialectRules());
             }
         }

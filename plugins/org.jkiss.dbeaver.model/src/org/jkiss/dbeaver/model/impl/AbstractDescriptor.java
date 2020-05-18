@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -169,8 +170,13 @@ public abstract class AbstractDescriptor {
                 return false;
             }
             if (expression != null) {
-                Object result = expression.evaluate(makeContext(object, context));
-                return Boolean.TRUE.equals(result);
+                try {
+                    Object result = expression.evaluate(makeContext(object, context));
+                    return Boolean.TRUE.equals(result);
+                } catch (Exception e) {
+                    log.debug("Error evaluating expression '" + expression + "'", e);
+                    return false;
+                }
             }
             return true;
         }
@@ -186,8 +192,8 @@ public abstract class AbstractDescriptor {
                 throw new DBException("Can't load class '" + getImplName() + "'");
             }
             try {
-                return objectClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                return objectClass.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }
@@ -304,7 +310,7 @@ public abstract class AbstractDescriptor {
         try {
             objectClass = fromBundle.loadClass(className);
         } catch (Throwable ex) {
-            log.error("Can't determine object class '" + className + "'", ex);
+            log.error("Can't determine object class '" + className + "': " + ex.getMessage());
             return null;
         }
 

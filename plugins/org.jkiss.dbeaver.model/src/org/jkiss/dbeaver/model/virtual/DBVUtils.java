@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,7 +203,8 @@ public abstract class DBVUtils {
         @NotNull DBCSession session,
         @NotNull DBSEntityAttribute valueAttribute,
         @NotNull DBDValueHandler valueHandler,
-        @NotNull DBCResultSet dbResult) throws DBCException
+        @NotNull DBCResultSet dbResult,
+        boolean formatValues) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
         List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
@@ -226,9 +227,9 @@ public abstract class DBVUtils {
                 }
                 hasNulls = true;
             }
-            if (keyValue instanceof Date) {
+            if (formatValues && keyValue instanceof Date) {
                 // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.EDIT);
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
             String keyLabel;
             if (metaColumns.size() > 1) {

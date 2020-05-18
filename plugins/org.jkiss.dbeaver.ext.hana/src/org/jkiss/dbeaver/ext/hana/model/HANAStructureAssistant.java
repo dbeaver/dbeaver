@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
@@ -40,7 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-public class HANAStructureAssistant extends JDBCStructureAssistant {
+import java.sql.SQLException;
+import java.util.List;
+
+public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
 
     private HANADataSource dataSource;
 
@@ -63,7 +59,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
        };
     }
 
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject,
+    protected void findObjectsByMask(JDBCExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject,
             String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults,
             List<DBSObjectReference> result) throws DBException, SQLException {
         GenericSchema parentSchema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject : null;
@@ -85,7 +81,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
         String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COMMENTS FROM SYS.TABLES WHERE";
         stmt += caseSensitive ?             " TABLE_NAME LIKE ?" : " UPPER(TABLE_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY TABLE_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -128,7 +124,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
         String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COMMENTS FROM SYS.VIEWS WHERE";
         stmt += caseSensitive ?             " VIEW_NAME LIKE ?" : " UPPER(VIEW_NAME) LIKE ?";
         if (parentSchema != null)stmt +=    " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY VIEW_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -171,7 +167,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
         String stmt =                       "SELECT SCHEMA_NAME, PROCEDURE_NAME FROM SYS.PROCEDURES WHERE";
         stmt += caseSensitive ?             " PROCEDURE_NAME LIKE ?" : " UPPER(PROCEDURE_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY PROCEDURE_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, PROCEDURE_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -214,7 +210,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
         String stmt =                       "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, COMMENTS FROM SYS.TABLE_COLUMNS WHERE";
         stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY COLUMN_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, TABLE_NAME, COLUMN_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
@@ -263,7 +259,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant {
         String stmt =                       "SELECT SCHEMA_NAME, VIEW_NAME, COLUMN_NAME, COMMENTS FROM SYS.VIEW_COLUMNS WHERE";
         stmt += caseSensitive ?             " COLUMN_NAME LIKE ?" : " UPPER(COLUMN_NAME) LIKE ?";
         if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
-        stmt +=                             " ORDER BY COLUMN_NAME LIMIT " + maxResults;
+        stmt +=                             " ORDER BY SCHEMA_NAME, VIEW_NAME, COLUMN_NAME LIMIT " + maxResults;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {

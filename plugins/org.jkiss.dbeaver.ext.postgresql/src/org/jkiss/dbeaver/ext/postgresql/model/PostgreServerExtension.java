@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,10 @@ public interface PostgreServerExtension
 
     boolean supportsTriggers();
 
+    boolean supportsFunctionDefRead();
+
+    boolean supportsFunctionCreate();
+
     boolean supportsRules();
 
     boolean supportsExtensions();
@@ -73,8 +77,6 @@ public interface PostgreServerExtension
     boolean supportsClientInfo();
 
     boolean supportsRelationSizeCalc();
-
-    boolean supportFunctionDefRead();
 
     boolean supportsExplainPlan();
 
@@ -116,4 +118,7 @@ public interface PostgreServerExtension
 
     List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
 
+    Map<String, String> getDataTypeAliases();
+
+    boolean supportsTableStatistics();
 }

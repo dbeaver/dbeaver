@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,29 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
-class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBackupWizard>
+class PostgreBackupWizardPageObjects extends AbstractToolWizardPage<PostgreBackupWizard>
 {
     private static final Log log = Log.getLog(PostgreBackupWizardPageObjects.class);
 
@@ -55,6 +59,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
 
     private PostgreSchema curSchema;
     private PostgreDatabase dataBase;
+    private Button exportViewsCheck;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -104,7 +109,6 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             createCheckButtons(buttonsPanel, schemasTable);
         }
 
-        final Button exportViewsCheck;
         {
             Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -126,7 +130,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    wizard.showViews = exportViewsCheck.getSelection();
+                    wizard.getSettings().setShowViews(exportViewsCheck.getSelection());
                     loadTables(null);
                 }
             });
@@ -134,29 +138,55 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             createCheckButtons(buttonsPanel, tablesTable);
         }
 
+        setControl(composite);
+    }
+
+    @Override
+    public void activatePage() {
+        super.activatePage();
+        loadSettings();
+
+        updateState();
+    }
+
+    @Override
+    public void deactivatePage() {
+        saveState();
+    }
+
+    private void loadSettings() {
+        checkedObjects.clear();
+        schemasTable.removeAll();
+        tablesTable.removeAll();
+
         dataBase = null;
-        Set<PostgreSchema> activeCatalogs = new LinkedHashSet<>();
-        for (DBSObject object : wizard.getDatabaseObjects()) {
-            if (object instanceof PostgreSchema) {
-                activeCatalogs.add((PostgreSchema) object);
-                dataBase = ((PostgreSchema) object).getDatabase();
-            } else if (object instanceof PostgreTableBase) {
-                PostgreTableContainer tableContainer = ((PostgreTableBase) object).getContainer();
-                if (!(tableContainer instanceof PostgreSchema)) {
-                    continue;
-                }
-                PostgreSchema schema = (PostgreSchema) tableContainer;
-                dataBase = schema.getDatabase();
-                activeCatalogs.add(schema);
-                Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(schema, k -> new HashSet<>());
-                tables.add((PostgreTableBase) object);
-                if (((PostgreTableBase) object).isView()) {
-                    wizard.showViews = true;
-                    exportViewsCheck.setSelection(true);
-                }
-            } else if (object.getDataSource() instanceof PostgreDataSource) {
-                dataBase = (PostgreDatabase) DBUtils.getObjectOwnerInstance(object);
+        boolean hasViews = false;
+        Set<PostgreSchema> activeSchemas = new LinkedHashSet<>();
+        for (PostgreDatabaseBackupInfo info : wizard.getSettings().getExportObjects()) {
+            dataBase = info.getDatabase();
+
+            if (!CommonUtils.isEmpty(info.getSchemas())) {
+                activeSchemas.addAll(info.getSchemas());
             }
+            if (!CommonUtils.isEmpty(info.getTables())) {
+                for (PostgreTableBase table : info.getTables()) {
+                    PostgreTableContainer tableContainer = table.getContainer();
+                    if (!(tableContainer instanceof PostgreSchema)) {
+                        continue;
+                    }
+                    PostgreSchema schema = (PostgreSchema) tableContainer;
+                    activeSchemas.add(schema);
+                    Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(schema, k -> new HashSet<>());
+                    tables.add(table);
+                    if (table.isView()) {
+                        hasViews = true;
+                    }
+                }
+            }
+        }
+        if (hasViews) {
+            wizard.getSettings().setShowViews(true);
+            exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
             boolean tablesLoaded = false;
@@ -169,7 +199,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                     item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                     item.setText(0, schema.getName());
                     item.setData(schema);
-                    if (activeCatalogs.contains(schema)) {
+                    if (activeSchemas.contains(schema)) {
                         item.setChecked(true);
                         schemasTable.select(schemasTable.indexOf(item));
                         if (!tablesLoaded) {
@@ -182,8 +212,6 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 log.error(e);
             }
         }
-        updateState();
-        setControl(composite);
     }
 
     private void updateCheckedTables() {
@@ -234,7 +262,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                             objects.add((PostgreTableBase) table);
                         }
                     }
-                    if (wizard.showViews) {
+                    if (wizard.getSettings().isShowViews()) {
                         objects.addAll(curSchema.getViews(monitor));
                     }
                     objects.sort(DBUtils.nameComparator());
@@ -257,24 +285,28 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
     }
 
     public void saveState() {
-        wizard.objects.clear();
+        super.saveState();
+
+        List<PostgreDatabaseBackupInfo> objects = wizard.getSettings().getExportObjects();
+        objects.clear();
         List<PostgreSchema> schemas = new ArrayList<>();
         List<PostgreTableBase> tables = new ArrayList<>();
         for (TableItem item : schemasTable.getItems()) {
             if (item.getChecked()) {
                 PostgreSchema schema = (PostgreSchema) item.getData();
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
-                if (CommonUtils.isEmpty(checkedTables)) {
-                    // All tables checked
+                // All tables checked
+                if (!schemas.contains(schema)) {
                     schemas.add(schema);
-                } else {
+                }
+                if (checkedTables != null) {
                     // Only a few tables checked
                     tables.addAll(checkedTables);
                 }
             }
         }
         PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
-        wizard.objects.add(info);
+        objects.add(info);
     }
 
     @Override

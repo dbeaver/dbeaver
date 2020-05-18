@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class StatusLineContributionItemEx extends ContributionItem {
     private String text = "";
     private String toolTip = "";
     private Runnable doubleClickListener;
+    private int maxWidth = 0;
 
     public StatusLineContributionItemEx(String id) {
         super(id);
@@ -65,8 +66,10 @@ public class StatusLineContributionItemEx extends ContributionItem {
 
         // compute the size of the label to get the width hint for the contribution
         Point preferredSize = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        int widthHint = preferredSize.x;
+        int widthHint = Math.max(maxWidth, preferredSize.x);
         int heightHint = preferredSize.y;
+
+        maxWidth = widthHint;
 
         StatusLineLayoutData data = new StatusLineLayoutData();
         data.widthHint = widthHint;

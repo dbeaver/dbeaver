@@ -109,7 +109,7 @@ public class SetPartSettingsAction extends SelectionAction {
                         }
                     }
                 } finally {
-                    shell.dispose();
+                    UIUtils.disposeCenteredShell(shell);
                 }
             }
 

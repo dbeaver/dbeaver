@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,25 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * DataSourceOrigin
  */
-class DataSourceOrigin
+class DataSourceOrigin implements DBPDataSourceConfigurationStorage
 {
     private final IFile sourceFile;
     private final boolean isDefault;
     private final String configSuffix;
 
-    public DataSourceOrigin(IFile sourceFile, boolean isDefault) {
+    DataSourceOrigin(IFile sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
 
@@ -43,20 +50,41 @@ class DataSourceOrigin
 
     }
 
+    @Override
+    public String getStorageId() {
+        return "file://" + sourceFile.getFullPath().toString();
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public String getStatus() {
+        return "Valid";
+    }
+
     public String getName() {
         return sourceFile.getName();
     }
 
-    public String getConfigSuffix() {
+    public String getConfigurationFileSuffix() {
         return configSuffix;
     }
 
+    @Override
     public boolean isDefault() {
         return isDefault;
     }
 
     public IFile getSourceFile() {
         return sourceFile;
+    }
+
+    @Override
+    public List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

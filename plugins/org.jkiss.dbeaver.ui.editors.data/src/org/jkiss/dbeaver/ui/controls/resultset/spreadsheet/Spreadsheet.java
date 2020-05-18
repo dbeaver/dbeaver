@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,7 +252,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                     final SpreadsheetPresentation presentation = getPresentation();
                     final DBDAttributeBinding attribute = presentation.getCurrentAttribute();
-                    if (editorControl != null && attribute != null && !presentation.getController().isAttributeReadOnly(attribute) && event.keyCode != SWT.CR) {
+                    if (editorControl != null && attribute != null && presentation.getController().getAttributeReadOnlyStatus(attribute) == null && event.keyCode != SWT.CR) {
                         if (!editorControl.isDisposed()) {
                             // We used to forward key even to control but it worked poorly.
                             // So let's just insert first letter (it will remove old value which must be selected for inline controls)
@@ -324,6 +324,12 @@ public class Spreadsheet extends LightGrid implements Listener {
         cancelInlineEditor();
         super.refreshData(refreshColumns, keepState, fitValue);
         super.redraw();
+    }
+
+    @Override
+    protected void toggleCellValue(Object column, Object row) {
+        presentation.toggleCellValue(column, row);
+
     }
 
     private void hookContextMenu()

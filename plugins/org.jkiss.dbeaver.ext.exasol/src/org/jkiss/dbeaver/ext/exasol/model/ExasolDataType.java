@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,6 +139,9 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
             case "TIMESTAMP WITH LOCAL TIME ZONE":
                 tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP_WITH_TIMEZONE, precision, minimumScale, maximumScale, typeName);
                 break;
+            case "HASHTYPE":
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.BINARY, precision, minimumScale, maximumScale, typeName);
+                break;
             default:
                 LOG.error("DataType '" + name + "' is unknown to DBeaver");
         }
@@ -226,7 +229,12 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     @Override
     @Property(viewable = true, editable = false, order = 4)
     public DBPDataKind getDataKind() {
-        return typeDesc == null ? DBPDataKind.UNKNOWN : typeDesc.dataKind;
+    	if (typeDesc == null)
+    	{
+    		return DBPDataKind.UNKNOWN;
+    	} else {
+    		return typeDesc.dataKind;
+    	}
     }
 
 

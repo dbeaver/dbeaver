@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 
 /**
  * Data transfer
@@ -29,14 +32,16 @@ public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> e
      * Transfer data to consumer
      * @param monitor   progress monitor
      * @param consumer  transfer consumer
-     * @param processor transfer processor
+     * @param processor transfer processor (optional)
      * @param settings  settings
+     * @param task      task (optional)
      */
     void transferData(
-        DBRProgressMonitor monitor,
-        IDataTransferConsumer consumer,
-        IDataTransferProcessor processor,
-        SETTINGS settings)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IDataTransferConsumer consumer,
+        @Nullable IDataTransferProcessor processor,
+        @NotNull SETTINGS settings,
+        @Nullable DBTTask task)
         throws DBException;
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,9 @@ import java.util.*;
 */
 class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
-    private final Map<String, GenericPrimaryKey> pkMap = new HashMap<>();
+    private final Map<String, GenericUniqueKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
+    private Set<String> cachedFKNames;
 
     ForeignKeysCache(TableCache tableCache)
     {
@@ -73,7 +74,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         return session.getMetaData().getImportedKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
             forParent == null ?
                 owner.getDataSource().getAllObjectsPattern() :
                 forParent.getName())
@@ -140,9 +141,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 return null;
             }
 
-            Collection<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(session.getProgressMonitor());
+            Collection<GenericUniqueKey> uniqueKeys = pkTable.getConstraints(session.getProgressMonitor());
             if (uniqueKeys != null) {
-                for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                for (GenericUniqueKey pkConstraint : uniqueKeys) {
                     if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(session.getProgressMonitor(), pkConstraint, pkColumn) != null) {
                         pk = pkConstraint;
                         break;
@@ -163,7 +164,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
             if (pk == null) {
                 log.warn("Can't find unique key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName() + ". Making fake one.");
-                GenericPrimaryKey fakePk;
+                GenericUniqueKey fakePk;
                 // Too bad. But we have to create new fake PK for this FK
                 if (pkName == null) {
                     pkName = "primary_key";
@@ -171,7 +172,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                 fakePk = pkMap.get(pkFullName);
                 if (fakePk == null) {
-                    fakePk = new GenericPrimaryKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    fakePk = new GenericUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                     pkMap.put(pkFullName, fakePk);
                     // Add this fake constraint to it's owner
                     fakePk.getTable().addUniqueKey(fakePk);
@@ -233,7 +234,18 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Override
     protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
+        if (cachedFKNames == null) {
+            cachedFKNames = new LinkedHashSet<>();
+        }
         final String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
-        return "FK_" + parentName + "_" + pkTableName;
+        int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
+        String fkName = "FK_" + parentName + "_" + pkTableName;
+        if (cachedFKNames.contains(fkName) && keySeq == 1) {
+            // Multiple unnamed foreign keys - #8286
+            // Column sequnce 1 means new FK so lets make a new one
+            fkName += "_" + (cachedFKNames.size() + 1);
+        }
+        cachedFKNames.add(fkName);
+        return fkName;
     }
 }

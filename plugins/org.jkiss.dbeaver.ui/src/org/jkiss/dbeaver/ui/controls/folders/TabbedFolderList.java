@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2001, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -11,7 +11,7 @@
  *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
  *
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
@@ -43,7 +42,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -136,17 +134,14 @@ public class TabbedFolderList extends Composite {
                     }
                 }
             });
-            addMouseMoveListener(new MouseMoveListener() {
-
-                public void mouseMove(MouseEvent e) {
-                    String tooltip = tab.getTooltip();
-                    if (tooltip != null) {
-                        setToolTipText(tooltip);
-                    }
-                    if (!hover) {
-                        hover = true;
-                        redraw();
-                    }
+            addMouseMoveListener(e -> {
+                String tooltip = tab.getTooltip();
+                if (tooltip != null) {
+                    setToolTipText(tooltip);
+                }
+                if (!hover) {
+                    hover = true;
+                    redraw();
                 }
             });
             addMouseTrackListener(new MouseTrackAdapter() {
@@ -296,12 +291,7 @@ public class TabbedFolderList extends Composite {
          */
         public TopNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
-            addPaintListener(new PaintListener() {
-
-                public void paintControl(PaintEvent e) {
-                    paint(e);
-                }
-            });
+            addPaintListener(this::paint);
             addMouseListener(new MouseAdapter() {
 
                 public void mouseUp(MouseEvent e) {
@@ -379,12 +369,7 @@ public class TabbedFolderList extends Composite {
          */
         public BottomNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
-            addPaintListener(new PaintListener() {
-
-                public void paintControl(PaintEvent e) {
-                    paint(e);
-                }
-            });
+            addPaintListener(this::paint);
             addMouseListener(new MouseAdapter() {
 
                 public void mouseUp(MouseEvent e) {
@@ -488,19 +473,12 @@ public class TabbedFolderList extends Composite {
                 computeTopAndBottomTab();
             }
         });
-        this.addTraverseListener(new TraverseListener() {
-            public void keyTraversed(TraverseEvent e) {
-                handleTraverse(e);
+        this.addTraverseListener(this::handleTraverse);
+        addDisposeListener(e -> {
+            for (Image di : grayedImages.values()) {
+                UIUtils.dispose(di);
             }
-        });
-        addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                for (Image di : grayedImages.values()) {
-                    UIUtils.dispose(di);
-                }
-                grayedImages.clear();
-            }
+            grayedImages.clear();
         });
     }
 
@@ -721,17 +699,16 @@ public class TabbedFolderList extends Composite {
         Display display = Display.getCurrent();
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
-        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
-
         listBackground = UIStyles.getDefaultTextBackground();
-        Color widgetBackground = getBackground();
-        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
-            // FIXME: hacking of dark theme
+        Color widgetBackground;
+        if (UIStyles.isDarkTheme()) {
             // By some reason E4 sets white background in dark theme.
             widgetBackground = UIStyles.getDefaultTextBackground();
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);
+        } else {
+            widgetBackground = getBackground();
         }
         widgetForeground = UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
@@ -779,19 +756,16 @@ public class TabbedFolderList extends Composite {
     @Override
     public void setBackground(Color color) {
         super.setBackground(color);
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (isDisposed()) {
-                    return;
-                }
-                initColours();
-                for (ListElement e : elements) {
-                    e.redraw();
-                }
-                topNavigationElement.redraw();
-                bottomNavigationElement.redraw();
+        UIUtils.asyncExec(() -> {
+            if (isDisposed()) {
+                return;
             }
+            initColours();
+            for (ListElement e : elements) {
+                e.redraw();
+            }
+            topNavigationElement.redraw();
+            bottomNavigationElement.redraw();
         });
     }
 
@@ -809,9 +783,7 @@ public class TabbedFolderList extends Composite {
 			 * that the navigation elements fit.
 			 */
             int ret = getBounds().height - 20;
-            return (ret > tabHeight) ? tabHeight
-                : (ret < 5) ? 5
-                : ret;
+            return (ret > tabHeight) ? tabHeight : Math.max(ret, 5);
         }
         return tabHeight;
     }
@@ -996,21 +968,13 @@ public class TabbedFolderList extends Composite {
             }
         });
 
-        addListener(SWT.Selection, new Listener() {
-
-            public void handleEvent(Event event) {
-                if (isFocusControl()) {
-                    accessible.setFocus(ACC.CHILDID_SELF);
-                }
-            }
-        });
-
-        addListener(SWT.FocusIn, new Listener() {
-
-            public void handleEvent(Event event) {
+        addListener(SWT.Selection, event -> {
+            if (isFocusControl()) {
                 accessible.setFocus(ACC.CHILDID_SELF);
             }
         });
+
+        addListener(SWT.FocusIn, event -> accessible.setFocus(ACC.CHILDID_SELF));
     }
 
     public void addSelectionListener(SelectionListener listener) {

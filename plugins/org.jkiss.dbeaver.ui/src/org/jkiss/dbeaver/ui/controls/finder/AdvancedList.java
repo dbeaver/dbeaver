@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -26,7 +29,10 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.TypedListener;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,7 +72,28 @@ public class AdvancedList extends ScrolledComposite {
             setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
-        this.container = new Canvas(this, SWT.NONE);
+        this.container = new Canvas(this, SWT.NONE) {
+            @Override
+            public Point computeSize(int wHint, int hHint) {
+                return computeSize(wHint, hHint, true);
+            }
+
+            @Override
+            public Point computeSize(int wHint, int hHint, boolean changed) {
+                if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
+                    return new Point(100, 100);
+                }
+                return super.computeSize(wHint, hHint, changed);
+/*
+        // Do not calc real size because RowLayout will fill to maximum screen width
+        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
+            //return getParent().getSize();
+            return super.computeSize(wHint, hHint, changed);
+        }
+        return new Point(wHint, hHint);
+*/
+            }
+        };
 
         this.setContent(this.container);
         this.setExpandHorizontal( true );
@@ -146,11 +173,21 @@ public class AdvancedList extends ScrolledComposite {
     }
 
     public void updateSize(boolean layout) {
-        this.setMinHeight(10);
-        int width = this.getClientArea().width;
-        this.setMinHeight( getParent().computeSize( width, SWT.DEFAULT ).y );
-        if (layout) {
-            this.layout(true, true);
+        getParent().setRedraw(false);
+        try {
+            int width = this.getClientArea().width;
+            if (width > 0) {
+                if (getMinHeight() != 10) {
+                    this.setMinHeight(10);
+                }
+                Point fullSize = getParent().computeSize(width, SWT.DEFAULT);
+                this.setMinHeight(fullSize.y);
+                if (layout) {
+                    this.layout(true, true);
+                }
+            }
+        } finally {
+            getParent().setRedraw(true);
         }
     }
 
@@ -176,27 +213,6 @@ public class AdvancedList extends ScrolledComposite {
 
     Point getTextSize() {
         return textSize;
-    }
-
-    @Override
-    public Point computeSize(int wHint, int hHint) {
-        return computeSize(wHint, hHint, false);
-    }
-
-    @Override
-    public Point computeSize(int wHint, int hHint, boolean changed) {
-        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
-            return new Point(100, 100);
-        }
-        return super.computeSize(wHint, hHint, changed);
-/*
-        // Do not calc real size because RowLayout will fill to maximum screen width
-        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
-            //return getParent().getSize();
-            return super.computeSize(wHint, hHint, changed);
-        }
-        return new Point(wHint, hHint);
-*/
     }
 
     public Canvas getContainer() {

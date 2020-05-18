@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
     public MySQLPlanJSON(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
 
-        String plainQuery = SQLUtils.stripComments(SQLUtils.getDialectFromObject(dataSource), query).toUpperCase();
-        if (!plainQuery.startsWith("SELECT")) {
+        if (!SQLUtils.getFirstKeyword(SQLUtils.getDialectFromObject(dataSource), query).toUpperCase().equals("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
@@ -94,7 +93,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
                 rootNodes = nodes;
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

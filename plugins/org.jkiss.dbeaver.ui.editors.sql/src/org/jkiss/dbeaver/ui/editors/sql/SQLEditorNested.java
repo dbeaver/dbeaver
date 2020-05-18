@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,6 +46,7 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -67,6 +68,9 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
 /**
  * SQLEditorNested
  */
@@ -74,6 +78,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
     extends SQLEditorBase
     implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost, IDatabasePostSaveProcessor
 {
+
+    private static final String SAVE_CONTEXT_COMPILE_PARAM = "object.compiled";
 
     private EditorPageControl pageControl;
     private ObjectCompilerLogViewer compileLog;
@@ -167,11 +173,15 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void runPostSaveCommands() {
+    public void runPostSaveCommands(Map<String, Object> context) {
         String compileCommandId = getCompileCommandId();
-        if (compileCommandId != null) {
+        if (compileCommandId != null && context.get(SAVE_CONTEXT_COMPILE_PARAM) == null) {
             // Compile after save
-            ActionUtils.runCommand(compileCommandId, getSite().getWorkbenchWindow());
+            try {
+                ActionUtils.runCommand(compileCommandId, getSite().getWorkbenchWindow());
+            } finally {
+                context.put(SAVE_CONTEXT_COMPILE_PARAM, true);
+            }
         }
     }
 
@@ -257,10 +267,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
                         try {
-                            sourceText = getSourceText(monitor);
-                            if (sourceText == null) {
-                                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
-                            }
+                            DBExecUtils.tryExecuteRecover(monitor, getDataSource(), param -> {
+                                try {
+                                    sourceText = getSourceText(monitor);
+                                    if (sourceText == null) {
+                                        sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
+                                    }
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            });
                             return Status.OK_STATUS;
                         } catch (Exception e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";

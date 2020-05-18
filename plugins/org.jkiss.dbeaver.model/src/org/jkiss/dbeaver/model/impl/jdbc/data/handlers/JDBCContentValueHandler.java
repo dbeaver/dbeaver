@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -30,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -40,7 +39,6 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.sql.*;
-import java.util.Locale;
 
 /**
  * JDBC Content value handler.
@@ -105,7 +103,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             // We need to convert only in case of some value transformations, not when getting it from DB
             return new JDBCContentChars(session.getDataSource(), (String) value);
         }
-        return getValueFromObject(session, type, value, false);
+        return getValueFromObject(session, type, value, false, false);
     }
 
     @Override
@@ -132,7 +130,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             // Create wrapper using column type
@@ -260,15 +258,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             if (ContentUtils.isTextContent(object)) {
                 writer.write("'");
                 String strValue = ContentUtils.getContentStringValue(monitor, object);
-                if (dataSource instanceof SQLDataSource) {
-                    strValue = ((SQLDataSource) dataSource).getSQLDialect().escapeString(strValue);
-                }
+                strValue = dataSource.getSQLDialect().escapeString(strValue);
                 writer.write(strValue);
                 writer.write("'");
             } else {
 
-                if (dataSource instanceof SQLDataSource) {
-                    DBDBinaryFormatter binaryFormatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
+                {
+                    DBDBinaryFormatter binaryFormatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
                     ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
                     try (InputStream contentStream = cs.getContentStream()) {
                         IOUtils.copyStream(contentStream, buffer);
@@ -276,9 +272,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                     final byte[] bytes = buffer.toByteArray();
                     final String binaryString = binaryFormatter.toString(bytes, 0, bytes.length);
                     writer.write(binaryString);
-                } else {
-                    // Binary data not supported
-                    writer.write("NULL");
                 }
             }
         } else {

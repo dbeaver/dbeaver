@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.ui.editors.json;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -72,7 +76,22 @@ public class JSONTextEditor extends BaseTextEditor {
 	@Override
 	public void doSetInput(IEditorInput input) throws CoreException {
 		super.doSetInput(input);
+		setupDocument();
 	}
+
+	private void setupDocument() {
+		IDocument document = getDocument();
+		if (document != null) {
+			IDocumentPartitioner partitioner =
+				new FastPartitioner(
+					new JSONPartitionScanner(),
+					new String[]{
+						JSONPartitionScanner.JSON_STRING});
+			partitioner.connect(document);
+			((IDocumentExtension3) document).setDocumentPartitioner(JSONPartitionScanner.JSON_PARTITIONING, partitioner);
+		}
+	}
+
 
 	@Override
 	public void createPartControl(Composite parent) {

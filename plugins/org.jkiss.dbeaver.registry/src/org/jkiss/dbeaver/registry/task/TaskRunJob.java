@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,33 +67,33 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
-        try {
-            Date startTime = new Date();
+        Date startTime = new Date();
 
-            String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
-            TaskRunImpl taskRun = new TaskRunImpl(
-                taskId,
-                new Date(),
-                System.getProperty(StandardConstants.ENV_USER_NAME),
-                GeneralUtils.getProductTitle(),
-                0, null, null);
-            task.getTaskStatsFolder(true);
-            File logFile = task.getRunLog(taskRun);
+        String taskId = TaskManagerImpl.systemDateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
+        TaskRunImpl taskRun = new TaskRunImpl(
+            taskId,
+            new Date(),
+            System.getProperty(StandardConstants.ENV_USER_NAME),
+            GeneralUtils.getProductTitle(),
+            0, null, null);
+        task.getTaskStatsFolder(true);
+        File logFile = task.getRunLog(taskRun);
+        task.addNewRun(taskRun);
 
-            try (OutputStream logStream = new FileOutputStream(logFile)) {
-                taskLog = new Log(getName(), logStream);
-                try {
-                    monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
-                    executeTask(new LoggingProgressMonitor(monitor));
-                } catch (Throwable e) {
-                    taskError = e;
-                    taskLog.error("Task fatal error", e);
-                    throw e;
-                } finally {
-                    monitor.done();
-                    taskLog.flush();
-                }
+        try (Writer logStream = new OutputStreamWriter(new FileOutputStream(logFile), StandardCharsets.UTF_8)) {
+            taskLog = Log.getLog(TaskRunJob.class);
+            Log.setLogWriter(logStream);
+            monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
+            try {
+                executeTask(new LoggingProgressMonitor(monitor), new PrintWriter(logStream, true));
+            } catch (Throwable e) {
+                taskError = e;
+                taskLog.error("Task fatal error", e);
             } finally {
+                monitor.done();
+                taskLog.flush();
+                Log.setLogWriter(null);
+
                 taskRun.setRunDuration(elapsedTime);
                 if (taskError != null) {
                     String errorMessage = taskError.getMessage();
@@ -104,19 +105,18 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     taskError.printStackTrace(new PrintWriter(buf, true));
                     taskRun.setErrorStackTrace(buf.toString());
                 }
-                task.addNewRun(taskRun);
+                task.updateRun(taskRun);
             }
-        } catch (Throwable e) {
-            taskLog.error("Error running task", e);
-            return GeneralUtils.makeExceptionStatus(e);
+        } catch (IOException e) {
+            log.error("Error opning task run log file", e);
         }
         return Status.OK_STATUS;
     }
 
-    private void executeTask(DBRProgressMonitor monitor) throws DBException {
+    private void executeTask(DBRProgressMonitor monitor, Writer logWriter) throws DBException {
         activeMonitor = monitor;
         DBTTaskHandler taskHandler = task.getType().createHandler();
-        taskHandler.executeTask(this, task, locale, taskLog, executionListener);
+        taskHandler.executeTask(this, task, locale, taskLog, logWriter, executionListener);
     }
 
     @Override
@@ -132,13 +132,13 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         @Override
         public void beginTask(String name, int totalWork) {
             super.beginTask(name, totalWork);
-            taskLog.debug(">> " + name);
+            taskLog.debug("" + name);
         }
 
         @Override
         public void subTask(String name) {
             super.subTask(name);
-            taskLog.debug(">>> " + name);
+            taskLog.debug("\t" + name);
         }
     }
 

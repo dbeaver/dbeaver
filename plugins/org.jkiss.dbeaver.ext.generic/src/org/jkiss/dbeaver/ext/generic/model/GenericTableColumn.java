@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,9 +145,9 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implem
     @Property(viewable = false, order = 80)
     public boolean isInUniqueKey()
     {
-        final Collection<GenericPrimaryKey> uniqueKeysCache = getTable().getContainer().getPrimaryKeysCache().getCachedObjects(getTable());
+        final Collection<GenericUniqueKey> uniqueKeysCache = getTable().getContainer().getConstraintKeysCache().getCachedObjects(getTable());
         if (!CommonUtils.isEmpty(uniqueKeysCache)) {
-            for (GenericPrimaryKey key : uniqueKeysCache) {
+            for (GenericUniqueKey key : uniqueKeysCache) {
                 if (key.hasColumn(this)) {
                     return true;
                 }

@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.model.admin.locks;
 
-import java.util.List;
-
 import org.jkiss.dbeaver.model.DBPObject;
+
+import java.util.List;
 
 /**
  * Server lock interface

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class ImportDriverInfo {
     private String sampleURL;
     private String driverClass;
     private List<String> libraries = new ArrayList<>();
-    private Map<Object, Object> properties = new HashMap<>();
+    private Map<String, Object> properties = new HashMap<>();
     private String defaultPort;
     private String description;
 
@@ -89,7 +89,7 @@ public class ImportDriverInfo {
         libraries.add(path);
     }
 
-    public Map<Object,Object> getProperties()
+    public Map<String, Object> getProperties()
     {
         return properties;
     }

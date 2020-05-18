@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
-import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -188,22 +185,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     if (!databaseObject.isPersisted()) {
                         return null;
                     }
-                    if (DBUtils.getDefaultContext(databaseObject, false) == null) {
-                        // Not connected - try to connect
-                        DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(databaseObject);
-                        if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
-                            if (!RuntimeUtils.runTask(monitor -> {
-                                try {
-                                    ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            }, "Initiate instance connection",
-                                dnNode.getDataSourceContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
-                                return null;
-                            }
-                        }
-                        //
+                    if (DBUtils.getOrOpenDefaultContext(databaseObject, false) == null) {
+                        return null;
                     }
 
                     if (selectedNode instanceof DBNDatabaseObject) {
@@ -342,7 +325,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         DBEObjectEditor objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
                             object.getClass(),
                             DBEObjectEditor.class);
-                        actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
+                        //actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
+                        actionName = UINavigatorMessages.actions_navigator_view;
                     }
                 }
                 String label;

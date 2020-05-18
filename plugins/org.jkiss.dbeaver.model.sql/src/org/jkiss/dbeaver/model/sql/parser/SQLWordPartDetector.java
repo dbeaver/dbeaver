@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
                 if (prevWords == null) {
                     prevWords = new ArrayList<>();
-                } else {
+                }
+                if (!prevWord.equals(prevKeyWord)) {
                     // Add only second word (first is in prevKeyword)
                     prevWords.add(prevWord);
                 }
@@ -217,5 +218,9 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     public void moveToDelimiter() {
         int shift = startOffset - delimiterOffset;
         startOffset -= shift;
+    }
+
+    public void shiftOffset(int offset) {
+        startOffset += offset;
     }
 }

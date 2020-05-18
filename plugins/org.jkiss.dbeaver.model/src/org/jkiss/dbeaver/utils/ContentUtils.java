@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -490,7 +490,7 @@ public class ContentUtils {
         }
     }
 
-    public static void makeFileBackup(IFile file) throws IOException {
+    public static void makeFileBackup(IFile file) {
         if (!file.exists()) {
             return;
         }
@@ -506,13 +506,14 @@ public class ContentUtils {
             }
         }
         try (InputStream fis = file.getContents()) {
+
             if (!backupFile.exists()) {
                 backupFile.create(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
             } else {
                 backupFile.setContents(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
             }
-        } catch (CoreException e) {
-            throw new IOException("Error creating backup copy of " + file.getFullPath(), e);
+        } catch (Exception e) {
+            log.error("Error creating backup copy of " + file.getFullPath(), e);
         }
     }
 }

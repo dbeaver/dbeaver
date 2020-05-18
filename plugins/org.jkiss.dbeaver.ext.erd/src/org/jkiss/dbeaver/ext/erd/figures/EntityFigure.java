@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 13, 2004
- */
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
@@ -93,9 +89,13 @@ public class EntityFigure extends Figure {
         layout.marginWidth = 0;
 */
 
-        ToolbarLayout layout = new ToolbarLayout();
-        layout.setHorizontal(false);
-        layout.setStretchMinorAxis(true);
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        //layout.setHorizontal(false);
+        //layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
         LineBorder border = new LineBorder(getBorderColor(), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
@@ -103,12 +103,12 @@ public class EntityFigure extends Figure {
         setBorder(border);
         setOpaque(true);
 
-        add(nameLabel);
+        add(nameLabel, new GridData(GridData.FILL_HORIZONTAL));
         if (descLabel != null) {
-            add(descLabel);
+            add(descLabel, new GridData(GridData.FILL_HORIZONTAL));
         }
-        add(keyFigure);
-        add(attributeFigure);
+        add(keyFigure, new GridData(GridData.FILL_HORIZONTAL));
+        add(attributeFigure, new GridData(GridData.FILL_BOTH));
 
         refreshColors();
     }
@@ -155,6 +155,7 @@ public class EntityFigure extends Figure {
     public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
+        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
         if (part.getEntity().isPrimary()) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
@@ -162,8 +163,21 @@ public class EntityFigure extends Figure {
         } else {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
-        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
-        nameLabel.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+    }
+
+    public void updateTitleForegroundColor() {
+        Color bgColor = getBackgroundColor();
+        
+        if(bgColor == null)
+        	nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+        else
+	        nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+    }
+
+    @Override
+    public void setBackgroundColor(Color bg) {
+        super.setBackgroundColor(bg);
+        updateTitleForegroundColor();
     }
 
     public void setSelected(boolean isSelected)

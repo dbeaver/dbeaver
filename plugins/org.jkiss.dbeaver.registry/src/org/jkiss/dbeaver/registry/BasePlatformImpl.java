@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -37,15 +35,12 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
-import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
-import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.runtime.jobs.KeepAliveListenerJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -58,7 +53,7 @@ import java.util.Locale;
  *
  * Base implementation of DBeaver platform
  */
-public abstract class BasePlatformImpl implements DBPPlatform {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLanguageManager {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
@@ -76,11 +71,11 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefsStore = getPreferenceStore();
-        //' Global pref events forwarder
+        // Global pref events forwarder
         prefsStore.addPropertyChangeListener(event -> {
             // Forward event to all data source preferences
             for (DBPDataSourceContainer ds : DataSourceRegistry.getAllDataSources()) {
-                ds.getPreferenceStore().firePropertyChangeEvent(event.getProperty(), event.getOldValue(), event.getNewValue());
+                ((AbstractPreferenceStore)ds.getPreferenceStore()).firePropertyChangeEvent(prefsStore, event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });
 
@@ -97,9 +92,6 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         this.navigatorModel = new DBNModel(this, true);
         this.navigatorModel.initialize();
 
-        // Activate proxy service
-        activateProxyService();
-
         // Activate plugin services
         for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
             try {
@@ -111,7 +103,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         }
 
         // Keep-alive job
-        new KeepAliveJob(this).scheduleMonitor();
+        new KeepAliveListenerJob(this).scheduleMonitor();
     }
 
     public synchronized void dispose() {
@@ -133,15 +125,6 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         }
     }
 
-    protected void installProxySelector() {
-        // Init default network settings
-        ProxySelector defProxySelector = GeneralUtils.adapt(this, ProxySelector.class);
-        if (defProxySelector == null) {
-            defProxySelector = new GlobalProxySelector(ProxySelector.getDefault());
-        }
-        ProxySelector.setDefault(defProxySelector);
-    }
-
     @NotNull
     @Override
     public DBDRegistry getValueHandlerRegistry() {
@@ -152,6 +135,11 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     @Override
     public DBERegistry getEditorsRegistry() {
         return ObjectManagerRegistry.getInstance();
+    }
+
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
     }
 
     @NotNull
@@ -188,6 +176,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         return language;
     }
 
+    @Override
     public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
         if (CommonUtils.equalObjects(language, this.language)) {
             return;
@@ -230,14 +219,6 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     @Override
     public File getCustomDriversHome() {
         return DriverDescriptor.getCustomDriversHome();
-    }
-
-    private void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
     }
 
     // Patch config and add/update -nl parameter

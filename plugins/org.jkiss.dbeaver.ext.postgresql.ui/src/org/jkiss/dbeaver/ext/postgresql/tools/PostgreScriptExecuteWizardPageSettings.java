@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,48 +31,35 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 
 
-public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSettings<PostgreScriptExecuteWizard>
-{
+public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPageSettings<PostgreScriptExecuteWizard> {
     private Text inputFileText;
-    //private Combo logLevelCombo;
 
-    public PostgreScriptExecuteWizardPageSettings(PostgreScriptExecuteWizard wizard)
-    {
-        super(wizard, wizard.isImport() ?
-        		PostgreMessages.tool_script_title_import :
-        		PostgreMessages.tool_script_title_execute);
-        setTitle(wizard.isImport() ?
-        	PostgreMessages.tool_script_title_import :
-        	PostgreMessages.tool_script_title_execute);
-        setDescription(wizard.isImport() ?
-        	PostgreMessages.tool_script_description_import :
-        	PostgreMessages.tool_script_description_execute);
+    PostgreScriptExecuteWizardPageSettings(PostgreScriptExecuteWizard wizard) {
+        super(wizard, PostgreMessages.tool_script_title_execute);
+        setTitle(PostgreMessages.tool_script_title_execute);
+        setDescription(PostgreMessages.tool_script_description_execute);
     }
 
     @Override
-    public boolean isPageComplete()
-    {
-        return super.isPageComplete() && wizard.getInputFile() != null;
+    public boolean isPageComplete() {
+        return super.isPageComplete() && wizard.getSettings().getInputFile() != null;
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group inputGroup = UIUtils.createControlGroup(
-                composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL, 0);
+            composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL, 0);
         inputFileText = UIUtils.createLabelText(
-                inputGroup, PostgreMessages.tool_script_label_input_file, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+            inputGroup, PostgreMessages.tool_script_label_input_file, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
         inputFileText.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseUp(MouseEvent e)
-            {
+            public void mouseUp(MouseEvent e) {
                 chooseInputFile();
             }
         });
@@ -80,43 +67,23 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
         browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 chooseInputFile();
             }
         });
 
-        if (wizard.getInputFile() != null) {
-            inputFileText.setText(wizard.getInputFile().getName());
+        if (wizard.getSettings().getInputFile() != null) {
+            inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
-/*
-        Group settingsGroup = UIUtils.createControlGroup(
-                composite, PostgreMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-        logLevelCombo = UIUtils.createLabelCombo(
-                settingsGroup, PostgreMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (PostgreScriptExecuteWizard.LogLevel logLevel : PostgreScriptExecuteWizard.LogLevel.values()) {
-            logLevelCombo.add(logLevel.name());
-        }
-        logLevelCombo.select(wizard.getLogLevel().ordinal());
-        logLevelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                wizard.setLogLevel(PostgreScriptExecuteWizard.LogLevel.valueOf(logLevelCombo.getText()));
-            }
-        });
-*/
-
-        createSecurityGroup(composite);
+        Composite extraGroup = UIUtils.createComposite(composite, 2);
+        createSecurityGroup(extraGroup);
+        wizard.createTaskSaveGroup(extraGroup);
 
         setControl(composite);
-
-        //updateState();
     }
 
-    private void chooseInputFile()
-    {
+    private void chooseInputFile() {
         File file = DialogUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if (file != null) {
             inputFileText.setText(file.getAbsolutePath());
@@ -125,11 +92,15 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
     }
 
     @Override
-    protected void updateState()
-    {
-        String fileName = inputFileText.getText();
-        wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+    public void saveState() {
+        super.saveState();
+        wizard.getSettings().setInputFile(inputFileText.getText());
+    }
 
+
+    @Override
+    protected void updateState() {
+        saveState();
         getContainer().updateButtons();
     }
 

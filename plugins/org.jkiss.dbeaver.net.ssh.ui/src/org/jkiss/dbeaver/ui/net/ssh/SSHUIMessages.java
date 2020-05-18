@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,19 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
 	public static String model_ssh_configurator_label_implementation;
+	public static String model_ssh_configurator_label_local_host;
+	public static String model_ssh_configurator_label_local_host_description;
 	public static String model_ssh_configurator_label_local_port;
 	public static String model_ssh_configurator_label_local_port_description;
+	public static String model_ssh_configurator_label_remote_host;
+	public static String model_ssh_configurator_label_remote_host_description;
+	public static String model_ssh_configurator_label_remote_port;
+	public static String model_ssh_configurator_label_remote_port_description;
     public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
 	public static String model_ssh_configurator_button_test_tunnel;
+	public static String model_ssh_configurator_combo_agent;
+
 
 	static {
 		// initialize resource bundle

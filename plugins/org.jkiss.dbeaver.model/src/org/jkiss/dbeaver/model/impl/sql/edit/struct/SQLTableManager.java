@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,17 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -48,15 +46,15 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     extends SQLStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
 
-    protected static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
-    protected static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
+    public static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
+    public static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
     {
         long options = FEATURE_EDITOR_ON_CREATE;
-        if (dataSource instanceof SQLDataSource) {
-            if (((SQLDataSource) dataSource).getSQLDialect().supportsTableDropCascade()) {
+        {
+            if (dataSource.getSQLDialect().supportsTableDropCascade()) {
                 options |= FEATURE_DELETE_CASCADE;
             }
         }
@@ -64,7 +62,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
+    protected final void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
     {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
@@ -80,8 +78,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         final OBJECT_TYPE table = command.getObject();
+
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
@@ -129,7 +128,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
-                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(monitor, options);
+                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(monitor, executionContext, options);
                 if (nestedActions != null) {
                     Collections.addAll(actions, nestedActions);
                 }
@@ -152,7 +151,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         OBJECT_TYPE object = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(object, options);
@@ -171,24 +170,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     }
 
-    protected void setTableName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
-        if (table instanceof DBPNamedObject2) {
-            ((DBPNamedObject2)table).setName(getNewChildName(monitor, container));
-        }
-    }
-
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
-        return getNewChildName(monitor, container, BASE_TABLE_NAME);
-    }
-
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) throws DBException {
-        for (int i = 0; ; i++) {
-            String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
-            DBSObject child = container.getChild(monitor, tableName);
-            if (child == null) {
-                return tableName;
-            }
-        }
+    protected String getBaseObjectName() {
+        return BASE_TABLE_NAME;
     }
 
     public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options) throws DBException
@@ -201,6 +184,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
         SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
 
+        DBCExecutionContext executionContext = DBUtils.getDefaultContext(table, true);
+
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
             if (fkm != null) {
                 // Create only foreign keys
@@ -211,7 +196,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                             DBUtils.isInheritedObject(foreignKey)) {
                             continue;
                         }
-                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, options);
+                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, executionContext, options);
                         if (cmdActions != null) {
                             Collections.addAll(actions, cmdActions);
                         }
@@ -226,7 +211,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
         if (isIncludeDropInDDL()) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
-            for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, options)) {
+            for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, executionContext, options)) {
                 String script = delAction.getScript();
                 String delimiter = SQLUtils.getScriptLineDelimiter(SQLUtils.getDialectFromObject(table));
                 if (!script.endsWith(delimiter)) {
@@ -293,7 +278,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             }
         }
         addExtraDDLCommands(monitor, table, options, command);
-        Collections.addAll(actions, command.getPersistActions(monitor, options));
+        Collections.addAll(actions, command.getPersistActions(monitor, executionContext, options));
 
         return actions.toArray(new DBEPersistAction[0]);
     }

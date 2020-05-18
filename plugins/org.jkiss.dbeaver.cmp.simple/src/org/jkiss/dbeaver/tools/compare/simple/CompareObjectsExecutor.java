@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.properties.*;
@@ -173,7 +174,7 @@ public class CompareObjectsExecutor {
         try {
             if (nodes.size() > 1) {
                 // Go deeper only if we have more than one node
-                if (!settings.isCompareOnlyStructure() && !(nodes.get(0) instanceof DBNDatabaseFolder)) {
+                if (!(nodes.get(0) instanceof DBNDatabaseFolder)) {
                     compareProperties(monitor, nodes);
                 }
 
@@ -186,6 +187,8 @@ public class CompareObjectsExecutor {
 
     private void compareProperties(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes) throws DBException, InterruptedException
     {
+        boolean onlyStruct = settings.isCompareOnlyStructure();
+
         // Clear compare singletons
         this.initializedCount = 0;
         this.initializeError = null;
@@ -205,7 +208,7 @@ public class CompareObjectsExecutor {
                 if (initializeError != null) {
                     throw new DBException(initializeError.getMessage());
                 }
-                Thread.sleep(100);
+                Thread.sleep(50);
                 if (monitor.isCanceled()) {
                     throw new InterruptedException();
                 }
@@ -226,8 +229,13 @@ public class CompareObjectsExecutor {
                 break;
             }
         }
+
         boolean compareScripts = compareLazyProperties && settings.isCompareScripts();
         compareLazyProperties = compareLazyProperties && settings.isCompareLazyProperties();
+
+        if (onlyStruct && !compareScripts) {
+            return;
+        }
 
         // Load all properties
         for (DBNDatabaseNode node : nodes) {
@@ -242,11 +250,12 @@ public class CompareObjectsExecutor {
             }
             PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties || compareScripts);
             for (ObjectPropertyDescriptor prop : properties) {
+                boolean isScriptProperty = prop.getId().equals(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) || prop.getId().equals(DBConstants.PARAM_EXTENDED_DEFINITION_TEXT);
                 if (prop.isLazy()) {
                     if (!compareLazyProperties) {
                         if (compareScripts) {
                             // Only DBPScriptObject methods
-                            if (!prop.getId().equals(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) && !prop.getId().equals(DBConstants.PARAM_EXTENDED_DEFINITION_TEXT)) {
+                            if (!isScriptProperty) {
                                 continue;
                             }
                         } else {
@@ -257,6 +266,9 @@ public class CompareObjectsExecutor {
                     if (prop.isHidden()) {
                         continue;
                     }
+                }
+                if (onlyStruct && !isScriptProperty) {
+                    continue;
                 }
                 Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop, true);
                 synchronized (PROPS_LOCK) {
@@ -281,14 +293,16 @@ public class CompareObjectsExecutor {
         // Compare children
         int nodeCount = nodes.size();
         List<DBNDatabaseNode[]> allChildren = new ArrayList<>(nodeCount);
+        // Use submonitor to avoid huge number of tasks
+        DBRProgressMonitor subMonitor = new SubTaskProgressMonitor(monitor);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
             // Cache structure if possible
             if (node.getObject() instanceof DBSObjectContainer) {
-                ((DBSObjectContainer) node.getObject()).cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+                ((DBSObjectContainer) node.getObject()).cacheStructure(subMonitor, DBSObjectContainer.STRUCT_ALL);
             }
             try {
-                DBNDatabaseNode[] children = node.getChildren(monitor);
+                DBNDatabaseNode[] children = node.getChildren(subMonitor);
                 allChildren.add(children);
             } catch (Exception e) {
                 log.warn("Error reading child nodes for compare", e);
@@ -305,7 +319,7 @@ public class CompareObjectsExecutor {
                     // Skip virtual nodes
                     continue;
                 }
-                if (settings.isSkipSystemObjects() && child.getObject() instanceof DBPSystemObject && ((DBPSystemObject) child.getObject()).isSystem()) {
+                if (settings.isSkipSystemObjects() && DBUtils.isSystemObject(child.getObject())) {
                     // Skip system objects
                     continue;
                 }

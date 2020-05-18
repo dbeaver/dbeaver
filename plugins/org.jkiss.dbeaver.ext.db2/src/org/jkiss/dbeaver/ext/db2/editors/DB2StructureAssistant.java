@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,10 @@ package org.jkiss.dbeaver.ext.db2.editors;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -48,7 +45,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2StructureAssistant implements DBSStructureAssistant {
+public class DB2StructureAssistant implements DBSStructureAssistant<DB2ExecutionContext> {
     private static final Log LOG = Log.getLog(DB2StructureAssistant.class);
 
     // TODO DF: Work in progess
@@ -104,8 +101,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
-                                                      DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
+    public List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2ExecutionContext executionContext,
+        DBSObject parentObject,
+        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
     {
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);
         for (DBSObjectType dbsObjectType : objectTypes) {
@@ -114,10 +114,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
         if (schema == null && !globalSearch) {
-            schema = dataSource.getDefaultObject();
+            schema = executionContext.getContextDefaults().getDefaultSchema();
         }
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);

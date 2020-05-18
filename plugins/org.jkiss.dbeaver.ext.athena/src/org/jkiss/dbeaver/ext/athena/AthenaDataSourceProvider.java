@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.model.AthenaDataSource;
 import org.jkiss.dbeaver.ext.athena.model.AthenaMetaModel;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -58,9 +57,13 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider {
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         //jdbc:awsathena://AwsRegion=us-east-1;
-        StringBuilder url = new StringBuilder();
-        url.append(AthenaConstants.JDBC_URL_PREFIX)
-            .append(AthenaConstants.DRIVER_PROP_REGION).append("=").append(connectionInfo.getServerName()).append(";");
-        return url.toString();
+        String urlTemplate = driver.getSampleURL();
+        if (CommonUtils.isEmpty(urlTemplate) || !urlTemplate.startsWith(AthenaConstants.JDBC_URL_PREFIX)) {
+            return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + connectionInfo.getServerName() + ";";
+        }
+        urlTemplate = urlTemplate
+            .replace("{region}", connectionInfo.getServerName())
+            .replace("=region;", "=" + connectionInfo.getServerName() + ";"); // Left for backward compatibility
+        return urlTemplate;
     }
 }

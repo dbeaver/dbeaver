@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -395,6 +395,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             UIUtils.packColumns(previewTable, false);
 
             if (finalError != null) {
+                log.error(finalError);
                 DBWorkbench.getPlatformUI().showError("Load entity meta", "Can't load entity attributes", finalError);
             }
         });
@@ -508,7 +509,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         settings.setMaxRows(10);
 
         try {
-            currentProducer.transferData(monitor, previewConsumer, importer, settings);
+            currentProducer.transferData(monitor, previewConsumer, importer, settings, null);
         } finally {
             previewConsumer.close();
             settings.setMaxRows(-1);
@@ -523,7 +524,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 for (int i = 0; i < attributeMappings.size(); i++) {
                     StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
                     Object srcValue = row[i];
-                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false);
+                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false, activated);
                     String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
                     strRow[i] = valueStr;
                 }
@@ -563,18 +564,22 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         final StreamProducerSettings settings = getProducerSettings();
         List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         if (dataPipes.isEmpty()) {
+            setErrorMessage("No entities specified");
             return false;
         }
         for (DataTransferPipe pipe : dataPipes) {
             DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
             if (!(databaseObject instanceof DBSEntity)) {
+                setErrorMessage("Wrong input object");
                 return false;
             }
             StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
             if (!entityMapping.isComplete()) {
+                setErrorMessage("Set mappings for all columns");
                 return false;
             }
         }
+        setErrorMessage(null);
         return true;
     }
 

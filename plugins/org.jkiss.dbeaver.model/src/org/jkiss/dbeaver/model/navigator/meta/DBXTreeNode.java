@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,12 +142,12 @@ public abstract class DBXTreeNode
     /**
      * Human readable node type
      */
-    public abstract String getNodeType(@Nullable DBPDataSource dataSource, @Nullable String locale);
+    public abstract String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     /**
      * Human readable child nodes type
      */
-    public abstract String getChildrenType(@Nullable DBPDataSource dataSource, @Nullable String locale);
+    public abstract String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     public boolean isNavigable()
     {

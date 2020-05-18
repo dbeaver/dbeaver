@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.lang.parser;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.rules.*;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.lang.SCMSourceScanner;
 import org.jkiss.dbeaver.lang.SCMSourceText;
-import org.jkiss.dbeaver.lang.SCMToken;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collection;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -117,7 +118,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data", e);
+                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
         }
     }
@@ -175,10 +176,10 @@ public class DashboardUpdater {
                             fetchDashboardData(dashboard, dbResults);
                         }
                     }
+                } catch (Exception e) {
+                    throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e, session.getExecutionContext());
                 }
             }
-        } catch (Exception e) {
-            throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e);
         }
     }
 

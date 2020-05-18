@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * DBSStructureAssistant
  */
-public interface DBSStructureAssistant
+public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext>
 {
 
     DBSObjectType[] getSupportedObjectTypes();
@@ -41,6 +42,7 @@ public interface DBSStructureAssistant
     /**
      * Search objects matching specified mask.
      * @param monitor           monitor
+     * @param executionContext  execution context
      * @param parentObject      parent (schema or catalog)
      * @param objectTypes       type of objects to search
      * @param objectNameMask    name mask
@@ -52,7 +54,8 @@ public interface DBSStructureAssistant
      */
     @NotNull
     List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTEXT executionContext,
         @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,

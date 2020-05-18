@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,8 +44,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 class TransformerSettingsDialog extends BaseDialog {
 
@@ -66,17 +67,15 @@ class TransformerSettingsDialog extends BaseDialog {
     private Combo transformerCombo;
     private Table attributeTable;
 
-    TransformerSettingsDialog(ResultSetViewer viewer) {
-        this(viewer, null, false);
-    }
-
     TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
         super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;
         this.selector = selector;
 
-        this.vEntitySrc = DBVUtils.getVirtualEntity(viewer.getDataContainer(), true);
+        this.vEntitySrc = this.currentAttribute == null ?
+            viewer.getModel().getVirtualEntity(true) :
+            DBVUtils.getVirtualEntity(currentAttribute, true);
         this.vEntity = new DBVEntity(vEntitySrc.getContainer(), vEntitySrc, vEntitySrc.getModel());
     }
 
@@ -163,13 +162,7 @@ class TransformerSettingsDialog extends BaseDialog {
 
     private void updateAttributeSelection() {
         if (currentAttribute != null) {
-            saveTransformerSettings();
-            for (TableItem item : attributeTable.getItems()) {
-                if (item.getData() == currentAttribute) {
-                    updateTransformItem(item);
-                    break;
-                }
-            }
+            updateAttributeItemText();
         }
 
         if (attributeTable.getSelectionIndex() < 0) {
@@ -230,7 +223,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void saveTransformerSettings() {
-        if (currentAttribute == null || transformer == null) {
+        if (currentAttribute == null) {
             // Nothign to save - just ignore
             return;
         }
@@ -261,6 +254,9 @@ class TransformerSettingsDialog extends BaseDialog {
 
     private void createTransformSettingsArea(Composite composite) {
         Composite settingsPanel = UIUtils.createComposite(composite, 1);
+        if (composite.getLayout() instanceof GridLayout) {
+            settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
         if (selector || transformer != null) {
             final Composite placeholder = UIUtils.createControlGroup(settingsPanel, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
             if (!selector) {
@@ -283,7 +279,9 @@ class TransformerSettingsDialog extends BaseDialog {
                             infoText.setText(CommonUtils.notEmpty(transformer.getDescription()));
                             loadTransformerSettings(transformer.getProperties());
                         }
-                        updateAttributeSelection();
+                        updateTransformerInfo();
+                        updateAttributeItemText();
+
                         composite.layout(true, true);
                     }
                 });
@@ -299,6 +297,16 @@ class TransformerSettingsDialog extends BaseDialog {
         propertiesEditor = new PropertyTreeViewer(settingsPanel, SWT.BORDER);
 
         propertiesEditor.getControl().setFocus();
+    }
+
+    private void updateAttributeItemText() {
+        saveTransformerSettings();
+        for (TableItem item : attributeTable.getItems()) {
+            if (item.getData() == currentAttribute) {
+                updateTransformItem(item);
+                break;
+            }
+        }
     }
 
     private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
@@ -318,6 +326,16 @@ class TransformerSettingsDialog extends BaseDialog {
     {
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+    @Override
+    public void create() {
+        super.create();
+
+        if (propertySource != null && propertySource.getPropertyDescriptors2().length == 0 && !selector) {
+            // No properties
+            UIUtils.asyncExec(this::okPressed);
+        }
     }
 
     @Override

@@ -17,25 +17,6 @@
 
 package org.jkiss.dbeaver.ext.ui.svg;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Composite;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Polygon;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.Stack;
-
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.SWTGraphics;
 import org.eclipse.draw2d.TextUtilities;
@@ -46,17 +27,15 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.FontMetrics;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.LineAttributes;
-import org.eclipse.swt.graphics.Path;
-import org.eclipse.swt.graphics.PathData;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Display;
+
+import java.awt.*;
+import java.awt.geom.*;
+import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 /**
  * Objects of this class can be used with draw2d to render to a Graphics2D object.

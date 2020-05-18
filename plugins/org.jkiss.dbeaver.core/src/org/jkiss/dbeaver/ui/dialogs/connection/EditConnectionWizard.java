@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
@@ -40,16 +40,14 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
-import org.jkiss.dbeaver.ui.preferences.PrefPageConnections;
-import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
-import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
-import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
+import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -72,7 +70,6 @@ public class EditConnectionWizard extends ConnectionWizard
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
-    private PrefPageConnections pageClientSettings;
 
     /**
      * Constructor for SampleNewWizard.
@@ -116,6 +113,11 @@ public class EditConnectionWizard extends ConnectionWizard
         return dataSource.getRegistry().getProject();
     }
 
+    @Override
+    DBNBrowseSettings getSelectedNavigatorSettings() {
+        return dataSource.getNavigatorSettings();
+    }
+
     @Nullable
     @Override
     public ConnectionPageSettings getPageSettings()
@@ -153,9 +155,14 @@ public class EditConnectionWizard extends ConnectionWizard
         }
 
         if (!embedded && pageSettings != null) {
-            pageClientSettings = new PrefPageConnections();
+            PrefPageConnections pageClientSettings = new PrefPageConnections();
             pageSettings.addSubPage(
                 createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
+        }
+        if (pageSettings != null) {
+            PrefPageTransactions pageClientTransactions = new PrefPageTransactions();
+            pageSettings.addSubPage(
+                createPreferencePage(pageClientTransactions, CoreMessages.dialog_connection_edit_wizard_transactions, CoreMessages.dialog_connection_edit_wizard_transactions_description));
         }
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
@@ -180,7 +187,7 @@ public class EditConnectionWizard extends ConnectionWizard
                 return page;
             }
             if (page instanceof ICompositeDialogPage) {
-                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false);
+                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(false, true);
                 if (subPages != null) {
                     for (IDialogPage subPage : subPages) {
                         if (subPage instanceof IWizardPage && ((IWizardPage) subPage).getName().equals(name)) {
@@ -212,7 +219,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
         // Check locked datasources
         if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (DBeaverCore.getInstance().getSecureStorage().useSecurePreferences() && !isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+            if (dataSource.getProject().getSecureStorage().useSecurePreferences() && !isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
                 if (!checkLockPassword()) {
                     return false;
                 }

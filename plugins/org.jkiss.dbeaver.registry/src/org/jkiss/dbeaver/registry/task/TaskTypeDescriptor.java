@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,11 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
             }
         }
         return objClasses.toArray(new Class[0]);
+    }
+
+    @Override
+    public boolean supportsVariables() {
+        return CommonUtils.toBoolean(config.getAttribute("supportsVariables"));
     }
 
     @NotNull

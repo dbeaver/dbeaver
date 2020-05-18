@@ -9,7 +9,7 @@
 	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
-		<tycho-version>1.4.0</tycho-version>
+		<tycho-version>1.7.0</tycho-version>
 		<reficio-p2-version>1.4.1</reficio-p2-version>
 		<repo-name>DBeaver CE Update</repo-name>
 	</properties>
@@ -55,11 +55,15 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
 								<!-- Bouncy castle left here for backward compatibility (older DBeaver versions still require it. To remove in future versions -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:LATEST</id></artifact>
+								<!-- Ant minimized -->
+								<artifact><id>org.jkiss.bundle:org.apache.ant:1.10.0</id></artifact>
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
 								<!-- GraphQL -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
+								<!-- DBCP -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 

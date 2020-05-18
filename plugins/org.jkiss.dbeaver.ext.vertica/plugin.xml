@@ -14,11 +14,12 @@
             id="vertica"
             parent="generic"
             label="Vertica"
-            icon="icons/vertica_icon.png">
+            icon="icons/vertica_icon.png"
+            dialect="vertica">
 
             <tree path="vertica" label="Vertica data source">
                 <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
-                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema">
                         <icon if="object.system" icon="#schema_system"/>
                         <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
@@ -26,7 +27,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -131,13 +132,11 @@
                         class="com.vertica.jdbc.Driver"
                         sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                         defaultPort="5433"
-                        webURL="http://www.vertica.com/"
+                        webURL="https://www.vertica.com/"
                         description="Driver for Vertica Database"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>
-
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
@@ -163,7 +162,7 @@
                     <replace provider="vertica" driver="vertica-jdbc-6"/>
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
-                    <file type="jar" path="drivers/vertica/vertica8.jar" bundle="drivers.vertica"/>
+                    <file type="jar" path="drivers/vertica" bundle="drivers.vertica"/>
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
@@ -186,5 +185,9 @@
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="vertica" parent="generic" class="org.jkiss.dbeaver.ext.vertica.model.VerticaSQLDialect" label="Vertica" description="Vertica SQL dialect." icon="icons/vertica_icon.png">
+        </dialect>
+    </extension>
 
 </plugin>

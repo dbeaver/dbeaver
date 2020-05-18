@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +27,9 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -40,6 +41,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
+    private Text timestampPattern;
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
@@ -104,24 +106,25 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
+                StreamTransferConsumer.VARIABLE_INDEX,
                 StreamTransferConsumer.VARIABLE_PROJECT);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
                 settings.setOutputFilePattern(fileNameText.getText());
                 updatePageCompletion();
             });
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 fileNameText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
-                }));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
 
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_encoding);
@@ -134,7 +137,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     }
                     updatePageCompletion();
                 });
-                encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 3);
+                timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
+                timestampPattern.addModifyListener(e -> {
+                    settings.setOutputTimestampPattern(timestampPattern.getText());
+                });
+                encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 1);
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -201,7 +208,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
-                    toggleExecProcessControls();
+                    updateControlsEnablement();
                     updatePageCompletion();
                 }
             });
@@ -217,15 +224,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
                 StreamTransferConsumer.VARIABLE_PROJECT);
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 execProcessText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[] {
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)}));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -256,15 +263,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
+        timestampPattern.setEnabled(!clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
         execProcessCheckbox.setEnabled(!clipboard);
         execProcessText.setEnabled(!clipboard);
-    }
-
-    private void toggleExecProcessControls() {
-        boolean clipboard = clipboardCheck.getSelection();
-        final boolean isExecCommand = execProcessCheckbox.getSelection();
-        execProcessText.setEnabled(!clipboard && isExecCommand);
     }
 
     @Override
@@ -282,6 +284,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         splitFilesCheckbox.setSelection(settings.isSplitOutFiles());
         maximumFileSizeText.setText(String.valueOf(settings.getMaxOutFileSize()));
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
+        timestampPattern.setText(settings.getOutputTimestampPattern());
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
         execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
@@ -296,7 +299,6 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
         updatePageCompletion();
         updateControlsEnablement();
-        toggleExecProcessControls();
     }
 
     @Override

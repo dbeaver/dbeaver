@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -65,7 +65,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private static final String DIALOG_ID = "GotoObjectDialog";
 
     private static final boolean SHOW_OBJECT_TYPES = true;
-    public static final int MAX_RESULT_COUNT = 1000;
+    private static final int MAX_RESULT_COUNT = 1000;
 
     private final DBCExecutionContext context;
     private DBSObject container;
@@ -161,7 +161,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         return new ObjectFilter();
     }
 
-    protected boolean isValidObjectType(DBSObjectType objectType) {
+    private boolean isValidObjectType(DBSObjectType objectType) {
         Class<? extends DBSObject> typeClass = objectType.getTypeClass();
         if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
             return false;
@@ -203,7 +203,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 typesToSearch.add(type);
             }
 
-            ObjectFinder objectFinder = new ObjectFinder(structureAssistant, monitor, typesToSearch, nameMask);
+            ObjectFinder objectFinder = new ObjectFinder(structureAssistant, monitor, context, typesToSearch, nameMask);
             DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), objectFinder);
 
             DBPDataSourceContainer dsContainer = context.getDataSource().getContainer();
@@ -279,7 +279,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         private Pattern namePattern = null;
         private Map<String, Boolean> enabledTypesCopy;
 
-        public ObjectFilter() {
+        ObjectFilter() {
             this.enabledTypesCopy = new HashMap<>(enabledTypes);
         }
 
@@ -292,7 +292,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         public boolean matchItem(Object item) {
             if (item instanceof DBPNamedObject) {
                 String objectName = ((DBPNamedObject) item).getName();
-                String pattern = getPattern().replaceAll("[\\*\\%\\?]", "");
+                //String pattern = getPattern().replaceAll("[\\*\\%\\?]", "");
                 //return TextUtils.fuzzyScore(objectName, pattern) > 0;
                 if (!getNamePattern().matcher(objectName).matches()) {
                     return false;
@@ -345,13 +345,15 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private class ObjectFinder implements DBRRunnableParametrized<DBRProgressMonitor> {
         private final DBSStructureAssistant structureAssistant;
         private final DBRProgressMonitor monitor;
+        private final DBCExecutionContext executionContext;
         private final List<DBSObjectType> typesToSearch;
         private final String nameMask;
         private List<DBSObjectReference> result;
 
-        public ObjectFinder(DBSStructureAssistant structureAssistant, DBRProgressMonitor monitor, List<DBSObjectType> typesToSearch, String nameMask) {
+        ObjectFinder(DBSStructureAssistant structureAssistant, DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBSObjectType> typesToSearch, String nameMask) {
             this.structureAssistant = structureAssistant;
             this.monitor = monitor;
+            this.executionContext = executionContext;
             this.typesToSearch = typesToSearch;
             this.nameMask = nameMask;
         }
@@ -365,12 +367,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             try {
                 result = structureAssistant.findObjectsByMask(
                     monitor,
+                    executionContext,
                     container,
-                    typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
+                    typesToSearch.toArray(new DBSObjectType[0]),
                     nameMask,
                     false,
-                    true,
-                    MAX_RESULT_COUNT);
+                    true, MAX_RESULT_COUNT);
                 hasMoreResults = result.size() >= MAX_RESULT_COUNT;
             } catch (Exception e) {
                 throw new InvocationTargetException(e);

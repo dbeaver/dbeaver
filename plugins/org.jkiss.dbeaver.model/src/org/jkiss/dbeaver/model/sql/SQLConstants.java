@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,27 +31,47 @@ public class SQLConstants {
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
 
-    public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_INSERT = "INSERT";
+    public static final String KEYWORD_UPDATE = "UPDATE";
+    public static final String KEYWORD_DELETE = "DELETE";
+    public static final String KEYWORD_MERGE = "MERGE";
+    public static final String KEYWORD_UPSERT = "UPSERT";
+    public static final String KEYWORD_TRUNCATE = "TRUNCATE";
+
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_WHERE = "WHERE";
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
+    public static final String KEYWORD_IS = "IS";
+    public static final String KEYWORD_NOT = "NOT";
+    public static final String KEYWORD_NULL = "NULL";
+    public static final String KEYWORD_IN = "IN";
+
+    public static final String KEYWORD_FUNCTION = "FUNCTION";
+    public static final String KEYWORD_PROCEDURE = "PROCEDURE";
+
+    public static final String KEYWORD_COMMIT = "COMMIT";
+    public static final String KEYWORD_ROLLBACK = "ROLLBACK";
 
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_UPDATE,
+        KEYWORD_DELETE,
         KEYWORD_INTO,
         "TABLE",
         "VIEW",
-        KEYWORD_JOIN
+        KEYWORD_JOIN,
+        KEYWORD_TRUNCATE,
+        KEYWORD_MERGE,
     };
 
     public static final String[] COLUMN_KEYWORDS = {
         KEYWORD_SELECT,
-        "WHERE",
+        KEYWORD_WHERE,
         "SET",
         KEYWORD_ON,
         KEYWORD_AND,
@@ -102,7 +122,7 @@ public class SQLConstants {
         "COLLATE",
         "COLLECT",
         "COLUMN",
-        "COMMIT",
+        KEYWORD_COMMIT,
         "CONDITION",
         "CONNECT",
         "CONSTRAINT",
@@ -123,7 +143,7 @@ public class SQLConstants {
         "DEC",
         "DECLARE",
         "DEFAULT",
-        "DELETE",
+        KEYWORD_DELETE,
         "DENSE_RANK",
         "DEREF",
         "DESCRIBE",
@@ -154,7 +174,7 @@ public class SQLConstants {
         "FREE",
         "FROM",
         "FULL",
-        "FUNCTION",
+        KEYWORD_FUNCTION,
         "FUSION",
         "GET",
         "GLOBAL",
@@ -166,18 +186,18 @@ public class SQLConstants {
         "HOUR",
         "IDENTITY",
         "IF",
-        "IN",
+        KEYWORD_IN,
         "INDEX",
         "INDICATOR",
         "INNER",
         "INOUT",
         "INSENSITIVE",
-        "INSERT",
+        KEYWORD_INSERT,
         "INTERSECT",
         "INTERSECTION",
         "INTERVAL",
         "INTO",
-        "IS",
+        KEYWORD_IS,
         "JOIN",
         "LANGUAGE",
         "LARGE",
@@ -190,7 +210,7 @@ public class SQLConstants {
         "LOCALTIMESTAMP",
         "MATCH",
         "MEMBER",
-        "MERGE",
+        KEYWORD_MERGE,
         "METHOD",
         "MINUTE",
         "MOD",
@@ -206,8 +226,8 @@ public class SQLConstants {
         "NO",
         "NONE",
         "NORMALIZE",
-        "NOT",
-        "NULL",
+        KEYWORD_NOT,
+        KEYWORD_NULL,
         "NULLIF",
         "NUMERIC",
         "OF",
@@ -228,7 +248,7 @@ public class SQLConstants {
         "PRECISION",
         "PREPARE",
         "PRIMARY",
-        "PROCEDURE",
+        KEYWORD_PROCEDURE,
         "RANGE",
         "RANK",
         "READS",
@@ -244,7 +264,7 @@ public class SQLConstants {
         "RETURNS",
         "REVOKE",
         "RIGHT",
-        "ROLLBACK",
+        KEYWORD_ROLLBACK,
         "ROLLUP",
         "ROW",
         "ROW_NUMBER",
@@ -269,8 +289,8 @@ public class SQLConstants {
         "SQLWARNING",
         "START",
         "STATIC",
-        "STDDEV_POP",
-        "STDDEV_SAMP",
+//        "STDDEV_POP",
+//        "STDDEV_SAMP",
         "SUBMULTISET",
         "SYMMETRIC",
         "SYSTEM",
@@ -291,18 +311,18 @@ public class SQLConstants {
         "UNIQUE",
         "UNKNOWN",
         "UNNEST",
-        "UPDATE",
+        KEYWORD_UPDATE,
         "USER",
         "USING",
         //"VALUE", // too common for column names
         "VALUES",
-        "VAR_POP",
-        "VAR_SAMP",
+//        "VAR_POP",
+//        "VAR_SAMP",
         //"VARCHAR",
         "VARYING",
         "WHEN",
         "WHENEVER",
-        "WHERE",
+        KEYWORD_WHERE,
         "WIDTH_BUCKET",
         "WINDOW",
         "WITH",
@@ -633,4 +653,5 @@ public class SQLConstants {
     public static final String KEYWORD_PATTERN_CHARS = "\\*\\";
     public static final String DEFAULT_CONTROL_COMMAND_PREFIX = "@";
 
+    public final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
 }

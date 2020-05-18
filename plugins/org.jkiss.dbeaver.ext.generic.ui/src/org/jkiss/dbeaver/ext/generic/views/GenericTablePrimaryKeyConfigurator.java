@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 /**
  * Generic table primary key configurator
  */
-public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator<GenericPrimaryKey> {
+public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator<GenericUniqueKey> {
 
 
     @Override
-    public GenericPrimaryKey configureObject(DBRProgressMonitor monitor, Object table, GenericPrimaryKey primaryKey) {
-        return new UITask<GenericPrimaryKey>() {
+    public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey) {
+        return new UITask<GenericUniqueKey>() {
             @Override
-            protected GenericPrimaryKey runTask() {
+            protected GenericUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
                     primaryKey,

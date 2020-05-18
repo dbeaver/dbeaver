@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionService;
@@ -42,7 +43,7 @@ public class ActiveWizardDialog extends WizardDialog
     private boolean adaptContainerSizeToPages = false;
 
     private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
-    private String cancelButtonLabel = IDialogConstants.CLOSE_LABEL;
+    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
@@ -71,6 +72,18 @@ public class ActiveWizardDialog extends WizardDialog
 //                    ((ActiveWizardPage) event.getTargetPage()).activatePage();
 //                }
         });
+    }
+
+    @Override
+    public int getShellStyle() {
+        if (isModalWizard() || UIUtils.isInDialog()) {
+            return super.getShellStyle();
+        }
+        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+    }
+
+    protected boolean isModalWizard() {
+        return true;
     }
 
     @Override

@@ -3,24 +3,20 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,35 +43,7 @@ public class ExasolForeignKeyManager
             "FK"
         );
         foreignKey.setName(getNewConstraintName(monitor, foreignKey));
-
-        return new UITask<ExasolTableForeignKey>() {
-            @Override
-            protected ExasolTableForeignKey runTask() {
-                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog("Create Foreign Key", foreignKey);
-
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                List<ExasolTableKeyColumn> columns = new ArrayList<ExasolTableKeyColumn>();
-                int cnt = 0;
-                for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
-                    try {
-                        columns.add(new ExasolTableKeyColumn(foreignKey, table.getAttribute(monitor, column.getOwnColumn().getName()), ++cnt));
-                    } catch (DBException e) {
-                        log.error("Could not get Attribute Information from Table");
-                        return null;
-                    }
-                }
-
-                foreignKey.setName(editPage.getName());
-                foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
-                foreignKey.setEnabled(editPage.isEnabled());
-                foreignKey.setColumns(columns);
-
-                return foreignKey;
-            }
-        }.execute();
+        return foreignKey;
     }
 
     @Override
@@ -86,7 +54,7 @@ public class ExasolForeignKeyManager
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         final ExasolTableForeignKey key = command.getObject();
 
@@ -102,7 +70,7 @@ public class ExasolForeignKeyManager
 
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options) {
         final ExasolTableForeignKey key = command.getObject();
 
@@ -117,7 +85,7 @@ public class ExasolForeignKeyManager
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options) {
         final ExasolTableForeignKey constraint = command.getObject();
 

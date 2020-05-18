@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,14 +97,13 @@ public class AdvancedListViewer extends StructuredViewer {
 
         IStructuredContentProvider contentProvider = (IStructuredContentProvider) getContentProvider();
         ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
-        IToolTipProvider toolTipProvider = labelProvider instanceof IToolTipProvider ? (IToolTipProvider) labelProvider : null;
+        //IToolTipProvider toolTipProvider = labelProvider instanceof IToolTipProvider ? (IToolTipProvider) labelProvider : null;
         Object[] elements = contentProvider.getElements(element);
         for (ViewerFilter filter : getFilters()) {
             elements = filter.filter(this, (Object)null, elements);
         }
         for (Object item : elements) {
-            AdvancedListItem listItem = new AdvancedListItem(control, item, labelProvider);
-            listItem.setData(item);
+            new AdvancedListItem(control, item, labelProvider);
         }
 
         if (true) {

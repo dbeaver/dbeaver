@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,8 +150,7 @@ class DiagramCreateWizardPage extends WizardPage {
 			return Collections.emptyList();
 		}
         List<DBNNode> nodes = new ArrayList<>();
-        CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
-        for (Object obj : viewer.getCheckedElements()) {
+        for (Object obj : contentTree.getCheckboxViewer().getCheckedElements()) {
             DBNNode node = (DBNNode)obj;
             nodes.add(node);
         }

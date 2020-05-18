@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,12 +76,12 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                         figure.paint(graphics);
                         ImageLoader imageLoader = new ImageLoader();
                         imageLoader.data = new ImageData[1];
-                        if (imageType != SWT.IMAGE_JPEG) {
+                        if (imageType == SWT.IMAGE_GIF) {
                             // Convert to 8bit color
                             imageLoader.data[0] = ImageUtils.makeWebImageData(image);
                         } else {
-                            // Use maximum colors for JPEG
-                            imageLoader.data[0] = image.getImageData();
+                            // Use maximum colors for JPEG, PNG
+                            imageLoader.data[0] = ImageUtils.getImageDataAtCurrentZoom(image);
                         }
                         imageLoader.save(fos, imageType);
                     } finally {

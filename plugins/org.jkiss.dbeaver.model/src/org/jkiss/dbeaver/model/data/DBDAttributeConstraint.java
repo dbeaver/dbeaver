@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
+
 /**
  * Attribute constraint
  */
 public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
+
+//    public static final String FEATURE_HIDDEN = "hidden";
 
     @Nullable
     private DBSAttributeBase attribute;
@@ -135,6 +139,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
     }
 
     public boolean equalVisibility(DBDAttributeConstraint constraint) {
-        return isVisible() == constraint.isVisible() && getVisualPosition() == constraint.getVisualPosition();
+        return isVisible() == constraint.isVisible() && getVisualPosition() == constraint.getVisualPosition() &&
+            Arrays.equals(getOptions(), constraint.getOptions());
     }
 }

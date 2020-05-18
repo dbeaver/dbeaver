@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ import java.util.Collections;
 public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectEditor<OBJECT_TYPE>
     implements IResultSetContainer,IResultSetListener,IEntityDataEditor
 {
+    public static final String CONTENT_TYPE_DATA_ID = "org.jkiss.dbeaver.data";
+    public static final String CONTENT_TYPE_DATA_EXT = "databasedata";
+
     private static final Log log = Log.getLog(AbstractDataEditor.class);
 
     private ResultSetViewer resultSetView;

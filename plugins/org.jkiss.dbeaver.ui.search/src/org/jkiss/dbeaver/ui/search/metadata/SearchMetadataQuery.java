@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,14 +48,17 @@ public class SearchMetadataQuery implements ISearchQuery {
     private static final Log log = Log.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
+    private final DBCExecutionContext executionContext;
     private final SearchMetadataParams params;
     private SearchMetadataResult searchResult;
 
     private SearchMetadataQuery(
         DBSStructureAssistant structureAssistant,
+        DBCExecutionContext executionContext,
         SearchMetadataParams params)
     {
         this.structureAssistant = structureAssistant;
+        this.executionContext = executionContext;
         this.params = params;
     }
 
@@ -106,12 +110,12 @@ public class SearchMetadataQuery implements ISearchQuery {
             DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
                 localMonitor,
+                executionContext,
                 params.getParentObject(),
-                objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
+                objectTypes.toArray(new DBSObjectType[0]),
                 objectNameMask,
                 params.isCaseSensitive(),
-                true,
-                params.getMaxResults());
+                true, params.getMaxResults());
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
@@ -133,6 +137,7 @@ public class SearchMetadataQuery implements ISearchQuery {
 
             return Status.OK_STATUS;
         } catch (DBException e) {
+            log.debug(e);
             return GeneralUtils.makeExceptionStatus(e);
         }
     }
@@ -146,7 +151,7 @@ public class SearchMetadataQuery implements ISearchQuery {
         if (dataSource == null || assistant == null) {
             throw new DBException("Can't obtain database structure assistance from [" + dataSource + "]");
         }
-        return new SearchMetadataQuery(assistant, params);
+        return new SearchMetadataQuery(assistant, DBUtils.getDefaultContext(dataSource, true), params);
     }
 
 

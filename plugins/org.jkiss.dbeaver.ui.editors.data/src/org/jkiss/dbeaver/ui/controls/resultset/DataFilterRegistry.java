@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -79,7 +80,9 @@ class DataFilterRegistry {
 
         SavedDataFilter(DBPDataSource dataSource, DBDDataFilter dataFilter) {
             for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
-                constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
+                if (c.getAttribute() != null) {
+                    constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
+                }
             }
             this.anyConstraint = dataFilter.isAnyConstraint();
             this.order = dataFilter.getOrder();
@@ -92,6 +95,9 @@ class DataFilterRegistry {
             dataFilter.setWhere(this.where);
             for (Map.Entry<String, DBDAttributeConstraintBase> savedC : constraints.entrySet()) {
                 String attrName = savedC.getKey();
+                if (dataContainer.getDataSource() != null) {
+                    attrName = DBUtils.getUnQuotedIdentifier(dataContainer.getDataSource(), attrName);
+                }
                 DBDAttributeConstraint attrC = dataFilter.getConstraint(attrName);
                 if (attrC == null) {
                     if (dataContainer instanceof DBSEntity) {
@@ -166,7 +172,7 @@ class DataFilterRegistry {
     }
 
     private class ConfigSaver extends AbstractJob {
-        protected ConfigSaver() {
+        ConfigSaver() {
             super("Data filters config save");
         }
 
@@ -217,6 +223,15 @@ class DataFilterRegistry {
                                         xml.addText(GeneralUtils.serializeObject(attrC.getValue()));
                                         xml.endElement();
                                     }
+                                    Object[] options = attrC.getOptions();
+                                    if (!ArrayUtils.isEmpty(options)) {
+                                        for (int i = 0; i < options.length; i += 2) {
+                                            xml.startElement("option");
+                                            xml.addAttribute("name", CommonUtils.toString(options[i]));
+                                            xml.addText(GeneralUtils.serializeObject(options[i + 1]));
+                                            xml.endElement();
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -235,6 +250,7 @@ class DataFilterRegistry {
         private SavedDataFilter curSavedDataFilter = null;
         private DBDAttributeConstraintBase curSavedConstraint = null;
         private boolean isInValue = false;
+        private String curOptionName = null;
 
         private DataFilterParser() {
         }
@@ -276,6 +292,12 @@ class DataFilterRegistry {
                     }
                     break;
                 }
+                case "option": {
+                    if (curSavedConstraint != null) {
+                        curOptionName = CommonUtils.toString(atts.getValue("name"));
+                    }
+                    break;
+                }
             }
         }
 
@@ -294,6 +316,10 @@ class DataFilterRegistry {
                     isInValue = false;
                     break;
                 }
+                case "option": {
+                    curOptionName = null;
+                    break;
+                }
             }
         }
 
@@ -301,6 +327,9 @@ class DataFilterRegistry {
         public void saxText(SAXReader reader, String data) throws XMLException {
             if (isInValue) {
                 curSavedConstraint.setValue(GeneralUtils.deserializeObject(data));
+            } else if (curOptionName != null) {
+                curSavedConstraint.setOption(curOptionName, GeneralUtils.deserializeObject(data));
+                curSavedConstraint.setOption(curOptionName, GeneralUtils.deserializeObject(data));
             }
         }
     }

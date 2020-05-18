@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,10 @@ public class QMUtils {
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
+        return isTransactionActive(executionContext, true);
+    }
+
+    public static boolean isTransactionActive(DBCExecutionContext executionContext, boolean checkQueries) {
         if (executionContext == null || application == null) {
             return false;
         } else {
@@ -87,12 +91,23 @@ public class QMUtils {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
-                    QMMStatementExecuteInfo execInfo = sp.getLastExecute();
-                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
-                        if (exec.isTransactional()) {
-                            return true;
+                    if (sp != null) {
+                        if (checkQueries) {
+                            // If transaction was enabled all statements are transactional
+                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null; ei = ei.getPrevious()) {
+                                if (ei.isTransactional()) {
+                                    return true;
+                                }
+                            }
+                        } else {
+                            return sp.getLastExecute() != null;
                         }
                     }
+//                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
+//                        if (exec.isTransactional()) {
+//                            return true;
+//                        }
+//                    }
                 }
             }
         }
@@ -134,7 +149,7 @@ public class QMUtils {
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
                         DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
-                        if (exec.isTransactional() && !exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
+                        if (!exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }
@@ -146,6 +161,9 @@ public class QMUtils {
             } else {
                 txnMode = false;
             }
+        }
+        if (txnStartTime <= 0) {
+            txnStartTime = System.currentTimeMillis();
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
     }

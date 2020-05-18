@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -32,7 +30,10 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -154,14 +155,22 @@ public class DriverUtils {
     public static List<DBPDriver> getRecentDrivers(List<DBPDriver> allDrivers, int total) {
         List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
 
-        Map<DBPDriver, Integer> connCountMap = new HashMap<>();
-        for (DBPDriver driver : allDrivers) {
-            connCountMap.put(driver, getUsedBy(driver, allDataSources).size());
-        }
+//        Map<DBPDriver, Integer> connCountMap = new HashMap<>();
+//        for (DBPDriver driver : allDrivers) {
+//            connCountMap.put(driver, getUsedBy(driver, allDataSources).size());
+//        }
 
         List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
+        sortDriversByRating(allDataSources, recentDrivers);
+        if (recentDrivers.size() > total) {
+            return recentDrivers.subList(0, total);
+        }
+        return recentDrivers;
+    }
+
+    public static void sortDriversByRating(List<DBPDataSourceContainer> allDataSources, List<DBPDriver> drivers) {
         try {
-            recentDrivers.sort((o1, o2) -> {
+            drivers.sort((o1, o2) -> {
                 int ub1 = getUsedBy(o1, allDataSources).size() + o1.getPromotedScore();
                 int ub2 = getUsedBy(o2, allDataSources).size() + o2.getPromotedScore();
                 if (ub1 == ub2) {
@@ -173,10 +182,6 @@ public class DriverUtils {
         } catch (Throwable e) {
             // ignore
         }
-        if (recentDrivers.size() > total) {
-            return recentDrivers.subList(0, total);
-        }
-        return recentDrivers;
     }
 
     public static List<DBPDriver> getAllDrivers() {

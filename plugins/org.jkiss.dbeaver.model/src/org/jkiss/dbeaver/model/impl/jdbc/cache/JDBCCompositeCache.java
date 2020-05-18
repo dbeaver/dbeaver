@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -50,6 +52,7 @@ public abstract class JDBCCompositeCache<
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
     extends AbstractObjectCache<OWNER, OBJECT>
+    implements DBSCompositeCache<PARENT, OBJECT>
 {
     protected static final Log log = Log.getLog(JDBCCompositeCache.class);
     private static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
@@ -128,6 +131,7 @@ public abstract class JDBCCompositeCache<
         return result;
     }
 
+    @Override
     public List<OBJECT> getCachedObjects(PARENT forParent)
     {
         if (forParent == null) {
@@ -180,15 +184,32 @@ public abstract class JDBCCompositeCache<
     public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
         super.removeObject(object, resetFullCache);
-        objectCache.remove(getParent(object));
+        synchronized (objectCache) {
+            PARENT parent = getParent(object);
+            if (resetFullCache) {
+                objectCache.remove(parent);
+            } else {
+                List<OBJECT> subCache = objectCache.get(parent);
+                if (subCache != null) {
+                    subCache.remove(object);
+                }
+            }
+        }
     }
 
+    @Override
     public void clearObjectCache(PARENT forParent)
     {
         if (forParent == null) {
             super.clearCache();
+            objectCache.clear();
         } else {
-            objectCache.remove(forParent);
+            List<OBJECT> removedObjects = objectCache.remove(forParent);
+            if (removedObjects != null) {
+                for (OBJECT obj : removedObjects) {
+                    super.removeObject(obj, false);
+                }
+            }
         }
     }
 
@@ -344,7 +365,11 @@ public abstract class JDBCCompositeCache<
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+            if (ex instanceof SQLFeatureNotSupportedException) {
+                log.debug("Error reading cache: feature not supported", ex);
+            } else {
+                throw new DBException(ex, dataSource);
+            }
         }
 
         if (monitor.isCanceled()) {

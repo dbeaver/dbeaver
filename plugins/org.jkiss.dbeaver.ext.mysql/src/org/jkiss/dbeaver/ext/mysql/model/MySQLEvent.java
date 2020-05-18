@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,8 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     private MySQLCharset characterSetClient;
     private MySQLCollation collationConnection;
     private MySQLCollation databaseCollation;
+
+    private transient String eventFullDefinitionText;
 
     public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
         throws SQLException {
@@ -246,10 +248,16 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (eventFullDefinitionText != null) {
+            return eventFullDefinitionText;
+        }
         DateFormat dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n")
-            .append("ON SCHEDULE EVERY ").append(intervalValue = "1").append(" ").append(intervalField = "DAY").append("\n");
+        sql.append(CommonUtils.getOption(options, OPTION_OBJECT_ALTER) ? "ALTER" : "CREATE");
+        sql.append(" EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n");
+        if (intervalValue != null && intervalField != null) {
+            sql.append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
+        }
         if (starts != null) {
             sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
         }
@@ -271,9 +279,13 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         return sql.toString();
     }
 
+    public void setEventDefinition(String eventDefinition) {
+        this.eventDefinition = eventDefinition;
+    }
+
     @Override
     public void setObjectDefinitionText(String sourceText) {
-        eventDefinition = sourceText;
+        eventFullDefinitionText = sourceText;
     }
 
     public MySQLCatalog getCatalog() {

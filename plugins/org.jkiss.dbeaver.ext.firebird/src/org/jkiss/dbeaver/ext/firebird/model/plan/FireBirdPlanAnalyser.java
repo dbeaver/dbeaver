@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
@@ -28,6 +24,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Build firebird plan tree based on textual plan information returned by getPlan.
@@ -62,7 +62,7 @@ public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 				dbStat.close();
 			}
 		} catch (SQLException e) {
-			throw new DBCException(e, session.getDataSource());
+			throw new DBCException(e, session.getExecutionContext());
 		}
 	}
 	

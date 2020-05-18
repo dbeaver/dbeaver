@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -49,6 +50,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
+    private Button autoSaveActiveSchema;
 
     private Button csFoldingEnabled;
     private Button csMarkOccurrencesUnderCursor;
@@ -73,12 +75,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
     
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) ||
 
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
             store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
 
-            store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR) ||
-            store.contains(SQLPreferenceConstants.RESULT_SET_ORIENTATION)
+            store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR)
         ;
     }
 
@@ -105,7 +107,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
-            saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false);
+            saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
+            autoSaveActiveSchema = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_active_schema, false);
         }
 
         // Folding
@@ -152,13 +155,15 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
+            autoSaveActiveSchema.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA));
 
             csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
             csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
             csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
 
             closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
-            SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(store.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
+            SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(
+                DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
         } catch (Exception e) {
             log.warn(e);
@@ -184,7 +189,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             String orientationLabel = resultsOrientationCombo.getText();
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
                 if (orientationLabel.equals(orientation.getLabel())) {
-                    store.setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, orientation.name());
                     break;
                 }
             }
@@ -209,7 +214,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
-        store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
     }
 
     @Override

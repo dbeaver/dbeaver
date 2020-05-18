@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -49,9 +48,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ProjectMetadata implements DBPProject {
+
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
+    public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
+    public static final String PROP_PROJECT_ID = "id";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -64,18 +66,24 @@ public class ProjectMetadata implements DBPProject {
         .serializeNulls()
         .create();
 
+    private final AbstractJob metadataSyncJob;
+
     private final DBPWorkspace workspace;
     private final IProject project;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
+    private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
+    private DBASecureStorage secureStorage;
+    private UUID projectID;
     private final Object metadataSync = new Object();
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
         this.workspace = workspace;
         this.project = project;
+        this.metadataSyncJob = new ProjectSyncJob();
     }
 
     @NotNull
@@ -88,6 +96,20 @@ public class ProjectMetadata implements DBPProject {
     @Override
     public String getName() {
         return project.getName();
+    }
+
+    @Override
+    public UUID getProjectID() {
+        if (projectID == null) {
+            String idStr = CommonUtils.toString(this.getProjectProperty(PROP_PROJECT_ID), null);
+            if (CommonUtils.isEmpty(idStr)) {
+                projectID = UUID.randomUUID();
+                this.setProjectProperty(PROP_PROJECT_ID, projectID.toString());
+            } else {
+                projectID = UUID.fromString(idStr);
+            }
+        }
+        return projectID;
     }
 
     @NotNull
@@ -187,10 +209,73 @@ public class ProjectMetadata implements DBPProject {
         return taskManager;
     }
 
+    ////////////////////////////////////////////////////////
+    // Secure storage
+
     @NotNull
     @Override
-    public ISecurePreferences getSecurePreferences() {
-        return SecurePreferencesFactory.getDefault().node("dbeaver").node("projects").node(getName());
+    public DBASecureStorage getSecureStorage() {
+        synchronized (metadataSync) {
+            if (this.secureStorage == null) {
+                this.secureStorage = workspace.getPlatform().getApplication().getProjectSecureStorage(this);
+            }
+        }
+        return secureStorage;
+    }
+
+    ////////////////////////////////////////////////////////
+    // Properties
+
+    @Override
+    public Object getProjectProperty(String propName) {
+        synchronized (this) {
+            loadProperties();
+            return properties.get(propName);
+        }
+    }
+
+    @Override
+    public void setProjectProperty(String propName, Object propValue) {
+        synchronized (this) {
+            loadProperties();
+            if (propValue == null) {
+                properties.remove(propName);
+            } else {
+                properties.put(propName, propValue);
+            }
+            saveProperties();
+        }
+    }
+
+    private void loadProperties() {
+        if (properties != null) {
+            return;
+        }
+
+        synchronized (metadataSync) {
+            File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
+            if (settingsFile.exists() && settingsFile.length() > 0) {
+                // Parse metadata
+                try (Reader settingsReader = new InputStreamReader(new FileInputStream(settingsFile), StandardCharsets.UTF_8)) {
+                    properties = JSONUtils.parseMap(METADATA_GSON, settingsReader);
+                } catch (Throwable e) {
+                    log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.getAbsolutePath(), e);
+                }
+            }
+            if (properties == null) {
+                properties = new LinkedHashMap<>();
+            }
+        }
+    }
+
+    private void saveProperties() {
+        File settingsFile = new File(getMetadataPath(), SETTINGS_STORAGE_FILE);
+        String settingsString = METADATA_GSON.toJson(properties);
+        try (Writer settingsWriter = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
+            settingsWriter.write(settingsString);
+        } catch (Throwable e) {
+            log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.getAbsolutePath(), e);
+        }
     }
 
     @Override
@@ -206,14 +291,43 @@ public class ProjectMetadata implements DBPProject {
     }
 
     @Override
+    public Map<String, Object> getResourceProperties(IResource resource) {
+        loadMetadata();
+        synchronized (metadataSync) {
+            return resourceProperties.get(resource.getProjectRelativePath().toString());
+        }
+    }
+
+    @Override
+    public Map<String, Map<String, Object>> getResourceProperties() {
+        loadMetadata();
+        synchronized (metadataSync) {
+            return new LinkedHashMap<>(resourceProperties);
+        }
+    }
+
+    @Override
     public void setResourceProperty(IResource resource, String propName, Object propValue) {
         loadMetadata();
         synchronized (metadataSync) {
-            Map<String, Object> resProps = resourceProperties.computeIfAbsent(resource.getProjectRelativePath().toString(), s -> new LinkedHashMap<>());
+            String filePath = resource.getProjectRelativePath().toString();
+            Map<String, Object> resProps = resourceProperties.get(filePath);
+            if (resProps == null) {
+                if (propValue == null) {
+                    // No props + no new value - ignore
+                    return;
+                }
+                resProps = new LinkedHashMap<>();
+                resourceProperties.put(filePath, resProps);
+            }
             if (propValue == null) {
                 if (resProps.remove(propName) == null) {
-                    // No changes
-                    return;
+                    if (resProps.isEmpty()) {
+                        resourceProperties.remove(filePath);
+                    } else {
+                        // No changes
+                        return;
+                    }
                 }
             } else {
                 Object oldValue = resProps.put(propName, propValue);
@@ -279,7 +393,9 @@ public class ProjectMetadata implements DBPProject {
                                         resProperties.put(propName, propValue);
                                     }
                                     jsonReader.endObject();
-                                    mdCache.put(resourceName, resProperties);
+                                    if (!resProperties.isEmpty()) {
+                                        mdCache.put(resourceName, resProperties);
+                                    }
                                 }
                                 jsonReader.endObject();
                             }
@@ -366,50 +482,7 @@ public class ProjectMetadata implements DBPProject {
 
     private void flushMetadata() {
         synchronized (metadataSync) {
-            File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
-            if (CommonUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
-                // Nothing to save and metadata file doesn't exist
-                return;
-            }
-            try {
-                ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
-
-                try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
-                    try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
-                        jsonWriter.beginObject();
-
-                        jsonWriter.name("resources");
-                        jsonWriter.beginObject();
-                        for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
-                            jsonWriter.name(resEntry.getKey());
-                            jsonWriter.beginObject();
-                            Map<String, Object> resProps = resEntry.getValue();
-                            for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
-                                jsonWriter.name(propEntry.getKey());
-                                Object value = propEntry.getValue();
-                                if (value == null) {
-                                    jsonWriter.nullValue();
-                                } else if (value instanceof Number) {
-                                    jsonWriter.value((Number)value);
-                                } else if (value instanceof Boolean) {
-                                    jsonWriter.value((Boolean)value);
-                                } else {
-                                    jsonWriter.value(CommonUtils.toString(value));
-                                }
-                            }
-                            jsonWriter.endObject();
-                        }
-                        jsonWriter.endObject();
-
-                        jsonWriter.endObject();
-                        jsonWriter.flush();
-                    }
-                }
-
-            } catch (IOException e) {
-                log.error("Error flushing project metadata", e);
-            }
-
+            metadataSyncJob.schedule(100);
         }
     }
 
@@ -419,6 +492,7 @@ public class ProjectMetadata implements DBPProject {
                 resourceProperties.remove(path.toString());
             }
         }
+        flushMetadata();
     }
 
     void updateResourceCache(IPath oldPath, IPath newPath) {
@@ -430,10 +504,72 @@ public class ProjectMetadata implements DBPProject {
                 }
             }
         }
+        flushMetadata();
     }
 
     @Override
     public String toString() {
         return getName();
+    }
+
+    private class ProjectSyncJob extends AbstractJob {
+        ProjectSyncJob() {
+            super("Project metadata sync");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
+
+            ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
+
+            synchronized (metadataSync) {
+                File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);
+                if (CommonUtils.isEmpty(resourceProperties) && !mdFile.exists()) {
+                    // Nothing to save and metadata file doesn't exist
+                    return Status.OK_STATUS;
+                }
+                try {
+                    if (!CommonUtils.isEmpty(resourceProperties)) {
+                        try (Writer mdWriter = new OutputStreamWriter(new FileOutputStream(mdFile), StandardCharsets.UTF_8)) {
+                            try (JsonWriter jsonWriter = METADATA_GSON.newJsonWriter(mdWriter)) {
+                                jsonWriter.beginObject();
+
+                                jsonWriter.name("resources");
+                                jsonWriter.beginObject();
+                                for (Map.Entry<String, Map<String, Object>> resEntry : resourceProperties.entrySet()) {
+                                    jsonWriter.name(resEntry.getKey());
+                                    jsonWriter.beginObject();
+                                    Map<String, Object> resProps = resEntry.getValue();
+                                    for (Map.Entry<String, Object> propEntry : resProps.entrySet()) {
+                                        jsonWriter.name(propEntry.getKey());
+                                        Object value = propEntry.getValue();
+                                        if (value == null) {
+                                            jsonWriter.nullValue();
+                                        } else if (value instanceof Number) {
+                                            jsonWriter.value((Number) value);
+                                        } else if (value instanceof Boolean) {
+                                            jsonWriter.value((Boolean) value);
+                                        } else {
+                                            jsonWriter.value(CommonUtils.toString(value));
+                                        }
+                                    }
+                                    jsonWriter.endObject();
+                                }
+                                jsonWriter.endObject();
+
+                                jsonWriter.endObject();
+                                jsonWriter.flush();
+                            }
+                        }
+                    }
+
+                } catch (IOException e) {
+                    log.error("Error flushing project metadata", e);
+                }
+            }
+
+            return Status.OK_STATUS;
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -53,7 +54,7 @@ public class SQLContextInformer
 {
     private static final Log log = Log.getLog(SQLContextInformer.class);
 
-    private static final Map<DBPDataSourceContainer, Map<String, ObjectLookupCache>> LINKS_CACHE = new HashMap<>();
+    private static final Map<String, Map<String, ObjectLookupCache>> LINKS_CACHE = new HashMap<>();
 
     private final SQLEditorBase editor;
     private SQLSyntaxManager syntaxManager;
@@ -76,6 +77,17 @@ public class SQLContextInformer
 
     public SQLEditorBase getEditor() {
         return editor;
+    }
+
+    public void refresh(SQLSyntaxManager syntaxManager) {
+        this.syntaxManager = syntaxManager;
+        DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource != null) {
+            synchronized (LINKS_CACHE) {
+                LINKS_CACHE.remove(dataSource.getContainer().getId());
+            }
+        }
+
     }
 
     public SQLIdentifierDetector.WordRegion getWordRegion() {
@@ -168,7 +180,6 @@ public class SQLContextInformer
             // Skip keywords
             return;
         }
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
 
         final Map<String, ObjectLookupCache> contextCache = getLinksCache();
         if (contextCache == null) {
@@ -179,6 +190,8 @@ public class SQLContextInformer
             // Start new word finder job
             tlc = new ObjectLookupCache();
             contextCache.put(fullName, tlc);
+
+            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
             TablesFinderJob job = new TablesFinderJob(executionContext, structureAssistant, containerNames, tableName, caseSensitive, tlc);
             job.schedule();
         }
@@ -211,10 +224,10 @@ public class SQLContextInformer
         }
         final DBPDataSourceContainer container = dataSource.getContainer();
         synchronized (LINKS_CACHE) {
-            Map<String, ObjectLookupCache> cacheMap = LINKS_CACHE.get(container);
+            Map<String, ObjectLookupCache> cacheMap = LINKS_CACHE.get(container.getId());
             if (cacheMap == null) {
                 cacheMap = new HashMap<>();
-                LINKS_CACHE.put(container, cacheMap);
+                LINKS_CACHE.put(container.getId(), cacheMap);
 
                 DBPDataSourceRegistry registry = container.getRegistry();
 
@@ -224,7 +237,7 @@ public class SQLContextInformer
                     public void handleDataSourceEvent(DBPEvent event) {
                         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
                             synchronized (LINKS_CACHE) {
-                                LINKS_CACHE.remove(container);
+                                LINKS_CACHE.remove(container.getId());
                                 registry.removeDataSourceListener(this);
                             }
                         }
@@ -268,26 +281,31 @@ public class SQLContextInformer
                 if (!ArrayUtils.isEmpty(containerNames)) {
                     DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
                     if (dsContainer != null) {
+                        DBCExecutionContextDefaults contextDefaults = getExecutionContext().getContextDefaults();
+
                         DBSObject childContainer = dsContainer.getChild(monitor, containerNames[0]);
+                        if (childContainer == null) {
+                             if (contextDefaults != null) {
+                                 if (contextDefaults.getDefaultCatalog() != null) {
+                                     childContainer = contextDefaults.getDefaultCatalog().getChild(monitor, containerNames[0]);
+                                 }
+                             }
+                        }
                         if (childContainer instanceof DBSObjectContainer) {
                             container = (DBSObjectContainer) childContainer;
                         } else {
                             // Check in selected object
-                            DBSObjectSelector dsSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
-                            if (dsSelector != null) {
-                                DBSObject curCatalog = dsSelector.getDefaultObject();
-                                if (curCatalog instanceof DBSObjectContainer) {
-                                    childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerNames[0]);
-                                }
-                            }
                             if (childContainer == null && structureAssistant != null) {
                                 // Container is not direct child of schema/catalog. Let's try struct assistant
-                                final List<DBSObjectReference> objReferences = structureAssistant.findObjectsByMask(monitor, null, structureAssistant.getAutoCompleteObjectTypes(), containerNames[0], false, true, 1);
-                                if (objReferences.size() == 1) {
-                                    childContainer = objReferences.get(0).resolveObject(monitor);
-                                }
-                                if (childContainer == null) {
-                                    return Status.CANCEL_STATUS;
+                                DBCExecutionContext executionContext = editor.getExecutionContext();
+                                if (executionContext != null) {
+                                    final List<DBSObjectReference> objReferences = structureAssistant.findObjectsByMask(monitor, executionContext, null, structureAssistant.getAutoCompleteObjectTypes(), containerNames[0], false, true, 1);
+                                    if (objReferences.size() == 1) {
+                                        childContainer = objReferences.get(0).resolveObject(monitor);
+                                    }
+                                    if (childContainer == null) {
+                                        return Status.CANCEL_STATUS;
+                                    }
                                 }
                             }
                             if (childContainer instanceof DBSObjectContainer) {
@@ -332,9 +350,12 @@ public class SQLContextInformer
                     cache.references.add(new DirectObjectReference(container, null, targetObject));
                 } else if (structureAssistant != null) {
                     DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                    Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, objectName, caseSensitive, false, 10);
-                    if (!CommonUtils.isEmpty(objects)) {
-                        cache.references.addAll(objects);
+                    DBCExecutionContext executionContext = editor.getExecutionContext();
+                    if (executionContext != null) {
+                        Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, executionContext, container, objectTypes, objectName, caseSensitive, false, 10);
+                        if (!CommonUtils.isEmpty(objects)) {
+                            cache.references.addAll(objects);
+                        }
                     }
                 }
             } catch (DBException e) {

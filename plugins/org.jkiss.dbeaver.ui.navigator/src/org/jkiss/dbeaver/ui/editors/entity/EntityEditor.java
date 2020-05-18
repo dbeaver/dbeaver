@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,19 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
@@ -63,14 +68,15 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * EntityEditor
@@ -105,7 +111,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private boolean hasPropertiesEditor;
     private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
     private volatile boolean saveInProgress = false;
+
     private Menu breadcrumbsMenu;
+    private ISelectionProvider savedPartSelectionProvider = null;
 
     public EntityEditor()
     {
@@ -293,9 +301,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         // Run post-save commands (e.g. compile)
+        Map<String, Object> context = new LinkedHashMap<>();
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof IDatabasePostSaveProcessor) {
-                ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+                ((IDatabasePostSaveProcessor) editor).runPostSaveCommands(context);
             }
             if (monitor.isCanceled()) {
                 return;
@@ -473,17 +482,18 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 for (DBECommand command : commands) {
                     monitor.subTask(command.getTitle());
                     try {
-                        command.validateCommand(validateOptions);
+                        command.validateCommand(monitor, validateOptions);
                     } catch (final DBException e) {
                         throw new InvocationTargetException(e);
                     }
                     Map<String, Object> options = new HashMap<>();
                     options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
 
+                    DBPDataSource dataSource = getDatabaseObject().getDataSource();
                     try {
-                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, getExecutionContext(), options);
                         script.append(SQLUtils.generateScript(
-                            commandContext.getExecutionContext().getDataSource(),
+                            dataSource,
                             persistActions,
                             false));
                     } catch (DBException e) {
@@ -521,8 +531,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 addPage(new ProgressEditorPart(this), editorInput);
                 setPageText(0, "Initializing ...");
-                setPageImage(0, DBeaverIcons.getImage(UIIcon.REFRESH));
+                Image tabImage = DBeaverIcons.getImage(UIIcon.REFRESH);
+                setPageImage(0, tabImage);
                 setActivePage(0);
+                ((CTabFolder)getContainer()).setTabHeight(tabImage.getBounds().height + 2);
             } catch (PartInitException e) {
                 log.error(e);
             }
@@ -543,7 +555,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override
-            public void onCommandChange(DBECommand command)
+            public void onCommandChange(DBECommand<?> command)
             {
                 UIUtils.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
             }
@@ -616,7 +628,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 defFolderId = editorDefaults.folderId;
             }
             if (defFolderId != null) {
-                ((ITabbedFolderContainer)activeEditor).switchFolder(defFolderId);
+                String folderId = defFolderId;
+                UIUtils.asyncExec(() -> {
+                    ((ITabbedFolderContainer)activeEditor).switchFolder(folderId);
+                });
             }
         }
 
@@ -828,12 +843,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws InstantiationException, IllegalAccessException
-    {
+    private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws Exception {
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         IEditorActionBarContributor contributor = contributorManager.getContributor(contributorClass);
         if (contributor == null) {
-            contributor = contributorClass.newInstance();
+            contributor = contributorClass.getDeclaredConstructor().newInstance();
         }
         contributorManager.addContributor(contributor, editor);
         actionContributors.put(editor, contributor);
@@ -844,6 +858,18 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         if (getContainer() == null || getContainer().isDisposed() || isSaveInProgress()) {
             return;
+        }
+
+        if (force && isDirty()) {
+            if (ConfirmationDialog.showConfirmDialog(
+                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                null,
+                NavigatorPreferences.CONFIRM_ENTITY_REVERT,
+                ConfirmationDialog.QUESTION,
+                getTitle()) != IDialogConstants.YES_ID)
+            {
+                return;
+            }
         }
 
         if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
@@ -916,10 +942,22 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     protected Control createTopRightControl(Composite composite) {
+        Composite bcComposite = new Composite(composite, SWT.NONE);
+        bcComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        bcComposite.setLayout(new FillLayout());
+
         // Path
-        ToolBar breadcrumbsPanel = new ToolBar(composite, SWT.HORIZONTAL | SWT.RIGHT);
-        breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        DBNDatabaseNode[] selNode = new DBNDatabaseNode[1];
+        ToolBar breadcrumbsPanel = new ToolBar(bcComposite, SWT.HORIZONTAL | SWT.RIGHT);
+        //breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         breadcrumbsPanel.setForeground(UIStyles.getDefaultTextForeground());
+        breadcrumbsPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                ToolItem onItem = breadcrumbsPanel.getItem(new Point(e.x, e.y));
+                selNode[0] = onItem == null ? null : (DBNDatabaseNode) onItem.getData();
+            }
+        });
 
         // Make base node path
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
@@ -934,8 +972,44 @@ public class EntityEditor extends MultiPageDatabaseEditor
             createBreadcrumbs(breadcrumbsPanel, databaseNode);
         }
 
+        {
+            // Add context menu
+            CustomSelectionProvider selProvider = new CustomSelectionProvider();
 
-        return breadcrumbsPanel;
+            MenuManager menuMgr = new MenuManager();
+            Menu menu = menuMgr.createContextMenu(breadcrumbsPanel);
+            menuMgr.addMenuListener(manager -> {
+                savedPartSelectionProvider = getActiveEditor().getSite().getSelectionProvider();
+                getActiveEditor().getSite().setSelectionProvider(selProvider);
+                selProvider.setSelection(selProvider.getSelection());
+
+                DBNDatabaseNode curNode = selNode[0];
+                if (curNode == null) {
+                    selProvider.setSelection(new StructuredSelection());
+                } else {
+                    selProvider.setSelection(new StructuredSelection(selNode));
+                }
+                NavigatorUtils.addStandardMenuItem(getSite(), manager, selProvider);
+            });
+            menuMgr.setRemoveAllWhenShown(true);
+            breadcrumbsPanel.setMenu(menu);
+
+            getSite().registerContextMenu("entityBreadcrumbsMenu", menuMgr, selProvider);
+
+            menu.addMenuListener(new MenuAdapter() {
+                @Override
+                public void menuHidden(MenuEvent e) {
+                    UIUtils.asyncExec(() -> {
+                        if (savedPartSelectionProvider != null) {
+                            getActiveEditor().getSite().setSelectionProvider(savedPartSelectionProvider);
+                            savedPartSelectionProvider = null;
+                        }
+                    });
+                }
+            });
+        }
+
+        return bcComposite;
         //return null;
     }
 
@@ -960,10 +1034,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         final ToolItem item = new ToolItem(infoGroup, databaseNode instanceof DBNDatabaseFolder ? SWT.DROP_DOWN : SWT.PUSH);
         item.setText(databaseNode.getNodeName());
         item.setImage(DBeaverIcons.getImage(databaseNode.getNodeIconDefault()));
+        item.setData(databaseNode);
 
         if (databaseNode == curNode) {
             item.setToolTipText(databaseNode.getNodeType());
-            item.setEnabled(false);
+            //item.setEnabled(false);
         } else {
             item.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -1040,10 +1115,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
 //                    allowSave);
                 result = serviceSQL.openSQLViewer(
                     getExecutionContext(),
-                    allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title,
+                    getDatabaseObject().getName() + " - " + (allowSave ? UINavigatorMessages.editors_entity_dialog_persist_title : UINavigatorMessages.editors_entity_dialog_preview_title),
                     UIIcon.SQL_PREVIEW,
                     script.toString(),
-                    allowSave);
+                    allowSave,
+                    true);
             } else {
                 result = IDialogConstants.OK_ID;
             }
@@ -1116,6 +1192,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             log.error(e);
             return false;
         }
+    }
+
+    @Override
+    public boolean isRelationalObject(DBSObject object) {
+        return true;
     }
 
 }

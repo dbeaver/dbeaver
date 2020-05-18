@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ public class DBCException extends DBException
 {
     private static final long serialVersionUID = 1L;
 
+    private DBCExecutionContext executionContext;
+
     public DBCException(String message)
     {
         super(message);
@@ -37,19 +39,56 @@ public class DBCException extends DBException
     public DBCException(String message, Throwable cause)
     {
         super(message, cause);
+        if (cause instanceof DBCException) {
+            this.executionContext = ((DBCException) cause).executionContext;
+        }
     }
 
-    public DBCException(Throwable cause, DBPDataSource dataSource)
+    public DBCException(Throwable cause, DBCExecutionContext executionContext)
     {
-        super(cause, dataSource);
+        super(cause, executionContext.getDataSource());
+        this.executionContext = executionContext;
     }
 
+    public DBCException(String message, Throwable cause, DBCExecutionContext executionContext) {
+        super(message, cause, executionContext.getDataSource());
+        this.executionContext = executionContext;
+    }
+
+    /**
+     * Deprecated. Use constructor with execution context
+     */
+    @Deprecated
     public DBCException(SQLException ex, DBPDataSource dataSource)
     {
         super(ex, dataSource);
     }
 
+    /**
+     * Deprecated. Use constructor with execution context
+     */
+    @Deprecated
+    public DBCException(Throwable cause, DBPDataSource dataSource)
+    {
+        super(cause, dataSource);
+        if (cause instanceof DBCException) {
+            this.executionContext = ((DBCException) cause).executionContext;
+        }
+    }
+
+    /**
+     * Deprecated. Use constructor with execution context
+     */
+    @Deprecated
     public DBCException(String message, Throwable cause, DBPDataSource dataSource) {
         super(message, cause, dataSource);
+        if (cause instanceof DBCException) {
+            this.executionContext = ((DBCException) cause).executionContext;
+        }
+    }
+
+
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 }

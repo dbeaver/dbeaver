@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericStructureAssistant extends JDBCStructureAssistant
+public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExecutionContext>
 {
     private final GenericDataSource dataSource;
 
@@ -76,11 +76,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
-    {
-        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
+    protected void findObjectsByMask(GenericExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException {
+        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : (globalSearch ? null : executionContext.getDefaultSchema());
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
-            schema == null ? null : schema.getCatalog();
+            schema == null ? (globalSearch ? null : executionContext.getDefaultCatalog()) : schema.getCatalog();
+
         final GenericDataSource dataSource = getDataSource();
         DBPIdentifierCase convertCase = caseSensitive ? dataSource.getSQLDialect().storesQuotedCase() : dataSource.getSQLDialect().storesUnquotedCase();
         objectNameMask = convertCase.transform(objectNameMask);

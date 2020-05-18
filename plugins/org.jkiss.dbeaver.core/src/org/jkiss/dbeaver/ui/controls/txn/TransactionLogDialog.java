@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.txn;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -24,10 +25,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.eclipse.osgi.util.NLS;
 
 public class TransactionLogDialog extends TransactionInfoDialog {
 
@@ -36,9 +35,11 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     private final DBCExecutionContext context;
     private final boolean showPreviousTxn;
 
-    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
+    private TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
     {
-        super(parentShell, activeEditor);
+        super(parentShell,
+            NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName()),
+            activeEditor);
         this.context = context;
         this.showPreviousTxn = showPreviousTxn;
     }
@@ -61,8 +62,6 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName())); //$NON-NLS-2$ //$NON-NLS-3$
-
         Composite composite = (Composite) super.createDialogArea(parent);
 
         super.createTransactionLogPanel(composite);
@@ -89,6 +88,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
                 CoreMessages.transaction_log_dialog_error_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
+            dialog.setModeless(true);
             dialog.open();
         }
     }

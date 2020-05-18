@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,13 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
     private String name;
-    private String[][] identifierQuoteString;
+    private String[][] identifierQuoteString = new String[][]{{SQLConstants.DEFAULT_IDENTIFIER_QUOTE, SQLConstants.DEFAULT_IDENTIFIER_QUOTE}};
     private SQLStateType sqlStateType;
     private String searchStringEscape;
-    private String catalogSeparator;
+    private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     private boolean isCatalogAtStart;
-    private int catalogUsage;
-    protected int schemaUsage;
+    private int catalogUsage = SQLDialect.USAGE_ALL;
+    protected int schemaUsage = SQLDialect.USAGE_ALL;
     protected String validCharacters = "";
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;

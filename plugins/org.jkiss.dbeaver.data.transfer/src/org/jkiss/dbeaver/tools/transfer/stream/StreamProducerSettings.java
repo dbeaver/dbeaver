@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 runnableContext.run(true, true, monitor -> {
                     try {
                         entity = (DBSEntity) DBUtils.findObjectById(monitor, project, entityId);
-
+                        if (entity == null) {
+                            log.error("Entity '" + entityId + "' not found");
+                            return;
+                        }
                         Map<String, Object> attrsConfig = JSONUtils.getObject(config, "attributes");
                         for (String sourceAttrName : attrsConfig.keySet()) {
                             Map<String, Object> attrMap = (Map<String, Object>) attrsConfig.get(sourceAttrName);
@@ -234,7 +237,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         }
 
         public String getSourceAttributeName() {
-            return sourceAttributeName;
+            return CommonUtils.isEmpty(sourceAttributeName) ? String.valueOf(sourceAttributeIndex) : sourceAttributeName;
         }
 
         public void setSourceAttributeName(String sourceAttributeName) {

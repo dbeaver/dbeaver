@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,18 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import java.util.Map;
+
 /**
  * IDatabasePostSaveProcessor
  */
 public interface IDatabasePostSaveProcessor {
 
-    void runPostSaveCommands();
+    /**
+     * Execute post-save commands.
+     * May run database object compile or other complex stuff.
+     * @param context can be used to save object state. Cleared on each save.
+     */
+    void runPostSaveCommands(Map<String, Object> context);
 
 }

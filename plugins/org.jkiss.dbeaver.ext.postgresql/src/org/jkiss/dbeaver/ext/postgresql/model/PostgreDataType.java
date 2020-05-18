@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -67,6 +68,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         "regtype",
         "regconfig",
         "regdictionary",
+        "regrole",
     };
 
     private final boolean alias;
@@ -95,6 +97,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private boolean isNotNull;
     private long baseTypeId;
     private int typeMod;
+    private String baseTypeName;
     private int arrayDim;
     private long collationId;
     private String defaultValue;
@@ -182,6 +185,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
+        this.baseTypeName = JDBCUtils.safeGetString(dbResult, "base_type_name");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
         if (getDataSource().getServerType().supportsCollations()) {
             this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
@@ -267,6 +271,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         } catch (SQLException e) {
             throw new DBException("Error reading enum values", e, getDataSource());
         }
+    }
+
+    public static String[] getOidTypes() {
+      return OID_TYPES;
     }
 
     @Override
@@ -435,11 +443,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return constraintText;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read domain constraint value")) {
+            try {
             this.constraintText = JDBCUtils.queryString(
                 session,
                 "SELECT pg_catalog.pg_get_constraintdef((SELECT oid FROM pg_catalog.pg_constraint WHERE contypid = " + getObjectId() + "), true)");
-        } catch (SQLException e) {
-            throw new DBCException("Error reading domain constraint value", e, getDataSource());
+            } catch (SQLException e) {
+                throw new DBCException("Error reading domain constraint value", e, session.getExecutionContext());
+            }
         }
         return this.constraintText;
     }
@@ -578,7 +588,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 break;
             }
             case d: {
-                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ").append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ");
+                if (baseTypeName != null) {
+                    sql.append(baseTypeName);
+                } else {
+                    sql.append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                }
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
                     sql.append("\n\tCOLLATE ").append(collation.getName());
@@ -701,7 +716,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
@@ -817,17 +832,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     case PostgreOid.BYTEA:
                         valueType = Types.BINARY;
                         break;
-                    case PostgreOid.CHAR_ARRAY:
-                        valueType = Types.CHAR;
-                        break;
                     case PostgreOid.BPCHAR:
                         valueType = Types.CHAR;
                         break;
                     case PostgreOid.XML:
                         valueType = Types.SQLXML;
                         break;
+                    case PostgreOid.NAME:
+                        valueType = Types.VARCHAR;
+                        break;
+                    case PostgreOid.OID:
+                    case PostgreOid.BOX:
+                        valueType = Types.OTHER;
+                        break;
                     default:
-                        if (typElem > 0) {
+                        if (typElem > 0 && typeLength < 0) {
                             valueType = Types.ARRAY;
                         } else {
                             valueType = Types.OTHER;
@@ -872,9 +891,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                     case N:
                         valueType = Types.NUMERIC;
+                        // Kind of a hack (#7459). Don't know any better way to distinguish floats from integers
+                        String outputF = JDBCUtils.safeGetString(dbResult, "typoutput");
                         if (name.equals("numeric")) {
                             valueType = Types.NUMERIC;
-                        } else if (name.startsWith("float")) {
+                        } else if (outputF != null && outputF.startsWith("float")) {
                             switch (typeLength) {
                                 case 4:
                                     valueType = Types.FLOAT;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,7 +103,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         columns = getSite().getAttributes();
         tableName = getTableName();
-        String outputEncoding = getSite().getOutputEncoding() == null || getSite().getOutputEncoding().length() == 0 ? "UTF-8" : getSite().getOutputEncoding(); 
+        String outputEncoding = getSite().getOutputEncoding();
         out.append("<?xml version=\"1.0\" encoding=\"").append(outputEncoding).append("\"?>").append(CommonUtils.getLineSeparator());
         out.append("<dataset>").append(CommonUtils.getLineSeparator());
     }

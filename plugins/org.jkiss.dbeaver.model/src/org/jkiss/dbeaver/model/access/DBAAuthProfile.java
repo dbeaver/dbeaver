@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,65 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Auth profile.
- * May be anything cloud-specific.
+ * Authentication properties.
  */
 public class DBAAuthProfile extends DBPConfigurationProfile {
 
+    private String authModelId;
+    private String userName;
+    private String userPassword;
+    private boolean savePassword;
+
+    public DBAAuthProfile() {
+    }
+
+    public DBAAuthProfile(DBAAuthProfile source) {
+        super(source);
+        this.authModelId = source.authModelId;
+        this.userName = source.userName;
+        this.userPassword = source.userPassword;
+        this.savePassword = source.savePassword;
+    }
+
+    public String getAuthModelId() {
+        return authModelId;
+    }
+
+    public void setAuthModelId(String authModelId) {
+        this.authModelId = authModelId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public boolean isSavePassword() {
+        return savePassword;
+    }
+
+    public void setSavePassword(boolean savePassword) {
+        this.savePassword = savePassword;
+    }
+
+    public DBPAuthModelDescriptor getAuthModel() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
+    }
 }

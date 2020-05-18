@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,19 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -55,10 +59,12 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.*;
 
 /**
  * Navigator utils
@@ -129,14 +135,12 @@ public class NavigatorUtils {
         return result;
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer)
-    {
-        addContextMenu(workbenchSite, viewer, null);
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer) {
+        addContextMenu(workbenchSite, viewer, viewer);
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
-    {
-        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, menuListener);
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, ISelectionProvider selectionProvider) {
+        MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
             ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
@@ -144,7 +148,11 @@ public class NavigatorUtils {
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener)
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener) {
+        return createContextMenu(workbenchSite, viewer, viewer, menuListener);
+    }
+
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final ISelectionProvider selectionProvider, final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -191,49 +199,7 @@ public class NavigatorUtils {
 
             manager.add(new Separator());
 
-            final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-            final DBNNode selectedNode = getSelectedNode(viewer);
-            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                // Add "Set active object" menu
-                if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
-                    final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                        DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
-                    if (activeContainer != null && activeContainer.supportsDefaultChange()) {
-                        DBSObject activeChild;
-                        activeChild = activeContainer.getDefaultObject();
-                        if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
-                            DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                            if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_ACTIVE));
-                            }
-                        }
-                    }
-                }
-
-                manager.add(new Separator());
-            }
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
-
-            manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
-            manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
-
-            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                manager.add(new Separator());
-                // Add properties button
-                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement()) && selection.getFirstElement() instanceof DBNResource) {
-                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
-                }
-
-                if (selectedNode.isPersisted()) {
-                    // Add refresh button
-                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
-                }
-            }
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            addStandardMenuItem(workbenchSite, manager, selectionProvider);
 
             if (menuListener != null) {
                 menuListener.menuAboutToShow(manager);
@@ -244,6 +210,65 @@ public class NavigatorUtils {
         control.setMenu(menu);
 
         return menuMgr;
+    }
+
+    public static void addStandardMenuItem(IWorkbenchSite workbenchSite, IMenuManager manager, ISelectionProvider selectionProvider) {
+        final ISelection selection = selectionProvider.getSelection();
+        final DBNNode selectedNode = getSelectedNode(selectionProvider);
+        if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+            addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
+        }
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
+
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
+        manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+
+        if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+            manager.add(new Separator());
+            // Add properties button
+            if (selection instanceof IStructuredSelection) {
+                Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+                if (PreferencesUtil.hasPropertiesContributors(firstElement) && firstElement instanceof DBNResource) {
+                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
+                }
+            }
+
+            if (selectedNode.isPersisted()) {
+                // Add refresh button
+                manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+            }
+        }
+        manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+    }
+
+    private static void addSetDefaultObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
+        // Add "Set active object" menu
+        boolean addSetActive = false;
+        if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
+            DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
+            DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
+            if (dataSource != null) {
+                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
+                DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                if (contextDefaults != null) {
+                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
+                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
+                    {
+                        addSetActive = true;
+                    }
+                }
+            }
+        }
+
+        if (addSetActive) {
+            manager.add(ActionUtils.makeCommandContribution(workbenchSite, NavigatorCommands.CMD_OBJECT_SET_DEFAULT));
+        }
+
+        manager.add(new Separator());
     }
 
     public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, IServiceLocator serviceLocator) {
@@ -536,26 +561,38 @@ public class NavigatorUtils {
         if (dsProvider.getDataSourceContainer() != ds) {
             dsProvider.setDataSourceContainer(ds);
         }
-        // Now check if we can change default object
-        DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
-        if (dbObject != null && dbObject.getParentObject() != null) {
-            DBPObject parentObject = DBUtils.getPublicObject(dbObject.getParentObject());
-            if (parentObject instanceof DBSObjectSelector) {
-                DBSObjectSelector selector = (DBSObjectSelector) parentObject;
-                DBSObject curDefaultObject = selector.getDefaultObject();
-                if (curDefaultObject != dbObject) {
-                    if (curDefaultObject != null && curDefaultObject.getClass() != dbObject.getClass()) {
-                        // Wrong object type
-                        return true;
-                    }
-                    try {
-                        selector.setDefaultObject(new VoidProgressMonitor(), dbObject);
-                    } catch (Throwable e) {
-                        log.debug(e);
+
+        if (activeEditor instanceof DBPContextProvider) {
+            // Now check if we can change default object
+            DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
+            if (dbObject instanceof DBSCatalog || dbObject instanceof DBSSchema) {
+                DBCExecutionContext navExecutionContext = DBUtils.getOrOpenDefaultContext(dbObject, false);
+                DBCExecutionContext editorExecutionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
+                if (navExecutionContext != null && editorExecutionContext != null) {
+                    DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();
+                    if (editorContextDefaults != null) {
+                        RuntimeUtils.runTask(monitor -> {
+                                try {
+                                    monitor.beginTask("Change default object", 1);
+                                    if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
+                                        monitor.subTask("Change default catalog");
+                                        editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
+                                    } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
+                                        monitor.subTask("Change default schema");
+                                        editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
+                                    }
+                                    monitor.worked(1);
+                                    monitor.done();
+                                } catch (DBCException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            }, "Set active object",
+                            dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
                     }
                 }
             }
         }
+
         return true;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -38,7 +39,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerGenericDataSource extends GenericDataSource {
+public class SQLServerGenericDataSource extends GenericDataSource implements DBAUserCredentialsProvider {
 
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -102,20 +103,20 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     // Windows authentication
 
     @Override
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
-            return super.getConnectionUserName(connectionInfo);
+            return connectionInfo.getUserName();
         }
     }
 
     @Override
-    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
         if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
-            return super.getConnectionUserPassword(connectionInfo);
+            return connectionInfo.getUserPassword();
         }
     }
 

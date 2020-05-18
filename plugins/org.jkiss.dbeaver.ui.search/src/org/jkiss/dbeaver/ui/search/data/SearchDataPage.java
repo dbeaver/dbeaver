@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.search.internal.UISearchMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class SearchDataPage extends AbstractSearchPage {
 
@@ -108,19 +108,20 @@ public class SearchDataPage extends AbstractSearchPage {
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,
+                true,
                 new RunnableContextDelegate(container.getRunnableContext())) {
                 @Override
-                protected boolean isObjectVisible(DBSObject obj) {
+                protected boolean isDatabaseObjectVisible(DBSObject obj) {
                     if (obj instanceof DBSDataContainer && obj instanceof DBSEntity) {
                         if ((((DBSDataContainer) obj).getSupportedFeatures() & DBSDataContainer.DATA_SEARCH) == 0) {
                             return false;
                         }
                     }
-                    return super.isObjectVisible(obj);
+                    return super.isDatabaseObjectVisible(obj);
                 }
 
                 @Override
-                protected void onSelectionChange() {
+                protected void onSelectionChange(Object element) {
                     updateEnablement();
                 }
             };

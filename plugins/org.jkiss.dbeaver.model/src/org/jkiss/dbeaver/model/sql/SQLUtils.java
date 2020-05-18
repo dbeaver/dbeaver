@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,19 +213,13 @@ public final class SQLUtils {
 
     public static String escapeString(DBPDataSource dataSource, String string)
     {
-        @NotNull
-        SQLDialect dialect = dataSource instanceof SQLDataSource ?
-            ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
-        return dialect.escapeString(string);
+        return dataSource.getSQLDialect().escapeString(string);
     }
 
     public static String unQuoteString(DBPDataSource dataSource, String string)
     {
         if (string.length() > 1 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'') {
-            @NotNull
-            SQLDialect dialect = dataSource instanceof SQLDataSource ?
-                    ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
-            return dialect.unEscapeString(string.substring(1, string.length() - 1));
+            return dataSource.getSQLDialect().unEscapeString(string.substring(1, string.length() - 1));
         }
         return string;
     }
@@ -416,11 +410,8 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static SQLDialect getDialectFromDataSource(DBPDataSource dataSource) {
-        if (dataSource instanceof SQLDataSource) {
-            return ((SQLDataSource) dataSource).getSQLDialect();
-        }
-        return BasicSQLDialect.INSTANCE;
+    public static SQLDialect getDialectFromDataSource(@Nullable DBPDataSource dataSource) {
+        return dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect();
     }
 
     public static void appendConditionString(
@@ -481,7 +472,7 @@ public final class SQLUtils {
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
             String orderString = null;
-            if (co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta) {
+            if (co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = co.getAttributeName();
                 if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.
@@ -550,7 +541,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
                     } else {
-                        conString.append(" ?");
+                        conString.append(" ").append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(),"?"));
                     }
                 }
             } else if (operator.getArgumentCount() < 0) {
@@ -591,7 +582,7 @@ public final class SQLUtils {
                     if (inlineCriteria) {
                         conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
                     } else {
-                        conString.append("?");
+                        conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?"));
                     }
                 }
                 conString.append(")");
@@ -605,7 +596,9 @@ public final class SQLUtils {
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
-        return convertValueToSQL(dataSource, attribute, valueHandler, value);
+        return dataSource.getSQLDialect().getTypeCastClause(
+            attribute,
+            convertValueToSQL(dataSource, attribute, valueHandler, value));
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {
@@ -615,21 +608,22 @@ public final class SQLUtils {
 
         String strValue;
 
-        if (value instanceof DBDContent && dataSource instanceof SQLDataSource) {
-            strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, (SQLDataSource) dataSource);
+        if (value instanceof DBDContent) {
+            strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, dataSource);
         } else {
             strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
         }
         if (value instanceof Number) {
             return strValue;
         }
-        SQLDialect sqlDialect = null;
-        if (dataSource instanceof SQLDataSource) {
-            sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
-        }
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
+
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
+                if (sqlDialect != null) {
+                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
+                }
                 return strValue;
             case CONTENT:
                 if (value instanceof DBDContent) {
@@ -644,7 +638,10 @@ public final class SQLUtils {
                 if (sqlDialect != null) {
                     strValue = sqlDialect.escapeString(strValue);
                 }
-                return '\'' + strValue + '\'';
+                if (!(strValue.startsWith("'") && strValue.endsWith("'"))) {
+                    strValue = '\'' + strValue + '\'';
+                }
+                return sqlDialect.getTypeCastClause(attribute, strValue);
             default:
                 if (sqlDialect != null) {
                     return sqlDialect.escapeScriptValue(attribute, value, strValue);
@@ -653,7 +650,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
+    public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, DBPDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
             if (ContentUtils.isTextContent(content)) {
@@ -674,11 +671,10 @@ public final class SQLUtils {
         if (column == null) {
             return null;
         }
-        if (!(dataSource instanceof SQLDataSource)) {
+        if (dataSource == null) {
             return null;
         }
-        SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-        return dialect.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
+        return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     public static String getScriptDescripion(@NotNull String sql) {
@@ -736,16 +732,18 @@ public final class SQLUtils {
 
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
+        char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
-                if (prevNonLetter) {
+                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
                     buf.append(c);
                 }
                 prevNonLetter = false;
             }
+            prevChar = c;
         }
         String alias = buf.toString().toLowerCase(Locale.ENGLISH);
 
@@ -765,8 +763,8 @@ public final class SQLUtils {
     public static String generateCommentLine(DBPDataSource dataSource, String comment)
     {
         String slComment = SQLConstants.ML_COMMENT_END;
-        if (dataSource instanceof SQLDataSource) {
-            String[] slComments = ((SQLDataSource) dataSource).getSQLDialect().getSingleLineComments();
+        if (dataSource != null) {
+            String[] slComments = dataSource.getSQLDialect().getSingleLineComments();
             if (!ArrayUtils.isEmpty(slComments)) {
                 slComment = slComments[0];
             }
@@ -897,7 +895,7 @@ public final class SQLUtils {
                     String testLine = scriptLine.trim();
                     if (testLine.lastIndexOf(delimiter) != (testLine.length() - delimiter.length())) {
                         script.append(delimiter);
-                    }    
+                    }
                 } else {
                     script.append(lineSeparator);
                 }

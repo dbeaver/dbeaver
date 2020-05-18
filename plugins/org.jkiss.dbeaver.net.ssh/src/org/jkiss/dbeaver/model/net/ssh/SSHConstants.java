@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,15 @@ public class SSHConstants {
     public static final String PROP_ALIVE_COUNT = "aliveCount";
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
 
+    public static final String PROP_LOCAL_HOST = "localHost";
     public static final String PROP_LOCAL_PORT = "localPort";
+    public static final String PROP_REMOTE_HOST = "remoteHost";
+    public static final String PROP_REMOTE_PORT = "remotePort";
     //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {
         PASSWORD,
-        PUBLIC_KEY
+        PUBLIC_KEY,
+        AGENT
     }
 }

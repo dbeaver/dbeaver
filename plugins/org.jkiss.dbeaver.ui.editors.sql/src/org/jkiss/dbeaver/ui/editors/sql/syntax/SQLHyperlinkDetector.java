@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -36,21 +35,18 @@ import java.util.List;
 /**
  * SQLHyperlinkDetector
  */
-public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
-{
+public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
     static protected final Log log = Log.getLog(SQLHyperlinkDetector.class);
 
     private SQLContextInformer contextInformer;
 
-    public SQLHyperlinkDetector(SQLEditorBase editor, SQLSyntaxManager syntaxManager)
-    {
-        this.contextInformer = new SQLContextInformer(editor, syntaxManager);
+    public SQLHyperlinkDetector(SQLEditorBase editor, SQLContextInformer contextInformer) {
+        this.contextInformer = contextInformer;
     }
 
     @Nullable
     @Override
-    public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
-    {
+    public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
         this.contextInformer.searchInformation(region);
         if (!this.contextInformer.hasObjects()) {
             // Long task - just return no links for now
@@ -82,8 +78,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 

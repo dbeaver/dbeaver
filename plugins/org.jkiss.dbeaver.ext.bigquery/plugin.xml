@@ -13,7 +13,8 @@
                 id="bigquery"
                 parent="generic"
                 label="Google BigQuery"
-                icon="icons/bigquery_icon.png">
+                icon="icons/bigquery_icon.png"
+                dialect="google_bigquery">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
@@ -27,7 +28,7 @@
                         defaultPort="443"
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
-                        propertiesURL="http://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
+                        propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
                         categories="bigdata">
                     <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.1.1001.zip"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
@@ -38,23 +39,9 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.bigquery.dataSourceWizardView"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="bigquery"
-                label="%bigquery.dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
-                icon="icons/google_bigquery_icon.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
-                icon="icons/google_bigquery_icon.png"
-                id="org.jkiss.dbeaver.ext.bigquery.dataSourceEditorView"
-                dataSource="bigquery"
-                label="%bigquery.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="google_bigquery" parent="generic" class="org.jkiss.dbeaver.ext.bigquery.model.BigQuerySQLDialect" label="BigQuery" description="Google BigQuery." icon="icons/bigquery_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

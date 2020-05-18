@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -51,8 +53,22 @@ import java.util.Map;
 
 public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCreateBase {
 
+    static final Log log = Log.getLog(NavigatorHandlerObjectCreateCopy.class);
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        Shell activeShell = HandlerUtil.getActiveShell(event);
+        Control focusControl = activeShell.getDisplay().getFocusControl();
+        if (focusControl instanceof Text) {
+            ((Text) focusControl).paste();
+            return null;
+        } else if (focusControl instanceof StyledText) {
+            ((StyledText) focusControl).paste();
+            return null;
+        } else if (focusControl instanceof Combo) {
+            ((Combo) focusControl).paste();
+            return null;
+        }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
@@ -79,10 +95,12 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                             }
                         }
                     } else {
-                        DBWorkbench.getPlatformUI().showError("Paste error", "Unsupported clipboard format. File or folder were expected.");
+                        log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
+                        Display.getCurrent().beep();
                     }
                 } else {
-                    DBWorkbench.getPlatformUI().showError("Paste error", "Clipboard contains data in unsupported format");
+                    log.debug("Paste error: clipboard contains data in unsupported format");
+                    Display.getCurrent().beep();
                 }
             } finally {
                 clipboard.dispose();

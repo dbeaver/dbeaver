@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -32,11 +33,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * PostgreArrayValueHandler
@@ -50,11 +50,11 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object != null) {
             String className = object.getClass().getName();
-            if (object instanceof String || className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
+            if (object instanceof String || className.equals(PostgreConstants.PG_OBJECT_CLASS) || className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                 final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
                 if (arrayType == null) {
                     throw new DBCException("Can't resolve data type " + type.getFullTypeName());
@@ -63,10 +63,15 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 if (itemType == null) {
                     throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
                 }
-                if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                if (className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
+                    // Convert arrays to string representation (#7468)
+                    // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
+                    String strValue = object.toString();
+                    return convertStringArrayToCollection(session, itemType, strValue);
+                } else if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
-                        return convertStringToArray(session, itemType, (String) value);
+                        return convertStringToCollection(session, type, itemType, (String) value);
                     } else {
                         // Can't parse
                         return new JDBCCollection(
@@ -74,23 +79,49 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                             DBUtils.findValueHandler(session, itemType),
                             value == null ? null : new Object[]{value});
                     }
-                } else if (object instanceof String) {
-                    return convertStringToArray(session, itemType, (String) object);
+                } else {
+                    return convertStringToCollection(session, type, itemType, (String) object);
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
-    private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
-        List<String> strings = new ArrayList<>(10);
-        StringTokenizer st = new StringTokenizer(value, " ");
-        while (st.hasMoreTokens()) {
-            strings.add(st.nextToken());
+    private JDBCCollection convertStringToCollection(@NotNull DBCSession session, @NotNull DBSTypedObject arrayType, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
+        String delimiter;
+
+        PostgreDataType arrayDataType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), arrayType);
+        if (arrayDataType != null) {
+            delimiter = CommonUtils.toString(arrayDataType.getArrayDelimiter(), PostgreConstants.DEFAULT_ARRAY_DELIMITER);
+        } else {
+            delimiter = PostgreConstants.DEFAULT_ARRAY_DELIMITER;
         }
-        Object[] contents = new Object[strings.size()];
-        for (int i = 0; i < strings.size(); i++) {
-            contents[i] = PostgreUtils.convertStringToValue(session, itemType, strings.get(i), false);
+        if (itemType.getDataKind() == DBPDataKind.STRUCT) {
+            // Items are structures. Parse them as CSV
+            List<Object> itemStrings = PostgreUtils.parseArrayString(value, delimiter);
+            Object[] itemValues = new Object[itemStrings.size()];
+            DBDValueHandler itemValueHandler = DBUtils.findValueHandler(session, itemType);
+            for (int i = 0; i < itemStrings.size(); i++) {
+                Object itemString = itemStrings.get(i);
+                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false, false);
+                itemValues[i] = itemValue;
+            }
+            return new JDBCCollection(itemType, itemValueHandler, itemValues);
+        } else {
+            List<Object> strings = PostgreUtils.parseArrayString(value, delimiter);
+            Object[] contents = new Object[strings.size()];
+            for (int i = 0; i < strings.size(); i++) {
+                contents[i] = PostgreUtils.convertStringToValue(session, itemType, String.valueOf(strings.get(i)), false);
+            }
+            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
+        }
+    }
+
+    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
+        String[] strings = PostgreUtils.parseObjectString(strValue.substring(1, strValue.length() - 1));
+        Object[] contents = new Object[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            contents[i] = PostgreUtils.convertStringToValue(session, itemType, strings[i], false);
         }
         return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }

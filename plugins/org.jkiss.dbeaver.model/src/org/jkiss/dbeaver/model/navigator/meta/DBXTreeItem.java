@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
-    public String getChildrenType(@Nullable DBPDataSource dataSource, String locale)
+    public String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, String locale)
     {
         final String term = getNodeTerm(dataSource, label, true);
         if (term != null) {
@@ -116,7 +116,7 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
-    public String getNodeType(@Nullable DBPDataSource dataSource, @Nullable String locale)
+    public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale)
     {
         final String term = getNodeTerm(dataSource, itemLabel, false);
         if (term != null) {
@@ -161,11 +161,6 @@ public class DBXTreeItem extends DBXTreeNode
         return null;
     }
 
-    @Override
-    public String toString() {
-        return "Item " + label;
-    }
-
     public synchronized Method getPropertyReadMethod(Class<?> objectClass) {
         Method getter = propertyGettersCache.get(objectClass);
         if (getter == null) {
@@ -201,6 +196,11 @@ public class DBXTreeItem extends DBXTreeNode
             }
         }
         return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
+    }
+
+    @Override
+    public String toString() {
+        return "Item " + label;
     }
 
 }

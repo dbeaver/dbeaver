@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
+import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableIndexCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolViewCache;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolGrantee;
@@ -61,7 +62,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     private String owner;
     private Timestamp createTime;
     private String remarks;
-    private Integer objectId;
+    private long objectId;
     private String tablePrefix;
     private BigDecimal rawObjectSize;
     private BigDecimal memObjectSize;
@@ -75,10 +76,11 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public final DBSObjectCache<ExasolSchema, ExasolFunction> functionCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
     private ExasolTableCache tableCache = new ExasolTableCache();
-
+    
     // ExasolTable's children
     private final ExasolTableUniqueKeyCache constraintCache = new ExasolTableUniqueKeyCache(tableCache);
     private final ExasolTableForeignKeyCache associationCache = new ExasolTableForeignKeyCache(tableCache);
+    private final ExasolTableIndexCache indexCache = new ExasolTableIndexCache(tableCache);
 
     public ExasolSchema(ExasolDataSource exasolDataSource, String name, String owner) {
         super(exasolDataSource, true);
@@ -87,7 +89,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.owner = owner;
         this.scriptCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
         		ExasolScript.class,
-        		"select "
+        		"/*snapshot execution*/ select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from SYS." + tablePrefix + "_SCRIPTS a inner join SYS." + tablePrefix + "_OBJECTS b "
         		+ "on a.SCRIPT_OBJECT_ID  = b.object_id and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
@@ -95,7 +97,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         		name);
 
         this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
-                "SELECT\n" + 
+                "/*snapshot execution*/ SELECT\n" + 
                 "    F.*,\n" + 
                 "    O.CREATED\n" + 
                 "FROM\n" + 
@@ -123,7 +125,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-        this.objectId = JDBCUtils.safeGetInt(dbResult, "SCHEMA_OBJECT_ID");
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "SCHEMA_OBJECT_ID");
 
 
     }
@@ -292,22 +294,23 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     
     private void refresh(DBRProgressMonitor monitor) throws DBCException
     {
-    	if (!refreshed) {
+    	if (!refreshed && this.objectId != 0) {
 	    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
-	    	try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
+	    	try (JDBCPreparedStatement stmt = session.prepareStatement("/*snapshot execution*/ SELECT * FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECT_SIZES WHERE OBJECT_ID = ?"))
 	    	{
-	    		stmt.setInt(1, this.objectId);
+	    		stmt.setLong(1, this.objectId);
 	    		try (JDBCResultSet dbResult = stmt.executeQuery()) 
 	    		{
-	    			dbResult.next();
-	    	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-	    	        this.rawObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE");
-	    	        this.memObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "MEM_OBJECT_SIZE");
-	    	        this.rawObjectSizeLimit = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE_LIMIT");
+	    			if (dbResult.next()) {
+                        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
+                        this.rawObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE");
+                        this.memObjectSize = JDBCUtils.safeGetBigDecimal(dbResult, "MEM_OBJECT_SIZE");
+                        this.rawObjectSizeLimit = JDBCUtils.safeGetBigDecimal(dbResult, "RAW_OBJECT_SIZE_LIMIT");
+                    }
 	    		}
 	    		
 	    	} catch (SQLException e) {
-	    		throw new DBCException(e,getDataSource());
+	    		throw new DBCException(e, session.getExecutionContext());
 			}
     	}
 		
@@ -411,9 +414,21 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 		
 	}
 	
-	
 	public Boolean isPhysicalSchema()
 	{
 	    return true;
 	}
+
+	public ExasolTableIndexCache getIndexCache() {
+		return indexCache;
+	}
+	
+	@Association
+	public Collection<ExasolTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+		return indexCache.getObjects(monitor, this, null);
+	}
+	
+	
+	
+	
 }

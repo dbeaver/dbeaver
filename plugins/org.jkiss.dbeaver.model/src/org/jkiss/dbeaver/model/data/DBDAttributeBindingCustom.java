@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.utils.CommonUtils;
@@ -179,6 +178,11 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
         return null;
+    }
+
+    @Override
+    public String getRowIdentifierStatus() {
+        return "Virtual attribute";
     }
 
     @Nullable

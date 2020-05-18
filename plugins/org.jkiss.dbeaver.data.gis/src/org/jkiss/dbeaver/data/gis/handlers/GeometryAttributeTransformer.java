@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,21 +73,22 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
             this.srid = srid;
         }
 
+        @NotNull
         @Override
-        public Class<?> getValueObjectType(DBSTypedObject attribute) {
+        public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
             return realHandler.getValueObjectType(attribute);
         }
 
         @Override
-        public Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException {
+        public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
             Object object = super.fetchValueObject(session, resultSet, type, index);
-            return getValueFromObject(session, type, object, false);
+            return getValueFromObject(session, type, object, false, false);
         }
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
-            return realHandler.getValueFromObject(session, type, object, copy);
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+            return realHandler.getValueFromObject(session, type, object, copy, false);
         }
 
     }

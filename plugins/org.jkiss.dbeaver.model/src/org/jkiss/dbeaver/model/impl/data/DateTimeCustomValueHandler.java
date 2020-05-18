@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,19 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
 
 /**
  * Customizable date/time value handler
  */
-public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
+public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler implements DBDValueHandlerConfigurable {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
 
@@ -47,19 +47,23 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return null;
         } else if (object instanceof Date) {
             return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
+            String strValue = (String)object;
+            if (strValue.isEmpty()) {
+                // NULL date
+                return null;
+            }
             if (session != null && session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
                 // Do not use formatter for native format
                 return object;
             }
 
-            String strValue = (String)object;
             try {
                 return getFormatter(type).parseValue(strValue, null);
             } catch (ParseException e) {
@@ -78,7 +82,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
             }
         } else {
             //log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
-            return super.getValueFromObject(session, type, object, copy);
+            return super.getValueFromObject(session, type, object, copy, validateValue);
         }
     }
 
@@ -113,6 +117,11 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
             formatter = getFormatter(column, getFormatterId(column));
         }
         return formatter;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     @NotNull

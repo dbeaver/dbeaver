@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ class MySQLDialect extends JDBCSQLDialect {
     };
 
     private static String[] EXEC_KEYWORDS =  { "CALL" };
+    private int lowerCaseTableNames;
 
     public MySQLDialect() {
         super("MySQL");
@@ -61,6 +62,7 @@ class MySQLDialect extends JDBCSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
@@ -107,6 +109,11 @@ class MySQLDialect extends JDBCSQLDialect {
         return null;
     }
 
+    @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return lowerCaseTableNames != 0;
+    }
+
     @NotNull
     @Override
     public String escapeString(String string) {
@@ -151,8 +158,13 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @NotNull
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return MYSQL_NON_TRANSACTIONAL_KEYWORDS;
+    }
+
+    @Override
+    public boolean isAmbiguousCountBroken() {
+        return true;
     }
 
     @Override

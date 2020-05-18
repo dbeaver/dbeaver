@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPOverloaded
         }
         // Query row count
         try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read table description")) {
-            DBSObject defaultDatabase = getDataSource().getDefaultObject();
+            DBSObject defaultDatabase = DBUtils.getDefaultContext(getDataSource(), true).getContextDefaults().getDefaultCatalog();
             boolean switchSchema = getCatalog() != null && defaultDatabase != null && defaultDatabase != getCatalog();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 (switchSchema ? "USE " + DBUtils.getQuotedIdentifier(getCatalog()) + ";\n" : "") +

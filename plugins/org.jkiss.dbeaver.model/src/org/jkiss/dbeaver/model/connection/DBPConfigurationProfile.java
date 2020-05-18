@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,11 +27,35 @@ import java.util.Map;
  */
 public class DBPConfigurationProfile {
 
+    private String profileId;
     private String profileName;
     private String profileDescription;
 
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
+
+    public DBPConfigurationProfile() {
+    }
+
+    public DBPConfigurationProfile(DBPConfigurationProfile source) {
+        this.profileId = source.profileId;
+        this.profileName = source.profileName;
+        this.profileDescription = source.profileDescription;
+        if (!CommonUtils.isEmpty(source.properties)) {
+            this.properties = new LinkedHashMap<>(source.properties);
+        }
+    }
+
+    public String getProfileId() {
+        if (CommonUtils.isEmpty(profileId)) {
+            return profileName;
+        }
+        return profileId;
+    }
+
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
+    }
 
     public String getProfileName() {
         return profileName;

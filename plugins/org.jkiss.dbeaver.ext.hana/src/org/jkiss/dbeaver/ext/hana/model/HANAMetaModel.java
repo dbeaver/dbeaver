@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -29,9 +30,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -49,7 +53,8 @@ public class HANAMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HANAMetaModel.class);
     private static Pattern ERROR_POSITION_PATTERN = Pattern.compile(" \\(at pos ([0-9]+)\\)");
-
+    static String PUBLIC_SCHEMA_NAME = "PUBLIC";
+    
     public HANAMetaModel() {
         super();
     }
@@ -59,6 +64,27 @@ public class HANAMetaModel extends GenericMetaModel
         return new HANADataSource(monitor, container, this);
     }
 
+    @Override
+    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
+        List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
+        GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
+        int i;
+        for(i=0; i<schemas.size(); i++)
+            if(schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
+                break;
+        schemas.add(i, publicSchema);
+        return schemas;
+    }
+
+    @Override
+    public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
+        String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
+        if (tableType != null && tableType.equals("SYNONYM"))
+            return null;
+        return super.createTableImpl(session, owner, tableObject, dbResult);
+    }
+
+    
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
@@ -113,8 +139,8 @@ public class HANAMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareCall(
                 "CALL get_object_definition(?,?)"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                dbStat.setString(1, DBUtils.getQuotedIdentifier(sourceObject.getContainer()));
+                dbStat.setString(2, DBUtils.getQuotedIdentifier(sourceObject));
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder ddl = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -226,18 +252,18 @@ public class HANAMetaModel extends GenericMetaModel
 
     @Override
     public List<? extends GenericSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        // TODO: create a fake schema to show PUBLIC synonyms? 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read synonyms")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SYNONYM_NAME, OBJECT_SCHEMA, OBJECT_NAME FROM SYS.SYNONYMS WHERE SCHEMA_NAME = ? ORDER BY SYNONYM_NAME")) {
+                "SELECT SYNONYM_NAME, OBJECT_TYPE, OBJECT_SCHEMA, OBJECT_NAME FROM SYS.SYNONYMS WHERE SCHEMA_NAME = ? ORDER BY SYNONYM_NAME")) {
                 dbStat.setString(1, container.getName());
                 List<GenericSynonym> result = new ArrayList<>();
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String name = dbResult.getString(1);
-                        String targetSchema = dbResult.getString(2);
-                        String targetObject = dbResult.getString(3);
-                        HANASynonym synonym = new HANASynonym(container, name, targetSchema, targetObject);
+                        String targetObjectType   = dbResult.getString(2);
+                        String targetObjectSchema = dbResult.getString(3);
+                        String targetObjectName   = dbResult.getString(4);
+                        HANASynonym synonym = new HANASynonym(container, name, targetObjectType, targetObjectSchema, targetObjectName);
                         result.add(synonym);
                     }
                 }
@@ -247,6 +273,33 @@ public class HANAMetaModel extends GenericMetaModel
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
         }
+    }
+
+    @Override
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+        JDBCPreparedStatement dbStat;
+        if(forParent!=null) { 
+            dbStat = session.prepareStatement("SELECT"
+                    + " TABLE_NAME, COLUMN_NAME, POSITION AS KEY_SEQ, CONSTRAINT_NAME AS PK_NAME, IS_PRIMARY_KEY" 
+                    + " FROM SYS.CONSTRAINTS"
+                    + " WHERE SCHEMA_NAME=? AND TABLE_NAME=?"
+                    + " ORDER BY PK_NAME");
+            dbStat.setString(1, forParent.getSchema().getName());
+            dbStat.setString(2, forParent.getName());
+        } else {
+            dbStat = session.prepareStatement("SELECT"
+                    + " TABLE_NAME, COLUMN_NAME, POSITION AS KEY_SEQ, CONSTRAINT_NAME AS PK_NAME, IS_PRIMARY_KEY" 
+                    + " FROM SYS.CONSTRAINTS"
+                    + " ORDER BY PK_NAME");
+        }
+        return dbStat;
+    }
+
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+        String isPrimaryKey = JDBCUtils.safeGetString(dbResult, "IS_PRIMARY_KEY");
+        return "TRUE".equals(isPrimaryKey) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
     }
 
     @Override
@@ -286,7 +339,7 @@ public class HANAMetaModel extends GenericMetaModel
     }
     
     @Override
-    public GenericTableColumn createTableColumnImpl(DBRProgressMonitor monitor, GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
+    public GenericTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
 
         if(table.getSchema().getName().equals("SYS") && table.isView()) {
             ((HANADataSource)table.getDataSource()).initializeSysViewColumnUnits(monitor);

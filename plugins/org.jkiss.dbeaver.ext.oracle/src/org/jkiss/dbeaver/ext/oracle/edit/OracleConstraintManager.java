@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectStatus;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
@@ -25,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -67,35 +67,27 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     protected String getDropConstraintPattern(OracleTableConstraint constraint)
     {
         String clause = "CONSTRAINT"; //$NON-NLS-1$;
-/*
-        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-            clause = "PRIMARY KEY"; //$NON-NLS-1$
-        } else {
-            clause = "CONSTRAINT"; //$NON-NLS-1$
-        }
-*/
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+        String tableType = constraint.getTable().isView() ? "VIEW" : "TABLE";
+
+        return "ALTER " + tableType + " " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
-    @NotNull
-    protected String getAddConstraintTypeClause(OracleTableConstraint constraint) {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
-            return "UNIQUE"; //$NON-NLS-1$
-        }
-        return super.getAddConstraintTypeClause(constraint);
-    }
-    
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
-    	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();
+    	OracleTableConstraint constraint = command.getObject();
+        boolean isView = constraint.getTable().isView();
+        String tableType = isView ? "VIEW" : "TABLE";
     	OracleTableBase table = constraint.getTable();
         actions.add(
                 new SQLDatabasePersistAction(
                     ModelMessages.model_jdbc_create_new_constraint,
-                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options) +
-                    " "  + (constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" )
+                    "ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                        "\nADD " + getNestedDeclaration(monitor, table, command, options) +
+                    "\n"  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
+                    (isView ? " NOVALIDATE" : "")
                 	));
     }
 

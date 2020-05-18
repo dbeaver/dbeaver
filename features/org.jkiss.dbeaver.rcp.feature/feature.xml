@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.rcp.feature"
       label="%featureName"
-      version="2.1.96.qualifier"
+      version="2.1.108.qualifier"
       provider-name="%providerName">
 
     <description>
@@ -82,7 +82,8 @@
     <plugin id="org.eclipse.equinox.preferences" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.simpleconfigurator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+<!--    Was removed in 2019-12? -->
+<!--    <plugin id="org.eclipse.equinox.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
     <plugin id="org.eclipse.help" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface.databinding" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -104,6 +105,14 @@
     <plugin id="org.eclipse.ui.themes" download-size="0" install-size="0" version="0.0.0"/>
 
     <plugin id="org.eclipse.update.configurator" download-size="0" install-size="0" version="0.0.0"/>
+
+    <plugin id="com.sun.jna" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="0.0.0"/>
+
+    <!-- Quick search. Includes minimized ant bundle. -->
+
+<!--    <plugin id="org.apache.ant" download-size="0" install-size="0" version="0.0.0"/>-->
+    <plugin id="org.eclipse.text.quicksearch" download-size="0" install-size="0" version="0.0.0"/>
 
     <!-- GEF -->
 

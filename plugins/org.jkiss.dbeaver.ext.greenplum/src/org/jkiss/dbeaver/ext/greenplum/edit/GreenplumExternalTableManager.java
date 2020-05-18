@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,18 +47,14 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
                                                           Object container,
                                                           Object copyFrom, Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
-        try {
-            setTableName(monitor, (PostgreSchema) container, externalTable);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        setNewObjectName(monitor, (PostgreSchema) container, externalTable);
 
         return externalTable;
     }
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor,
-                                                List<DBEPersistAction> actions,
+                                                DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                                 StructCreateCommand command,
                                                 Map<String, Object> options) throws DBException {
         GreenplumExternalTable table = (GreenplumExternalTable) command.getObject();
@@ -77,7 +74,7 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command,
                                           Map<String, Object> options) {
         actions.add(createDeleteAction(command.getObject(), options));

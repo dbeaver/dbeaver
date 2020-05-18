@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,15 @@ public class JDBCURL {
     private static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
 
     public static String generateUrlByTemplate(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
+            CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
+            CommonUtils.isEmpty(connectionInfo.getHostName()) &&
+            CommonUtils.isEmpty(connectionInfo.getServerName()) &&
+            CommonUtils.isEmpty(connectionInfo.getDatabaseName()))
+        {
+            // No parameters, just URL - so URL it is
+            return connectionInfo.getUrl();
+        }
         try {
             String urlTemplate = driver.getSampleURL();
             if (CommonUtils.isEmptyTrimmed(urlTemplate)) {

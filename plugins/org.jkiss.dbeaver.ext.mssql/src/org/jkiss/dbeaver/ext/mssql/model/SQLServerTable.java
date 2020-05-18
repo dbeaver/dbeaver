@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class SQLServerTable extends SQLServerTableBase
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
     private String ddl;
-    private volatile List<SQLServerTableForeignKey> references;
+    private volatile transient List<SQLServerTableForeignKey> references;
 
     public SQLServerTable(SQLServerSchema schema)
     {
@@ -122,13 +122,12 @@ public class SQLServerTable extends SQLServerTableBase
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this,  "Read table references")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.schema_id as schema_id,t.name as table_name,fk.name as key_name\n" +
-                    "FROM "+
-                        SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t, " +
-                        SQLServerUtils.getSystemTableName(getDatabase(), "foreign_keys") +" fk, " +
-                        SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " tr\n" +
+                    "FROM " +
+                    SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t, " +
+                    SQLServerUtils.getSystemTableName(getDatabase(), "foreign_keys") + " fk, " +
+                    SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " tr\n" +
                     "WHERE t.object_id = fk.parent_object_id AND tr.object_id=fk.referenced_object_id AND fk.referenced_object_id=?\n" +
-                    "ORDER BY 1,2,3"))
-            {
+                    "ORDER BY 1,2,3")) {
                 dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<SQLServerTableForeignKey> result = new ArrayList<>();
@@ -151,10 +150,9 @@ public class SQLServerTable extends SQLServerTableBase
                     this.references = result;
                     return result;
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 

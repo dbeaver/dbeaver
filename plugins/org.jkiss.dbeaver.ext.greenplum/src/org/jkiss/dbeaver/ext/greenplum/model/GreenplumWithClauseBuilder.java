@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -32,12 +32,21 @@ public class GreenplumWithClauseBuilder {
 
         if (tableSupportsAndHasOids(table) && tableIsGreenplumWithRelOptions(table, tableBase)) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-            withClauseBuilder.append(format(", %s\n)", String.join(", ", tableBase.getRelOptions())));
+            for (String option : tableBase.getRelOptions()) {
+                withClauseBuilder.append(format(",\n\t%s", option));
+            }
+            withClauseBuilder.append("\n)");
         } else if (tableSupportsAndHasOids(table)) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
             withClauseBuilder.append("\n)");
         } else if (tableIsGreenplumWithRelOptions(table, tableBase)) {
-            withClauseBuilder.append(format("\nWITH (\n\t%s\n)", String.join(", ", tableBase.getRelOptions())));
+            String[] options = tableBase.getRelOptions();
+            withClauseBuilder.append(format("\nWITH (\n\t%s", options[0]));
+            for (int i = 1; i < options.length; i++) {
+                String option = options[i];
+                withClauseBuilder.append(format(",\n\t%s", option));
+            }
+            withClauseBuilder.append("\n)");
         }
 
         return withClauseBuilder.toString();

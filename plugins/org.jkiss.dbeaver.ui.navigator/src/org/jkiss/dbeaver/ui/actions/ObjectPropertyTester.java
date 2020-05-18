@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -34,13 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
-import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -93,6 +85,9 @@ public class ObjectPropertyTester extends PropertyTester
                 return canCreateObject(node, false);
             }
             case PROP_CAN_PASTE: {
+                // We cannot interact with clipboard in property testers (#6489).
+                // It breaks context menu (and maybe something else) omn some OSes.
+/*
                 Clipboard clipboard = new Clipboard(display);
                 try {
                     if (clipboard.getContents(TreeNodeTransfer.getInstance()) == null) {
@@ -101,6 +96,7 @@ public class ObjectPropertyTester extends PropertyTester
                 } finally {
                     clipboard.dispose();
                 }
+*/
                 if (node instanceof DBNResource) {
                     return property.equals(PROP_CAN_PASTE);
                 }
@@ -216,19 +212,20 @@ public class ObjectPropertyTester extends PropertyTester
                 }
                 break;
             }
-            case PROP_HAS_TOOLS: {
-                IStructuredSelection structuredSelection = NavigatorUtils.getSelectionFromPart((IWorkbenchPart)receiver);
-                if (structuredSelection == null || structuredSelection.isEmpty()) {
-                    return false;
-                }
-                DBSObject object = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBSObject.class);
-                return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
-            }
         }
         return false;
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
+        if (node instanceof DBNDatabaseNode) {
+            if (((DBNDatabaseNode)node).isVirtual()) {
+                // Can't create virtual objects
+                return false;
+            }
+            if (isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
+                return false;
+            }
+        }
         if (onlySingle == null) {
             // Just try to find first create handler
             if (node instanceof DBNDataSource) {
@@ -278,6 +275,11 @@ public class ObjectPropertyTester extends PropertyTester
         } else {
             return createItems.size() > 1;
         }
+    }
+
+    public static boolean isMetadataChangeDisabled(DBNDatabaseNode node) {
+        DBNBrowseSettings navSettings = node.getDataSourceContainer().getNavigatorSettings();
+        return navSettings.isHideFolders() || navSettings.isShowOnlyEntities();
     }
 
     private static <T extends DBEObjectManager> T getObjectManager(Class<?> objectType, Class<T> managerType)

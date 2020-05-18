@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -140,6 +138,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     public abstract DBDRowIdentifier getRowIdentifier();
 
+    public abstract String getRowIdentifierStatus();
+
     @Nullable
     public abstract List<DBSEntityReferrer> getReferrers();
 
@@ -220,10 +220,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         if (getParentObject() == null) {
             return DBUtils.getQuotedIdentifier(dataSource, getName());
         }
-        char structSeparator = SQLConstants.STRUCT_SEPARATOR;
-        if (dataSource instanceof SQLDataSource) {
-            structSeparator = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-        }
+        char structSeparator = dataSource.getSQLDialect().getStructSeparator();
+
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {

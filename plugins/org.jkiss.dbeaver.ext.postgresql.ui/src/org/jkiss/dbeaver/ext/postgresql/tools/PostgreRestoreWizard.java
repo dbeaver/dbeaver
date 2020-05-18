@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,40 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreInfo;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreSettings;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
-class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreInfo> implements IExportWizard {
+class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRestoreSettings, PostgreDatabaseRestoreInfo> implements IExportWizard {
 
     private PostgreRestoreWizardPageSettings settingsPage;
-    private PostgreDatabaseRestoreInfo restoreInfo;
 
-    String inputFile;
-    boolean cleanFirst;
+    PostgreRestoreWizard(DBTTask task) {
+        super(task);
+    }
 
     PostgreRestoreWizard(PostgreDatabase database) {
         super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
-        restoreInfo = new PostgreDatabaseRestoreInfo(database);
+        getSettings().setRestoreInfo(new PostgreDatabaseRestoreInfo(database));
+    }
+
+    @Override
+    public String getTaskTypeId() {
+        return PostgreSQLTasks.TASK_DATABASE_RESTORE;
+    }
+
+    @Override
+    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
+        settingsPage.saveState();
+
+        getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }
 
     @Override
@@ -58,6 +72,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
 
     @Override
     public void addPages() {
+        addTaskConfigPages();
         addPage(settingsPage);
         super.addPages();
     }
@@ -88,39 +103,8 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, PostgreDatabaseRestoreInfo arg) throws IOException {
-        super.fillProcessParameters(cmd, arg);
-
-        if (cleanFirst) {
-            cmd.add("-c");
-        }
-    }
-
-    @Override
-    protected List<String> getCommandLine(PostgreDatabaseRestoreInfo arg) throws IOException {
-        List<String> cmd = super.getCommandLine(arg);
-        if (format != ExportFormat.PLAIN) {
-            cmd.add("--format=" + format.getId());
-        }
-        cmd.add("--dbname=" + arg.getDatabase().getName());
-        if (format == ExportFormat.DIRECTORY) {
-            cmd.add(inputFile);
-        }
-
-        return cmd;
-    }
-
-    @Override
-    public Collection<PostgreDatabaseRestoreInfo> getRunInfo() {
-        return Collections.singleton(restoreInfo);
-    }
-
-    @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
-        super.startProcessHandler(monitor, arg, processBuilder, process);
-        if (format != ExportFormat.DIRECTORY) {
-            new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
-        }
+    protected PostgreDatabaseRestoreSettings createSettings() {
+        return new PostgreDatabaseRestoreSettings();
     }
 
 }

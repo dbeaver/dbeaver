@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class VerticalButton extends Canvas {
 
     private String text = "";
     private Image image = null;
+    private Image imageDisabled = null;
 
     private boolean isHover;
 
@@ -119,10 +120,14 @@ public class VerticalButton extends Canvas {
             getFolder().setSelection(this);
         }
         if (action != null) {
-            action.runWithEvent(event);
-            redraw();
+            if (action.isEnabled()) {
+                action.runWithEvent(event);
+                redraw();
+            }
         } else if (commandId != null) {
-            ActionUtils.runCommand(commandId, serviceLocator);
+            if (ActionUtils.isCommandEnabled(commandId, serviceLocator)) {
+                ActionUtils.runCommand(commandId, serviceLocator);
+            }
         }
     }
 
@@ -188,7 +193,15 @@ public class VerticalButton extends Canvas {
         boolean selected = isSelected();
         Point size = computeSize(e.gc, -1, -1, false);
 
-        if (selected || isHover) {
+        boolean enabled = true;
+        if (getFolder().isCheckCommandEnablement()) {
+            if (action != null && !action.isEnabled()) {
+                enabled = false;
+            } else if (commandId != null) {
+                enabled = ActionUtils.isCommandEnabled(commandId, serviceLocator);
+            }
+        }
+        if (enabled && (selected || isHover)) {
             Color curBackground = e.gc.getBackground();
             boolean isDarkBG = UIUtils.isDark(curBackground.getRGB());
             RGB blendRGB = isDarkBG ? new RGB(255, 255, 255) : new RGB(0, 0, 0);
@@ -232,7 +245,15 @@ public class VerticalButton extends Canvas {
         }
 
         if (image != null) {
-            e.gc.drawImage(image, x, BORDER_MARGIN);
+            if (!enabled) {
+                if (imageDisabled == null) {
+                    imageDisabled = new Image(e.display, image, SWT.IMAGE_GRAY);
+                    addDisposeListener(e1 -> imageDisabled.dispose());
+                }
+                e.gc.drawImage(imageDisabled, x, BORDER_MARGIN);
+            } else {
+                e.gc.drawImage(image, x, BORDER_MARGIN);
+            }
             x += image.getBounds().width + BORDER_MARGIN;
         }
 

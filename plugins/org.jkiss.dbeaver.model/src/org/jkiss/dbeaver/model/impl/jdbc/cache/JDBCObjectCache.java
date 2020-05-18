@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,8 +133,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                 }
             } catch (SQLException ex) {
                 throw new DBException(ex, dataSource);
+            } catch (Exception ex) {
+                throw new DBException("Internal driver error", ex);
             }
-        } catch (DBException e) {
+        } catch (Exception e) {
             if (!handleCacheReadError(e)) {
                 throw e;
             }
@@ -157,7 +159,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     // Can be implemented to provide custom cache error handler
-    protected boolean handleCacheReadError(DBException error) {
+    protected boolean handleCacheReadError(Exception error) {
         return false;
     }
 

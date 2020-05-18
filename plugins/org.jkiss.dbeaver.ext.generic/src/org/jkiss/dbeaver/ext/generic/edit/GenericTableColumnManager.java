@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
@@ -61,6 +62,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
         GenericTableColumn column = tableBase.getDataSource().getMetaModel().createTableColumnImpl(
             monitor,
+            null,
             tableBase,
             getNewColumnName(monitor, context, tableBase),
             columnType == null ? "INTEGER" : columnType.getName(),
@@ -104,15 +106,17 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected long getDDLFeatures(GenericTableColumn object) {
         long features = 0;
-        Object shortDrop = object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT);
-        if (shortDrop != null && CommonUtils.toBoolean(shortDrop)) {
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT))) {
             features |= DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP;
+        }
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_BRACKETS))) {
+            features |= DDL_FEATURE_USER_BRACKETS_IN_DROP;
         }
         return features;
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         GenericTableColumn column = command.getObject();
         // Add more or less standard COMMENT ON if comment was actualy edited (i.e. it is editable at least).
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileReader;
@@ -43,6 +44,7 @@ import java.util.*;
 public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescription {
 
     private static final Log log = Log.getLog(TaskImpl.class);
+
     private static final String META_FILE_NAME = "meta.json";
 
     private static final int MAX_RUNS_IN_STATS = 100;
@@ -53,7 +55,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         .create();
 
     private final DBPProject project;
-    private String id;
+    private final String id;
     private String label;
     private String description;
     private Date createTime;
@@ -66,7 +68,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         private List<TaskRunImpl> runs = new ArrayList<>();
     }
 
-    public TaskImpl(DBPProject project, DBTTaskType type, String id, String label, String description, Date createTime, Date updateTime) {
+    public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime) {
         this.project = project;
         this.id = id;
         this.label = label;
@@ -165,20 +167,49 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     }
 
     @Override
+    public void removeRunLog(DBTTaskRun taskRun) {
+        File runLog = getRunLog(taskRun);
+
+        if (runLog.exists() && !runLog.delete()) {
+            log.error("Can't delete log file '" + runLog.getAbsolutePath() + "'");
+        }
+        RunStatistics runStatistics = loadRunStatistics();
+        runStatistics.runs.remove(taskRun);
+        flushRunStatistics(runStatistics);
+        if (CommonUtils.equalObjects(lastRun, taskRun)) {
+            lastRun = null;
+        }
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
+    }
+
+    @Override
     public void cleanRunStatistics() {
         File statsFolder = getTaskStatsFolder(false);
         if (statsFolder.exists()) {
             for (File file : ArrayUtils.safeArray(statsFolder.listFiles())) {
-                file.delete();
+                if (!file.delete()) {
+                    log.error("Can't delete log item '" + file.getAbsolutePath() + "'");
+                }
             }
-            statsFolder.delete();
+            if (!statsFolder.delete()) {
+                log.error("Can't delete logs folder '" + statsFolder.getAbsolutePath() + "'");
+            }
         }
+        RunStatistics runStatistics = new RunStatistics();
+        flushRunStatistics(runStatistics);
+        lastRun = null;
         TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
     }
 
     @Override
     public void setProperties(@NotNull Map<String, Object> properties) {
         this.properties = new LinkedHashMap<>(properties);
+    }
+
+    @NotNull
+    @Override
+    public File getRunLogFolder() {
+        return getTaskStatsFolder(false);
     }
 
     File getTaskStatsFolder(boolean create) {
@@ -189,7 +220,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         return taskStatsFolder;
     }
 
-    RunStatistics loadRunStatistics() {
+    private RunStatistics loadRunStatistics() {
         File metaFile = new File(getTaskStatsFolder(false), META_FILE_NAME);
         if (!metaFile.exists()) {
             return new RunStatistics();
@@ -219,6 +250,22 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
             stats.runs.add(taskRun);
             while (stats.runs.size() > MAX_RUNS_IN_STATS) {
                 stats.runs.remove(0);
+            }
+            flushRunStatistics(stats);
+        }
+        TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(this, DBTTaskEvent.Action.TASK_UPDATE));
+    }
+
+    void updateRun(TaskRunImpl taskRun) {
+        synchronized (this) {
+            RunStatistics stats = loadRunStatistics();
+            List<TaskRunImpl> runs = stats.runs;
+            for (int i = 0; i < runs.size(); i++) {
+                TaskRunImpl run = runs.get(i);
+                if (CommonUtils.equalObjects(run.getId(), taskRun.getId())) {
+                    runs.set(i, taskRun);
+                    break;
+                }
             }
             flushRunStatistics(stats);
         }

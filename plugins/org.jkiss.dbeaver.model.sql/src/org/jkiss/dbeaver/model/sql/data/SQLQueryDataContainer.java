@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.data;
 
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -25,9 +26,14 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * Data container for single SQL query.
@@ -57,6 +63,10 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return DATA_SELECT;
     }
 
+    public SQLScriptContext getScriptContext() {
+        return scriptContext;
+    }
+
     @NotNull
     @Override
     public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
@@ -65,9 +75,10 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         // Modify query (filters + parameters)
         DBPDataSource dataSource = session.getDataSource();
         SQLQuery sqlQuery = query;
-        String queryText = sqlQuery.getText();//.trim();
-        if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-            String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
+        String queryText = sqlQuery.getOriginalText();//.trim();
+        if (dataFilter != null && dataFilter.hasFilters()) {
+            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                session.getProgressMonitor(),
                 dataSource, queryText, dataFilter);
             sqlQuery = new SQLQuery(dataSource, filteredQueryText, sqlQuery);
         } else {
@@ -75,7 +86,13 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         }
 
         if (scriptContext != null) {
-            if (!scriptContext.fillQueryParameters(sqlQuery)) {
+            SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+            syntaxManager.init(dataSource);
+            SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+            ruleManager.loadRules(dataSource, false);
+            SQLParserContext parserContext = new SQLParserContext(this, syntaxManager, ruleManager, new Document(query.getOriginalText()));
+            sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, 0, sqlQuery.getLength()));
+            if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
             }
@@ -223,6 +240,11 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
     @Override
     public SQLScriptElement getQuery() {
         return query;
+    }
+
+    @Override
+    public Map<String, Object> getQueryParameters() {
+        return scriptContext.getAllParameters();
     }
 
     @Nullable

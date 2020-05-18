@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,6 +275,9 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
                     return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + ")";
                 case "DECIMAL":
                     return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + "," + Long.toString(this.scale) + ")";
+                case "HASHTYPE":
+                	return dataType.getTypeName() + "(" + Long.toString(this.maxLength) + " byte)";
+                    
                 default:
                     return dataType.getTypeName();
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,13 @@ public class DBIconBinary implements DBPImage
     public DBIconBinary(final String location, final ImageData data) {
         this.location = "binary:" + location;
         this.image = new Image(null, data);
-        imageDescriptor = ImageDescriptor.createFromImageData(data);
+        this.imageDescriptor = ImageDescriptor.createFromImageData(data);
+    }
+
+    public DBIconBinary(final String location, final Image image) {
+        this.location = "image:" + location;
+        this.image = image;
+        this.imageDescriptor = ImageDescriptor.createFromImage(image);
     }
 
     public Image getImage() {
@@ -63,4 +69,5 @@ public class DBIconBinary implements DBPImage
     public String toString() {
         return location;
     }
+
 }

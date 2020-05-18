@@ -32,6 +32,7 @@ import org.osgi.framework.Bundle;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PropertyResourceBundle;
@@ -205,7 +206,7 @@ public class SQLTemplateStore extends TemplateStore {
             String templatesConfig = getString(PREF_STORE_KEY);
             if (!CommonUtils.isEmpty(templatesConfig)) {
                 // Save it in templates file
-                try (FileWriter writer = new FileWriter(configurationFile)) {
+                try (Writer writer = new OutputStreamWriter(new FileOutputStream(configurationFile), StandardCharsets.UTF_8)) {
                     writer.write(templatesConfig);
                 }
             } else {

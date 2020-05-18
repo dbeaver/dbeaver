@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="ocient" parent="generic" class="org.jkiss.dbeaver.ext.ocient.model.OcientSQLDialect" label="Ocient" description="Ocient dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/ocient_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.ocient.OcientDataSourceProvider"
+                description="%datasource.bq.description"
+                id="ocient"
+                parent="generic"
+                label="Ocient DB"
+                icon="icons/ocient_icon.png"
+                dialect="ocient">
+            <drivers managable="true">
+                <driver
+                        id="ocient_jdbc"
+                        label="Ocient"
+                        class="com.ocient.jdbc.JDBCDriver"
+                        icon="icons/ocient_icon.png"
+                        iconBig="icons/ocient_icon_big.png"
+                        sampleURL="jdbc:ocient://{host}:{port}/{database}"
+                        defaultPort="4050"
+                        description="Ocient JDBC driver"
+                        webURL=""
+                        categories="sql,analytic">
+                    <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
+                </driver>
+             </drivers>
+        </datasource>
+    </extension>
+
+</plugin>

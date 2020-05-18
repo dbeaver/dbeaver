@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
@@ -307,6 +308,37 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
                 permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
+            } catch (Throwable e) {
+                log.error("Error reading routine privileges", e);
+            }
+            // Select acl for all schemas
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT n.oid, n.nspacl FROM pg_catalog.pg_namespace n WHERE n.nspacl IS NOT NULL")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.nextRow()) {
+                        long schemaId = JDBCUtils.safeGetLong(dbResult, 1);
+                        Object acl = JDBCUtils.safeGetObject(dbResult, 2);
+                        PostgreSchema schema = getDatabase().getSchema(monitor, schemaId);
+                        if (schema != null) {
+                            List<PostgrePrivilege> privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                            for (PostgrePrivilege p : privileges) {
+                                if (p instanceof PostgreObjectPrivilege && getName().equals(((PostgreObjectPrivilege) p).getGrantee())) {
+                                    List<PostgrePrivilegeGrant> grants = new ArrayList<>();
+                                    for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
+                                        grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(), schema.getName(), null, perm.getPrivilegeType(), false, false));
+                                    }
+                                    permissions.add(
+                                        new PostgreRolePrivilege(
+                                            this,
+                                            PostgrePrivilegeGrant.Kind.SCHEMA,
+                                            schema.getName(),
+                                            null,
+                                            grants));
+                                }
+                            }
+                        }
+                    }
+                }
+                //permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading routine privileges", e);
             }

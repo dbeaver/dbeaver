@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
+
+import java.util.Map;
 
 /**
  * SQL Completion proposal
@@ -35,6 +37,8 @@ public interface SQLCompletionContext {
     int PROPOSAL_CASE_LOWER                         = 2;
 
     DBPDataSource getDataSource();
+
+    DBCExecutionContext getExecutionContext();
 
     SQLSyntaxManager getSyntaxManager();
 
@@ -66,6 +70,7 @@ public interface SQLCompletionContext {
         @Nullable DBPImage image,
         @NotNull DBPKeywordType proposalType,
         @Nullable String description,
-        @Nullable DBPNamedObject object);
+        @Nullable DBPNamedObject object,
+        @NotNull Map<String, Object> params);
 
 }

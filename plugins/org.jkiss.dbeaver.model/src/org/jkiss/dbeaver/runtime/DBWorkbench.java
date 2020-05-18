@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public class DBWorkbench {
     private static final Log log = Log.getLog(DBWorkbench.class);
 
     private static final DBWorkbench instance = new DBWorkbench();
+    private static final ConsoleUserInterface CONSOLE_USER_INTERFACE = new ConsoleUserInterface();
 
     private static volatile DBPPlatform platformInstance = null;
     private static volatile DBPPlatformUI platformUIInstance = null;
@@ -51,15 +52,22 @@ public class DBWorkbench {
         return platformInstance;
     }
 
+    public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
+        return pc.cast(getPlatform());
+    }
+
     public static DBPPlatformUI getPlatformUI() {
         if (platformUIInstance == null) {
             synchronized (DBWorkbench.class) {
                 if (platformUIInstance == null) {
+                    if (getPlatform().getApplication().isHeadlessMode()) {
+                        return CONSOLE_USER_INTERFACE;
+                    }
                     platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
                     if (platformUIInstance == null) {
                         // Use console UI
                         log.debug("No platform UI installed. Use console interface.");
-                        platformUIInstance = new ConsoleUserInterface();
+                        platformUIInstance = CONSOLE_USER_INTERFACE;
                     }
                 }
             }
@@ -74,7 +82,7 @@ public class DBWorkbench {
     public static <T> T getService(@NotNull Class<T> serviceType) {
         T service = ServiceRegistry.getInstance().getService(serviceType);
         if (service == null) {
-            log.error("Service '" + serviceType.getName() + "' not found");
+            log.debug("Service '" + serviceType.getName() + "' not found");
         }
         return service;
     }

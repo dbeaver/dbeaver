@@ -56,7 +56,6 @@ Web
 ==========
   Main web site: https://dbeaver.io
   Source code: https://github.com/dbeaver/dbeaver
+  Issue tracker: https://github.com/dbeaver/dbeaver/issues
 
-Contacts
-==============
-  dbeaver@jkiss.org       - Technical support, feature suggestions and any other questions.
+  Please use out issue tracker for technical support, feature suggestions and any other questions

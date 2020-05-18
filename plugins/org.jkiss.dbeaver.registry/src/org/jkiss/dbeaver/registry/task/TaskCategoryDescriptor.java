@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.registry.task;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
-import org.jkiss.dbeaver.model.task.DBTTaskConfigurator;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
@@ -38,7 +36,6 @@ public class TaskCategoryDescriptor extends AbstractContextDescriptor implements
 
     private final IConfigurationElement config;
     private final List<TaskTypeDescriptor> tasks = new ArrayList<>();
-    private TaskConfiguratorDescriptor configuratorDescriptor;
     private TaskCategoryDescriptor parent;
     private List<TaskCategoryDescriptor> children = new ArrayList<>();
 
@@ -101,24 +98,6 @@ public class TaskCategoryDescriptor extends AbstractContextDescriptor implements
     @Override
     public DBTTaskType[] getTaskTypes() {
         return tasks.toArray(new DBTTaskType[0]);
-    }
-
-    @Override
-    public boolean supportsConfigurator() {
-        return configuratorDescriptor != null;
-    }
-
-    @NotNull
-    @Override
-    public DBTTaskConfigurator createConfigurator() throws DBException {
-        if (configuratorDescriptor == null) {
-            throw new DBException("No configurator for task type " + getId());
-        }
-        return configuratorDescriptor.createConfigurator();
-    }
-
-    void setConfigurator(TaskConfiguratorDescriptor configurator) {
-        this.configuratorDescriptor = configurator;
     }
 
     @Override

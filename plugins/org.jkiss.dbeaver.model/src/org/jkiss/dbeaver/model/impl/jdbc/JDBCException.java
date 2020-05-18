@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,23 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.sql.SQLException;
 
 /**
  * JDBCException
  */
-public class JDBCException extends DBCException
-{
+public class JDBCException extends DBCException {
     private static final long serialVersionUID = 1L;
 
-    public JDBCException(SQLException cause, DBPDataSource dataSource)
-    {
-        super(cause, dataSource);
+    public JDBCException(SQLException cause, DBCExecutionContext executionContext) {
+        super(cause, executionContext);
     }
 
     @Override
-    public SQLException getCause()
-    {
-        return (SQLException)super.getCause();
+    public SQLException getCause() {
+        return (SQLException) super.getCause();
     }
 }

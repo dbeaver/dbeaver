@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.runtime.serialize.SerializerRegistry;
@@ -189,8 +189,9 @@ public class JSONUtils {
                 json.value(value.toString());
             } else if (value instanceof Map) {
                 serializeMap(json, (Map<String, ?>) value);
+            } else if (value instanceof Collection) {
+                serializeCollection(json, (Collection<?>) value);
             } else {
-                log.error("Unsupport collection type: " + value.getClass().getName());
                 json.value(value.toString());
             }
         }
@@ -226,7 +227,7 @@ public class JSONUtils {
         json.endObject();
     }
 
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRProgressMonitor monitor, @NotNull OBJECT_TYPE object) {
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Map<String, Object> serializeObject(DBRRunnableContext runnableContext, OBJECT_CONTEXT context, @NotNull OBJECT_TYPE object) {
         DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializer(object);
         if (serializer == null) {
             log.error("No serializer found for object " + object.getClass().getName());
@@ -235,14 +236,14 @@ public class JSONUtils {
         Map<String, Object> state = new LinkedHashMap<>();
 
         Map<String, Object> location = new LinkedHashMap<>();
-        serializer.serializeObject(monitor, object, location);
+        serializer.serializeObject(runnableContext, context, object, location);
         state.put("type", SerializerRegistry.getInstance().getObjectType(object));
         state.put("location", location);
 
         return state;
     }
 
-    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  OBJECT_CONTEXT objectContext, @NotNull Map<String, Object> objectConfig) {
+    public static <OBJECT_CONTEXT, OBJECT_TYPE> Object deserializeObject(@NotNull DBRRunnableContext runnableContext,  OBJECT_CONTEXT objectContext, @NotNull Map<String, Object> objectConfig) throws DBCException {
         String typeID = CommonUtils.toString(objectConfig.get("type"));
         DBPObjectSerializer<OBJECT_CONTEXT, OBJECT_TYPE> serializer = SerializerRegistry.getInstance().createSerializerByType(typeID);
         if (serializer == null) {
@@ -300,8 +301,20 @@ public class JSONUtils {
         return CommonUtils.toBoolean(map.get(name));
     }
 
+    public static boolean getBoolean(Map<String, Object> map, String name, boolean defaultValue) {
+        return CommonUtils.getBoolean(map.get(name), defaultValue);
+    }
+
     public static int getInteger(Map<String, Object> map, String name) {
         return CommonUtils.toInt(map.get(name));
+    }
+
+    public static int getInteger(Map<String, Object> map, String name, int defaultValue) {
+        return CommonUtils.toInt(map.get(name), defaultValue);
+    }
+
+    public static long getLong(Map<String, Object> map, String name, long defaultValue) {
+        return CommonUtils.toLong(map.get(name), defaultValue);
     }
 
     @NotNull
@@ -337,6 +350,19 @@ public class JSONUtils {
             }
         }
         return result;
+    }
+
+    @Nullable
+    public static Map<String, String> deserializeStringMapOrNull(Map<String, Object> map, String name) {
+        Object propMap = map.get(name);
+        if (propMap instanceof Map && !((Map) propMap).isEmpty()) {
+            Map<String, String> result = new LinkedHashMap<>();
+            for (Map.Entry<?,?> pe : ((Map<?, ?>) propMap).entrySet()) {
+                result.put(CommonUtils.toString(pe.getKey()), CommonUtils.toString(pe.getValue()));
+            }
+            return result;
+        }
+        return null;
     }
 
     @NotNull

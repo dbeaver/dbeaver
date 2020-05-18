@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,12 +279,36 @@ public class ResultSetModel {
         return null;
     }
 
-    DBVEntity getVirtualEntity(boolean create) {
+    @Nullable
+    public DBDRowIdentifier getDefaultRowIdentifier() {
+        for (DBDAttributeBinding column : attributes) {
+            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+            if (rowIdentifier != null) {
+                return rowIdentifier;
+            }
+        }
+        return null;
+    }
+
+    void refreshValueHandlersConfiguration() {
+        for (DBDAttributeBinding binding : attributes) {
+            DBDValueHandler valueHandler = binding.getValueHandler();
+            if (valueHandler instanceof DBDValueHandlerConfigurable) {
+                ((DBDValueHandlerConfigurable) valueHandler).refreshValueHandlerConfiguration(binding);
+            }
+            DBDValueRenderer valueRenderer = binding.getValueRenderer();
+            if (valueRenderer != valueHandler && valueRenderer instanceof DBDValueHandlerConfigurable) {
+                ((DBDValueHandlerConfigurable) valueRenderer).refreshValueHandlerConfiguration(binding);
+            }
+        }
+    }
+
+    public DBVEntity getVirtualEntity(boolean create) {
         DBSEntity entity = isSingleSource() ? getSingleSource() : null;
         return getVirtualEntity(entity, create);
     }
 
-    DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
+    public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
         }
@@ -469,7 +493,7 @@ public class ResultSetModel {
         return metadataDynamic;
     }
 
-    boolean isMetadataChanged() {
+    public boolean isMetadataChanged() {
         return metadataChanged;
     }
 
@@ -511,7 +535,7 @@ public class ResultSetModel {
                 } else if (oldMeta == newMeta) {
                     continue;
                 }
-                if (!ResultSetUtils.equalAttributes(oldMeta, newMeta)) {
+                if (!DBExecUtils.equalAttributes(oldMeta, newMeta)) {
                     update = true;
                     break;
                 }
@@ -561,7 +585,6 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
-            updateColorMapping(false);
         }
     }
 
@@ -595,6 +618,7 @@ public class ResultSetModel {
         }
 
         // Add new data
+        updateColorMapping(false);
         appendData(rows, true);
         updateDataFilter();
 
@@ -623,7 +647,6 @@ public class ResultSetModel {
                 }
             }
             singleSourceEntity = sourceTable;
-            updateColorMapping(false);
         }
 
         hasData = true;
@@ -633,48 +656,35 @@ public class ResultSetModel {
         return colorMapping.containsKey(binding);
     }
 
-    boolean hasColorMapping(DBSEntity entity) {
-        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-        return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
-    }
-
-    void updateColorMapping(boolean reset) {
+    public void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
-        DBSEntity entity = getSingleSource();
-        if (entity != null) {
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
-            if (virtualEntity != null) {
-                List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                if (!CommonUtils.isEmpty(coList)) {
-                    for (DBVColorOverride co : coList) {
-                        DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
-                        if (binding != null) {
-                            List<AttributeColorSettings> cmList =
-                                colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                            cmList.add(new AttributeColorSettings(co));
-                        }
-                    }
-                }
-            }
-        } else {
-            for (DBDAttributeBinding attr : attributes) {
-                DBVEntity virtualEntity = DBVUtils.getVirtualEntity(attr, false);
-                if (virtualEntity != null) {
-                    List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-                    if (!CommonUtils.isEmpty(coList)) {
-                        for (DBVColorOverride co : coList) {
-                            if (CommonUtils.equalObjects(attr.getName(), co.getAttributeName())) {
-                                List<AttributeColorSettings> cmList =
-                                    colorMapping.computeIfAbsent(attr, k -> new ArrayList<>());
-                                cmList.add(new AttributeColorSettings(co));
-                            }
-                        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return;
+        }
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return;
+        }
+        {
+            List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+            if (!CommonUtils.isEmpty(coList)) {
+                for (DBVColorOverride co : coList) {
+                    DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
+                    if (binding != null) {
+                        List<AttributeColorSettings> cmList =
+                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        cmList.add(new AttributeColorSettings(co));
+                    } else {
+                        log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
                     }
                 }
             }
         }
-        updateRowColors(reset, curRows);
+        if (reset) {
+            updateRowColors(true, curRows);
+        }
     }
 
     private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
@@ -695,12 +705,12 @@ public class ResultSetModel {
                         Color background = null, foreground = null;
                         if (acs.rangeCheck) {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
-                                double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
-                                double maxValue = ResultSetUtils.makeNumericValue(acs.attributeValues[1]);
+                                double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
+                                double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
                                 if (acs.colorBackground != null && acs.colorBackground2 != null) {
                                     final DBDAttributeBinding binding = entry.getKey();
                                     final Object cellValue = getCellValue(binding, row);
-                                    double value = ResultSetUtils.makeNumericValue(cellValue);
+                                    double value = DBExecUtils.makeNumericValue(cellValue);
                                     if (value >= minValue && value <= maxValue) {
                                         foreground = acs.colorForeground;
                                         RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
@@ -759,7 +769,7 @@ public class ResultSetModel {
         }
     }
 
-    public void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
+    void appendData(@NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
             curRows.clear();
         }
@@ -771,7 +781,8 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
-        updateRowColors(false, newRows);
+
+        updateRowColors(resetOldRows, newRows);
     }
 
     void clearData() {
@@ -802,6 +813,28 @@ public class ResultSetModel {
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
+    }
+
+    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        if (attribute == null || attribute.getMetaAttribute() == null) {
+            return "Null meta attribute";
+        }
+        if (attribute.getMetaAttribute().isReadOnly()) {
+            return "Attribute is read-only";
+        }
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier == null) {
+            String status = attribute.getRowIdentifierStatus();
+            return status != null ? status : "No row identifier found";
+        }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+            return "Underlying entity doesn't support data modification";
+        }
+        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+            return "Underlying entity doesn't support data update";
+        }
+        return null;
     }
 
     public boolean isUpdateInProgress() {
@@ -936,9 +969,18 @@ public class ResultSetModel {
     void updateDataFilter(DBDDataFilter filter, boolean forceUpdate) {
         this.visibleAttributes.clear();
         Collections.addAll(this.visibleAttributes, this.attributes);
+        List<DBDAttributeConstraint> missingConstraints = new ArrayList<>();
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null || (!forceUpdate &&
+            if (filterConstraint == null) {
+                // Constraint not found
+                // Let's add it just to visualize condition in filters text
+                if (constraint.getOperator() != null) {
+                    missingConstraints.add(constraint);
+                }
+                continue;
+            }
+            if ((!forceUpdate &&
                 constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
                 constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
             {
@@ -964,6 +1006,7 @@ public class ResultSetModel {
             if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
                 filterConstraint.setVisualPosition(constraint.getVisualPosition());
             }
+            filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {
@@ -978,6 +1021,10 @@ public class ResultSetModel {
                     }
                 }
             }
+        }
+
+        if (!missingConstraints.isEmpty()) {
+            this.dataFilter.addConstraints(missingConstraints);
         }
 
         if (filter.getConstraints().size() != attributes.length) {
@@ -1002,30 +1049,33 @@ public class ResultSetModel {
 
     public void resetOrdering() {
         final boolean hasOrdering = dataFilter.hasOrdering();
-        // Sort locally
-        final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
-        curRows.sort((row1, row2) -> {
-            if (!hasOrdering) {
-                return row1.getRowNumber() - row2.getRowNumber();
-            }
-            int result = 0;
-            for (DBDAttributeConstraint co : orderConstraints) {
-                final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
-                if (binding == null) {
-                    continue;
+
+        // First sort in original order to reset multi-column orderings
+        curRows.sort(Comparator.comparingInt(ResultSetRow::getRowNumber));
+
+        if (hasOrdering) {
+            // Sort locally
+            final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
+            curRows.sort((row1, row2) -> {
+                int result = 0;
+                for (DBDAttributeConstraint co : orderConstraints) {
+                    final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
+                    if (binding == null) {
+                        continue;
+                    }
+                    Object cell1 = getCellValue(binding, row1);
+                    Object cell2 = getCellValue(binding, row2);
+                    result = DBUtils.compareDataValues(cell1, cell2);
+                    if (co.isOrderDescending()) {
+                        result = -result;
+                    }
+                    if (result != 0) {
+                        break;
+                    }
                 }
-                Object cell1 = getCellValue(binding, row1);
-                Object cell2 = getCellValue(binding, row2);
-                result = DBUtils.compareDataValues(cell1, cell2);
-                if (co.isOrderDescending()) {
-                    result = -result;
-                }
-                if (result != 0) {
-                    break;
-                }
-            }
-            return result;
-        });
+                return result;
+            });
+        }
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class OracleServerSession extends AbstractServerSession {
     private long instId;
     private long sid;
     private long serial;
+    private long sqlChildNumber; // SergDzh: to show in list
     private String user;
     private String schema;
     private String type;
@@ -79,6 +80,7 @@ public class OracleServerSession extends AbstractServerSession {
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sqlId = JDBCUtils.safeGetString(dbResult, "SQL_ID");
+        this.sqlChildNumber = JDBCUtils.safeGetLong(dbResult, "SQL_CHILD_NUMBER");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
         this.elapsedTime = JDBCUtils.safeGetLong(dbResult, "LAST_CALL_ET");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
@@ -161,9 +163,19 @@ public class OracleServerSession extends AbstractServerSession {
         return serviceName;
     }
 
-    @Property(category = CAT_SQL, order = 50)
+    @Property(category = CAT_SQL, order = 20)
     public String getSql() {
         return sql;
+    }
+
+    @Property(category = CAT_SQL, order = 21)
+    public String getSqlId() {
+        return sqlId;
+    }
+
+    @Property(category = CAT_SQL, order = 22) // SergDzh: to show in list
+    public long getSqlChildNumber() {
+        return sqlChildNumber;
     }
 
     @Property(category = CAT_PROCESS, viewable = true, order = 30)

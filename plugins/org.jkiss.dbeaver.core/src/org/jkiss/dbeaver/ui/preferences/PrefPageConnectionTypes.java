@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,12 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,9 +47,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageConnectionTypes
@@ -267,6 +270,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
+        } else {
+            colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
         }
 
         typeName.setText(connectionType.getName());
@@ -333,7 +338,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             //item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
             if (connectionColor != null) {
-                colorPicker.setColorValue(connectionColor.getRGB());
+                //colorPicker.setColorValue(connectionColor.getRGB());
             }
         }
         item.setData(connectionType);
@@ -343,23 +348,29 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     public boolean performOk()
     {
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        java.util.List<DBPConnectionType> toRemove = new ArrayList<>();
+        List<DBPConnectionType> toRemove = new ArrayList<>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
             if (!changedInfo.values().contains(type)) {
                 // Remove
                 toRemove.add(type);
             }
         }
+
+        Set<DBPConnectionType> changedSet = new HashSet<>();
+
         for (DBPConnectionType connectionType : toRemove) {
             registry.removeConnectionType(connectionType);
+            changedSet.add(connectionType);
         }
 
         for (DBPConnectionType changed : changedInfo.keySet()) {
+            boolean hasChanges = false;
             DBPConnectionType source = changedInfo.get(changed);
             if (source == changed) {
                 // New type
                 registry.addConnectionType(changed);
-            } else {
+                hasChanges = true;
+            } else if (!source.equals(changed)) {
                 // Changed type
                 source.setName(changed.getName());
                 source.setDescription(changed.getDescription());
@@ -368,9 +379,26 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
                 source.setModifyPermissions(changed.getModifyPermission());
+                hasChanges = true;
+            }
+            if (hasChanges) {
+                changedSet.add(source);
             }
         }
-        registry.saveConnectionTypes();
+
+        if (!changedSet.isEmpty()) {
+            registry.saveConnectionTypes();
+            // Flush projects configs (as they cache connection type information)
+            for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+                DBPDataSourceRegistry projectRegistry = project.getDataSourceRegistry();
+                for (DBPDataSourceContainer ds : projectRegistry.getDataSources()) {
+                    if (changedSet.contains(ds.getConnectionConfiguration().getConnectionType())) {
+                        projectRegistry.flushConfig();
+                        break;
+                    }
+                }
+            }
+        }
         return super.performOk();
     }
 

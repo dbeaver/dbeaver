@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBCExecutionContext context = getExecutionContext(event, false);
+        DBCExecutionContext context = getActiveExecutionContext(event, false);
         if (context != null) {
             invalidateDataSource(context.getDataSource());
         } else {
@@ -59,6 +59,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 // It should trigger connection instantiation if for some reason it was lost (SQLEditor specific?)
                 DBPDataSourceContainer dsContainer = ((IDataSourceContainerProviderEx) editor).getDataSourceContainer();
                 if (dsContainer != null) {
+                    ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(null);
                     ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(dsContainer);
                 }
             }

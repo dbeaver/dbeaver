@@ -17,7 +17,8 @@
                 id="jaybird"
                 parent="generic"
                 label="Firebird"
-                icon="icons/firebird_icon.png">
+                icon="icons/firebird_icon.png"
+                dialect="firebird">
             <drivers managable="true">
 
                 <driver
@@ -30,15 +31,15 @@
                         defaultPort="3050"
                         webURL="https://firebirdsql.org/en/jdbc-driver/"
                         propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
-                        description="Firebird JayBird driver"
+                        description="Firebird Jaybird driver"
                         categories="sql,embedded">
                     <replace provider="generic" driver="firebird_jaybird"/>
                     <replace provider="generic" driver="firebird_jaybird3"/>
 
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk18:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[4.0.0.java8]" bundle="!drivers.firebird"/>
 
-                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
+                    <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/jaybird"/>
 
                     <property name="encoding" value="UTF8"/>
 
@@ -57,7 +58,7 @@
                         sampleURL="jdbc:firebirdsql:embedded://{file}"
                         embedded="true"
                         webURL=""
-                        description="Firebird JayBird embedded driver">
+                        description="Firebird Jaybird embedded driver">
 
                     <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk18:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
 
@@ -81,6 +82,11 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="firebird" parent="generic" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect" label="Firebird" description="Firebird SQL dialect." icon="icons/firebird_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

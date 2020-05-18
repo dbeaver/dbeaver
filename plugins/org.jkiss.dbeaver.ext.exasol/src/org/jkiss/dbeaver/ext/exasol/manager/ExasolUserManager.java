@@ -1,25 +1,28 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
+//import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
+//import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+//import org.jkiss.dbeaver.ui.UITask;
+//import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -44,28 +47,11 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     protected ExasolUser createDatabaseObject(DBRProgressMonitor monitor,
                                               DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
         throws DBException {
-        return new UITask<ExasolUser>() {
-            @Override
-            protected ExasolUser runTask() {
-                ExasolUserDialog dialog = new ExasolUserDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                ExasolUser user = new ExasolUser(
-                    (ExasolDataSource) container,
-                    dialog.getName(),
-                    dialog.getComment(),
-                    dialog.getLDAPDN(),
-                    dialog.getPassword(),
-                    dialog.getKerberosPrincipal(),
-                    dialog.getUserType());
-                return user;
-            }
-        }.execute();
+    	return new ExasolUser((ExasolDataSource) container, "user", "", "", "password", "", ExasolUserType.LOCAL);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         ExasolUser obj = command.getObject();
 
@@ -91,7 +77,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         ExasolUser obj = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop User", "DROP USER " + DBUtils.getQuotedIdentifier(obj)));
@@ -111,7 +97,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options) {
         ExasolUser obj = command.getObject();
         actions.add(
@@ -127,7 +113,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options) {
         ExasolUser obj = command.getObject();
 
@@ -137,8 +123,17 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
         }
 
         if (command.getProperties().containsKey("priority")) {
-            String script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(obj.getPriority()), DBUtils.getQuotedIdentifier(obj));
-            actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+        	
+        	ExasolPriority priority = obj.getPriority();
+        	
+        	if (ExasolConstants.PRIORITY_GROUP_CLASS.equals(priority.getClass().getName())) {
+                String script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(priority), DBUtils.getQuotedIdentifier(obj));
+                actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+        	}
+        	if (ExasolConstants.CONSUMER_GROUP_CLASS.equals(priority.getClass().getName())) {
+                String script = String.format("ALTER USER  %s SET CONSUMER_GROUP = %s", DBUtils.getQuotedIdentifier(obj), DBUtils.getQuotedIdentifier(priority));
+                actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+        	}
         }
 
         if (command.getProperties().containsKey("dn")) {
@@ -148,7 +143,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
         }
 
         if (command.getProperties().containsKey("kerberosPrincipal")) {
-            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
+            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
             actionList.add(new SQLDatabasePersistAction("alter user", script));
             return;
         }
@@ -157,7 +152,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 
             StringBuilder script = new StringBuilder("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED ");
             script.append(" BY \"" + obj.getPassword() + "\" ");
-            ExasolDataSource ds = (ExasolDataSource) obj.getDataSource();
+            /*ExasolDataSource ds = (ExasolDataSource) obj.getDataSource();
             if (!ds.hasAlterUserPrivilege()) {
                 String oldPassword = new UITask<String>() {
                     @Override
@@ -177,7 +172,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
                 }
 
                 script.append(" REPLACE \"" + oldPassword + "\"");
-            }
+            }*/
 
             actionList.add(new SQLDatabasePersistAction("Modify User", script.toString()));
         }

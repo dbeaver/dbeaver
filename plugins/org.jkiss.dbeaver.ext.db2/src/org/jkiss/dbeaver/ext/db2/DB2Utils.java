@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
-import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
-import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
-import org.jkiss.dbeaver.ext.db2.model.DB2View;
-import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
@@ -279,7 +266,7 @@ public class DB2Utils {
                     LOG.debug("No valid EXPLAIN tables found in schema '" + explainTableSchemaName + "'.");
                     return false;
                 }
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, session.getExecutionContext());
             }
         } finally {
             monitor.done();
@@ -304,7 +291,7 @@ public class DB2Utils {
                 LOG.debug("Creation EXPLAIN Tables : OK");
             } catch (SQLException e) {
                 LOG.error("SQLException occured during EXPLAIN tables creation in schema " + explainTableSchemaName, e);
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, session.getExecutionContext());
             }
         } finally {
             monitor.done();

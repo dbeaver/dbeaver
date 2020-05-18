@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -42,7 +43,7 @@ import java.util.List;
  * ResultSet controller.
  * This interface is not supposed to be implemented by clients.
  */
-public interface IResultSetController extends IDataController, DBPContextProvider {
+public interface IResultSetController extends IDataController, DBPContextProvider, DBPObject {
 
     String MENU_ID_EDIT = "edit";
     String MENU_ID_VIEW = "view";
@@ -52,13 +53,16 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String MENU_ID_LAYOUT = "layout";
     String MENU_GROUP_EDIT = "edit";
     String MENU_GROUP_EXPORT = "results_export";
-    String MENU_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
+    String MENU_GROUP_ADDITIONS = "results_additions";//IWorkbenchActionConstants.MB_ADDITIONS;
 
     @NotNull
     IResultSetContainer getContainer();
 
     @NotNull
     IResultSetDecorator getDecorator();
+
+    @NotNull
+    IResultSetLabelProvider getLabelProvider();
 
     @NotNull
     ResultSetModel getModel();
@@ -72,7 +76,9 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     boolean isRecordMode();
 
-    boolean isAttributeReadOnly(DBDAttributeBinding attr);
+    String getReadOnlyStatus();
+
+    String getAttributeReadOnlyStatus(DBDAttributeBinding attr);
 
     boolean isPanelsVisible();
 
@@ -186,6 +192,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void updatePanelsContent(boolean forceRefresh);
 
     void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData);
+
+    void setSegmentFetchSize(Integer segmentFetchSize);
 
     /**
      * Enable/disable viewer actions. May be used by editors to "lock" RSV actions like navigation, edit, etc.

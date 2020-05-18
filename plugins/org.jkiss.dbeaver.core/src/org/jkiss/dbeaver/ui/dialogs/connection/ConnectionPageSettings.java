@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
@@ -110,7 +109,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             //UIUtils.resizeShell(getWizard().getContainer().getShell());
         }
 
-        setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
+        setDescription(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
             if (this.connectionEditor != null) {
@@ -132,7 +131,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             connectionEditor.loadSettings();
         }
         activateCurrentItem();
-        getContainer().updateTitleBar();
+        //getContainer().updateTitleBar();
     }
 
     @Override
@@ -200,14 +199,16 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 this.connectionEditor.setSite(this);
             }
             // init sub pages (if any)
-            IDialogPage[] allSubPages = getSubPages(false);
+            IDialogPage[] allSubPages = getSubPages(false, true);
 
-            if (!ArrayUtils.isEmpty(allSubPages)) {
+            {
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
-                // Add sub pages
-                Collections.addAll(allPages, allSubPages);
+                if (!ArrayUtils.isEmpty(allSubPages)) {
+                    // Add sub pages
+                    Collections.addAll(allPages, allSubPages);
+                }
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -233,10 +234,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         activateCurrentItem();
                     }
                 });
-            } else {
-                // Create single editor control
-                this.connectionEditor.createControl(parent);
-                setControl(this.connectionEditor.getControl());
             }
 
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
@@ -350,12 +347,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly) {
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
         if (extrasOnly) {
             return extraPages;
         }
         if (subPages != null) {
             return subPages;
+        }
+        if (!forceCreate) {
+            return new IDialogPage[0];
         }
         if (this.connectionEditor == null) {
             this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
@@ -363,7 +363,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         if (connectionEditor instanceof ICompositeDialogPage) {
-            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly);
+            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly, true);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
                     if (page instanceof IDataSourceConnectionEditor) {

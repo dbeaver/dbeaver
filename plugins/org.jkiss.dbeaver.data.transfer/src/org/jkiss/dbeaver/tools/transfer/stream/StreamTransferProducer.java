@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,10 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -116,10 +114,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public void transferData(
-        DBRProgressMonitor monitor,
-        IDataTransferConsumer consumer,
-        IDataTransferProcessor processor,
-        StreamProducerSettings settings)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IDataTransferConsumer consumer,
+        @Nullable IDataTransferProcessor processor,
+        @NotNull StreamProducerSettings settings, DBTTask task)
         throws DBException
     {
         // Initialize importer
@@ -155,7 +153,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         this.sourceObject.entityMapping = entityMapping;
     }
 
-    private class StreamSourceObject implements DBSEntity, DBSDataContainer {
+    private class StreamSourceObject implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
 
         private StreamProducerSettings.EntityMapping entityMapping;
 
@@ -245,6 +243,12 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         public boolean isPersisted() {
             return true;
         }
+
+        @NotNull
+        @Override
+        public String getFullyQualifiedName(DBPEvaluationContext context) {
+            return getName();
+        }
     }
 
     private static class StreamSourceAttribute extends AbstractAttribute implements DBSEntityAttribute {
@@ -284,7 +288,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
-        public void serializeObject(DBRProgressMonitor monitor, StreamTransferProducer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
             state.put("file", object.inputFile.getAbsolutePath());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());

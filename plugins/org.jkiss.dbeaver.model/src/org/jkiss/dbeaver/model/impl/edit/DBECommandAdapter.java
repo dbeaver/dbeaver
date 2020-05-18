@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandListener;
 public abstract class DBECommandAdapter implements DBECommandListener {
 
     @Override
-    public void onCommandChange(DBECommand command)
+    public void onCommandChange(DBECommand<?> command)
     {
     }
 
@@ -40,12 +40,12 @@ public abstract class DBECommandAdapter implements DBECommandListener {
     }
 
     @Override
-    public void onCommandDo(DBECommand command)
+    public void onCommandDo(DBECommand<?> command)
     {
     }
 
     @Override
-    public void onCommandUndo(DBECommand command)
+    public void onCommandUndo(DBECommand<?> command)
     {
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -51,15 +51,38 @@ public class Log
     }
 
     private final String name;
-    private PrintStream logWriter;
+    private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
+    private static PrintWriter DEFAULT_DEBUG_WRITER;
+    private final boolean doEclipseLog;
 
     public static Log getLog(Class<?> forClass) {
-        return new Log(forClass.getName());
+        return new Log(forClass.getName(), false);
+    }
+
+    public static Log getLog(String name) {
+        return new Log(name, true);
+    }
+
+    public static Log getLog(String name, boolean doEclipseLog) {
+        return new Log(name, doEclipseLog);
     }
 
     public static boolean isQuietMode() {
         return quietMode;
+    }
+
+    public static PrintWriter getLogWriter() {
+        return logWriter.get();
+    }
+
+    public static void setLogWriter(Writer logWriter) {
+        if (logWriter == null) {
+            Log.logWriter.remove();
+        } else {
+            PrintWriter printStream = new PrintWriter(logWriter, true);
+            Log.logWriter.set(printStream);
+        }
     }
 
     public void log(IStatus status) {
@@ -91,20 +114,15 @@ public class Log
         }
     }
 
-    private Log(String name)
-    {
+    private Log(String name, boolean doEclipseLog) {
         this.name = name;
-        logWriter = null;
-    }
-
-    public Log(String name, OutputStream out) {
-        this.name = name;
-        this.logWriter = new PrintStream(out);
+        this.doEclipseLog = doEclipseLog;
     }
 
     public void flush() {
-        if (logWriter != null) {
-            logWriter.flush();
+        PrintWriter logStream = logWriter.get();
+        if (logStream != null) {
+            logStream.flush();
         }
     }
 
@@ -166,15 +184,25 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintStream debugWriter = logWriter != null ? logWriter : (quietMode ? null : System.err);
-        if (debugWriter == null) {
-            return;
-        }
+        PrintWriter logStream = logWriter.get();
         synchronized (Log.class) {
+            if (DEFAULT_DEBUG_WRITER == null) {
+                DEFAULT_DEBUG_WRITER = new PrintWriter(System.err, true);
+            }
+            PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
+            if (debugWriter == null) {
+                return;
+            }
+
             debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
-            debugWriter.println(message);
+            if (message != null) {
+                debugWriter.println(message);
+            }
             if (t != null) {
                 t.printStackTrace(debugWriter);
+            }
+            if (message == null && t == null) {
+                debugWriter.println();
             }
             debugWriter.flush();
             for (Listener listener : listeners) {
@@ -244,7 +272,7 @@ public class Log
     private void writeExceptionStatus(int severity, Object message, Throwable t)
     {
         debugMessage(message, t);
-        if (logWriter == null) {
+        if (logWriter.get() == null) {
             if (t == null) {
                 writeEclipseLog(createStatus(severity, message));
             } else {
@@ -258,7 +286,7 @@ public class Log
     }
 
     private void writeEclipseLog(IStatus status) {
-        if (logWriter == null && eclipseLog != null) {
+        if (doEclipseLog && logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
         }
     }

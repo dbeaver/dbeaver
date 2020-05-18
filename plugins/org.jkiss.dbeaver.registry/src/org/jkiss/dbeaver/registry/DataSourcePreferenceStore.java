@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -27,7 +32,7 @@ import java.util.Map;
 /**
  * DataSourcePreferenceStore
  */
-public class DataSourcePreferenceStore extends SimplePreferenceStore
+public class DataSourcePreferenceStore extends SimplePreferenceStore implements IDataSourceContainerProvider
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 
@@ -36,20 +41,15 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore
         super(DBWorkbench.getPlatform().getPreferenceStore());
         this.dataSourceDescriptor = dataSourceDescriptor;
         // Init default properties from driver overrides
-        Map<Object,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
-        for (Map.Entry<Object, Object> prop : defaultConnectionProperties.entrySet()) {
-            String propName = CommonUtils.toString(prop.getKey());
+        Map<String,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
+        for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
+            String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
                 getDefaultProperties().put(
                     propName.substring(DBConstants.DEFAULT_DRIVER_PROP_PREFIX.length()),
                     CommonUtils.toString(prop.getValue()));
             }
         }
-    }
-
-    public DataSourceDescriptor getDataSourceDescriptor()
-    {
-        return dataSourceDescriptor;
     }
 
     @Override
@@ -59,4 +59,20 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore
         dataSourceDescriptor.getRegistry().flushConfig();
     }
 
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceDescriptor;
+    }
+
+    @Override
+    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+        super.firePropertyChangeEvent(name, oldValue, newValue);
+
+        // Forward event to global DS prefs store
+        DBPPreferenceStore gps = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore();
+        if (gps instanceof AbstractPreferenceStore) {
+            ((AbstractPreferenceStore) gps).firePropertyChangeEvent(this, name, oldValue, newValue);
+        }
+    }
 }

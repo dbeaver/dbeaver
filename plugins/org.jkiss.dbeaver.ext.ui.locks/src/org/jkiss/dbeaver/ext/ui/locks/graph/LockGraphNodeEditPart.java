@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import java.util.List;
-
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.IFigure;
@@ -29,6 +27,8 @@ import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphEdge;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
+
+import java.util.List;
 
 public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 	

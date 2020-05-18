@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,11 @@ class TaskRunImpl implements DBTTaskRun {
     private String errorMessage;
     private String errorStackTrace;
 
-    public TaskRunImpl() {
+    TaskRunImpl() {
+        this.id = "void";
     }
 
-    public TaskRunImpl(String id, Date startTime, String startUser, String startedBy, long duration, String errorMessage, String errorStackTrace) {
+    TaskRunImpl(String id, Date startTime, String startUser, String startedBy, long duration, String errorMessage, String errorStackTrace) {
         this.id = id;
         this.startTime = startTime;
         this.startUser = startUser;
@@ -114,4 +115,13 @@ class TaskRunImpl implements DBTTaskRun {
         return id + "; " + startUser + "; " + startedBy + "; " + (isRunSuccess() ? "Success" : CommonUtils.notEmpty(errorMessage));
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TaskRunImpl && id.equals(((TaskRunImpl) obj).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

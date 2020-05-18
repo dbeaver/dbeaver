@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +48,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
-    private DBPProject selectedProject;
-    //private ConnectionPageNetwork pageNetwork;
+
 
     public NewConnectionWizard() {
         this(null);
@@ -61,8 +57,6 @@ public class NewConnectionWizard extends ConnectionWizard
     public NewConnectionWizard(DBPDriver initialDriver) {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
         this.initialDriver = initialDriver;
-
-        selectedProject = NavigatorUtils.getSelectedProject();
     }
 
     @Override
@@ -94,7 +88,12 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     DBPProject getSelectedProject() {
-        return selectedProject;
+        return pageDrivers.getConnectionProject();
+    }
+
+    @Override
+    DBNBrowseSettings getSelectedNavigatorSettings() {
+        return pageDrivers.getNavigatorSettings();
     }
 
     @Override
@@ -113,8 +112,12 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
-        if (initialDriver == null) {
+        /*if (initialDriver == null) */{
+            // We need drivers page always as it contains some settings
             pageDrivers = new ConnectionPageDriver(this);
+            if (initialDriver != null) {
+                pageDrivers.setSelectedDriver(initialDriver);
+            }
             addPage(pageDrivers);
         }
 

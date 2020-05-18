@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
@@ -97,19 +98,24 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     @Override
     public void createPartControl(Composite parent)
     {
-        this.tree = createNavigatorTree(parent, getRootNode());
+        this.tree = createNavigatorTree(parent, null);
+        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer());
 
         getViewSite().setSelectionProvider(tree.getViewer());
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
 //        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
 //        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
+
+        UIExecutionQueue.queueExec(() -> tree.setInput(getRootNode()));
     }
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
     {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
+
+        createTreeColumns(navigatorTree);
 
         navigatorTree.getViewer().addSelectionChangedListener(
             event -> onSelectionChange((IStructuredSelection)event.getSelection())
@@ -196,6 +202,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return navigatorTree;
     }
 
+    protected void createTreeColumns(DatabaseNavigatorTree tree) {
+
+    }
+
     private void toggleNode(TreeViewer viewer, Object node) {
         if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
             viewer.collapseToLevel(node, 1);
@@ -228,7 +238,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     protected int getTreeStyle()
     {
-        return SWT.MULTI;
+        return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
     @Override
@@ -298,6 +308,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
                 tree.getViewer().refresh();
+                break;
+            case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
+                tree.getViewer().getTree().redraw();
                 break;
         }
     }

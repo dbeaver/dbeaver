@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         if (CommonUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenType(getDataSource(), null);
+            return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
         }
     }
 
@@ -85,12 +85,12 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     @Property(viewable = true)
     public String getName() {
-        return meta.getChildrenType(getDataSource(), null);
+        return meta.getChildrenTypeLabel(getDataSource(), null);
     }
 
     @Override
     public String getLocalizedName(String locale) {
-        return meta.getChildrenType(getDataSource(), locale);
+        return meta.getChildrenTypeLabel(getDataSource(), locale);
     }
 
     @Nullable
@@ -134,7 +134,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     @Override
     public String toString() {
-        return meta.getChildrenType(getDataSource(), null);
+        return meta.getChildrenTypeLabel(getDataSource(), null);
     }
 
 }

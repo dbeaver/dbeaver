@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -198,16 +199,21 @@ public class OracleUtils {
         }
     }
 
-    public static void addSchemaChangeActions(List<DBEPersistAction> actions, OracleSourceObject object)
+    public static void addSchemaChangeActions(DBCExecutionContext executionContext, List<DBEPersistAction> actions, OracleSourceObject object)
     {
+        OracleSchema schema = object.getSchema();
+        if (schema == null) {
+            return;
+        }
         actions.add(0, new SQLDatabasePersistAction(
             "Set target schema",
-            "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
+            "ALTER SESSION SET CURRENT_SCHEMA=" + schema.getName(),
             DBEPersistAction.ActionType.INITIALIZER));
-        if (object.getSchema() != object.getDataSource().getDefaultObject()) {
+        OracleSchema defaultSchema = ((OracleExecutionContext)executionContext).getDefaultSchema();
+        if (schema != defaultSchema && defaultSchema != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
-                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getDefaultObject().getName(),
+                "ALTER SESSION SET CURRENT_SCHEMA=" + defaultSchema.getName(),
                 DBEPersistAction.ActionType.FINALIZER));
         }
     }
@@ -227,7 +233,7 @@ public class OracleUtils {
             log.warn("Can't read source for custom source objects");
             return "-- ???? CUSTOM SOURCE";
         }
-        final String sourceType = sourceObject.getSourceType().name();
+        final String sourceType = sourceObject.getSourceType().name().replace("_", " ");
         final OracleSchema sourceOwner = sourceObject.getSchema();
         if (sourceOwner == null) {
             log.warn("No source owner for object '" + sourceObject.getName() + "'");
@@ -243,9 +249,15 @@ public class OracleUtils {
                 "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE")) {
+                String sourceName;
+                if (sourceObject instanceof OracleJavaClass) {
+                    sourceName = ((OracleJavaClass) sourceObject).getSourceName();
+                } else {
+                    sourceName = sourceObject.getName();
+                }
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
                 dbStat.setString(2, sourceOwner.getName());
-                dbStat.setString(3, sourceObject.getName());
+                dbStat.setString(3, sourceName);
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder source = null;
@@ -254,11 +266,18 @@ public class OracleUtils {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        final String line = dbResult.getString(1);
+                        String line = dbResult.getString(1);
                         if (source == null) {
                             source = new StringBuilder(200);
                         }
+                        if (line == null) {
+                            line = "";
+                        }
                         source.append(line);
+                        if (!line.endsWith("\n")) {
+                            // Java source
+                            source.append("\n");
+                        }
                         lineCount++;
                         monitor.subTask("Line " + lineCount);
                     }
@@ -271,9 +290,9 @@ public class OracleUtils {
                         return source.toString();
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, sourceOwner.getDataSource());
         } finally {
             monitor.done();
         }
@@ -356,9 +375,9 @@ public class OracleUtils {
                         return false;
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, object.getDataSource());
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         try {
             Object object = resultSet.getObject(index);
-            return getValueFromObject(session, type, object,false);
+            return getValueFromObject(session, type, object,false, false);
         } catch (SQLException e) {
             if (e.getCause() instanceof IllegalArgumentException) {
                 // Try to parse as WKG
@@ -98,7 +98,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object == null) {
             return new DBGeometry();
         } else if (object instanceof DBGeometry) {
@@ -152,7 +152,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             String pgString = value.toString();
             return makeGeometryFromWKT(session, pgString, 2);
         } catch (Throwable e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -193,7 +193,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 return new DBGeometry(wktString, srid);
             }
         } catch (Throwable e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

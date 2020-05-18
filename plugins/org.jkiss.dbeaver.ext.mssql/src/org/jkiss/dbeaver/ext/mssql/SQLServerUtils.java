@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.model.*;
@@ -78,10 +77,31 @@ public class SQLServerUtils {
             "use " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
     }
 
+    public static void setCurrentSchema(JDBCSession session, String currentUser, String schema) throws SQLException {
+        if (!CommonUtils.isEmpty(currentUser)) {
+            JDBCUtils.executeSQL(session,
+                "alter user " + DBUtils.getQuotedIdentifier(session.getDataSource(), currentUser) +
+                    " with default_schema = " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
+        }
+    }
+
+    public static String getCurrentUser(JDBCSession session) throws SQLException {
+        // See https://stackoverflow.com/questions/4101863/sql-server-current-user-name
+        return JDBCUtils.queryString(
+            session,
+            "select original_login()");
+    }
+
     public static String getCurrentDatabase(JDBCSession session) throws SQLException {
         return JDBCUtils.queryString(
             session,
             "select db_name()");
+    }
+
+    public static String getCurrentSchema(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "select schema_name()");
     }
 
     public static boolean isShowAllSchemas(DBPDataSource dataSource) {
@@ -149,7 +169,11 @@ public class SQLServerUtils {
         String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(systemSchema + ".sp_helptext '" + objectFQN + "'")) {
+            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
+            if (dataSource.isDataWarehouseServer(monitor)) {
+                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -212,4 +236,5 @@ public class SQLServerUtils {
         }
         return ddl;
     }
+
 }

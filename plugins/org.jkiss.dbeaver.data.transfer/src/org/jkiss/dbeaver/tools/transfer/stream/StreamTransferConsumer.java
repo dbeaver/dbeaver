@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -51,6 +50,9 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -71,6 +73,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
+    public static final String VARIABLE_INDEX = "index";
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_FILE = "file";
@@ -259,7 +262,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (processor != null) {
             // Dispose exporter
-            processor.dispose();
+            try {
+                processor.dispose();
+            } catch (Exception e) {
+                log.debug(e);
+            }
             processor = null;
         }
         closeOutputStreams();
@@ -419,7 +426,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public String getOutputFileName() {
-        Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
+        Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
             null).trim();
@@ -428,7 +435,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 //            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
 //        }
         if (multiFileNumber > 0) {
-            fileName += "_" + String.valueOf(multiFileNumber + 1);
+            fileName += "_" + (multiFileNumber + 1);
         }
         if (extension != null) {
             return fileName + "." + extension;
@@ -470,20 +477,46 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         return "";
                     }
                     DBSSchema schema = DBUtils.getParentOfType(DBSSchema.class, dataContainer);
-                    return schema == null ? "" : stripObjectName(schema.getName());
+                    if (schema != null) {
+                        return stripObjectName(schema.getName());
+                    }
+                    // Try catalog (#7506)
+                    DBSCatalog catalog = DBUtils.getParentOfType(DBSCatalog.class, dataContainer);
+                    return catalog == null ? "" : stripObjectName(catalog.getName());
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
                         return "export";
                     }
+                    if (dataContainer == null) {
+                        return null;
+                    }
                     String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:
-                    return RuntimeUtils.getCurrentTimeStamp();
+                    Date ts;
+                    if (parameters.startTimestamp != null) {
+                        // Use saved timestamp (#7352)
+                        ts = parameters.startTimestamp;
+                    } else {
+                        ts = new Date();
+                    }
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat(settings.getOutputTimestampPattern());
+                        return sdf.format(ts);
+                    } catch (Exception e) {
+                        log.error(e);
+                        return "BAD_TIMESTAMP";
+                    }
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                case VARIABLE_INDEX:
+                    return String.valueOf(parameters.orderNumber + 1);
                 case VARIABLE_PROJECT: {
+                    if (dataContainer == null) {
+                        return null;
+                    }
                     DBPProject project = DBUtils.getObjectOwnerProject(dataContainer);
                     return project == null ? "" : project.getName();
                 }
@@ -611,12 +644,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                             break;
                         }
                         case NATIVE: {
-                            if (dataSource instanceof SQLDataSource) {
+                            if (dataSource != null) {
                                 ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
                                 IOUtils.copyStream(stream, buffer);
 
                                 final byte[] bytes = buffer.toByteArray();
-                                final String binaryString = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
+                                final String binaryString = dataSource.getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
                                 writer.write(binaryString);
                                 break;
                             }
@@ -633,9 +666,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
 
+        @NotNull
         @Override
         public String getOutputEncoding() {
-            return settings == null ? null : settings.getOutputEncoding();
+            return settings == null ? StandardCharsets.UTF_8.displayName() : settings.getOutputEncoding();
         }
     }
 
@@ -652,13 +686,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public void write(byte[] b) throws IOException {
+        public void write(@NotNull byte[] b) throws IOException {
             this.out.write(b);
             bytesWritten += b.length;
         }
 
         @Override
-        public void write(byte[] b, int off, int len) throws IOException {
+        public void write(@NotNull byte[] b, int off, int len) throws IOException {
             this.out.write(b, off, len);
             bytesWritten += len;
         }
@@ -678,7 +712,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferConsumer> {
 
         @Override
-        public void serializeObject(DBRProgressMonitor monitor, StreamTransferConsumer object, Map<String, Object> state) {
+        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferConsumer object, Map<String, Object> state) {
         }
 
         @Override

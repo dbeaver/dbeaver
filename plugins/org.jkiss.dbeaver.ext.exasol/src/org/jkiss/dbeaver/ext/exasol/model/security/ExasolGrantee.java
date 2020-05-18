@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
+import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,11 +30,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+
 public abstract class ExasolGrantee
 		implements DBPSaveableObject, DBPRefreshableObject {
 	
 	private ExasolDataSource dataSource;
-	private ExasolPriorityGroup priority;
+	private ExasolPriority priority;
 	private boolean persisted;
 
 	private static final Log log = Log.getLog(ExasolGrantee.class);
@@ -49,16 +48,21 @@ public abstract class ExasolGrantee
 	public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
 	{
 		this.dataSource = dataSource;
+		ExasolCurrentUserPrivileges userPriv = this.dataSource.getUserPriviliges();
 		if (resultSet != null) {
 			this.persisted = true;
 	        try {
-				this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
+	        	if (userPriv.hasPriorityGroups())
+	        		this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
+	        	if (userPriv.hasConsumerGroups())
+	        		this.priority = dataSource.getConsumGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
 			} catch (DBException e) {
 				this.priority = null;
 			}
 		} else {
 			this.persisted = false;
 		}
+		
 	}
 	
 	public ExasolGrantee(ExasolDataSource dataSource, Boolean persisted)
@@ -204,18 +208,17 @@ public abstract class ExasolGrantee
 		
 	}
 
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
-    public ExasolPriorityGroup getPriority()
+    @Property(viewable = true,   editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
+    public ExasolPriority getPriority()
     {
     	return priority;
     }
     
-    public void setPriority(ExasolPriorityGroup priority) {
+    public void setPriority(ExasolPriority priority) {
 		this.priority = priority;
 	}
     
-    
-    
+
     public static class PriorityListProvider implements IPropertyValueListProvider<ExasolGrantee> {
 
 		@Override
@@ -227,8 +230,14 @@ public abstract class ExasolGrantee
 		public Object[] getPossibleValues(ExasolGrantee object) {
 			ExasolDataSource dataSource = object.getDataSource();
 			try {
-				Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-				return priorityGroups.toArray(new Object[priorityGroups.size()]);
+				if (dataSource.getUserPriviliges().hasConsumerGroups())
+				{
+					Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
+					return consumerGroups.toArray(new Object[consumerGroups.size()]);
+				} else {
+					Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
+					return priorityGroups.toArray(new Object[priorityGroups.size()]);
+				}
 			} catch (DBException e) {
 				log.error(e);
 				return new Object[0];

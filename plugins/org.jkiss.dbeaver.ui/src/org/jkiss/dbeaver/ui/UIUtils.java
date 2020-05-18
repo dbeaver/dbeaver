@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -76,6 +71,7 @@ import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.controls.*;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -572,20 +568,16 @@ public class UIUtils {
         return tipLabel;
     }
 
-    public static Text createLabelText(Composite parent, String label, String value)
-    {
+    public static Text createLabelText(Composite parent, String label, String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
 
-    public static Text createLabelText(Composite parent, String label, String value, int style)
-    {
+    public static Text createLabelText(Composite parent, String label, String value, int style) {
         return createLabelText(parent, label, value, style, new GridData(GridData.FILL_HORIZONTAL));
     }
 
     @NotNull
-    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style,
-        @Nullable Object layoutData)
-    {
+    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style, @Nullable Object layoutData) {
         Label controlLabel = createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
@@ -597,6 +589,38 @@ public class UIUtils {
         if (layoutData != null) {
             text.setLayoutData(layoutData);
         }
+
+        return text;
+    }
+
+    @NotNull
+    public static Text createLabelTextAdvanced(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style) {
+        Label controlLabel = createControlLabel(parent, label);
+        Composite panel = createComposite(parent, 2);
+        panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Text text = new Text(panel, style);
+        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        fixReadonlyTextBackground(text);
+        if (value != null) {
+            text.setText(value);
+        }
+        ToolBar editTB = new ToolBar(panel, SWT.HORIZONTAL);
+        ToolItem editButton = new ToolItem(editTB, SWT.DOWN);
+        //Button editButton = new Button(panel, SWT.DOWN);
+        //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        //editButton.setText("...");
+        editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
+        editButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
+                if (newText != null) {
+                    text.setText(newText);
+                }
+            }
+        });
+        editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;
     }
@@ -695,6 +719,16 @@ public class UIUtils {
         return button;
     }
 
+    public static Button createCheckbox(Composite parent, boolean checked)
+    {
+        final Button button = new Button(parent, SWT.CHECK);
+        if (checked) {
+            button.setSelection(true);
+        }
+
+        return button;
+    }
+
     public static Combo createLabelCombo(Composite parent, String label, int style)
     {
         return createLabelCombo(parent, label, null, style);
@@ -727,12 +761,23 @@ public class UIUtils {
         return button;
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener)
-    {
+    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener) {
+        return createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
+    }
+
+    public static ToolItem createToolItem(ToolBar parent, String title, String text, DBPImage icon, SelectionListener selectionListener) {
+        ToolItem toolItem = createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
+        if (title != null) {
+            toolItem.setText(title);
+        }
+        return toolItem;
+    }
+
+    public static ToolItem createToolItem(ToolBar parent, String text, Image icon, SelectionListener selectionListener) {
         ToolItem button = new ToolItem(parent, SWT.PUSH);
         button.setToolTipText(text);
         if (icon != null) {
-            button.setImage(DBeaverIcons.getImage(icon));
+            button.setImage(icon);
         }
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
@@ -1457,8 +1502,32 @@ public class UIUtils {
         table.addDisposeListener(e -> menuMgr.dispose());
     }
 
+    public static void setControlContextMenu(Control control, IMenuListener menuListener) {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(menuListener);
+        menuMgr.setRemoveAllWhenShown(true);
+        control.setMenu(menuMgr.createContextMenu(control));
+        control.addDisposeListener(e -> menuMgr.dispose());
+    }
+
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
-        menu.add(new Action("Copy selection") {
+        if (table.getColumnCount() > 1) {
+            menu.add(new Action("Copy " + table.getColumn(0).getText()) {
+                @Override
+                public void run() {
+                    StringBuilder text = new StringBuilder();
+                    for (TableItem item : table.getSelection()) {
+                        if (text.length() > 0) text.append("\n");
+                        text.append(item.getText(0));
+                    }
+                    if (text.length() == 0) {
+                        return;
+                    }
+                    UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
+                }
+            });
+        }
+        menu.add(new Action("Copy All") {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1732,17 +1801,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return getColorByRGB(rgbString);
-    }
-
-    public static Color getColorByRGB(String rgbString) {
-        Color connectionColor = sharedTextColors.getColor(rgbString);
-        if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-            // For white color return just null to avoid explicit color set.
-            // It is important for dark themes
-            return null;
-        }
-        return connectionColor;
+        return getConnectionColorByRGB(rgbString);
     }
 
     public static Color getConnectionTypeColor(DBPConnectionType connectionType) {
@@ -1750,7 +1809,26 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return getColorByRGB(rgbString);
+        return getConnectionColorByRGB(rgbString);
+    }
+
+    public static Color getConnectionColorByRGB(String rgbStringOrId) {
+        if (rgbStringOrId.isEmpty()) {
+            return null;
+        }
+        if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
+            // Some color constant
+            RGB rgb = getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
+            return sharedTextColors.getColor(rgb);
+        } else {
+            Color connectionColor = sharedTextColors.getColor(rgbStringOrId);
+            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
+                // For white color return just null to avoid explicit color set.
+                // It is important for dark themes
+                return null;
+            }
+            return connectionColor;
+        }
     }
 
     public static Shell createCenteredShell(Shell parent) {
@@ -1766,6 +1844,26 @@ public class UIUtils {
         return shell;
     }
 
+    public static void disposeCenteredShell(Shell shell) {
+        Composite parentShell = shell.getParent();
+        shell.dispose();
+        if (parentShell instanceof Shell) {
+            ((Shell) parentShell).setActive();
+        }
+    }
+
+    public static void centerShell(Shell parent, Shell shell) {
+        if (parent == null || shell == null) {
+            return;
+        }
+        Point size = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        final Rectangle parentBounds = parent.getBounds();
+        final int x = parentBounds.x + (parentBounds.width - size.x) / 2;
+        final int y = parentBounds.y + (parentBounds.height - size.y) / 2;
+
+        shell.setLocation(x, y);
+    }
+
     public static Image getShardImage(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImage(id);
     }
@@ -1774,38 +1872,22 @@ public class UIUtils {
         return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
     }
 
-    public static void installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
-        installContentProposal(control, contentAdapter, provider, false, true);
-    }
-
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation, boolean insertAfter) {
-        try {
-            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space"); //$NON-NLS-1$
-            final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
-                control,
-                contentAdapter,
-                provider,
-                keyStroke,
-                autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
-            proposalAdapter.setProposalAcceptanceStyle(insertAfter ? ContentProposalAdapter.PROPOSAL_INSERT : ContentProposalAdapter.PROPOSAL_REPLACE);
-            proposalAdapter.setPopupSize(new Point(300, 200));
-            //proposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_CHARACTER);
-            return proposalAdapter;
-        } catch (ParseException e) {
-            log.error("Error installing filters content assistant");
-            return null;
-        }
-    }
-
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
+        control.setToolTipText(getSupportedVariablesTip(toolTip, variables));
+
+    }
+
+    @NotNull
+    public static String getSupportedVariablesTip(String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
-        for (String var : variables) {
-            if (varsTip.length() > 0) varsTip.append(",\n");
-            varsTip.append("\t").append(GeneralUtils.variablePattern(var));
+        varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
+        for (int i = 0; i < variables.length; i++) {
+            String var = variables[i];
+            if (i > 0) varsTip.append(",\n");
+            varsTip.append("  ").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append("."); //$NON-NLS-1$
-        control.setToolTipText(toolTip + ". " + UIMessages.pref_page_connections_tool_tip_text_allowed_variables + ":\n" + varsTip);
-
+        return varsTip.toString();
     }
 
     public static CoolItem createCoolItem(CoolBar coolBar, Control control) {
@@ -1912,6 +1994,21 @@ public class UIUtils {
     public static boolean isDark(RGB rgb) {
         return greyLevel(rgb) < 128;
     }
+    
+    /**
+     * Calculate the Contrast color based on Luma(brightness)
+     * https://en.wikipedia.org/wiki/Luma_(video)
+     */
+    public static Color getContrastColor(Color color) {
+        if (color == null)
+            return new Color(null, 0, 0, 0);
+
+        double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+
+        int c = (luminance > 0.5) ? 255 : 0;
+
+        return new Color(null, c, c, c);
+    }  
 
     public static void openWebBrowser(String url)
     {
@@ -1942,7 +2039,7 @@ public class UIUtils {
             @Override
             public void paintControl(PaintEvent e) {
                 String tip = tipProvider.getValue(control);
-                if (tip != null && (control.isEnabled() && isEmptyTextControl(control) && !control.isFocusControl())) {
+                if (tip != null && (isEmptyTextControl(control) && !control.isFocusControl())) {
                     e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                     e.gc.setFont(hintFont);
                     e.gc.drawText(tip, 2, 0, true);
@@ -1968,4 +2065,19 @@ public class UIUtils {
             control.setRedraw(true);
         }
     }
+
+    public static Font getMonospaceFont() {
+        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
+    }
+
+    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+        while (control != null) {
+            if (parentType.isInstance(control)) {
+                return parentType.cast(control);
+            }
+            control = control.getParent();
+        }
+        return null;
+    }
+
 }

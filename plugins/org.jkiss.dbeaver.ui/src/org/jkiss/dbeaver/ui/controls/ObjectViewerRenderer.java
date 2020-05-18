@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,7 +184,7 @@ public abstract class ObjectViewerRenderer {
                 Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
 
                 if (getBooleanEditStyle() == ES_CENTERED) {
-                    gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y + 2);
+                    gc.drawImage(image, event.x + (columnBounds.width - imageBounds.width) / 2, event.y);
                 } else {
                     gc.drawImage(image, event.x/* + 4*/, event.y + (columnBounds.height - imageBounds.height) / 2);
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
@@ -163,7 +163,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 commandProposals.add(new SQLCommandCompletionProposal(request, command));
             }
         }
-        return commandProposals.toArray(new ICompletionProposal[commandProposals.size()]);
+        return commandProposals.toArray(new ICompletionProposal[0]);
     }
 
     @NotNull
@@ -185,7 +185,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         templateProposals.sort(Comparator.comparing(TemplateProposal::getDisplayString));
-        return templateProposals.toArray(new ICompletionProposal[templateProposals.size()]);
+        return templateProposals.toArray(new ICompletionProposal[0]);
     }
 
     /**

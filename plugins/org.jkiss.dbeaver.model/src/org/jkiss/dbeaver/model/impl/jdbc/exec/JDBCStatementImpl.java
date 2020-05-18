@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -131,7 +132,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             return execute(query);
         }
         catch (SQLException e) {
-            throw new DBSQLException(query, e, connection.getDataSource());
+            throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }
 
@@ -142,7 +143,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             addBatch(query);
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -153,7 +154,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             return executeBatch();
         }
         catch (SQLException e) {
-            throw new DBSQLException(query, e, connection.getDataSource());
+            throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }
 
@@ -168,7 +169,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             return getResultSet();
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
         finally {
             this.endBlock();
@@ -184,7 +185,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             return makeResultSet(getOriginal().getGeneratedKeys());
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -194,7 +195,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             return getUpdateCount();
         } catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -205,7 +206,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             return getOriginal().getMoreResults();
         } catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -313,6 +314,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         this.executeError = null;
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.traceQueryBegin(getQueryString());
         }
         this.startBlock();
     }
@@ -624,9 +628,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
                     log.debug("Internal error during clearWarnings", e);
                 }
             }
-            return warnings == null ? null : warnings.toArray(new Throwable[warnings.size()]);
+            return warnings == null ? null : warnings.toArray(new Throwable[0]);
         } catch (SQLException e) {
-            throw new DBCException(e, getSession().getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -635,7 +639,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             getOriginal().setQueryTimeout(timeout);
         } catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
@@ -644,7 +648,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         try {
             getOriginal().setFetchSize(fetchSize);
         } catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 

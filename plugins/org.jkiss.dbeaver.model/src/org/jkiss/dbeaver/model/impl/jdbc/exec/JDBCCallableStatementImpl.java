@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -155,10 +154,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             Matcher matcher = EXEC_PATTERN.matcher(queryString);
             if (matcher.find()) {
                 String procName = matcher.group(1);
-                char divChar = 0;
-                if (dataSource instanceof SQLDataSource) {
-                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-                }
+                char divChar = dataSource.getSQLDialect().getStructSeparator();
                 if (procName.indexOf(divChar) != -1) {
                     return findProcedureByNames(session, procName.split("\\" + divChar));
                 } else {
@@ -176,7 +172,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
         DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
         if (names.length == 1) {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), container);
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), session.getExecutionContext());
             if (selectedObjects.length > 0 && selectedObjects[selectedObjects.length - 1] instanceof DBSObjectContainer) {
                 container = (DBSObjectContainer) selectedObjects[selectedObjects.length - 1];
             }

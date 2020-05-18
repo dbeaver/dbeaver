@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
@@ -121,8 +120,8 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(catalogName) && CommonUtils.isEmpty(schemaName)) {
-            if (dataSource instanceof SQLDataSource) {
-                SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+            {
+                SQLDialect sqlDialect = dataSource.getSQLDialect();
                 if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
                     final String catalogSeparator = sqlDialect.getCatalogSeparator();
                     final int catDivPos = fetchedTableName.indexOf(catalogSeparator);

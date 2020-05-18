@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.model.gis.GisConstants;
-import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 
 import java.util.List;
 
@@ -68,13 +69,13 @@ class SelectCRSAction extends Action {
                     }
                     menuManager.add(new Separator());
                 }
-                menuManager.add(new Action("Other ...") {
+                menuManager.add(new Action(GISMessages.panel_select_crs_action_menu_manager_other) {
                     @Override
                     public void run() {
                         SelectCRSAction.this.run();
                     }
                 });
-                menuManager.add(new Action("Configuration ...") {
+                menuManager.add(new Action(GISMessages.panel_select_crs_action_menu_manager_config) {
                     @Override
                     public void run() {
                         new GISViewerConfigurationDialog(valueEditor.getEditorControl().getShell()).open();

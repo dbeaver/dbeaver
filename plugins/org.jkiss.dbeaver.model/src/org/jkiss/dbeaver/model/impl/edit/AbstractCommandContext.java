@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             Map<String, Object> validateOptions = new HashMap<>();
             for (CommandQueue queue : getCommandQueues()) {
                 for (CommandInfo cmd : queue.commands) {
-                    cmd.command.validateCommand(validateOptions);
+                    cmd.command.validateCommand(monitor, validateOptions);
                 }
             }
             useAutoCommit = CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS);
@@ -161,7 +161,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                     if (!cmd.executed) {
                         // Persist changes
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(monitor, options);
+                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(monitor, executionContext, options);
                             if (!ArrayUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<>(persistActions.length);
                                 for (DBEPersistAction action : persistActions) {
@@ -687,6 +687,18 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 }
             }
         }
+
+        // Move rename commands in the head (#7512)
+        for (CommandQueue queue : commandQueues) {
+            int headIndex = 0;
+            for (CommandInfo cmd : new ArrayList<>(queue.commands)) {
+                if (cmd.mergedBy == null && cmd.command instanceof DBECommandRename) {
+                    queue.commands.remove(cmd);
+                    queue.commands.add(headIndex++, cmd);
+                }
+            }
+        }
+
 
         return commandQueues;
     }

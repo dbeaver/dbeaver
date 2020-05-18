@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,9 @@ class GridColumn {
     private int level;
     private int width = DEFAULT_WIDTH;
     private int height = -1;
+    private int pinIndex = -1;
 
-	public GridColumn(LightGrid grid, Object element) {
+    public GridColumn(LightGrid grid, Object element) {
         this.grid = grid;
         this.element = element;
         this.parent = null;
@@ -113,6 +114,18 @@ class GridColumn {
 			grid.redraw();
 		}
 	}
+
+    public boolean isPinned() {
+        return pinIndex >= 0 || parent != null && parent.isPinned();
+    }
+
+    public int getPinIndex() {
+        return parent == null ? pinIndex : parent.getPinIndex();
+    }
+
+    public void setPinIndex(int pinIndex) {
+        this.pinIndex = pinIndex;
+    }
 
     public boolean isOverFilterButton(int x, int y) {
 	    if (!isFilterable()) {
@@ -384,6 +397,11 @@ class GridColumn {
         } else {
             return children.get(0).getFirstLeaf();
         }
+    }
+
+    @Override
+    public String toString() {
+        return CommonUtils.toString(element);
     }
 
 }

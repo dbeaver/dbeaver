@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -64,7 +65,7 @@ class ResultSetPersister {
 
         private final DBSDataContainer dataContainer;
 
-        public ExecutionSource(DBSDataContainer dataContainer) {
+        ExecutionSource(DBSDataContainer dataContainer) {
             this.dataContainer = dataContainer;
         }
 
@@ -84,6 +85,12 @@ class ResultSetPersister {
         @Override
         public Object getSourceDescriptor() {
             return ResultSetPersister.this;
+        }
+
+        @Nullable
+        @Override
+        public DBCScriptContext getScriptContext() {
+            return null;
         }
     }
 
@@ -181,7 +188,7 @@ class ResultSetPersister {
             // Nothing to refresh
             return false;
         }
-        final DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty()) {
             // No key - can't refresh
             return false;
@@ -249,7 +256,7 @@ class ResultSetPersister {
     private void prepareDeleteStatements(@NotNull DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
         throws DBException {
         // Make delete statements
-        DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
+        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
         if (rowIdentifier == null) {
             throw new DBCException("Internal error: can't find entity identifier, delete is not possible");
         }
@@ -490,23 +497,70 @@ class ResultSetPersister {
         }
     }
 
-    @Nullable
-    public DBDRowIdentifier getDefaultRowIdentifier() {
-        for (DBDAttributeBinding column : columns) {
-            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
-            if (rowIdentifier != null) {
-                return rowIdentifier;
-            }
-        }
-        return null;
-    }
-
     @NotNull
     private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException {
         if (entity instanceof DBSDataManipulator) {
             return (DBSDataManipulator) entity;
         } else {
             throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
+        }
+    }
+
+    void checkEntityIdentifiers() throws DBException
+    {
+
+        final DBCExecutionContext executionContext = viewer.getExecutionContext();
+        if (executionContext == null) {
+            throw new DBCException("Can't persist data - not connected to database");
+        }
+
+        boolean needsSingleEntity = this.hasInserts() || this.hasDeletes();
+
+        DBSEntity entity = model.getSingleSource();
+        if (needsSingleEntity) {
+            if (entity == null) {
+                throw new DBCException("Can't detect source entity");
+            }
+        }
+
+        if (entity != null) {
+            // Check for value locators
+            // Probably we have only virtual one with empty attribute set
+            DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
+            if (identifier != null) {
+                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                    // Empty identifier. We have to define it
+                    if (!UIConfirmation.run(() -> ValidateUniqueKeyUsageDialog.validateUniqueKey(viewer, executionContext))) {
+                        throw new DBCException("No unique key defined");
+                    }
+                }
+            }
+        }
+
+        List<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
+        if (this.hasDeletes()) {
+            DBDRowIdentifier defIdentifier = model.getDefaultRowIdentifier();
+            if (defIdentifier == null) {
+                throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
+            } else if (!defIdentifier.isValidIdentifier()) {
+                throw new DBCException("Attributes of unique key '" + DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set. Cannot proceed with row(s) delete.");
+            }
+        }
+
+        {
+            for (DBDAttributeBinding attr : updatedAttributes) {
+                // Check attributes of non-virtual identifier
+                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+                if (rowIdentifier == null) {
+                    // We shouldn't be here ever!
+                    // Virtual id should be created if we missing natural one
+                    throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
+                } else if (!rowIdentifier.isValidIdentifier()) {
+                    throw new DBCException(
+                        "Can't update attribute '" + attr.getName() +
+                            "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
+                }
+            }
         }
     }
 
@@ -519,7 +573,7 @@ class ResultSetPersister {
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        protected DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
+        DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
             super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
             this.settings = settings;
@@ -558,9 +612,9 @@ class ResultSetPersister {
                                 NLS.bind(
                                     ResultSetMessages.controls_resultset_viewer_status_inserted_,
                                     new Object[]{
-                                        DataUpdaterJob.this.insertStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.deleteStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.updateStats.getRowsUpdated()}));
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.insertStats.getRowsUpdated()),
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.deleteStats.getRowsUpdated()),
+                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.updateStats.getRowsUpdated())}));
                         } else {
                             DBWorkbench.getPlatformUI().showError("Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
@@ -580,9 +634,24 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor) {
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
+
                 monitor.beginTask(
                     ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+
+                if (!generateScript) {
+                    IResultSetContainer container = viewer.getContainer();
+                    if (container instanceof ISmartTransactionManager) {
+                        if (((ISmartTransactionManager) container).isSmartAutoCommit()) {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                            if (txnManager != null && txnManager.isAutoCommit()) {
+                                monitor.subTask("Disable auto-commit mode");
+                                txnManager.setAutoCommit(monitor, false);
+                            }
+                        }
+                    }
+                }
+
                 Throwable[] error = new Throwable[1];
                 DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), param -> {
                     error[0] = executeStatements(session);
@@ -865,7 +934,7 @@ class ResultSetPersister {
                 return;
             }
             for (int i = 0; i < curAttributes.length; i++) {
-                if (!ResultSetUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
+                if (!DBExecUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
                     log.debug("Attribute '" + curAttributes[i].getMetaAttribute() + "' doesn't match '" + attributes.get(i).getName() + "'");
                     return;
                 }

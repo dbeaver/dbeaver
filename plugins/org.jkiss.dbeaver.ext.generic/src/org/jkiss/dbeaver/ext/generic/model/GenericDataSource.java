@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
@@ -50,13 +53,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
 
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, IAdaptable, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -69,7 +70,6 @@ public class GenericDataSource extends JDBCDataSource
     private String queryGetActiveDB;
     private String querySetActiveDB;
     private String selectedEntityType;
-    private String selectedEntityName;
     private boolean selectedEntityFromAPI;
     private boolean omitSingleCatalog;
     private String allObjectsPattern;
@@ -176,9 +176,18 @@ public class GenericDataSource extends JDBCDataSource
         return getClass() != GenericDataSource.class;
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
-        if (setActiveObject) {
-            setActiveEntityName(monitor, context, getDefaultObject());
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new GenericExecutionContext(instance, type);
+    }
+
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        super.initializeContextState(monitor, context, initFrom);
+        if (initFrom != null) {
+            GenericExecutionContext metaContext = (GenericExecutionContext) initFrom;
+            ((GenericExecutionContext) context).initDefaultsFrom(monitor, metaContext);
+        } else {
+            ((GenericExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
@@ -251,10 +260,10 @@ public class GenericDataSource extends JDBCDataSource
                 Properties shutdownProps = new Properties();
                 DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
                 if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, connectionInfo.getUserName());
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, connectionInfo.getUserPassword());
                 }
 
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
@@ -280,7 +289,7 @@ public class GenericDataSource extends JDBCDataSource
         return tableTypeCache.getAllObjects(monitor, this);
     }
 
-    public Collection<GenericCatalog> getCatalogs() {
+    public List<GenericCatalog> getCatalogs() {
         return catalogs;
     }
 
@@ -289,7 +298,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Association
-    public Collection<GenericSchema> getSchemas() {
+    public List<GenericSchema> getSchemas() {
         return schemas;
     }
 
@@ -329,8 +338,8 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public PrimaryKeysCache getPrimaryKeysCache() {
-        return structureContainer.getPrimaryKeysCache();
+    public ConstraintKeysCache getConstraintKeysCache() {
+        return structureContainer.getConstraintKeysCache();
     }
 
     @Override
@@ -424,17 +433,18 @@ public class GenericDataSource extends JDBCDataSource
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         boolean omitCatalog = isOmitCatalog();
-        Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
-        if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
+        boolean omitTypeCache = CommonUtils.toBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE));
+        if (!omitTypeCache) {
             // Cache data types
             try {
                 dataTypeCache.getAllObjects(monitor, this);
             } catch (Exception e) {
                 log.warn("Can't fetch database data types", e);
             }
-        } else {
-            // Use basic data types
-            dataTypeCache.fillStandardTypes(this);
+            if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
+                // Use basic data types
+                dataTypeCache.fillStandardTypes(this);
+            }
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
@@ -511,8 +521,6 @@ public class GenericDataSource extends JDBCDataSource
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
-            determineSelectedEntity(session);
-
         } catch (Throwable ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
@@ -539,7 +547,6 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException {
         super.refreshObject(monitor);
 
-        this.selectedEntityName = null;
         this.structureContainer = null;
         this.tableTypeCache.clearCache();
         this.catalogs = null;
@@ -593,7 +600,8 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+        throws DBException
+    {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalogs();
         } else if (!CommonUtils.isEmpty(getSchemas())) {
@@ -606,8 +614,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalog(childName);
         } else if (!CommonUtils.isEmpty(getSchemas())) {
@@ -620,8 +627,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (!CommonUtils.isEmpty(schemas)) {
@@ -642,8 +648,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    private boolean isChild(DBSObject object)
-        throws DBException {
+    private boolean isChild(DBSObject object) throws DBException {
         if (object instanceof GenericCatalog) {
             return !CommonUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
@@ -652,185 +657,36 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
-    @Override
-    public boolean supportsDefaultChange() {
-        if (selectedEntityFromAPI) {
-            return true;
-        }
-        if (!CommonUtils.isEmpty(querySetActiveDB)) {
-            if (CommonUtils.isEmpty(selectedEntityType)) {
-                return !CommonUtils.isEmpty(getCatalogs()) || !CommonUtils.isEmpty(getSchemas());
-            }
-            if (!CommonUtils.isEmpty(getCatalogs())) {
-                return GenericConstants.ENTITY_TYPE_CATALOG.equals(selectedEntityType);
-            } else if (!CommonUtils.isEmpty(getSchemas())) {
-                return GenericConstants.ENTITY_TYPE_SCHEMA.equals(selectedEntityType);
-            }
-        }
-        return false;
+    boolean hasCatalogs() {
+        return !CommonUtils.isEmpty(catalogs);
     }
 
-    @Override
-    public DBSObject getDefaultObject() {
-        if (!CommonUtils.isEmpty(selectedEntityName)) {
-            if (!CommonUtils.isEmpty(catalogs)) {
-                if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
-                    return getCatalog(selectedEntityName);
-                }
-            } else if (!CommonUtils.isEmpty(schemas)) {
-                if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
-                    return getSchema(selectedEntityName);
-                }
-            }
-        }
-        return null;
+    boolean hasSchemas() {
+        return !CommonUtils.isEmpty(schemas);
     }
 
-    @Override
-    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException {
-        final DBSObject oldSelectedEntity = getDefaultObject();
-        // Check removed because we can select the same object on invalidate
-//        if (object == oldSelectedEntity) {
-//            return;
-//        }
-        if (!isChild(object)) {
-            throw new DBException("Bad child object specified as active: " + object);
-        }
-
-        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-            setActiveEntityName(monitor, context, object);
-        }
-
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        DBUtils.fireObjectSelect(object, true);
+    String getQueryGetActiveDB() {
+        return queryGetActiveDB;
     }
 
-    @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        String oldEntityName = selectedEntityName;
-        DBSObject oldDefaultObject = getDefaultObject();
-        try {
-            determineSelectedEntity((JDBCSession) session);
-        } catch (Throwable e) {
-            log.debug("Error detecting active object", e);
-            return false;
-        }
-        if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
-            final DBSObject newDefaultObject = getDefaultObject();
-            if (newDefaultObject != null) {
-                if (oldDefaultObject != null) {
-                    DBUtils.fireObjectSelect(oldDefaultObject, false);
-                }
-                DBUtils.fireObjectSelect(newDefaultObject, true);
-
-                return true;
-            }
-        }
-        return false;
+    String getQuerySetActiveDB() {
+        return querySetActiveDB;
     }
 
     String getSelectedEntityType() {
         return selectedEntityType;
     }
 
-    String getSelectedEntityName() {
-        return selectedEntityName;
+    void setSelectedEntityType(String selectedEntityType) {
+        this.selectedEntityType = selectedEntityType;
     }
 
-    private void determineSelectedEntity(JDBCSession session) {
-        // Get selected entity (catalog or schema)
-        selectedEntityName = null;
-        if (CommonUtils.isEmpty(queryGetActiveDB)) {
-            if (!CommonUtils.isEmpty(catalogs)) {
-                try {
-                    selectedEntityName = session.getCatalog();
-                    if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                        selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
-                        selectedEntityFromAPI = true;
-                    }
-                } catch (SQLException e) {
-                    // Seems to be not supported
-                    log.debug(e);
-                }
-            }
-            if (CommonUtils.isEmpty(selectedEntityName)) {
-                // Try to use current schema
-                try {
-                    selectedEntityName = session.getSchema();
-                    if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                        selectedEntityType = GenericConstants.ENTITY_TYPE_SCHEMA;
-                        selectedEntityFromAPI = true;
-                    }
-                } catch (SQLException e) {
-                    log.debug(e);
-                }
-            }
-            if (CommonUtils.isEmpty(selectedEntityName)) {
-                // If we have only one catalog then it is our selected entity
-                if (!CommonUtils.isEmpty(catalogs) && catalogs.size() == 1) {
-                    selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
-                    selectedEntityName = catalogs.get(0).getName();
-                } else if (!CommonUtils.isEmpty(schemas) && schemas.size() == 1) {
-                    selectedEntityType = GenericConstants.ENTITY_TYPE_SCHEMA;
-                    selectedEntityName = schemas.get(0).getName();
-                }
-            }
-        } else {
-            try {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB)) {
-                    try (JDBCResultSet resultSet = dbStat.executeQuery()) {
-                        resultSet.next();
-                        selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
-                        if (!CommonUtils.isEmpty(selectedEntityName)) {
-                            // [PostgreSQL]
-                            int divPos = selectedEntityName.lastIndexOf(',');
-                            if (divPos != -1) {
-                                selectedEntityName = selectedEntityName.substring(divPos + 1);
-                            }
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                log.debug(e);
-                selectedEntityName = null;
-            }
-        }
+    boolean isSelectedEntityFromAPI() {
+        return selectedEntityFromAPI;
     }
 
-    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBCException {
-        if (entity == null) {
-            log.debug("Null current entity");
-            return;
-        }
-        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
-            if (selectedEntityFromAPI) {
-                // Use JDBC API to change entity
-                switch (selectedEntityType) {
-                    case GenericConstants.ENTITY_TYPE_CATALOG:
-                        session.setCatalog(entity.getName());
-                        break;
-                    case GenericConstants.ENTITY_TYPE_SCHEMA:
-                        session.setSchema(entity.getName());
-                        break;
-                    default:
-                        throw new DBCException("No API to change active entity if type '" + selectedEntityType + "'");
-                }
-            } else {
-                if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
-                    throw new DBCException("Active database can't be changed for this kind of datasource!");
-                }
-                String changeQuery = querySetActiveDB.replaceFirst("\\?", Matcher.quoteReplacement(entity.getName()));
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery)) {
-                    dbStat.execute();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, context.getDataSource());
-        }
-        selectedEntityName = entity.getName();
+    void setSelectedEntityFromAPI(boolean selectedEntityFromAPI) {
+        this.selectedEntityFromAPI = selectedEntityFromAPI;
     }
 
     @Override
@@ -936,6 +792,21 @@ public class GenericDataSource extends JDBCDataSource
             log.error(e);
             return null;
         }
+    }
+
+    GenericCatalog getDefaultCatalog() {
+        return null;
+    }
+
+    GenericSchema getDefaultSchema() {
+        if (schemas != null) {
+            for (GenericSchema schema : schemas) {
+                if (schema.isVirtual()) {
+                    return schema;
+                }
+            }
+        }
+        return null;
     }
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {

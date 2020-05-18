@@ -13,7 +13,8 @@
                 id="db2_zos"
                 parent="generic"
                 label="DB2 for z/OS"
-                icon="icons/db2_zos_icon.png">
+                icon="icons/db2_zos_icon.png"
+                dialect="db2_zos">
             <drivers managable="true">
 
                 <driver
@@ -44,14 +45,14 @@
                     <parameter name="omit-type-cache" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
 
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                    <fileSource url="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                                 name="DB2 JCC drivers"
                                 instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>
             </drivers>
 
@@ -179,6 +180,11 @@
                 <column id="FILTER_CONDITION" index="13"/>
             </object>
         </meta>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="db2_zos" parent="generic" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSSQLDialect" label="DB2 for z/OS" description="IBM DB2 z/OS SQL dialect." icon="icons/db2_zos_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

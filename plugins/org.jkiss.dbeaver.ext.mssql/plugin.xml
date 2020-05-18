@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@
             description="%datasource.mssql.description"
             id="sqlserver"
             label="MS SQL Server"
-            icon="icons/mssql_icon.png">
+            icon="icons/mssql_icon.png"
+            dialect="sqlserver">
 
             <tree path="sqlserver" label="SQL Server data source">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
@@ -139,15 +140,11 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
-                    <!--<file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE" optional="true" />-->
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[8.2.0.x64]" os="win32" arch="x86_64" bundle="!drivers.mssql.new"/>
 
-                    <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
-                    <!--<file type="jar" path="drivers/mssql/new/adal4j.jar" optional="true" />-->
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/new/auth/x86/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
                 </driver>
 
@@ -167,8 +164,8 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
-                    <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
 
                     <!-- Active directory auth -->
                     <file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE[1.6.0]" optional="true" />
@@ -201,7 +198,8 @@
                 id="mssql"
                 parent="generic"
                 label="MS SQL Server (Generic)"
-                icon="icons/mssql_icon.png">
+                icon="icons/mssql_icon.png"
+                dialect="sqlserver">
             <drivers managable="true">
                 <!-- Obsolete -->
                 <driver
@@ -289,13 +287,11 @@
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
                     <parameter name="script-delimiter-after-query" value="true"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.4.1.jre8]" bundle="!drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[8.2.0.x64]" os="win32" arch="x86_64" bundle="!drivers.mssql.new"/>
 
-                    <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/new/auth/x86/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
                 </driver>
 
@@ -330,8 +326,7 @@
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
 
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" bundle="drivers.jtds"/>
                 </driver>
 
@@ -354,7 +349,7 @@
                     <property name="loginTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
@@ -364,7 +359,7 @@
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                 </driver>
 
                 <driver
@@ -383,7 +378,7 @@
                     <property name="loginTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
@@ -394,7 +389,37 @@
                     <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
                     <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
 
-                    <file type="jar" path="drivers/sybase/jconnect/jconn4.jar" bundle="drivers.sybase.jconnect"/>
+                    <file type="jar" path="drivers/sybase/jconnect" bundle="drivers.sybase.jconnect"/>
+                    <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
+                </driver>
+                <driver
+                        id="sypase_jconn"
+                        label="SAP ASE jConnect"
+                        icon="icons/sap_ase_icon.png"
+                        iconBig="icons/sap_ase_icon_big.png"
+                        class="com.sybase.jdbc4.jdbc.SybDriver"
+                        sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        useURL="false"
+                        defaultPort="5000"
+                        webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
+                        description="SAP ASE jConnect driver"
+                        categories="sql">
+
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="script-delimiter" value="go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
+                    <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
+
+                    <file type="jar" path="drivers/sybase/jconnect" bundle="drivers.sybase.jconnect"/>
                     <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
                 </driver>
 
@@ -415,6 +440,11 @@
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

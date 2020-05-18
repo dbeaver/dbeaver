@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.Nullable;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -229,6 +231,28 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (CommonUtils.equalObjects(curFolderId, folderId1)) {
                 return;
             }
+
+            IActionBars actionBars = getEditorSite().getActionBars();
+            MultiPageEditorPart mainEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
+            IWorkbenchPartSite mainEditorSite = mainEditor.getSite();
+            if (mainEditorSite instanceof PartSite) {
+                ((PartSite) mainEditorSite).deactivateActionBars(true);
+            }
+
+            ITabbedFolder activeFolder = folderComposite.getActiveFolder();
+            if (activeFolder instanceof TabbedFolderPageEditor) {
+                IEditorActionBarContributor activeFolderContributor = pageContributors.get(activeFolder);
+                if (activeFolderContributor != null) {
+                    // FIXME: do not add extra contributions as they will be there forever (never cleaned up)
+//                    if (activeFolderContributor instanceof EditorActionBarContributor) {
+//                        ((EditorActionBarContributor) activeFolderContributor).contributeToStatusLine(
+//                            actionBars.getStatusLineManager());
+//                    }
+                    activeFolderContributor.setActiveEditor(((TabbedFolderPageEditor) activeFolder).getEditor());
+                }
+            }
+            actionBars.updateActionBars();
+
             synchronized (folderListeners) {
                 curFolderId = folderId1;
                 for (ITabbedFolderListener listener : folderListeners) {
@@ -258,11 +282,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
 //        if (propsPlaceholder != null) {
             Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+            propsSize.y += 10;
             Point sashSize = sashForm.getParent().getSize();
             if (sashSize.x <= 0 || sashSize.y <= 0) {
                 // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
                 sashSize = getParentSize(sashForm);
-                sashSize.y += 20;
+                //sashSize.y += 20;
             }
             if (sashSize.x > 0 && sashSize.y > 0) {
                 float ratio = (float) propsSize.y / (float) sashSize.y;
@@ -397,7 +422,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public ITabbedFolder getActiveFolder()
     {
-        return folderComposite == null ? null : folderComposite.getActiveFolder();
+        return getActiveFolder(true);
+    }
+
+    private ITabbedFolder getActiveFolder(boolean activate)
+    {
+        return folderComposite == null ? null : folderComposite.getActiveFolder(activate);
     }
 
     @Override
@@ -478,7 +508,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public <T> T getAdapter(Class<T> adapter)
     {
         Object result = null;
-        final Object activeFolder = getActiveFolder();
+        final Object activeFolder = getActiveFolder(false);
         if (activeFolder != null) {
             if (activeFolder instanceof IAdaptable) {
                 result = ((IAdaptable) activeFolder).getAdapter(adapter);
@@ -581,6 +611,33 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         } else if (node != null) {
             try {
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, node, false);
+                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                    if (children != null) {
+                        // Folders are hidden in navigator. But we must show them here for all present child items
+                        Map<DBXTreeFolder, List<DBNNode>> childMap = new LinkedHashMap<>();
+                        for (DBNNode child : children) {
+                            if (child instanceof DBNDatabaseNode) {
+                                DBXTreeNode meta = ((DBNDatabaseNode) child).getMeta();
+                                if (meta.getParent() instanceof DBXTreeFolder) {
+                                    List<DBNNode> itemList = childMap.computeIfAbsent((DBXTreeFolder) meta.getParent(), dbxTreeFolder -> new ArrayList<>());
+                                    itemList.add(child);
+                                }
+                            }
+                        }
+                        for (Map.Entry<DBXTreeFolder, List<DBNNode>> fe : childMap.entrySet()) {
+                            DBXTreeFolder folder = fe.getKey();
+                            String nodeName = folder.getChildrenTypeLabel(((DBNDatabaseNode) node).getObject().getDataSource(), null);
+                            tabList.add(
+                                new TabbedFolderInfo(
+                                    nodeName,
+                                    nodeName,
+                                    folder.getDefaultIcon(),
+                                    folder.getDescription(),
+                                    false,
+                                    new TabbedFolderPageNode(part, node, folder)));
+                        }
+                    }
+                }
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
@@ -611,7 +668,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
-                                    String nodeName = child.getChildrenType(databaseNode.getObject().getDataSource(), null);
+                                    String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(
                                             nodeName,
@@ -657,12 +714,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void runPostSaveCommands() {
+    public boolean isRelationalObject(DBSObject object) {
+        return true;
+    }
+
+    @Override
+    public void runPostSaveCommands(Map<String, Object> context) {
         for (ISaveablePart sp : nestedSaveable) {
             if (sp instanceof TabbedFolderPageEditor) {
                 IEditorPart editor = ((TabbedFolderPageEditor) sp).getEditor();
                 if (editor instanceof IDatabasePostSaveProcessor) {
-                    ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+                    ((IDatabasePostSaveProcessor) editor).runPostSaveCommands(context);
                 }
             }
         }

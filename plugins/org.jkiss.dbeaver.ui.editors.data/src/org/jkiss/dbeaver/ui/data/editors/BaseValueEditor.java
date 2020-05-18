@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,17 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -56,6 +56,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     protected BaseValueEditor(final IValueController valueController)
     {
         this.valueController = valueController;
+    }
+
+    public IValueController getValueController() {
+        return valueController;
     }
 
     public void createControl() {
@@ -131,6 +135,17 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  } else {
                      ((IMultiController) valueController).closeInlineEditor();
                  }
+            }
+
+            if (!UIUtils.isInDialog(inlineControl)) {
+                // Set control font (the same as for results viewer)
+                ITheme currentTheme = valueController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
+                if (currentTheme != null) {
+                    Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
+                    if (rsFont != null) {
+                        inlineControl.setFont(rsFont);
+                    }
+                }
             }
         }
         final ControlModifyListener modifyListener = new ControlModifyListener();

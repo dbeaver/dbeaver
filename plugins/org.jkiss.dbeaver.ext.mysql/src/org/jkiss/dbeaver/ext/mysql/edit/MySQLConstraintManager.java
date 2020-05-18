@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
@@ -52,6 +53,15 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
             null,
             DBSEntityConstraintType.PRIMARY_KEY,
             false);
+    }
+
+    @NotNull
+    @Override
+    protected String getAddConstraintTypeClause(MySQLTableConstraint constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return "UNIQUE KEY"; //$NON-NLS-1$
+        }
+        return super.getAddConstraintTypeClause(constraint);
     }
 
     @Override

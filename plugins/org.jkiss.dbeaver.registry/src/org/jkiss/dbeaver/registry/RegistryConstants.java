@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ public class RegistryConstants {
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
     public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
+    public static final String ATTR_INSTANTIABLE = "instantiable"; //$NON-NLS-1$
     public static final String ATTR_PROMOTED = "promoted"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
@@ -96,12 +97,15 @@ public class RegistryConstants {
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_OBJECT = "defaultObject"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_CATALOG = "defaultCatalog"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_SCHEMA = "defaultSchema"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_DATA_CHANGE = "confirmDataChange"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
+    public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -114,6 +118,7 @@ public class RegistryConstants {
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$
     public static final String ATTR_DATA_SOURCE = "dataSource"; //$NON-NLS-1$
+    public static final String ATTR_AUTH_MODEL = "auth-model"; //$NON-NLS-1$
 
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_ITEMS = "items"; //$NON-NLS-1$
@@ -166,8 +171,7 @@ public class RegistryConstants {
     public static final String ATTR_UPDATE_DATE = "update-date"; //$NON-NLS-1$
     public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
-    public static final String ATTR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
-    public static final String ATTR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
+
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
     public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$
     public static final String ATTR_FILTER_SCHEMA = "filter-schema"; //$NON-NLS-1$

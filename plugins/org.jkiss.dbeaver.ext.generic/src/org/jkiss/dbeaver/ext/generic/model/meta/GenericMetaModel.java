@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -51,6 +53,24 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
+    private static final String DEFAULT_NULL_SCHEMA_NAME = "DEFAULT";
+
+    // Tables types which are not actually a table
+    // This is needed for some strange JDBC drivers which returns not a table objects
+    // in DatabaseMetaData.getTables method (PostgreSQL especially)
+    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<>();
+
+    static {
+        // [JDBC: PostgreSQL]
+        INVALID_TABLE_TYPES.add("INDEX");
+        INVALID_TABLE_TYPES.add("SEQUENCE");
+        INVALID_TABLE_TYPES.add("TYPE");
+        INVALID_TABLE_TYPES.add("SYSTEM INDEX");
+        INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
+        // [JDBC: SQLite]
+        INVALID_TABLE_TYPES.add("TRIGGER");
+    }
+
 
     GenericMetaModelDescriptor descriptor;
 
@@ -160,8 +180,14 @@ public class GenericMetaModel {
                         // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
                         schemaName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_OWNER);
                     }
+                    boolean nullSchema = false;
                     if (CommonUtils.isEmpty(schemaName)) {
-                        continue;
+                        if (supportsNullSchemas()) {
+                            schemaName = DEFAULT_NULL_SCHEMA_NAME;
+                            nullSchema = true;
+                        } else {
+                            continue;
+                        }
                     }
                     if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
                         // Doesn't match filter
@@ -188,6 +214,9 @@ public class GenericMetaModel {
                     session.getProgressMonitor().subTask("Schema " + schemaName);
 
                     GenericSchema schema = createSchemaImpl(dataSource, catalog, schemaName);
+                    if (nullSchema) {
+                        schema.setVirtual(true);
+                    }
                     tmpSchemas.add(schema);
                 }
             } finally {
@@ -215,6 +244,11 @@ public class GenericMetaModel {
         }
     }
 
+    // Schema with NULL name is a valid schema [Phoenix]
+    public boolean supportsNullSchemas() {
+        return false;
+    }
+
     public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) throws DBException {
         return new GenericSchema(dataSource, catalog, schemaName);
     }
@@ -238,7 +272,7 @@ public class GenericMetaModel {
                 // Read procedures
                 JDBCResultSet dbResult = session.getMetaData().getFunctions(
                     container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
                     supportsFunctions = true;
@@ -296,7 +330,7 @@ public class GenericMetaModel {
                 // Read procedures
                 JDBCResultSet dbResult = session.getMetaData().getProcedures(
                     container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
                     while (dbResult.next()) {
@@ -449,6 +483,9 @@ public class GenericMetaModel {
 
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();
+                if (!CommonUtils.isEmpty(tableNamePattern)) {
+                    tableNamePattern = SQLUtils.makeSQLLike(tableNamePattern);
+                }
             } else {
                 tableNamePattern = owner.getDataSource().getAllObjectsPattern();
             }
@@ -458,9 +495,49 @@ public class GenericMetaModel {
 
         return session.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             tableNamePattern,
             null).getSourceStatement();
+    }
+
+    public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
+        String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
+        String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
+
+        String tableSchema = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
+        if (!CommonUtils.isEmpty(tableSchema) && owner.getDataSource().isOmitSchema()) {
+            // Ignore tables with schema [Google Spanner]
+            log.debug("Ignore table " + tableSchema + "." + tableName + " (schemas are omitted)");
+            return null;
+        }
+
+        if (CommonUtils.isEmpty(tableName)) {
+            log.debug("Empty table name " + (owner == null ? "" : " in container " + owner.getName()));
+            return null;
+        }
+
+        if (CommonUtils.isEmpty(tableName)) {
+            return null;
+        }
+        if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
+            // Bad table type. Just skip it
+            return null;
+        }
+        if (DBUtils.isVirtualObject(owner) && !CommonUtils.isEmpty(tableSchema)) {
+            // Wrong schema - this may happen with virtual schemas
+            return null;
+        }
+        GenericTableBase table = this.createTableImpl(
+            owner,
+            tableName,
+            tableType,
+            dbResult);
+
+        boolean isSystemTable = table.isSystem();
+        if (isSystemTable && !owner.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects()) {
+            return null;
+        }
+        return table;
     }
 
     public GenericTableBase createTableImpl(
@@ -508,7 +585,18 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Table columns
 
-    public GenericTableColumn createTableColumnImpl(DBRProgressMonitor monitor, GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
+    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+        return session.getMetaData().getColumns(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            forTable == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                JDBCUtils.escapeWildCards(session, forTable.getName()),
+            owner.getDataSource().getAllObjectsPattern())
+            .getSourceStatement();
+    }
+
+    public GenericTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, @Nullable JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
         return new GenericTableColumn(table,
             columnName,
             typeName, valueType, sourceType, ordinalPos,
@@ -516,6 +604,23 @@ public class GenericMetaModel {
             charLength, scale, precision, radix, notNull,
             remarks, defaultValue, autoIncrement, autoGenerated
         );
+    }
+
+    //////////////////////////////////////////////////////
+    // Constraints
+
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent)
+        throws SQLException
+    {
+        return session.getMetaData().getPrimaryKeys(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
+            forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
+            .getSourceStatement();
+    }
+
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+        return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
     //////////////////////////////////////////////////////

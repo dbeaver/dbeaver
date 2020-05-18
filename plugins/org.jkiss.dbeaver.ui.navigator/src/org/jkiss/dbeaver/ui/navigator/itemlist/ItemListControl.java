@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -99,9 +102,9 @@ public class ItemListControl extends NodeListControl
         }
         addColumnConfigAction(contributionManager);
         IWorkbenchSite workbenchSite = getWorkbenchSite();
-        if (workbenchSite != null) {
-            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
-        }
+//        if (workbenchSite != null) {
+//            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+//        }
 
         // Object operations
 
@@ -243,10 +246,24 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, getRootNode(), false);
+                DBNNode parentNode = getRootNode();
+                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, false);
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
+                // Cache statistics
+                while (parentNode instanceof DBNDatabaseFolder) {
+                    parentNode = parentNode.getParentNode();
+                }
+                if (parentNode instanceof DBNDatabaseNode) {
+                    DBSObject parentObject = DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject());
+                    if (parentObject instanceof DBPObjectStatisticsCollector) {
+                        if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+                            ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                        }
+                    }
+                }
+                // Filter children
                 for (DBNNode item : children) {
                     if (monitor.isCanceled()) {
                         break;
@@ -255,7 +272,9 @@ public class ItemListControl extends NodeListControl
                         if (!(item instanceof DBNDatabaseNode)) {
                             continue;
                         }
-                        if (((DBNDatabaseNode)item).getMeta() != metaNode) {
+                        DBNDatabaseNode dbNode = (DBNDatabaseNode) item;
+                        if (dbNode.getMeta() != metaNode && !dbNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                            // Wrong meta. It is ok if folders are hidden
                             continue;
                         }
                     }

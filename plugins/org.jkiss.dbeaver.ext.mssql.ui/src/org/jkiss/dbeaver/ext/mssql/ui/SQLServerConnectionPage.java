@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -41,13 +42,16 @@ import java.util.List;
 public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
 
+    private static final ImageDescriptor LOG_AZURE = SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png");
+    private static final ImageDescriptor LOGO_SQLSERVER = SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png");
+    private static final ImageDescriptor LOGO_SYBASE = SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png");
+
     private Text hostText;
     private Text portText;
     private Text dbText;
     private Label userNameLabel;
     private Text userNameText;
     private Label passwordLabel;
-    private Text passwordText;
 
     private SQLServerAuthentication[] authSchemas;
     private Combo authCombo;
@@ -98,7 +102,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
                 portText = new Text(settingsGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
-                gd.widthHint = 60;
+                gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
             }
         }
@@ -176,10 +180,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             passwordLabel.setText(SQLServerUIMessages.dialog_connection_password_label);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
+            passwordText = createPasswordText(settingsGroup, null);
 
             UIUtils.createEmptyLabel(settingsGroup, 2, 1);
         }
@@ -192,7 +193,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(1, false));
 
-            createSavePasswordButton(secureGroup);
+            createPasswordControls(secureGroup);
             trustServerCertificate = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
@@ -218,9 +219,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         {
             setImageDescriptor(isSqlServer ?
                 (isDriverAzure ?
-                    SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png") :
-                    SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png")) :
-                SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png"));
+                    LOG_AZURE :
+                    LOGO_SQLSERVER) :
+                LOGO_SYBASE);
         }
 
         // Load values from new connection info
@@ -347,7 +348,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly)
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
                 new DriverPropertiesDialogPage(this)

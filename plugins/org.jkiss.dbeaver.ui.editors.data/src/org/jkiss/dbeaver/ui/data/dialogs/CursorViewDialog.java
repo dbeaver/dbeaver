@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -194,7 +194,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         return new QueryResultsDecorator() {
             @Override
             public long getDecoratorFeatures() {
-                return FEATURE_PANELS | FEATURE_STATUS_BAR;
+                return FEATURE_PANELS | FEATURE_PRESENTATIONS | FEATURE_STATUS_BAR | FEATURE_LINKS;
             }
         };
     }

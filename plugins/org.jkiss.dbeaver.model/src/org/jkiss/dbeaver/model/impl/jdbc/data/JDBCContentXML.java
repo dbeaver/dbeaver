@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,10 +152,10 @@ public class JDBCContentXML extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (IOException e) {
-            throw new DBCException("IO error while reading content", e);
+            throw new DBCException("IO error while reading content", e, session.getExecutionContext());
         }
     }
 

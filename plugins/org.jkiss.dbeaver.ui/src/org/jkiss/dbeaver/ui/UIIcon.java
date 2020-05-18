@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,10 +66,9 @@ public class UIIcon {
     public static final DBIcon FIND = new DBIcon("find", "misc/find.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FIND_TEXT = new DBIcon("find_text", "misc/find_text.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SEARCH = new DBIcon("search", "misc/search.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK = new DBIcon("check", "misc/check.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CHECK2 = new DBIcon("check2", "misc/check.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CHECK_ON = new DBIcon("checked", "misc/checked.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CHECK_OFF = new DBIcon("unchecked", "misc/unchecked.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_QUEST = new DBIcon("check_null", "misc/checked_null.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -134,6 +133,9 @@ public class UIIcon {
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT = new DBIcon("edit", "edit.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DELETE = new DBIcon("delete", "delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RENAME = new DBIcon("rename", "rename.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -171,6 +173,7 @@ public class UIIcon {
     public static final DBIcon LINK = new DBIcon("link", "misc/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SECURITY = new DBIcon("security", "security.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$

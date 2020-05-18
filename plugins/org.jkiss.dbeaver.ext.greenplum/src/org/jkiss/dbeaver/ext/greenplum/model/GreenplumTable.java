@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -24,7 +24,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -116,16 +119,26 @@ public class GreenplumTable extends PostgreTableRegular {
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
-                    if (dbResult.next()) {
-                        return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
-                    } else {
-                        return null;
+                if (((GreenplumDataSource) getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
+                    }
+                } else {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 
@@ -134,14 +147,14 @@ public class GreenplumTable extends PostgreTableRegular {
             try (JDBCStatement dbStat = session.createStatement()) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT policytype FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
                     if (dbResult.next()) {
-                        return JDBCUtils.safeGetString(dbResult, 1).equals("r");
+                        return CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, 1), "r");
                     } else {
                         return false;
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 
@@ -164,10 +177,35 @@ public class GreenplumTable extends PostgreTableRegular {
                 }
                 ddl.append(")");
             }
+
+            String partitionData = getPartitionData(monitor);
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
+            }
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }
     }
 
-}
+    private String getPartitionData(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table partition data")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" + getSchema().getName() + "." + getName() + "'::regclass, true, false);")) {
+                    if (dbResult.next()) {
+                        String result = dbResult.getString(1);
+                        if (result != null && result.startsWith("PARTITION ")) {
+                            return result;
+                        }
+                        return null;
+                    } else {
+                        return null;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
 
+}

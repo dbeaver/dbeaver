@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreServerCockroachDB
@@ -74,6 +71,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public boolean supportsTriggers() {
         return true;
+    }
+
+    @Override
+    public boolean supportsFunctionCreate() {
+        return false;
     }
 
     @Override
@@ -137,7 +139,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportFunctionDefRead() {
+    public boolean supportsFunctionDefRead() {
         return false;
     }
 
@@ -188,6 +190,22 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
         } catch (Exception e) {
             throw new DBException(e, table.getDataSource());
         }
+    }
+
+    @Override
+    public Map<String, String> getDataTypeAliases() {
+        Map<String, String> aliasMap = new LinkedHashMap<>(super.getDataTypeAliases());
+        aliasMap.put("string", "text");
+        aliasMap.put("bytes", "bytea");
+        aliasMap.put("decimal", "numeric");
+        aliasMap.put("dec", "numeric");
+        aliasMap.put("float", "float8");
+        return aliasMap;
+    }
+
+    @Override
+    public boolean supportsTableStatistics() {
+        return false;
     }
 
     @Override

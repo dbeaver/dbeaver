@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 
 /**
  * SRID details dialog
@@ -46,7 +45,7 @@ public class ShowSRIDDialog extends BaseDialog {
     private int selectedSRID;
 
     public ShowSRIDDialog(Shell shell, int defCRS) {
-        super(shell, "Select Coordinate Reference System (CRS) Identifier", null);
+        super(shell, GISMessages.panel_show_srid_dialog_title_select, null);
         selectedSRID = defCRS;
     }
 
@@ -61,13 +60,13 @@ public class ShowSRIDDialog extends BaseDialog {
         try {
             CoordinateReferenceSystem crs = GisTransformUtils.getCRSFactory().getCRS("EPSG:" + selectedSRID);
 
-            Group crsGroup = UIUtils.createControlGroup(dialogArea, "CRS details", 2, SWT.NONE, 0);
+            Group crsGroup = UIUtils.createControlGroup(dialogArea, GISMessages.panel_show_srid_dialog_control_group_label_details, 2, SWT.NONE, 0);
             crsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createLabelText(crsGroup, "SRID", String.valueOf(selectedSRID), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Name", crs.getName(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Coordinate System", crs.getCoordinateSystem().toString(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Projection", crs.getProjection() == null ? "N/A" : crs.getProjection().toString(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(crsGroup, "Type", crs.getType() == null ? "N/A" : crs.getType().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_name, crs.getName(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_coordinate, crs.getCoordinateSystem().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_projection, crs.getProjection() == null ? "N/A" : crs.getProjection().toString(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_type, crs.getType() == null ? "N/A" : crs.getType().toString(), SWT.BORDER | SWT.READ_ONLY);
 
             Text wktText = UIUtils.createLabelText(crsGroup, "WKT", crs.toWKT(), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
             GridData gd = new GridData(GridData.FILL_BOTH);

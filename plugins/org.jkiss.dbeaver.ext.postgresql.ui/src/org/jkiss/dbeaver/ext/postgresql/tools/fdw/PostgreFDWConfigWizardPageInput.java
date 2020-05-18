@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,15 +66,16 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,
+                true,
                 getWizard().getRunnableContext()) {
 
                 @Override
-                protected boolean isObjectVisible(DBSObject obj) {
-                    return super.isObjectVisible(obj);
+                protected boolean isDatabaseObjectVisible(DBSObject obj) {
+                    return super.isDatabaseObjectVisible(obj);
                 }
 
                 @Override
-                protected void onSelectionChange() {
+                protected void onSelectionChange(Object element) {
                     updateState();
                 }
 

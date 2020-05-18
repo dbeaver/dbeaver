@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 */
 public class SQLQueryTransformerExpression implements SQLQueryTransformer {
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         String dualTableName = dataSource.getSQLDialect().getDualTableName();
         String newQuery = "SELECT " + query.getText();
         if (dualTableName != null) {

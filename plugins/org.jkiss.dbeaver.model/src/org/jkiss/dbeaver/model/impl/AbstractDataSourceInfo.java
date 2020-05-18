@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Collection;
 import java.util.Map;
@@ -73,6 +74,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsNullableUniqueConstraints() {
+        return false;
+    }
+
+    @Override
     public boolean isDynamicMetadata() {
         return false;
     }
@@ -102,6 +108,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     @Override
     public boolean isMultipleResultsFetchBroken() {
         return false;
+    }
+
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes() {
+        return new DBSObjectType[0];
     }
 
     @Override

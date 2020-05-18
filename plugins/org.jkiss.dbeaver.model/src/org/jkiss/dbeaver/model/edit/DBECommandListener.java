@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ package org.jkiss.dbeaver.model.edit;
  */
 public interface DBECommandListener {
 
-    void onCommandChange(DBECommand command);
+    void onCommandChange(DBECommand<?> command);
 
     void onSave();
 
     void onReset();
 
-    void onCommandDo(DBECommand command);
+    void onCommandDo(DBECommand<?> command);
 
-    void onCommandUndo(DBECommand command);
+    void onCommandUndo(DBECommand<?> command);
 
 }

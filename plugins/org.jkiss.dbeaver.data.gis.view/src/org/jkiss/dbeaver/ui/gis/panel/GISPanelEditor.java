@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,16 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
-import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -77,7 +76,7 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
-        List<GeometryViewerDescriptor> viewers = GeometryViewerRegistry.getInstance().getViewers();
+        List<GeometryViewerDescriptor> viewers = GeometryViewerRegistry.getInstance().getSupportedViewers(controller.getExecutionContext().getDataSource());
         for (int i = 0; i < viewers.size(); i++) {
             if (i > 0) {
                 manager.add(new Separator());
@@ -109,7 +108,7 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
         ViewerSwitchAction() {
             super(null, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SCRIPTS));
-            setToolTipText("Geometry viewer settings");
+            setToolTipText(GISMessages.panel_gis_panel_editor_viewer_action_tool_tip_text_settings);
         }
 
         @Override
@@ -129,7 +128,8 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
             if (menu == null) {
                 ToolBar toolBar = toolItem.getParent();
                 menu = new Menu(toolBar);
-                List<GeometryViewerDescriptor> viewers = GeometryViewerRegistry.getInstance().getViewers();
+                List<GeometryViewerDescriptor> viewers = GeometryViewerRegistry.getInstance().getSupportedViewers(
+                    getValueController().getExecutionContext().getDataSource());
                 for (GeometryViewerDescriptor viewerDescriptor : viewers) {
                     MenuItem item = new MenuItem(menu, SWT.RADIO);
                     item.setText(viewerDescriptor.getLabel());

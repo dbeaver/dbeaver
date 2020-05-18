@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -28,10 +27,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -40,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -129,18 +126,28 @@ public class SQLQuery implements SQLScriptElement {
                 this.parseError = new DBException("Empty query");
                 return;
             }
-            statement = CCJSqlParserUtil.parse(text);
+            statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
-                // Detect single source table
+                // Detect single source table (no joins, no group by, no sub-selects)
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
                     PlainSelect plainSelect = (PlainSelect) selectBody;
                     if (plainSelect.getFromItem() instanceof Table &&
                         CommonUtils.isEmpty(plainSelect.getJoins()) &&
                         (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
-                        CommonUtils.isEmpty(plainSelect.getIntoTables())) {
-                        fillSingleSource((Table) plainSelect.getFromItem());
+                        CommonUtils.isEmpty(plainSelect.getIntoTables()))
+                    {
+                        boolean hasSubSelects = false;
+                        for (SelectItem si : plainSelect.getSelectItems()) {
+                            if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
+                                hasSubSelects = true;
+                                break;
+                            }
+                        }
+                        if (!hasSubSelects) {
+                            fillSingleSource((Table) plainSelect.getFromItem());
+                        }
                     }
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
@@ -201,7 +208,9 @@ public class SQLQuery implements SQLScriptElement {
         if (name == null) {
             return null;
         }
-        return DBUtils.getUnQuotedIdentifier(dataSource, name);
+        return dataSource == null ?
+            DBUtils.getUnQuotedIdentifier(name, SQLConstants.DEFAULT_IDENTIFIER_QUOTE) :
+            DBUtils.getUnQuotedIdentifier(dataSource, name);
     }
 
     /**

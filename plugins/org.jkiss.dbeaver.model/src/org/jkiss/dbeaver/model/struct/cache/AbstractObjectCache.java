@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.BeanUtils;
 
@@ -240,8 +239,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     protected void detectCaseSensitivity(DBSObject object) {
         if (this.caseSensitive) {
             DBPDataSource dataSource = object.getDataSource();
-            if (dataSource instanceof SQLDataSource &&
-                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED)
+            if (dataSource != null &&
+                dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED)
             {
                 this.caseSensitive = false;
             }
@@ -304,7 +303,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 final Field[] fields = theClass.getDeclaredFields();
                 for (Field field : fields) {
                     final int modifiers = field.getModifiers();
-                    if (Modifier.isStatic(modifiers)) {
+                    if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
                         continue;
                     }
                     field.setAccessible(true);
@@ -313,6 +312,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                     if (DBSObjectCache.class.isAssignableFrom(field.getType())) {
                         if (dstValue != null) {
                             ((DBSObjectCache) dstValue).clearCache();
+                        }
+                    } else if (Collection.class.isAssignableFrom(field.getType())) {
+                        if (Modifier.isTransient(modifiers) && dstValue != null) {
+                            ((Collection) dstValue).clear();
                         }
                     } else {
                         if (isPropertyGroupField(field)) {

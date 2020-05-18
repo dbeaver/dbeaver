@@ -12,7 +12,8 @@
                 id="h2gis"
                 parent="generic"
                 label="H2GIS"
-                icon="icons/h2gis_icon.png">
+                icon="icons/h2gis_icon.png"
+                dialect="h2">
             <drivers managable="true">
 
                 <driver
@@ -60,10 +61,6 @@
             </drivers>
 
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="h2gis" class="org.jkiss.dbeaver.ext.h2gis.model.H2GISMetaModel" driverClass="org.h2.Driver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

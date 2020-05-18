@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * SQLServerStructureAssistant
  */
-public class SQLServerStructureAssistant implements DBSStructureAssistant
+public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext>
 {
     static protected final Log log = Log.getLog(SQLServerStructureAssistant.class);
 
@@ -104,7 +104,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
     @NotNull
     @Override
     public List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerExecutionContext executionContext,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
@@ -116,14 +117,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             (SQLServerDatabase) parentObject :
             (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
         if (database == null) {
-            database = dataSource.getDefaultObject();
+            database = executionContext.getContextDefaults().getDefaultCatalog();
+        }
+        if (database == null) {
+            database = executionContext.getDataSource().getDefaultDatabase(monitor);
         }
         if (database == null) {
             return Collections.emptyList();
         }
         SQLServerSchema schema = parentObject instanceof SQLServerSchema ? (SQLServerSchema) parentObject : null;
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects

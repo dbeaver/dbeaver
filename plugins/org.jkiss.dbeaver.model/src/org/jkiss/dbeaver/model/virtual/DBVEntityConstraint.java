@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     private final List<DBVEntityConstraintColumn> attributes = new ArrayList<>();
     private DBSEntityConstraintType type;
     private String name;
+    private boolean useAllColumns = false;
 
     public DBVEntityConstraint(@NotNull DBVEntity entity, DBSEntityConstraintType type, String name)
     {
@@ -51,6 +52,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         for (DBVEntityConstraintColumn col : copy.attributes) {
             this.attributes.add(new DBVEntityConstraintColumn(this, col));
         }
+        this.useAllColumns = copy.useAllColumns;
     }
 
     @Override
@@ -114,9 +116,17 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return true;
     }
 
+    public boolean isUseAllColumns() {
+        return useAllColumns;
+    }
+
+    public void setUseAllColumns(boolean useAllColumns) {
+        this.useAllColumns = useAllColumns;
+    }
+
     public boolean hasAttributes()
     {
-        return !attributes.isEmpty();
+        return useAllColumns || !attributes.isEmpty();
     }
 
     public void setAttributes(Collection<DBSEntityAttribute> realAttributes)

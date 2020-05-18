@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Database import
@@ -44,31 +38,10 @@ public class PostgreToolScript implements IUserInterfaceTool
             if (object instanceof PostgreDatabase) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new PostgreScriptExecuteWizard((PostgreDatabase) object, false));
+                    new PostgreScriptExecuteWizard((PostgreDatabase) object));
                 dialog.open();
             }
         }
     }
 
-    public static <BASE_OBJECT extends DBSObject, PROCESS_ARG> List<String> getPostgreToolCommandLine(
-        AbstractToolWizard<BASE_OBJECT, PROCESS_ARG> toolWizard, PROCESS_ARG arg) throws IOException
-    {
-        java.util.List<String> cmd = new ArrayList<>();
-        toolWizard.fillProcessParameters(cmd, arg);
-
-        if (toolWizard.isVerbose()) {
-            cmd.add("--verbose");
-        }
-        DBPConnectionConfiguration connectionInfo = toolWizard.getConnectionInfo();
-        cmd.add("--host=" + connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            cmd.add("--port=" + connectionInfo.getHostPort());
-        }
-        cmd.add("--username=" + toolWizard.getToolUserName());
-//        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
-//            cmd.add("--password");
-//        }
-
-        return cmd;
-    }
 }

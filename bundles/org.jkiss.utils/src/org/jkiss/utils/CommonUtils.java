@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public class CommonUtils {
 
     public static String toCamelCase(String str) {
         if (isEmpty(str)) {
-            return null;
+            return str;
         }
 
         final StringBuilder ret = new StringBuilder(str.length());
@@ -416,6 +416,34 @@ public class CommonUtils {
         }
     }
 
+    public static float toFloat(@Nullable Object object) {
+        if (object == null) {
+            return 0.0f;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return Float.NaN;
+            }
+        }
+    }
+
+    public static float toFloat(@Nullable Object object, float def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return def;
+            }
+        }
+    }
+
     @NotNull
     public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);
@@ -542,6 +570,10 @@ public class CommonUtils {
         return (value & mask) == mask;
     }
 
+    public static boolean isBitSet(long value, long mask) {
+        return (value & mask) == mask;
+    }
+
     @Nullable
     public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
         return valueOf(type, name, null, false);
@@ -665,6 +697,14 @@ public class CommonUtils {
         }
         Object optionValue = options.get(name);
         return getBoolean(optionValue, defValue);
+    }
+
+    public static Map<String, Object> makeStringMap(Map<Object, Object> objMap) {
+        Map<String, Object> strMap = new LinkedHashMap<>(objMap.size());
+        for (Map.Entry<Object, Object> e : objMap.entrySet()) {
+            strMap.put(toString(e.getKey(), null), e.getValue());
+        }
+        return strMap;
     }
 
     public static String fixedLengthString(String string, int length) {

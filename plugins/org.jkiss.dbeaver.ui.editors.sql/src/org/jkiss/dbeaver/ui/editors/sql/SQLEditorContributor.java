@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.ITextEditorExtension;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.Log;
@@ -46,7 +45,8 @@ public class SQLEditorContributor extends TextEditorActionContributor
     static final String ACTION_CONTENT_ASSIST_INFORMATION = "ContentAssistInfo"; //$NON-NLS-1$
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
 
-    public static final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE = new StatusLineContributionItem("SelectionState", true, 12);
+    // It cannot be static! Otherwise item state cache become corrupted (I guess)
+    private final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE = new StatusLineContributionItem("SelectionState", true, 12);
 
     private SQLEditorBase activeEditorPart;
 
@@ -107,6 +107,9 @@ public class SQLEditorContributor extends TextEditorActionContributor
         if (targetEditor instanceof SQLEditorBase) {
         	activeEditorPart = (SQLEditorBase)targetEditor;
         } else {
+            if (activeEditorPart != null) {
+                activeEditorPart.setStatusField(null, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
+            }
         	activeEditorPart = null;
         }
 
@@ -118,9 +121,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
 
             {
-                if (activeEditorPart instanceof ITextEditorExtension) {
-                    activeEditorPart.setStatusField(STATUS_FIELD_SELECTION_STATE, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
-                }
+                activeEditorPart.setStatusField(STATUS_FIELD_SELECTION_STATE, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
             }
 
         }

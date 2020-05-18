@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,11 +23,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
-              description="Oracle connector"
-              icon="icons/oracle_icon.png"
-              id="oracle"
-              label="Oracle">
+            class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
+            description="Oracle connector"
+            icon="icons/oracle_icon.png"
+            id="oracle"
+            label="Oracle"
+            dialect="oracle">
             <tree
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
@@ -164,16 +165,16 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
                             <items label="%tree.table.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#folder_link" description="Database Links (DBLinks)">
                             <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
                         </folder>
-                        <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
-                        </folder-->
+                        </folder>
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" description="Scheduler objects">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
                                 <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="icons/scheduled_job.png">
@@ -274,7 +275,7 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     useURL="false"
                     defaultPort="1521"
-                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
+                    webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
                     icon="icons/oracle_icon.png"
                     iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
@@ -288,28 +289,13 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="useFetchSizeWithLongColumn" value="true"/>
 
-                    <!--<file path="maven:/com.oracle.jdbc:ojdbc8:RELEASE" type="jar"/>-->
-
-                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
-                        <file name="ojdbc8.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
-                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
-                    </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
-                        <file name="ojdbc6.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
-                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
-                    </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/database/index-100632.html" name="Oracle XML Developers Kit">
-                        <file name="xmlparserv2.jar " description="XML Parser"/>
-                    </fileSource>
+                    <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc8:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/ojdbc8.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xdb6.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
-
+                    <file type="jar" path="drivers/oracle" bundle="drivers.oracle"/>
                 </driver>
             </drivers>
             <templates>
@@ -358,13 +344,35 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="oracle_native"
+                label="Database Native"
+                description="Oracle native authentication (name/password)"
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative">
+            <replace model="native"/>
+            <datasource id="oracle"/>
+        </authModel>
+        <authModel
+                id="oracle_os"
+                label="OS Authentication"
+                description="OS authentication allows Oracle to pass control of user authentication to the operating system."
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
+            <datasource id="oracle"/>
+        </authModel>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.oracle.model.OracleObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.sql.OracleDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
     </extension>
+
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ext.oracle.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F9"/>
     </extension>
@@ -373,12 +381,25 @@
         <initializer class="org.jkiss.dbeaver.ext.oracle.internal.OraclePreferencesInitializer"/>
     </extension>
 
-<!--
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
-            <scope group="com.oracle.jdbc"/>
-        </repository>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="oracle" parent="basic" class="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" label="Oracle" description="Oracle SQL dialect." icon="icons/oracle_icon.png">
+        </dialect>
     </extension>
--->
+
+    <!--
+        <extension point="org.jkiss.dbeaver.mavenRepository">
+            <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
+                <scope group="com.oracle.jdbc"/>
+            </repository>
+        </extension>
+    -->
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="oracle" name="Oracle" description="Oracle database task" icon="icons/oracle_icon.png"/>
+
+        <task id="oracleScriptExecute" name="Oracle SQL*Plus script" description="Oracle SQL*Plus script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+        </task>
+    </extension>
 
 </plugin>

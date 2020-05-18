@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -164,6 +164,14 @@ public class ModelMessages extends NLS {
 	public static String dbp_connection_type_table_test;
 
 	public static String dbp_connection_type_table_test_database;
+
+    public static String dialog_connection_wizard_start_connection_monitor_close;
+    public static String dialog_connection_wizard_start_connection_monitor_start;
+    public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
+    public static String dialog_connection_wizard_start_connection_monitor_success;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
+    public static String dialog_connection_wizard_start_connection_monitor_thread;
+    public static String dialog_connection_wizard_start_dialog_error_message;
 
     static {
 		// initialize resource bundle

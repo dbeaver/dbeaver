@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
 
         if (handlerConfiguration == null) {
-            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
+            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
             connectionConfiguration.updateHandler(handlerConfiguration);
         }
 
@@ -149,7 +149,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         handlerComposite = UIUtils.createComposite(composite, 1);
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite);
+        configurator.createControl(handlerComposite, this::updatePageCompletion);
 
         configurator.loadSettings(handlerConfiguration);
         useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
@@ -178,7 +178,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
             cfg.setConfigProfile(activeProfile);
             handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
             if (handlerConfiguration == null) {
-                handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource.getDriver());
+                handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
             }
         } else {
             cfg.setConfigProfile(null);
@@ -210,7 +210,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         // Update page controls
         handlerConfiguration = cfg.getHandler(handlerDescriptor.getId());
         if (handlerConfiguration == null) {
-            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, site.getDriver());
+            handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, site.getActiveDataSource());
         }
         useHandlerCheck.setSelection(handlerConfiguration.isEnabled());
         configurator.loadSettings(handlerConfiguration);
@@ -242,10 +242,12 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
-        handlerConfiguration.setProperties(Collections.emptyMap());
-        configurator.saveSettings(handlerConfiguration);
-        dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
-        dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
+        if (handlerConfiguration != null) {
+            handlerConfiguration.setProperties(Collections.emptyMap());
+            configurator.saveSettings(handlerConfiguration);
+            dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
+            dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
+        }
     }
 
     @Override

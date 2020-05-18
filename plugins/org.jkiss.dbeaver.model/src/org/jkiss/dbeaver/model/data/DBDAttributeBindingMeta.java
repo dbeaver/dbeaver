@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private DBSEntityAttribute entityAttribute;
     @Nullable
     private DBDRowIdentifier rowIdentifier;
+    @Nullable
+    private String rowIdentifierStatus;
     @Nullable
     private List<DBSEntityReferrer> referrers;
     @Nullable
@@ -186,6 +188,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return rowIdentifier;
     }
 
+    @Override
+    public String getRowIdentifierStatus() {
+        return rowIdentifierStatus;
+    }
+
     @Nullable
     @Override
     public List<DBSEntityReferrer> getReferrers() {
@@ -232,6 +239,10 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     public void setRowIdentifier(@Nullable DBDRowIdentifier rowIdentifier) {
         this.rowIdentifier = rowIdentifier;
+    }
+
+    public void setRowIdentifierStatus(@Nullable String rowIdentifierStatus) {
+        this.rowIdentifierStatus = rowIdentifierStatus;
     }
 
     @Override

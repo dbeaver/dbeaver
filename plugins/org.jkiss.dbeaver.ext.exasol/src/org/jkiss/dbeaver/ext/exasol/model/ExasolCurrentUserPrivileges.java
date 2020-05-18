@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ public class ExasolCurrentUserPrivileges {
 
     private static final Log LOG = Log.getLog(ExasolCurrentUserPrivileges.class);
 
-	private static final String C_QUERY_DICTIONARY = "SELECT CONNECTION_NAME FROM sys.EXA_DBA_CONNECTIONS WHERE false";
-    private static final String C_MAJOR_VERSION = "select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMajorVersion'";
-    private static final String C_MINOR_VERSION = "select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMinorVersion'";
+	private static final String C_QUERY_DICTIONARY = "/*snapshot execution*/ SELECT CONNECTION_NAME FROM sys.EXA_DBA_CONNECTIONS WHERE false";
+    private static final String C_MAJOR_VERSION = "/*snapshot execution*/ select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMajorVersion'";
+    private static final String C_MINOR_VERSION = "/*snapshot execution*/ select TO_NUMBER(\"VALUE\") AS VERSION from \"$ODBCJDBC\".DB_METADATA WHERE name LIKE 'databaseMinorVersion'";
 
     private final Boolean userHasDictionaryAccess; 
     private final Integer majorVersion;
@@ -115,11 +115,24 @@ public class ExasolCurrentUserPrivileges {
         return hasPriv;
     }
     
+    public Boolean hasPartitionColumns()
+    {
+    	return hasPasswordPolicy();
+    }
+    
     public Boolean hasPriorityGroups()
     {
-    	if ((getatLeastV6() && getMinorVersion() >= 1) || (getMajorVersion() > 6) )
-    		return true;
-    	return false;
+    	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;
+    }
+    
+    public Boolean hasPasswordPolicy()
+    {
+    	return (getatLeastV6() && getMinorVersion() >= 1) || getMajorVersion() >= 7;
+    }
+    
+    public Boolean hasConsumerGroups()
+    {
+    	return getMajorVersion() >= 7;
     }
 
 

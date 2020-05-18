@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -68,6 +68,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (!disableLogging) {
             // Notify handler
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetOpen(this.original);
         }
     }
 /*
@@ -144,7 +147,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getObject(index + 1);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -155,7 +158,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getObject(name);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -177,7 +180,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.next();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -191,7 +194,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.absolute(position);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -204,7 +207,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             try {
                 metaData = createMetaDataImpl();
             } catch (SQLException e) {
-                throw new DBCException(e, session.getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
         }
         return metaData;
@@ -220,7 +223,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return original.getCursorName();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -270,6 +273,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             if (fetched) {
                 rowsFetched++;
             }
+            if (fetched && JDBCTrace.isApiTraceEnabled()) {
+                JDBCTrace.dumpResultSetRow(this.original);
+            }
+
             return fetched;
         }
         finally {
@@ -306,6 +313,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (fake && statement != null) {
             statement.close();
         }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetClose();
+        }
     }
 
     @Override
@@ -322,6 +332,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     {
         checkNotEmpty();
         return original.getString(columnIndex);
+    }
+
+    private static void traceGetValue(int columnIndex, String value) {
+
     }
 
     @Override

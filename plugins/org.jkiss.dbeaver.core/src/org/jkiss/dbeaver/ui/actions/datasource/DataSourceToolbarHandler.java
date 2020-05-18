@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         // Register as datasource listener in all datasources
         // We need it because at this moment there could be come already loaded registries (on startup)
         DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(this);
-        for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries()) {
+        for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries(false)) {
             handleRegistryLoad(registry);
         }
         // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated

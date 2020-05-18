@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     private Integer             colSeq;
     private DB2IndexColOrder    colOrder;
     private String              collationSchema;
-    private String              collationNane;
+    private String              collationName;
 
     private DB2IndexColVirtual  virtualCol;
     private String              virtualColName;
@@ -73,7 +73,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
 
         if (db2DataSource.isAtLeastV9_5()) {
             this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
-            this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+            this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         }
         if (db2DataSource.isAtLeastV10_1()) {
             this.virtualCol = CommonUtils.valueOf(DB2IndexColVirtual.class, JDBCUtils.safeGetString(dbResult, "VIRTUAL"));
@@ -241,8 +241,8 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
-    public String getCollationNane()
+    public String getcollationName()
     {
-        return collationNane;
+        return collationName;
     }
 }

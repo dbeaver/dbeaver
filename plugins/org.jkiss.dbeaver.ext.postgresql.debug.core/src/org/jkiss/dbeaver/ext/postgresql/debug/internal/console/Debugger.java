@@ -17,20 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.console;
 
-import org.jkiss.dbeaver.debug.*;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
-
 @SuppressWarnings("nls")
 public class Debugger {
 

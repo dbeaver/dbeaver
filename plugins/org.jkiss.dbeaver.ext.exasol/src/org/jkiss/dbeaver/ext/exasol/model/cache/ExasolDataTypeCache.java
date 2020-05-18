@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2019-2019 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public final class ExasolDataTypeCache
     private LongKeyMap<ExasolDataType> dataTypeMap = new LongKeyMap<>();
 	
 	private static final String SQL_TYPE_CACHE =
-        "select * from SYS.EXA_SQL_TYPES";
+        "/*snapshot execution*/ select * from SYS.EXA_SQL_TYPES";
 
 	@NotNull
     @Override

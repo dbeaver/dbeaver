@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,15 +104,7 @@ public class XMLUtils {
 
     @Nullable
     public static String getElementBody(Element element) {
-        org.w3c.dom.Node valueNode = element.getFirstChild();
-        if (valueNode == null) {
-            return null;
-        }
-        if (valueNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-            return valueNode.getNodeValue();
-        } else {
-            return null;
-        }
+        return element.getTextContent();
     }
 
     // Get list of all child elements of specified node

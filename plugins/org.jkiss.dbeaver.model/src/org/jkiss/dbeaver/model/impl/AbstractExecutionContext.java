@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -48,6 +49,8 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         this.dataSource = dataSource;
         this.purpose = purpose;
         this.id = generateContextId();
+
+        log.debug("Execution context opened (" + dataSource.getName() + "; " + purpose + "; " + this.id +  ")");
     }
 
     public static synchronized long generateContextId() {
@@ -71,6 +74,16 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         return dataSource;
     }
 
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return null;
+    }
+
+    @NotNull
+    protected DBPConnectionBootstrap getBootstrapSettings() {
+        return getDataSource().getContainer().getActualConnectionConfiguration().getBootstrap();
+    }
 
     /**
      * Context boot procedure.
@@ -83,7 +96,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
 
         // Execute bootstrap queries
-        DBPConnectionBootstrap bootstrap = dataSource.getContainer().getConnectionConfiguration().getBootstrap();
+        DBPConnectionBootstrap bootstrap = getBootstrapSettings();
         List<String> initQueries = bootstrap.getInitQueries();
         if (!CommonUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");
@@ -100,7 +113,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         if (bootstrap.isIgnoreErrors()) {
                             log.warn(message);
                         } else {
-                            throw new DBCException(message, e, dataSource);
+                            throw new DBCException(message, e, this);
                         }
                     }
                 }
@@ -111,6 +124,8 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
     protected void closeContext()
     {
         QMUtils.getDefaultHandler().handleContextClose(this);
+
+        log.debug("Execution context closed (" + dataSource.getName() + ", " + this.id +  ")");
     }
 
     @Override
