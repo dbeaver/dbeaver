@@ -18,13 +18,13 @@
 package org.jkiss.dbeaver.model.access;
 
 import javax.security.auth.callback.CallbackHandler;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DBAAuthParameters {
 
 
-    private final Map<String, Object> properties = new HashMap<>();
+    private final Map<String, Object> properties = new LinkedHashMap<>();
     private javax.security.auth.callback.CallbackHandler callbackHandler;
 
     public Map<String, Object> getProperties() {
@@ -33,6 +33,10 @@ public class DBAAuthParameters {
 
     public <T> T getProperty(String name) {
         return (T) properties.get(name);
+    }
+
+    public void setProperty(String name, Object value) {
+        properties.put(name, value);
     }
 
     public CallbackHandler getCallbackHandler() {

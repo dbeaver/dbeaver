@@ -46,7 +46,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    void dispose(boolean reflect)
+    protected void dispose(boolean reflect)
     {
         super.dispose(reflect);
     }
