@@ -115,6 +115,17 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
+                if (table instanceof PostgreTableReal && !((PostgreTableReal) table).getRules(monitor).isEmpty()) {
+                    Collection<PostgreRule> rules = ((PostgreTableReal) table).getRules(monitor);
+                    if (!CommonUtils.isEmpty(rules)) {
+                        actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Rules"));
+
+                        for (PostgreRule rule : rules) {
+                            actions.add(new SQLDatabasePersistAction("Create rule", rule.getObjectDefinitionText(monitor, options)));
+                        }
+                    }
+                }
+
                 if (isDDL) {
                     PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
                 }
