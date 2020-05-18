@@ -47,6 +47,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private IAdaptable element;
 
     private Button contentsShowViews;
+    private Button contentsShowPartitions;
 
     private Combo modeCombo;
     private Spinner spinnerMarginTop;
@@ -84,6 +85,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         Group contentsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
         contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
     }
 
     private void createVisibilityGroup(IPreferenceStore store, Composite composite)
@@ -167,6 +169,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
 
         store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
+        store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
 
         store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
