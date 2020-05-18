@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.model.access;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DBPAuthParameters {
+public class DBAAuthParameters {
 
 
     private final Map<String, Object> properties = new HashMap<>();
@@ -31,8 +31,8 @@ public class DBPAuthParameters {
         return properties;
     }
 
-    public Object getProperty(String name) {
-        return properties.get(name);
+    public <T> T getProperty(String name) {
+        return (T) properties.get(name);
     }
 
     public CallbackHandler getCallbackHandler() {
