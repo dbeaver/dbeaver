@@ -3,10 +3,10 @@
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.application" name="Applications"/>
+         <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.navigator" name="Navigator extender"/>
       </appInfo>
       <documentation>
-         Application meta info
+         Plugin Service
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="service" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="extender" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -37,7 +37,7 @@
       </complexType>
    </element>
 
-   <element name="service">
+   <element name="extender">
       <complexType>
          <attribute name="class" type="string">
             <annotation>
@@ -51,24 +51,5 @@
          </attribute>
       </complexType>
    </element>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
-
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
-
 
 </schema>
