@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -64,7 +65,7 @@ public abstract class AbstractTable<
     @Override
     public DBSEntityType getEntityType()
     {
-        return isView() ? DBSEntityType.VIEW : DBSEntityType.TABLE;
+        return DBUtils.isView(this) ? DBSEntityType.VIEW : DBSEntityType.TABLE;
     }
 
     @NotNull

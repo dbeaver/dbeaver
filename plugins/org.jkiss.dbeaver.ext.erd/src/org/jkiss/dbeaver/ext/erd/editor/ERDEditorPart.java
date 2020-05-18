@@ -1031,7 +1031,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 UIUtils.asyncExec(() -> graphicalViewer.setContents(diagram));
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshDiagram(true, false);
-            } else if (ERDConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty())) {
+            } else if (ERDConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
                 refreshDiagram(true, true);
             }
         }

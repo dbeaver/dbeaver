@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Date;
@@ -38,7 +39,7 @@ import java.sql.Timestamp;
  * 
  * @author Denis Forveille
  */
-public class DB2TablePartition extends DB2Object<DB2Table> {
+public class DB2TablePartition extends DB2Object<DB2Table> implements DBSTablePartition {
 
     private Integer partitionObjectId;
 
