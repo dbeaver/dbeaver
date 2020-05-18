@@ -25,6 +25,7 @@
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
 
     <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
         <runtime>

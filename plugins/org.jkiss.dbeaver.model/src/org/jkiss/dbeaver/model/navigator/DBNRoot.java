@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -35,7 +36,7 @@ import java.util.List;
 /**
  * DBNRoot
  */
-public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener {
+public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable, DBPProjectListener {
     private final DBNModel model;
     private DBNProject[] projects = new DBNProject[0];
     private List<DBNNode> extraNodes = new ArrayList<>();
@@ -49,6 +50,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         if (model.isGlobal()) {
             model.getPlatform().getWorkspace().addProjectListener(this);
         }
+        DBNRegistry.getInstance().extendNode(this);
     }
 
     @Override
@@ -126,7 +128,12 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         } else if (projects.length == 0) {
             return extraNodes.toArray(new DBNNode[0]);
         } else {
-            return new DBNNode[0];
+            DBNNode[] children = new DBNNode[extraNodes.size() + projects.length];
+            System.arraycopy(projects, 0, children, 0, projects.length);
+            for (int i = 0; i < extraNodes.size(); i++) {
+                children[projects.length + i] = extraNodes.get(i);
+            }
+            return children;
         }
     }
 
@@ -190,13 +197,15 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         }
     }
 
-    public void addExtraNode(DBNNode node) {
+    @Override
+    public void addExtraNode(@NotNull DBNNode node) {
         extraNodes.add(node);
         extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
         model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
     }
 
-    public void removeExtraNode(DBNNode node) {
+    @Override
+    public void removeExtraNode(@NotNull DBNNode node) {
         if (extraNodes.remove(node)) {
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
