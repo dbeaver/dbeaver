@@ -41,7 +41,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     public enum NodePathType {
         resource,
         folder,
-        database;
+        database,
+        other;
 
         public String getPrefix() {
             return name() + "://";
