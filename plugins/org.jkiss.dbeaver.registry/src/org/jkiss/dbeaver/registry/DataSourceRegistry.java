@@ -103,7 +103,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             // Provided datasources are needed for global model mode
             for (DataSourceDescriptor ds : source.dataSources) {
                 if (copyDataSources || ds.isProvided()) {
-                    dataSources.add(new DataSourceDescriptor(ds, this, false));
+                    DataSourceDescriptor dsCopy = new DataSourceDescriptor(ds, this, false);
+                    dataSources.add(dsCopy);
                 }
             }
         }

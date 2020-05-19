@@ -205,7 +205,12 @@ public class DataSourceDescriptor
             this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
         }
         this.lockPasswordHash = source.lockPasswordHash;
-        this.folder = source.folder;
+        if (source.getRegistry() == registry) {
+            this.folder = source.folder;
+        } else if (source.folder != null) {
+            // Cross-registry copy
+            this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
+        }
 
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
