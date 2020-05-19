@@ -137,6 +137,14 @@ public class PostgreRule implements PostgreObject, PostgreScriptObject, DBPQuali
     @Property(hidden = true, order = 80)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
+        if (definition != null) {
+            StringBuilder ddl = new StringBuilder();
+            ddl.append("-- DROP RULE ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
+                    .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+
+            ddl.append(definition);
+            this.definition = ddl.toString();
+        }
         return definition;
     }
 
