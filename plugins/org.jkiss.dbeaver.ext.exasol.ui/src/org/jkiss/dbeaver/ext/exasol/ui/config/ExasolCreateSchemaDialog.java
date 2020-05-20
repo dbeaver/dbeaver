@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,9 +92,6 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
                         {
                             String name = grantee.getName();
                             userCombo.add(name);
-                        }
-                        if(!CommonUtils.isEmpty(grantees)){
-                            owner = grantees.get(0);
                         }
                     });
                 } catch (DBException e) {
