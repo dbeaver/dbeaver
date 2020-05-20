@@ -177,6 +177,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 case RegistryConstants.TAG_PROVIDER: {
                     curProvider = null;
                     curDriver = null;
+                    isOldLibDeleted = false;
                     String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
                     if (CommonUtils.isEmpty(idAttr)) {
                         log.warn("No id for driver provider");
