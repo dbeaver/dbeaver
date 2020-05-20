@@ -19,7 +19,7 @@ public class ExasolSchemaConfigurator implements DBEObjectConfigurator<ExasolSch
                     return null;
                 }
                 schema.setName(dialog.getName());
-                schema.setOwner(dialog.getOwner());
+                schema.setOwner(dialog.getOwner() == null ? null : dialog.getOwner().getName());
                 return schema;
             }
         }.execute();
