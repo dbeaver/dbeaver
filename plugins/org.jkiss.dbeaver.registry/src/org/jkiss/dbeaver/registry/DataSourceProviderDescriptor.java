@@ -193,6 +193,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return registry;
     }
 
+    @Override
     public DataSourceProviderDescriptor getParentProvider() {
         return parentProvider;
     }

@@ -106,7 +106,7 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceConfigurationStorage origin;
     @NotNull
-    private DriverDescriptor driver;
+    private DBPDriver driver;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
     // Copy of connection info with resolved params (cache)
@@ -151,7 +151,7 @@ public class DataSourceDescriptor
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
         @NotNull String id,
-        @NotNull DriverDescriptor driver,
+        @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
@@ -161,7 +161,7 @@ public class DataSourceDescriptor
         @NotNull DBPDataSourceRegistry registry,
         @NotNull DBPDataSourceConfigurationStorage origin,
         @NotNull String id,
-        @NotNull DriverDescriptor driver,
+        @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.registry = registry;
@@ -249,7 +249,7 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DriverDescriptor getDriver()
+    public DBPDriver getDriver()
     {
         return driver;
     }

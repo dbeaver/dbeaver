@@ -120,9 +120,12 @@ public class DBNModel implements IResourceChangeListener {
             platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
         }
 
-        this.root.dispose(false);
-        synchronized (nodeMap) {
-            this.nodeMap.clear();
+        if (root != null) {
+            this.root.dispose(false);
+            synchronized (nodeMap) {
+                this.nodeMap.clear();
+            }
+            this.root = null;
         }
         synchronized (this.listeners) {
             if (!listeners.isEmpty()) {
@@ -133,7 +136,6 @@ public class DBNModel implements IResourceChangeListener {
             this.listeners.clear();
             this.listenersCopy = null;
         }
-        this.root = null;
     }
 
     public DBNRoot getRoot()

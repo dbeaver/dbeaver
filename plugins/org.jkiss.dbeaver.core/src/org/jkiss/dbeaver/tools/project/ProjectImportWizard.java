@@ -213,7 +213,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             // Try to find existing driver by class name
             List<DriverDescriptor> matchedDrivers = new ArrayList<>();
             for (DriverDescriptor tmpDriver : dataSourceProvider.getEnabledDrivers()) {
-                if (tmpDriver.getDriverClassName().equals(driverClass)) {
+                if (CommonUtils.equalObjects(tmpDriver.getDriverClassName(), driverClass)) {
                     matchedDrivers.add(tmpDriver);
                 }
             }
