@@ -343,7 +343,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         // Read secured creds file
         IFolder mdFolder = registry.getProject().getMetadataFolder(false);
         if (mdFolder.exists()) {
-            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + "-" + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+            IFile credFile = mdFolder.getFile(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (credFile.exists()) {
                 try {
                     String credJson = loadConfigFile(credFile, true);
