@@ -282,7 +282,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
             Set<String> categories = new TreeSet<>();
             for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                for (DriverDescriptor drv : provider.getEnabledDrivers()) {
+                for (DBPDriver drv : provider.getEnabledDrivers()) {
                     if (!CommonUtils.isEmpty(drv.getCategory())) {
                         categories.add(drv.getCategory());
                     }

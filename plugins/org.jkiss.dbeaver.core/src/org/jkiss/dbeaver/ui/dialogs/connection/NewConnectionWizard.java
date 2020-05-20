@@ -23,10 +23,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -44,9 +48,9 @@ public class NewConnectionWizard extends ConnectionWizard
 {
     private DBPDriver initialDriver;
     private IStructuredSelection selection;
-    private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<>();
+    private List<DBPDataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
-    private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
+    private Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
 
 
@@ -65,7 +69,7 @@ public class NewConnectionWizard extends ConnectionWizard
         return project == null ? null : project.getDataSourceRegistry();
     }
 
-    List<DataSourceProviderDescriptor> getAvailableProvides()
+    List<DBPDataSourceProviderDescriptor> getAvailableProvides()
     {
         return availableProvides;
     }
@@ -75,7 +79,7 @@ public class NewConnectionWizard extends ConnectionWizard
         return pageDrivers;
     }
 
-    ConnectionPageSettings getPageSettings(DriverDescriptor driver)
+    ConnectionPageSettings getPageSettings(DBPDriver driver)
     {
         return this.settingsPages.get(driver.getProviderDescriptor());
     }
@@ -121,7 +125,7 @@ public class NewConnectionWizard extends ConnectionWizard
             addPage(pageDrivers);
         }
 
-        for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+        for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
             DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {

@@ -68,7 +68,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     private final DBPPlatform platform;
-    private final ProjectMetadata project;
+    private final DBPProject project;
 
     private final Map<IFile, DataSourceOrigin> origins = new LinkedHashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
@@ -82,7 +82,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
 
-    public DataSourceRegistry(DBPPlatform platform, ProjectMetadata project) {
+    public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
         this.platform = platform;
         this.project = project;
 
@@ -762,7 +762,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 }
 
                 if (origin.isDefault()) {
-                    if (project.getFormat() == ProjectMetadata.ProjectFormat.MODERN) {
+                    if (project.isModernProject()) {
                         configFile = getModernConfigFile();
                     } else {
                         configFile = getLegacyConfigFile();
@@ -785,7 +785,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         }
                     } else {
                         DataSourceSerializer serializer;
-                        if (project.getFormat() == ProjectMetadata.ProjectFormat.LEGACY) {
+                        if (!project.isModernProject()) {
                             serializer = new DataSourceSerializerLegacy(this);
                         } else {
                             serializer = new DataSourceSerializerModern(this);

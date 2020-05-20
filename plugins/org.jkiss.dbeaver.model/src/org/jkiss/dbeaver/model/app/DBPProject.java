@@ -60,6 +60,8 @@ public interface DBPProject extends DBPObject
 
     boolean isRegistryLoaded();
 
+    boolean isModernProject();
+
     @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
 
