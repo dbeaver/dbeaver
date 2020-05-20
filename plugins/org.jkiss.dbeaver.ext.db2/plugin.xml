@@ -111,9 +111,9 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" virtual="true">
                             <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
-                               <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" />
+                               <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Sequence" label="%tree.sequences.node.name" icon="#folder_sequence" description="Sequences">
