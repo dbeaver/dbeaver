@@ -765,8 +765,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     @Override
     protected void cancelPressed() {
-        resetLibraries(false);
-
+        //resetLibraries(false);
         super.cancelPressed();
     }
 

@@ -165,6 +165,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
+        private boolean isOldLibDeleted;
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
@@ -265,6 +266,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         // so let's just skip it
                         //log.debug("Skip obsolete custom library '" + path + "'");
                         return;
+                    }
+                    if(providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
+                        if (!isOldLibDeleted) {
+                            for(DBPDriverLibrary libr : curDriver.getDriverLibraries()){
+                                curDriver.removeDriverLibrary(libr);
+                            }
+                            isOldLibDeleted = true;
+                        }
                     }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
