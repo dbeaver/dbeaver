@@ -69,7 +69,9 @@ import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GISLeafletViewer implements IGeometryValueEditor {
 
@@ -307,7 +309,17 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 if (CommonUtils.isEmpty(value.getProperties())) {
                     geomTipValues.add("null");
                 } else {
-                    geomTipValues.add(gson.toJson(value.getProperties()));
+                    Map<String, Object> simplifiedProperties = new LinkedHashMap<>();
+                    for (Map.Entry<String, Object> pe : value.getProperties().entrySet()) {
+                        Object pv = pe.getValue();
+                        if (pv instanceof String || pv instanceof Number || pv instanceof Boolean || pv == null) {
+                            // No changes
+                        } else {
+                            pv = CommonUtils.toString(pv);
+                        }
+                        simplifiedProperties.put(pe.getKey(), pv);
+                    }
+                    geomTipValues.add(gson.toJson(simplifiedProperties));
                 }
             } catch (Exception e) {
                 log.debug(e);
