@@ -303,10 +303,14 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 continue;
             }
             geomValues.add("'" + targetValue + "'");
-            if (CommonUtils.isEmpty(value.getProperties())) {
-                geomTipValues.add("null");
-            } else {
-                geomTipValues.add(gson.toJson(value.getProperties()));
+            try {
+                if (CommonUtils.isEmpty(value.getProperties())) {
+                    geomTipValues.add("null");
+                } else {
+                    geomTipValues.add(gson.toJson(value.getProperties()));
+                }
+            } catch (Exception e) {
+                log.debug(e);
             }
         }
         this.defaultSRID = actualSourceSRID;
