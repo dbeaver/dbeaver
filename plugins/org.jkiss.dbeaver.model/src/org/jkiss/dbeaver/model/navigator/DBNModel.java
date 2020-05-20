@@ -359,11 +359,7 @@ public class DBNModel implements IResourceChangeListener {
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {
                 for (DBNNode child : children) {
-                    if (nodePath.type == DBNNode.NodePathType.other) {
-                        if (child.getName().equals(item)) {
-                            nextChild = child;
-                        }
-                    } else if (nodePath.type == DBNNode.NodePathType.resource) {
+                    if (nodePath.type == DBNNode.NodePathType.resource) {
                         if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
                             nextChild = child;
                         }
