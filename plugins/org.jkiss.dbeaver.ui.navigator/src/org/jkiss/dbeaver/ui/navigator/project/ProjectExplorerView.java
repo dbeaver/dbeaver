@@ -80,6 +80,16 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             createColumns(viewer);
             updateTitle();
         });
+        // Remove all non-resource nodes
+        getNavigatorTree().getViewer().addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                if (parentElement == viewer.getInput() && !(element instanceof DBNResource)) {
+                    return false;
+                }
+                return true;
+            }
+        });
     }
 
     private void createColumns(final TreeViewer viewer) {
