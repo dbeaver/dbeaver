@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -34,19 +36,22 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * DBNProject
  */
-public class DBNProject extends DBNResource {
+public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private static final Log log = Log.getLog(DBNProject.class);
 
     private final DBPProject project;
+    private List<DBNNode> extraNodes = new ArrayList<>();
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
         super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
+        DBNRegistry.getInstance().extendNode(this);
     }
 
     public DBPProject getProject() {
@@ -122,19 +127,20 @@ public class DBNProject extends DBNResource {
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
         project.ensureOpen();
 
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
-            // Remove non-existing resources (placeholders)
-            List<DBNNode> children = new ArrayList<>();
-            Collections.addAll(children, super.getChildren(monitor));
-            children.removeIf(node ->
-                node instanceof DBNResource && !((DBNResource) node).getResource().exists());
-            return children.toArray(new DBNNode[0]);
-        }
-
         if (!project.getEclipseProject().isOpen()) {
             return new DBNNode[0];
         }
-        return super.getChildren(monitor);
+        List<DBNNode> childrenFiltered = new ArrayList<>();
+        Collections.addAll(childrenFiltered, super.getChildren(monitor));
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+            // Remove non-existing resources (placeholders)
+            childrenFiltered.removeIf(node ->
+                node instanceof DBNResource && !((DBNResource) node).getResource().exists());
+        }
+        if (!extraNodes.isEmpty()) {
+            childrenFiltered.addAll(extraNodes);
+        }
+        return childrenFiltered.toArray(new DBNNode[0]);
     }
 
     @Override
@@ -213,4 +219,32 @@ public class DBNProject extends DBNResource {
         }
     }
 
+    @NotNull
+    @Override
+    public List<DBNNode> getExtraNodes() {
+        return extraNodes;
+    }
+
+    @Override
+    public void addExtraNode(@NotNull DBNNode node) {
+        extraNodes.add(node);
+        extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
+        getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
+    }
+
+    @Override
+    public void removeExtraNode(@NotNull DBNNode node) {
+        if (extraNodes.remove(node)) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
+        }
+    }
+
+    @Override
+    protected void dispose(boolean reflect) {
+        for (DBNNode node : extraNodes) {
+            node.dispose(reflect);
+        }
+        extraNodes.clear();
+        super.dispose(reflect);
+    }
 }

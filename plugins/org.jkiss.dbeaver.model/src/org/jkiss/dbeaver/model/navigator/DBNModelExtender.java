@@ -17,11 +17,15 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * DBNModelExtender
  */
 public interface DBNModelExtender {
 
-    DBNNode[] getExtraNodes(DBNNode parentNode);
+    @Nullable
+    DBNNode[] getExtraNodes(@NotNull DBNNode parentNode);
 
 }

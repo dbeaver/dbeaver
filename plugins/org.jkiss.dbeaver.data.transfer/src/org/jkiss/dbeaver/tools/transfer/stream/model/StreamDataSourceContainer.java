@@ -364,4 +364,8 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return DefaultValueHandler.INSTANCE;
     }
 
+    @Override
+    public boolean isHidden() {
+        return true;
+    }
 }

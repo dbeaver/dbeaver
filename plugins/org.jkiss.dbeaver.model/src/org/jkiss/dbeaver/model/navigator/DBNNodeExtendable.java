@@ -19,11 +19,16 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
 
+import java.util.List;
+
 /**
  * DBNNodeExtendable
  */
 public interface DBNNodeExtendable
 {
+    @NotNull
+    List<DBNNode> getExtraNodes();
+
     void addExtraNode(@NotNull DBNNode node);
 
     void removeExtraNode(@NotNull DBNNode node);

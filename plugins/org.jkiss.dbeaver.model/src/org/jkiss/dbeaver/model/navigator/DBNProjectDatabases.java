@@ -151,9 +151,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     childNodes.add(folderNode);
                 }
             }
-            // Add only root datasources
+            // Add only visible root datasources
             for (DBNDataSource dataSource : dataSources) {
-                if (dataSource == null || dataSource.getDataSourceContainer().getFolder() != null) {
+                if (dataSource == null ||
+                    dataSource.getDataSourceContainer().isHidden() ||
+                    dataSource.getDataSourceContainer().getFolder() != null) {
                     continue;
                 }
                 childNodes.add(dataSource);

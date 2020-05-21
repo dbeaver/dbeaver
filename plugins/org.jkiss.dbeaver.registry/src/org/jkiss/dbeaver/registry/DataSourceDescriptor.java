@@ -140,6 +140,7 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
     private boolean temporary;
+    private boolean hidden;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
@@ -157,7 +158,7 @@ public class DataSourceDescriptor
         this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
     }
 
-    DataSourceDescriptor(
+    public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
         @NotNull DBPDataSourceConfigurationStorage origin,
         @NotNull String id,
@@ -585,6 +586,15 @@ public class DataSourceDescriptor
 
     public void setTemporary(boolean temporary) {
         this.temporary = temporary;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 
     @Override
