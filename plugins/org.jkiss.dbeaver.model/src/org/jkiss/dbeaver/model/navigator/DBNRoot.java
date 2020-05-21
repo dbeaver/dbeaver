@@ -141,6 +141,8 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return projects;
     }
 
+    @Override
+    @NotNull
     public List<DBNNode> getExtraNodes() {
         return extraNodes;
     }

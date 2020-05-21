@@ -62,7 +62,10 @@ public class DBNRegistry {
         List<DBNNode> extraNodes = new ArrayList<>();
         for (DBNModelExtenderDescriptor med : modelExtenders) {
             try {
-                Collections.addAll(extraNodes, med.getInstance().getExtraNodes((DBNNode) parentNode));
+                DBNNode[] enList = med.getInstance().getExtraNodes((DBNNode) parentNode);
+                if (enList != null) {
+                    Collections.addAll(extraNodes, enList);
+                }
             } catch (DBException e) {
                 log.debug("Error getting model extenders", e);
             }
