@@ -18,13 +18,16 @@ package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
-public class FireBirdView extends GenericView {
+public class FireBirdView extends FireBirdTable {
 
     public FireBirdView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
 
+    @Override
+    public boolean isView() {
+        return true;
+    }
 }
