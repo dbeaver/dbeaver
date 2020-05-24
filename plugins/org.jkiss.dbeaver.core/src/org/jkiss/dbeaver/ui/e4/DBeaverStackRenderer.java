@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
@@ -43,6 +44,10 @@ public class DBeaverStackRenderer extends StackRenderer {
     }
 
     private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @Nullable final IFile inputFile, @NotNull final File file) {
+        IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
+        if (activePage.getActiveEditor() != workbenchPart) {
+            activePage.activate(workbenchPart);
+        }
         new MenuItem(menu, SWT.SEPARATOR);
 
         {
