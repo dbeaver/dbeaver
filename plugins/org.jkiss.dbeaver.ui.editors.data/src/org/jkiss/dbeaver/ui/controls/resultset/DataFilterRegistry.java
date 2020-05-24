@@ -208,7 +208,10 @@ class DataFilterRegistry {
                                         xml.addAttribute("visible", false);
                                     }
                                     xml.addAttribute("pos", attrC.getVisualPosition());
-                                    xml.addAttribute("order", attrC.getOrderPosition());
+                                    if (attrC.getOrderPosition() > 0) {
+                                        xml.addAttribute("order", attrC.getOrderPosition());
+                                        xml.addAttribute("orderDesc", attrC.isOrderDescending());
+                                    }
                                     if (!CommonUtils.isEmpty(attrC.getCriteria())) {
                                         xml.addAttribute("criteria", attrC.getCriteria());
                                     }
@@ -270,7 +273,10 @@ class DataFilterRegistry {
                         curSavedConstraint = new DBDAttributeConstraintBase();
                         String name = atts.getValue("name");
                         curSavedConstraint.setVisualPosition(CommonUtils.toInt(atts.getValue("pos")));
-                        curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
+                        if (atts.getValue("order") != null) {
+                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
+                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(atts.getValue("orderDesc")));
+                        }
                         curSavedConstraint.setCriteria(atts.getValue("criteria"));
                         curSavedConstraint.setVisible(CommonUtils.getBoolean(atts.getValue("visible"), true));
                         String operName = atts.getValue("operator");
