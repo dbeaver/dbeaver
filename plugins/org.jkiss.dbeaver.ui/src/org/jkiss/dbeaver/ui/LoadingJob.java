@@ -86,6 +86,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             result = this.loadingService.evaluate(monitor);
         }
         catch (InvocationTargetException e) {
+            log.debug(e.getTargetException());
             error = e.getTargetException();
         }
         catch (InterruptedException e) {
@@ -129,7 +130,6 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             }
 
             if (innerError != null) {
-                log.debug(innerError);
                 DBWorkbench.getPlatformUI().showError(
                         getName(),
                     null,
