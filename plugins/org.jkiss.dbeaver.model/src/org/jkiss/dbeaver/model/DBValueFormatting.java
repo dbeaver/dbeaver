@@ -218,7 +218,7 @@ public final class DBValueFormatting {
             }
         } catch (NumberFormatException e) {
             try {
-                return (Number)formatter.parseValue(text, hintType);
+                return formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
                 if (validateValue) {
                     throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
@@ -229,13 +229,15 @@ public final class DBValueFormatting {
         }
     }
 
-    public static String convertNumberToNativeString(Number value) {
+    public static String convertNumberToNativeString(Number value, boolean scientificNotation) {
         try {
             if (value instanceof BigDecimal) {
-                return ((BigDecimal) value).toPlainString();
+                return scientificNotation ?
+                    value.toString() :
+                    ((BigDecimal) value).toPlainString();
             } else {
                 String strValue = value.toString();
-                if (strValue.indexOf('E') == -1) {
+                if (scientificNotation || strValue.indexOf('E') == -1) {
                     return strValue;
                 }
                 // We don't want exponential view
