@@ -248,13 +248,14 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " +
                 "   (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " WHERE " +
-                    "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
+                    "OBJECT_TYPE IN (" + objectTypeClause + ") AND " + (!caseSensitive ? "UPPER(OBJECT_NAME)" : "OBJECT_NAME") + " LIKE ? " +
                     (schema == null ? "" : " AND OWNER=?") +
                     "UNION ALL\n" +
                 "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
                     "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS") + " S," +
                         OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " O\n" +
-                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
+                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND " +
+                    (!caseSensitive ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME") + "  LIKE ?)" +
                 "\nORDER BY OBJECT_NAME")) {
             if (!caseSensitive) {
                 objectNameMask = objectNameMask.toUpperCase();
