@@ -85,14 +85,12 @@ public class DataExporterHTML extends StreamExporterAbstract {
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
             "padding: 5px;" +
-            "background-color: #D0E3FA;" +
-            "background-image: url(sky.jpg);}" +
+            "background-color: #D0E3FA;}" +
             "td{font-family: sans-serif;" +
             "border: thin solid #6495ed;" +
 //              "width: 50%;" +
             "padding: 5px;" +
-            "text-align: center;" +
-            "background-color: #ffffff;}" +
+            "text-align: center;}" +
             ".odd{background:#e8edff;}" +
             "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
             "</style>\n</head>\n");
