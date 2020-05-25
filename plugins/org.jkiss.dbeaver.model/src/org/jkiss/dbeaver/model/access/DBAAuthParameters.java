@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.model.access;
 
 import javax.security.auth.callback.CallbackHandler;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class DBPAuthParameters {
+public class DBAAuthParameters {
 
 
-    private final Map<String, Object> properties = new HashMap<>();
+    private final Map<String, Object> properties = new LinkedHashMap<>();
     private javax.security.auth.callback.CallbackHandler callbackHandler;
 
     public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public Object getProperty(String name) {
-        return properties.get(name);
+    public <T> T getProperty(String name) {
+        return (T) properties.get(name);
+    }
+
+    public void setProperty(String name, Object value) {
+        properties.put(name, value);
     }
 
     public CallbackHandler getCallbackHandler() {

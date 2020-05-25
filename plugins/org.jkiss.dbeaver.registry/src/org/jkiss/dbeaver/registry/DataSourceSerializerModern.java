@@ -140,7 +140,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             /*if (!connectionType.isPredefined()) */{
                                 connectionTypes.put(connectionType.getId(), connectionType);
                             }
-                            DriverDescriptor driver = dataSource.getDriver();
+                            DBPDriver driver = dataSource.getDriver();
                             if (driver.isCustom() && !driver.getProviderDescriptor().isTemporary()) {
                                 Map<String, DBPDriver> driverMap = drivers.computeIfAbsent(driver.getProviderId(), s -> new LinkedHashMap<>());
                                 driverMap.put(driver.getId(), driver);

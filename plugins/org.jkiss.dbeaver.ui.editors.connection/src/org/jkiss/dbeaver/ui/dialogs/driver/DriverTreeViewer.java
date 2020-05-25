@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -48,7 +49,7 @@ import java.util.*;
  */
 public class DriverTreeViewer extends TreeViewer {
 
-    private List<DataSourceProviderDescriptor> providers;
+    private List<DBPDataSourceProviderDescriptor> providers;
     private Font boldFont;
     private final Map<String,DriverCategory> categories = new HashMap<>();
     private final List<Object> driverList = new ArrayList<>();
@@ -94,7 +95,7 @@ public class DriverTreeViewer extends TreeViewer {
 
         public DBPImage getImage() {
             DBPImage driverImage = null;
-            for (DriverDescriptor driver : getDrivers()) {
+            for (DBPDriver driver : getDrivers()) {
                 if (driverImage == null) {
                     driverImage = driver.getPlainIcon();
                 } else if (!driverImage.equals(driver.getPlainIcon())) {
@@ -115,7 +116,7 @@ public class DriverTreeViewer extends TreeViewer {
         parent.addDisposeListener(e -> UIUtils.dispose(boldFont));
     }
 
-    public void initDrivers(List<DataSourceProviderDescriptor> providers, boolean expandRecent)
+    public void initDrivers(List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent)
     {
         getTree().setHeaderVisible(true);
         this.providers = providers;
@@ -185,9 +186,9 @@ public class DriverTreeViewer extends TreeViewer {
         }
 
         driverList.clear();
-        for (DataSourceProviderDescriptor provider : providers) {
-            List<DriverDescriptor> drivers = provider.getEnabledDrivers();
-            for (DriverDescriptor driver : drivers) {
+        for (DBPDataSourceProviderDescriptor provider : providers) {
+            List<? extends DBPDriver> drivers = provider.getEnabledDrivers();
+            for (DBPDriver driver : drivers) {
                 String category = driver.getCategory();
                 if (CommonUtils.isEmpty(category)) {
                     driverList.add(driver);
@@ -200,7 +201,7 @@ public class DriverTreeViewer extends TreeViewer {
                     if (!driverList.contains(driverCategory)) {
                         driverList.add(driverCategory);
                     }
-                    driverCategory.drivers.add(driver);
+                    driverCategory.drivers.add((DriverDescriptor) driver);
                 }
             }
         }
@@ -233,7 +234,7 @@ public class DriverTreeViewer extends TreeViewer {
             return count;
         } else if (obj instanceof DriverCategory) {
             int count = 0;
-            for (DriverDescriptor driver : ((DriverCategory) obj).drivers) {
+            for (DBPDriver driver : ((DriverCategory) obj).drivers) {
                 count += DriverUtils.getUsedBy(driver, allDataSources).size();
             }
             return count;

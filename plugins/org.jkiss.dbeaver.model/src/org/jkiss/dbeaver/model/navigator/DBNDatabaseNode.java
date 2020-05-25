@@ -74,7 +74,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     @Override
-    void dispose(boolean reflect) {
+    protected void dispose(boolean reflect) {
         clearChildren(reflect);
         super.dispose(reflect);
     }
@@ -703,7 +703,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 if (pathName.length() > 0) {
                     pathName.insert(0, '/');
                 }
-                pathName.insert(0, ((DBNDataSource) node).getDataSourceContainer().getId());
+                pathName.insert(0, node.getNodeItemPath());
             } else if (node instanceof DBNDatabaseFolder) {
                 if (pathName.length() > 0) {
                     pathName.insert(0, '/');
@@ -724,7 +724,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             }
             pathName.insert(0, node.getNodeName().replace('/', '_'));
         }
-        pathName.insert(0, NodePathType.database.getPrefix());
         return pathName.toString();
     }
 

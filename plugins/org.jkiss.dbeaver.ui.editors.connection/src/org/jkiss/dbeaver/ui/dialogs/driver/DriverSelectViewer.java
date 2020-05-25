@@ -39,6 +39,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -74,7 +75,7 @@ public class DriverSelectViewer extends Viewer {
     }
 
     private final Object site;
-    private final List<DataSourceProviderDescriptor> providers;
+    private final List<DBPDataSourceProviderDescriptor> providers;
     private final boolean expandRecent;
     private final boolean forceClassic;
 
@@ -111,11 +112,11 @@ public class DriverSelectViewer extends Viewer {
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SELECTOR_VIEW_TYPE, viewType.name());
     }
 
-    public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
+    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent) {
         this(parent, site, providers, expandRecent, false);
     }
 
-    public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
+    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;

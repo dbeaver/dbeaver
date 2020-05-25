@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -531,11 +528,13 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 }
                 case RegistryConstants.TAG_CONNECTION:
                     if (curDataSource != null) {
-                        DriverDescriptor driver = curDataSource.getDriver();
+                        DBPDriver driver = curDataSource.getDriver();
                         if (CommonUtils.isEmpty(driver.getName())) {
-                            // Broken driver - seems to be just created
-                            driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
-                            driver.setDriverClassName("java.sql.Driver");
+                            if (driver instanceof DriverDescriptor) {
+                                // Broken driver - seems to be just created
+                                ((DriverDescriptor)driver).setName(atts.getValue(RegistryConstants.ATTR_URL));
+                                ((DriverDescriptor)driver).setDriverClassName("java.sql.Driver");
+                            }
                         }
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
                         config.setHostName(atts.getValue(RegistryConstants.ATTR_HOST));

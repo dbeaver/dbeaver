@@ -380,6 +380,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return nativeClientHomes;
     }
 
+    @Override
     public DriverDescriptor getReplacedBy() {
         return replacedBy;
     }
@@ -413,6 +414,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return classLoader;
     }
 
+    @NotNull
+    @Override
     public DataSourceProviderDescriptor getProviderDescriptor() {
         return providerDescriptor;
     }
@@ -440,6 +443,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return id;
     }
 
+    @NotNull
     @Override
     public String getProviderId() {
         return providerDescriptor.getId();
@@ -495,6 +499,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      *
      * @return plain icon
      */
+    @Override
     @NotNull
     public DBPImage getPlainIcon() {
         return iconPlain;
@@ -819,6 +824,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         } else {
             return this.libraries.remove(lib);
         }
+    }
+
+    public void disabledAllDefaultLibraries() {
+        libraries.stream()
+                .filter(s -> !s.isCustom())
+                .forEach(libr -> libr.setDisabled(true));
     }
 
     @NotNull

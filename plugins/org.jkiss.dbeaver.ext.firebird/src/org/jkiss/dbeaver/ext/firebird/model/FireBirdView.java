@@ -17,14 +17,47 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.utils.CommonUtils;
 
-public class FireBirdView extends GenericView {
+import java.util.Map;
+
+public class FireBirdView extends FireBirdTable implements DBSObjectWithScript, DBSView {
+
+    private String ddl;
 
     public FireBirdView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+
+    @Override
+    public boolean isView() {
+        return true;
+    }
+
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
+            ddl = null;
+        }
+        if (ddl == null) {
+            ddl = isPersisted() ? FireBirdUtils.getViewSource(monitor, this) : "";
+        }
+        return ddl;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        this.ddl = source;
     }
 
 }

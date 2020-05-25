@@ -363,9 +363,9 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
     
 
-	public void setOwner(ExasolGrantee owner)
+	public void setOwner(String owner)
     {
-        this.owner = owner.getName();
+        this.owner = owner;
     }
 
     public ExasolTableCache getTableCache() {

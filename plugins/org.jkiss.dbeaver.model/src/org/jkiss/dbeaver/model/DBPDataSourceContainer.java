@@ -87,6 +87,10 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isTemporary();
 
+    // We do not implement DBPHiddenObject because it is not really hidden.
+    // This flag means that datasource shouldn't be included in the primary connection list.
+    boolean isHidden();
+
     boolean isConnectionReadOnly();
 
     boolean isSavePassword();

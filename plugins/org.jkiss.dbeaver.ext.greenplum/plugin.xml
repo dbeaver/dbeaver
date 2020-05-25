@@ -62,7 +62,7 @@
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle" bundle="drivers.postgresql"/>
+<!--                    <file type="jar" path="drivers/waffle" bundle="drivers.postgresql"/>-->
                     <parameter name="serverType" value="greenplum"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>

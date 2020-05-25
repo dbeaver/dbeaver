@@ -297,10 +297,10 @@
                     promoted="1"
                     categories="sql">
                     <os name="win32"/>
-                    <file type="jar" path="repo:/drivers/odbc" bundle="!drivers.odbc"/>
+                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
 
-                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
+                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
                 </driver>
                 <driver

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +52,9 @@ public class DataSourceViewRegistry
         }
     }
 
-    public DataSourceViewDescriptor findView(DataSourceProviderDescriptor provider, String targetID)
+    public DataSourceViewDescriptor findView(DBPDataSourceProviderDescriptor provider, String targetID)
     {
-        for (DataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
+        for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
             for (DataSourceViewDescriptor view : views) {
                 if (view.getDataSources().contains(pd.getId()) && targetID.equals(view.getTargetID())) {
                     return view;
