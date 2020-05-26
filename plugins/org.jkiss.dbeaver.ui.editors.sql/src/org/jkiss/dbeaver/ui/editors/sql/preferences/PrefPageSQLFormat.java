@@ -168,7 +168,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             // SQL preview
             Composite previewGroup = new Composite(composite, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 3;
             previewGroup.setLayoutData(gd);
             previewGroup.setLayout(new FillLayout());
 
