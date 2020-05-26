@@ -949,7 +949,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (!resultsSash.isDisposed()) {
                 int[] weights = resultsSash.getWeights();
                 IPreferenceStore prefs = getPreferenceStore();
-                if (prefs != null) {
+                if (prefs != null && weights.length == 2) {
                     prefs.setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
                 }
             }
