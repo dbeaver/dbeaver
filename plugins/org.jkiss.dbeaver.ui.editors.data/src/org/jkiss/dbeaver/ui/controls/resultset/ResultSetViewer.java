@@ -3597,6 +3597,7 @@ public class ResultSetViewer extends Viewer
 
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
+                model.releaseAllData();
                 if (filtersPanel != null) {
                     UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
                 }
@@ -3754,6 +3755,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData()
     {
+        this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
         this.activePresentation.clearMetaData();
