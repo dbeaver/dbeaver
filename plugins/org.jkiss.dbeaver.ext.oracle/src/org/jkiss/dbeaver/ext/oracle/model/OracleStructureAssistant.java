@@ -309,7 +309,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             }
         }
     }
-
+    
     private boolean containsOnlyConstraintOrFK(DBSObjectType[] objectTypes) {
         for (DBSObjectType objectType : objectTypes) {
             if (!(objectType == OracleObjectType.CONSTRAINT || objectType == OracleObjectType.FOREIGN_KEY)) {
