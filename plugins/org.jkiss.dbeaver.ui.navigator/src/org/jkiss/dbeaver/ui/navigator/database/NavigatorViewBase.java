@@ -310,6 +310,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 tree.getViewer().refresh();
                 break;
             case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
+            case NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME:
                 tree.getViewer().getTree().redraw();
                 break;
         }
