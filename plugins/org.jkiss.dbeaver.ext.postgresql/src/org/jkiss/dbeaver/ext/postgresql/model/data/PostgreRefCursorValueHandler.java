@@ -37,7 +37,7 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         String cursorName = resultSet.getString(index);
-        return new PostgreRefCursor(cursorName);
+        return new PostgreRefCursor((JDBCSession) session, cursorName);
 /*
         // Fetch as string (#1735)
         // Fetching cursor as object will close it so it won;'t be possible to use cursor in consequent queries
