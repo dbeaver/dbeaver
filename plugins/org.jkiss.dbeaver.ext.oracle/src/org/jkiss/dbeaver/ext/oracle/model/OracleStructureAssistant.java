@@ -121,6 +121,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             if (ArrayUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
                 // Search constraints
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
+                if (!containsOnlyConstraintOrFK(objectTypes)) {
+                    searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
+                }
             } else {
                 // Search all objects
                 searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
@@ -307,5 +310,12 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
         }
     }
 
-
+    private boolean containsOnlyConstraintOrFK(DBSObjectType[] objectTypes) {
+        for (DBSObjectType objectType : objectTypes) {
+            if (!(objectType == OracleObjectType.CONSTRAINT || objectType == OracleObjectType.FOREIGN_KEY)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
