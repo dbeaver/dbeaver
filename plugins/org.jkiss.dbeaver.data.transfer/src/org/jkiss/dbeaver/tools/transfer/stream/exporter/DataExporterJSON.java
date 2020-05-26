@@ -105,14 +105,14 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             out.write(jsonText);
         } else {
             out.write("\t{\n");
-            for (int i = 0; i < row.length; i++) {
+            for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding column = columns[i];
                 String columnName = column.getLabel();
                 if (CommonUtils.isEmpty(columnName)) {
                     columnName = column.getName();
                 }
                 out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" : ");
-                Object cellValue = row[i];
+                Object cellValue = row[column.getOrdinalPosition()];
                 if (DBUtils.isNullValue(cellValue)) {
                     writeTextCell(null);
                 } else if (cellValue instanceof DBDContent) {
@@ -144,7 +144,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                         writeTextCell(super.getValueDisplayString(column, cellValue));
                     }
                 }
-                if (i < row.length - 1) {
+                if (i < columns.length - 1) {
                     out.write(",");
                 }
                 out.write("\n");

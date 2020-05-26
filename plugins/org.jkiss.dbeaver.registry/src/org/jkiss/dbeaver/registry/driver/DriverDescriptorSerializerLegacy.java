@@ -266,6 +266,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         //log.debug("Skip obsolete custom library '" + path + "'");
                         return;
                     }
+                    if(providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
+                        curDriver.disabledAllDefaultLibraries();
+                    }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                         lib.setDisabled(true);

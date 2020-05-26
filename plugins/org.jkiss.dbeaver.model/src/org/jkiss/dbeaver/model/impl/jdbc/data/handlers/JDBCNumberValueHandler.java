@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -43,10 +44,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
 
     private final DBDDataFormatterProfile formatterProfile;
+    private final boolean useScientificNotation;
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
         this.formatterProfile = formatterProfile;
+        this.useScientificNotation = formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @Override
@@ -77,7 +80,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             }
         }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
-            return DBValueFormatting.convertNumberToNativeString((Number) value);
+            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation);
         }
         return getFormatter(column).formatValue(value);
     }
