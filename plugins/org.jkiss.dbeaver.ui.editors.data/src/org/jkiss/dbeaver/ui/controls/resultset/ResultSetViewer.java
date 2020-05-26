@@ -336,7 +336,9 @@ public class ResultSetViewer extends Viewer
                 this.panelFolder.addListener(SWT.Resize, event -> {
                     if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
-                        getPresentationSettings().panelRatio = weights[1];
+                        if (weights.length == 2) {
+                            getPresentationSettings().panelRatio = weights[1];
+                        }
                     }
                 });
                 this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {

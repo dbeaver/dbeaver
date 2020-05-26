@@ -49,7 +49,7 @@ public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRender
             //gc.setBackground(conColor);
             gc.setForeground(conColor);
             gc.setLineWidth(1);
-            gc.setLineStyle(SWT.LINE_DOT);
+            gc.setLineStyle(SWT.LINE_SOLID);
 
 //            gc.fillRectangle(0, event.y + 2, textSize.x, textSize.y);
 //            gc.drawRectangle(0, event.y + 2, textSize.x - 1, textSize.y - 1);
