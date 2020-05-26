@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -79,10 +80,10 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 13) public long getMaxDataLength() { return maxDataLength; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 14) public long getDataFree() { return dataFree; }
-        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 15) public long getIndexLength() { return indexLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12, formatter = ByteNumberFormat.class) public long getDataLength() { return dataLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 13, formatter = ByteNumberFormat.class) public long getMaxDataLength() { return maxDataLength; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 14, formatter = ByteNumberFormat.class) public long getDataFree() { return dataFree; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 15, formatter = ByteNumberFormat.class) public long getIndexLength() { return indexLength; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 16) public String getRowFormat() { return rowFormat; }
 
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 20) public Date getCreateTime() { return createTime; }

@@ -826,6 +826,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    public void disabledAllDefaultLibraries() {
+        libraries.stream()
+                .filter(s -> !s.isCustom())
+                .forEach(libr -> libr.setDisabled(true));
+    }
+
     @NotNull
     public List<DriverFileSource> getDriverFileSources() {
         return fileSources;
