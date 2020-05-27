@@ -165,6 +165,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                             SelectDataSourceDialog dsDialog = new SelectDataSourceDialog(group.getShell(), currentProject, null);
                             if (dsDialog.open() == IDialogConstants.OK_ID) {
                                 DBPDataSourceContainer dataSource = dsDialog.getDataSource();
+                                if (dataSource == null) {
+                                    return;
+                                }
                                 if (!dataSource.isConnected()) {
                                     try {
                                         runnableContext.run(true, true, monitor -> {
