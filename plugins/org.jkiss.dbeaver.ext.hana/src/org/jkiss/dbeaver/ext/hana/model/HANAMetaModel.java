@@ -69,8 +69,8 @@ public class HANAMetaModel extends GenericMetaModel
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
         GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
         int i;
-        for(i=0; i<schemas.size(); i++)
-            if(schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
+        for (i = 0; i < schemas.size(); i++)
+            if (schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
                 break;
         schemas.add(i, publicSchema);
         return schemas;
@@ -220,7 +220,7 @@ public class HANAMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read synonyms")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY FROM SYS.SEQUENCES WHERE SCHEMA_NAME = ? ORDER BY SEQUENCE_NAME")) {
                 dbStat.setString(1, container.getName());
