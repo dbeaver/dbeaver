@@ -22,6 +22,7 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.parser.rules,
  org.jkiss.dbeaver.model.sql.parser.tokens,
  org.jkiss.dbeaver.model.sql.registry,
+ org.jkiss.dbeaver.model.sql.task,
  org.jkiss.dbeaver.model.text,
  org.jkiss.dbeaver.model.text.parser,
  org.jkiss.dbeaver.model.text.parser.rules

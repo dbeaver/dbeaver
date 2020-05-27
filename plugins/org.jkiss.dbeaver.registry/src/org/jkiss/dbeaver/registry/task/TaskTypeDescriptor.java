@@ -123,6 +123,11 @@ public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBT
     }
 
     @Override
+    public Class<? extends DBTTaskHandler> getHandlerClass() {
+        return handlerImplType.getObjectClass(DBTTaskHandler.class);
+    }
+
+    @Override
     public String toString() {
         return getId();
     }
