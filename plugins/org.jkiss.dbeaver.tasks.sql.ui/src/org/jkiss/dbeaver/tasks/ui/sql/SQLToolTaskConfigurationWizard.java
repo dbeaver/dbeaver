@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.tasks.ui.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -26,20 +28,31 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.util.Map;
 
 class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
-    private SQLToolExecuteSettings settings = new SQLToolExecuteSettings();
+    private SQLToolExecuteSettings settings;
     private SQLToolTaskPageSettings pageSettings;
+    private SQLToolExecuteHandler taskHandler;
 
     public SQLToolTaskConfigurationWizard() {
     }
 
     public SQLToolTaskConfigurationWizard(@NotNull DBTTask task) {
         super(task);
+        try {
+            taskHandler = (SQLToolExecuteHandler) task.getType().createHandler();
+        } catch (DBException e) {
+            throw new IllegalArgumentException("Error instantiating task type handler", e);
+        }
+        settings = taskHandler.createToolSettings();
         settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task.getProperties());
+    }
+
+    public SQLToolExecuteHandler getTaskHandler() {
+        return taskHandler;
     }
 
     @Override
     protected String getDefaultWindowTitle() {
-        return "Script Execute";
+        return getTaskType().getName();
     }
 
     @Override

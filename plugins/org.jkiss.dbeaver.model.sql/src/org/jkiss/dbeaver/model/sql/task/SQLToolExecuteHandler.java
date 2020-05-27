@@ -79,6 +79,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
+        generateScript(monitor, settings);
+    }
+
+    public List<String> generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
         List<String> queries = new ArrayList<>();
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
@@ -87,11 +91,13 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                 generateObjectQueries(session, settings, queries, object);
             }
         }
+
+        return queries;
     }
 
     @NotNull
-    protected abstract SETTINGS createToolSettings();
+    public abstract SETTINGS createToolSettings();
 
-    protected abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<String> queries, OBJECT_TYPE object) throws DBCException;
+    public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<String> queries, OBJECT_TYPE object) throws DBCException;
 
 }

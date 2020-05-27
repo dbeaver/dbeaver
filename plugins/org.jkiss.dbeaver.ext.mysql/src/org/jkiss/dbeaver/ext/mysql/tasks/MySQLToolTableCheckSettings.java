@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 public class MySQLToolTableCheckSettings extends SQLToolExecuteSettings<MySQLTableBase> {
     private String option;
 
-    @Property(listProvider = CheckOptionListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, listProvider = CheckOptionListProvider.class)
     public String getOption() {
         return option;
     }
@@ -37,7 +37,7 @@ public class MySQLToolTableCheckSettings extends SQLToolExecuteSettings<MySQLTab
         this.option = option;
     }
 
-    private static class CheckOptionListProvider implements IPropertyValueListProvider<String> {
+    public static class CheckOptionListProvider implements IPropertyValueListProvider<MySQLToolTableCheckSettings> {
 
         @Override
         public boolean allowCustomValue() {
@@ -45,7 +45,7 @@ public class MySQLToolTableCheckSettings extends SQLToolExecuteSettings<MySQLTab
         }
 
         @Override
-        public Object[] getPossibleValues(String object) {
+        public Object[] getPossibleValues(MySQLToolTableCheckSettings object) {
             return new String[] {
                 "",
                 "FOR UPGRADE",
