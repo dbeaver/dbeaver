@@ -31,14 +31,25 @@ import org.jkiss.utils.CommonUtils;
 public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
 
     private final TaskTypeDescriptor type;
+    private final ObjectType taskHandlerType;
     private final IConfigurationElement config;
     private final ObjectType implType;
     private final boolean supportsPanel;
+
+    TaskConfiguratorDescriptor(IConfigurationElement config) {
+        super(config);
+        this.type = null;
+        this.config = config;
+        this.taskHandlerType = new ObjectType(config, "handler");
+        this.implType = new ObjectType(config, "class");
+        this.supportsPanel = CommonUtils.getBoolean(config.getAttribute("supportsPanel"), true);
+    }
 
     TaskConfiguratorDescriptor(TaskTypeDescriptor type, IConfigurationElement config) {
         super(config);
         this.type = type;
         this.config = config;
+        this.taskHandlerType = null;
         this.implType = new ObjectType(config, "class");
         this.supportsPanel = CommonUtils.getBoolean(config.getAttribute("supportsPanel"), true);
     }
@@ -56,6 +67,10 @@ public class TaskConfiguratorDescriptor extends AbstractContextDescriptor {
     @NotNull
     public TaskTypeDescriptor getType() {
         return type;
+    }
+
+    public ObjectType getTaskHandlerType() {
+        return taskHandlerType;
     }
 
     @NotNull

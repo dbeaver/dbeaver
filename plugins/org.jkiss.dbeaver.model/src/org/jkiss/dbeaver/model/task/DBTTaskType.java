@@ -53,4 +53,6 @@ public interface DBTTaskType {
     @NotNull
     DBTTaskHandler createHandler() throws DBException;
 
+    Class<? extends DBTTaskHandler> getHandlerClass();
+
 }

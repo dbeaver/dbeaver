@@ -19,24 +19,29 @@ package org.jkiss.dbeaver.model.sql.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * SQLToolExecuteHandler
  */
-public abstract class SQLToolExecuteHandler implements DBTTaskHandler {
+public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>> implements DBTTaskHandler {
 
     @Override
-    public void executeTask(
+    public final void executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,
@@ -44,12 +49,12 @@ public abstract class SQLToolExecuteHandler implements DBTTaskHandler {
         @NotNull Writer logStream,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
-        SQLToolExecuteSettings settings = new SQLToolExecuteSettings();
+        SETTINGS settings = createToolSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
     }
 
-    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SQLToolExecuteSettings settings) throws DBException {
+    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SETTINGS settings) throws DBException {
         // Start consumers
         listener.taskStarted(settings);
 
@@ -73,9 +78,20 @@ public abstract class SQLToolExecuteHandler implements DBTTaskHandler {
         listener.taskFinished(settings, error);
     }
 
-    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SQLToolExecuteSettings settings, Log log, Writer logStream) throws DBException {
-        List objectList = settings.getObjectList();
+    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
+        List<String> queries = new ArrayList<>();
 
+        List<OBJECT_TYPE> objectList = settings.getObjectList();
+        for (OBJECT_TYPE object : objectList) {
+            try (DBCSession session = DBUtils.openMetaSession(monitor, object, "Generate tool queries")) {
+                generateObjectQueries(session, settings, queries, object);
+            }
+        }
     }
+
+    @NotNull
+    protected abstract SETTINGS createToolSettings();
+
+    protected abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<String> queries, OBJECT_TYPE object) throws DBCException;
 
 }
