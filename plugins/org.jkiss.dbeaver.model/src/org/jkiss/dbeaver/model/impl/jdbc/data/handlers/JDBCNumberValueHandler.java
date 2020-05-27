@@ -243,7 +243,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     } else {
                         statement.setLong(paramIndex, number.longValue());
                     }
-                    statement.setLong(paramIndex, number.longValue());
                     break;
                 case Types.FLOAT:
                     if (number instanceof BigDecimal) {
@@ -354,6 +353,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     public Class<? extends Number> getNumberType(DBSTypedObject type) {
         switch (type.getTypeID()) {
             case Types.BIGINT:
+            case Types.INTEGER:
                 return Long.class;
             case Types.DECIMAL:
             case Types.DOUBLE:
@@ -369,8 +369,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     return Float.class;
                 }
                 return BigDecimal.class;
-            case Types.INTEGER:
-                return Integer.class;
+            //case Types.INTEGER:
+            //    return Integer.class;
             case Types.SMALLINT:
             case Types.TINYINT:
                 return Short.class;
