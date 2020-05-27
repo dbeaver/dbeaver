@@ -17,11 +17,8 @@
 
 package org.jkiss.dbeaver.tasks.ui.sql;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
@@ -37,54 +34,13 @@ public class SQLToolTaskConfigurator implements DBTTaskConfigurator {
     private static final Log log = Log.getLog(SQLToolTaskConfigurator.class);
 
     @Override
-    public ConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
-        return new ConfigPanel(runnableContext, taskType);
+    public DBTTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
+        return null;
     }
 
     @Override
     public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
         return new SQLToolTaskConfigurationWizard(taskConfiguration);
-    }
-
-    private static class ConfigPanel implements DBTTaskConfigPanel {
-
-        private DBRRunnableContext runnableContext;
-        private DBTTaskType taskType;
-        private Table objectsTable;
-        private DBPProject currentProject;
-        private SQLToolTaskConfigurationWizard dtWizard;
-
-        ConfigPanel(DBRRunnableContext runnableContext, DBTTaskType taskType) {
-            this.runnableContext = runnableContext;
-            this.taskType = taskType;
-            //this.currentProject = NavigatorUtils.getSelectedProject();
-        }
-
-        @Override
-        public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
-            dtWizard = (SQLToolTaskConfigurationWizard) wizard;
-        }
-
-        @Override
-        public void loadSettings() {
-        }
-
-        @Override
-        public void saveSettings() {
-        }
-
-        @Override
-        public boolean isComplete() {
-            return objectsTable.getItemCount() > 0;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            if (objectsTable.getItemCount() == 0) {
-                return "No objects selected";
-            }
-            return null;
-        }
     }
 
 }

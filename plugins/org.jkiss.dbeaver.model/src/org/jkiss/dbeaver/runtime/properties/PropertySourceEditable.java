@@ -55,9 +55,16 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
-    @Override
-    public boolean isEditable(Object object)
+    public PropertySourceEditable(Object sourceObject, Object object)
     {
+        super(sourceObject, object, true);
+    }
+
+    @Override
+    public boolean isEditable(Object object) {
+        if (commandContext == null) {
+            return true;
+        }
         DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
         return objectEditor != null &&
             object instanceof DBPObject && objectEditor.canEditObject((DBPObject) object);
@@ -74,7 +81,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             managerType);
     }
 
-    @Override
+    //@Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;

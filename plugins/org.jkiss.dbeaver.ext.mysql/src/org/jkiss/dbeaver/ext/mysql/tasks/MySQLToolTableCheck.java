@@ -33,7 +33,7 @@ public class MySQLToolTableCheck extends SQLToolExecuteHandler<MySQLTableBase, M
 
     @NotNull
     @Override
-    protected MySQLToolTableCheckSettings createToolSettings() {
+    public MySQLToolTableCheckSettings createToolSettings() {
         return new MySQLToolTableCheckSettings();
     }
 
