@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporter;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -136,8 +137,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 mappingsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
                 mappingsTable.setHeaderVisible(true);
                 mappingsTable.setLinesVisible(true);
-                UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
-                UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
+                UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+                UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
                 UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_settings_column_mapping_type);
 
                 final CustomTableEditor tableEditor = new CustomTableEditor(mappingsTable) {
