@@ -12,3 +12,4 @@ Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.netezza
+Export-Package: org.jkiss.dbeaver.ext.netezza.model
