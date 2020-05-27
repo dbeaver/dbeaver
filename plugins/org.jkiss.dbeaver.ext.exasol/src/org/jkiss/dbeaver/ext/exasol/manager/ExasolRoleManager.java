@@ -88,7 +88,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
             new SQLDatabasePersistAction(
                 "Rename ROLE",
                 "RENAME ROLE " + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
-                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName().trim()))
         );
     }
 

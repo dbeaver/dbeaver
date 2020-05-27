@@ -79,7 +79,7 @@ public class ExasolForeignKeyManager
                 "Rename FK",
                 "ALTER TABLE " + DBUtils.getObjectFullName(key.getTable(), DBPEvaluationContext.DDL) + " RENAME CONSTRAINT "
                     + DBUtils.getQuotedIdentifier(key.getDataSource(), command.getOldName()) + " to " +
-                    DBUtils.getQuotedIdentifier(key.getDataSource(), command.getNewName())
+                    DBUtils.getQuotedIdentifier(key.getDataSource(), command.getNewName().trim())
             )
         );
     }

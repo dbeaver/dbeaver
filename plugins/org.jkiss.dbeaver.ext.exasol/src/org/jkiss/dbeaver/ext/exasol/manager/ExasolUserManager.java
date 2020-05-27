@@ -104,7 +104,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
             new SQLDatabasePersistAction(
                 "Rename User",
                 "RENAME USER " + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
-                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName().trim()))
         );
     }
 

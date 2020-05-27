@@ -498,7 +498,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (renamer != null) {
                     try {
-                        renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value));
+                        renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value).trim());
                     } catch (Throwable e) {
                         log.error("Error renaming object", e);
                     }
@@ -506,7 +506,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             } else {
                 Class<?> dataType = prop.getDataType();
                 if (value instanceof String) {
-                    value = GeneralUtils.convertString((String) value, dataType);
+                    value = GeneralUtils.convertString(((String) value).trim(), dataType);
                 }
                 Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
                 curPropertySource.setPropertyValue(null, prop.getId(), value);
