@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.model.exec.plan;
 public enum DBCPlanStyle {
 
     PLAN,
-    QUERY
+    QUERY,
+    OUTPUT
 
 }
