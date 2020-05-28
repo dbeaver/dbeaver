@@ -1610,7 +1610,6 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         explainQueryPlan((SQLQuery) scriptElement);
-
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery) {
@@ -1619,15 +1618,16 @@ public class SQLEditor extends SQLEditorBase implements
         DBCPlanStyle planStyle = planner.getPlanStyle();
         if (planStyle == DBCPlanStyle.QUERY) {
             explainPlanFromQuery(planner, sqlQuery);
-            return;
+        } else if (planStyle == DBCPlanStyle.OUTPUT) {
+            explainPlanFromQuery(planner, sqlQuery);
+            showOutputPanel();
+        } else {
+            ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
+
+            if (planView != null) {
+                planView.explainQueryPlan(sqlQuery, planner);
+            }
         }
-
-        ExplainPlanViewer planView = getPlanView(sqlQuery,planner);
-
-        if (planView != null) {
-            planView.explainQueryPlan(sqlQuery, planner);
-        }
-
     }
 
     private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
