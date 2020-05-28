@@ -243,7 +243,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     } else {
                         statement.setLong(paramIndex, number.longValue());
                     }
-                    statement.setLong(paramIndex, number.longValue());
                     break;
                 case Types.FLOAT:
                     if (number instanceof BigDecimal) {
@@ -353,6 +352,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     public Class<? extends Number> getNumberType(DBSTypedObject type) {
         switch (type.getTypeID()) {
+            case Types.INTEGER:
             case Types.BIGINT:
                 return Long.class;
             case Types.DECIMAL:
@@ -369,8 +369,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     return Float.class;
                 }
                 return BigDecimal.class;
-            case Types.INTEGER:
-                return Integer.class;
+            // Workaround for MySQL Unsigned INTEGER #8786
+            //case Types.INTEGER:
+            //    return Integer.class;
             case Types.SMALLINT:
             case Types.TINYINT:
                 return Short.class;
