@@ -415,7 +415,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.NUMERIC) {
-            if (typeName.equals("NUMBER")) {
+            if (OracleConstants.TYPE_NUMBER.equals(typeName)) {
                 OracleDataType dataType = (OracleDataType) DBUtils.getDataType(column);
                 Integer scale = column.getScale();
                 int precision = CommonUtils.toInt(column.getPrecision());
