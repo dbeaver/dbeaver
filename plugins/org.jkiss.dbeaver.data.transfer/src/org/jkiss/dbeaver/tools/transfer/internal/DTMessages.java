@@ -22,18 +22,6 @@ import org.eclipse.osgi.util.NLS;
 public class DTMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.internal.DTMessages"; //$NON-NLS-1$
 
-	public static String data_transfer_wizard_name;
-	public static String data_transfer_wizard_final_column_source;
-	public static String data_transfer_wizard_final_column_source_container;
-	public static String data_transfer_wizard_final_column_target;
-	public static String data_transfer_wizard_final_column_target_container;
-	public static String data_transfer_wizard_final_description;
-	public static String data_transfer_wizard_final_group_tables;
-	public static String data_transfer_wizard_final_group_objects;
-	public static String data_transfer_wizard_final_group_settings_source;
-	public static String data_transfer_wizard_final_group_settings_target;
-	public static String data_transfer_wizard_final_name;
-	public static String data_transfer_wizard_final_title;
 	public static String data_transfer_wizard_init_column_description;
 	public static String data_transfer_wizard_init_column_exported;
 	public static String data_transfer_wizard_init_description;

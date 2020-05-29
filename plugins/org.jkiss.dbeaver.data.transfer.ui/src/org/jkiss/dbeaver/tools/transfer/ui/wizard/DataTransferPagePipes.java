@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -91,7 +92,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         Composite panel = UIUtils.createComposite(composite, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(panel, DTMessages.data_transfer_wizard_final_column_target);
+        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         nodesTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -199,7 +200,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         }
         inputsText.setText(txt.toString());
 */
-        UIUtils.createControlLabel(panel, DTMessages.data_transfer_wizard_final_group_objects);
+        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_group_objects);
 
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         inputsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));

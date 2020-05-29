@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -50,9 +50,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private Text targetSettingsText;
 
     DataTransferPageFinal() {
-        super(DTMessages.data_transfer_wizard_final_name);
-        setTitle(DTMessages.data_transfer_wizard_final_title);
-        setDescription(DTMessages.data_transfer_wizard_final_description);
+        super(DTUIMessages.data_transfer_wizard_final_name);
+        setTitle(DTUIMessages.data_transfer_wizard_final_title);
+        setDescription(DTUIMessages.data_transfer_wizard_final_description);
         setPageComplete(false);
     }
 
@@ -71,28 +71,28 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(sash, DTMessages.data_transfer_wizard_final_group_objects, 3, GridData.FILL_BOTH, 0);
+            Group tablesGroup = UIUtils.createControlGroup(sash, DTUIMessages.data_transfer_wizard_final_group_objects, 3, GridData.FILL_BOTH, 0);
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
 
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source_container);
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target_container);
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source_container);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target_container);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
         }
 
         {
             Composite settingsGroup = UIUtils.createComposite(sash, 2);
             settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Group sourceSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
+            Group sourceSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Group targetSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
+            Group targetSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTUIMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         }

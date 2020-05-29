@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -81,8 +82,8 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             mappingTable.setHeaderVisible(true);
             mappingTable.setLinesVisible(true);
 
-            UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
-            UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
+            UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
+            UIUtils.createTableColumn(mappingTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
 
             mappingTable.addSelectionListener(new SelectionAdapter() {
                 @Override

@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-
 /**
  * Editable property source
  */
@@ -26,7 +24,7 @@ public interface IPropertySourceEditable {
 
     boolean isEditable(Object object);
 
-    DBECommandContext getCommandContext();
+//    DBECommandContext getCommandContext();
 
 //    void addPropertySourceListener(IPropertySourceListener listener);
 
