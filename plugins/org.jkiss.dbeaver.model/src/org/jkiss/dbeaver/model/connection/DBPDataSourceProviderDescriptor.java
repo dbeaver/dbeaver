@@ -48,4 +48,8 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
 
     boolean isTemporary();
 
+    List<? extends DBPDriver> getDrivers();
+
+    DBPDataSourceProviderDescriptor getParentProvider();
+
 }

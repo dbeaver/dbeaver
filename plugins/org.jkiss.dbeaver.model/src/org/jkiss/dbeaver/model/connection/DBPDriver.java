@@ -44,6 +44,9 @@ public interface DBPDriver extends DBPNamedObject
     DBPDataSourceProvider getDataSourceProvider();
 
     @NotNull
+    DBPDataSourceProviderDescriptor getProviderDescriptor();
+
+    @NotNull
     String getId();
 
     @NotNull
@@ -64,6 +67,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @NotNull
     DBPImage getIcon();
+
+    @NotNull
+    DBPImage getPlainIcon();
 
     @NotNull
     DBPImage getIconBig();
@@ -104,6 +110,9 @@ public interface DBPDriver extends DBPNamedObject
     boolean isCustom();
     // Temporary driver: used for automatically created drivers when connection  configuration is broken
     boolean isTemporary();
+
+    boolean isDisabled();
+    DBPDriver getReplacedBy();
 
     int getPromotedScore();
 

@@ -45,7 +45,7 @@ public class OracleJavaClass extends OracleSchemaObject implements OracleSourceO
     private final boolean isFinal;
     private final boolean isStatic;
     private final boolean isDebug;
-    private final String source;
+    private final String sourceName;
     private final String superClass;
 
     private String sourceCode;
@@ -70,7 +70,7 @@ public class OracleJavaClass extends OracleSchemaObject implements OracleSourceO
         this.isFinal = JDBCUtils.safeGetBoolean(dbResult, "IS_FINAL", OracleConstants.YES);
         this.isStatic = JDBCUtils.safeGetBoolean(dbResult, "IS_STATIC", OracleConstants.YES);
         this.isDebug = JDBCUtils.safeGetBoolean(dbResult, "IS_DEBUG", OracleConstants.YES);
-        this.source = JDBCUtils.safeGetString(dbResult, "SOURCE");
+        this.sourceName = JDBCUtils.safeGetString(dbResult, "NAME");
         this.superClass = JDBCUtils.safeGetString(dbResult, "SUPER");
     }
 
@@ -122,7 +122,7 @@ public class OracleJavaClass extends OracleSchemaObject implements OracleSourceO
     }
 
     public String getSourceName() {
-        return source;
+        return sourceName;
     }
 
     @Override
@@ -151,7 +151,7 @@ public class OracleJavaClass extends OracleSchemaObject implements OracleSourceO
         if (sourceCode != null) {
             return sourceCode;
         }
-        if (CommonUtils.isEmpty(source)) {
+        if (CommonUtils.isEmpty(sourceName)) {
             return "-- Source unavailable for " + getName();
         }
         sourceCode = OracleUtils.getSource(monitor, this, false, false);

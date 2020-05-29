@@ -17,14 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConnection;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolConnectionDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -35,9 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 import java.util.List;
 import java.util.Map;
@@ -64,19 +57,7 @@ public class ExasolConnectionManager
     @Override
     protected ExasolConnection createDatabaseObject(DBRProgressMonitor monitor,
                                                     DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
-        return new UITask<ExasolConnection>() {
-            @Override
-            protected ExasolConnection runTask()
-            {
-                ExasolConnectionDialog dialog = new ExasolConnectionDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
-                if (dialog.open() != IDialogConstants.OK_ID)
-                {
-                    return null;
-                }
-                ExasolConnection con = new ExasolConnection((ExasolDataSource) container, dialog.getName(), dialog.getUrl(), dialog.getComment(), dialog.getUrl(), dialog.getPassword());
-                return con;
-            }
-        }.execute();
+        return new ExasolConnection((ExasolDataSource) container, null, null, null, null, null);
     }
     
     private SQLDatabasePersistAction getCommentCommand(ExasolConnection con)
@@ -164,31 +145,7 @@ public class ExasolConnectionManager
         if (com.containsKey("url") | com.containsKey("userName") | com.containsKey("password") )
         {
             // possible loss of information - warn
-            if (
-                    (com.containsKey("url") | com.containsKey("userName")  ) &  ! con.getUserName().isEmpty() & con.getPassword().isEmpty() 
-               )
-            {
-                int result = new UITask<Integer>() {
-                    protected Integer runTask() {
-                        ConfirmationDialog dialog = new ConfirmationDialog(
-                            UIUtils.getActiveWorkbenchShell(),
-                            ExasolMessages.dialog_connection_alter_title,
-                            null,
-                            ExasolMessages.dialog_connection_alter_message,
-                            MessageDialog.CONFIRM,
-                            new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
-                            0,
-                            ExasolMessages.dialog_general_continue,
-                            false);
-                        return dialog.open();
-                        }
-                }.execute();
-                if (result != IDialogConstants.YES_ID) 
-                {
-                    throw new IllegalStateException("User abort");
-                }
-            }
-            StringBuilder script = new StringBuilder(String.format("ALTER CONNECTION %s ",DBUtils.getQuotedIdentifier(con)));
+            StringBuilder script = new StringBuilder(String.format("ALTER CONNECTION %s TO",DBUtils.getQuotedIdentifier(con)));
             script.append(" '" + ExasolUtils.quoteString(con.getConnectionString()) + "' ");
             if (! (con.getUserName().isEmpty() | con.getPassword().isEmpty()))
             {

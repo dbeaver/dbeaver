@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -217,7 +218,7 @@ public final class DBValueFormatting {
             }
         } catch (NumberFormatException e) {
             try {
-                return (Number)formatter.parseValue(text, hintType);
+                return formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
                 if (validateValue) {
                     throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
@@ -228,14 +229,23 @@ public final class DBValueFormatting {
         }
     }
 
-    public static String convertNumberToNativeString(Number value) {
+    public static String convertNumberToNativeString(Number value, boolean scientificNotation) {
         try {
             if (value instanceof BigDecimal) {
-                return ((BigDecimal) value).toPlainString();
-            } else if (value instanceof Float) {
-                return NATIVE_FLOAT_FORMATTER.format(value);
-            } else if (value instanceof Double) {
-                return NATIVE_DOUBLE_FORMATTER.format(value);
+                return scientificNotation ?
+                    value.toString() :
+                    ((BigDecimal) value).toPlainString();
+            } else {
+                String strValue = value.toString();
+                if (scientificNotation || strValue.indexOf('E') == -1) {
+                    return strValue;
+                }
+                // We don't want exponential view
+                if (value instanceof Float) {
+                    return NATIVE_FLOAT_FORMATTER.format(value);
+                } else if (value instanceof Double) {
+                    return NATIVE_DOUBLE_FORMATTER.format(value);
+                }
             }
         } catch (Exception e) {
             log.debug("Error converting number to string: " + e.getMessage());
@@ -285,8 +295,6 @@ public final class DBValueFormatting {
             }
         } else if (value instanceof CharSequence) {
             return value.toString();
-        } else if (value instanceof DBPNamedObject) {
-            return ((DBPNamedObject) value).getName();
         } else if (value.getClass().isArray()) {
             if (value.getClass().getComponentType() == Byte.TYPE) {
                 byte[] bytes = (byte[]) value;
@@ -295,25 +303,45 @@ public final class DBValueFormatting {
                 String string = CommonUtils.toHexString(bytes, 0, length);
                 return bytes.length > 2000 ? string + "..." : string;
             } else {
-                StringBuilder str = new StringBuilder("{");
+                StringBuilder str = new StringBuilder("[");
                 int length = Array.getLength(value);
                 for (int i = 0; i < length; i++) {
                     if (i > 0) str.append(", ");
                     str.append(getDefaultValueDisplayString(Array.get(value, i), format));
                 }
-                str.append("}");
+                str.append("]");
                 return str.toString();
             }
-        } else if (value instanceof Collection) {
+        } else if (value instanceof DBDComposite) {
+            DBDComposite composite = (DBDComposite) value;
+            DBSAttributeBase[] attributes = composite.getAttributes();
             StringBuilder str = new StringBuilder("{");
+            try {
+                boolean first = true;
+                for (DBSAttributeBase item : attributes) {
+                    if (!first) str.append(", ");
+                    first = false;
+                    str.append(item.getName()).append(":");
+                    Object attributeValue = composite.getAttributeValue(item);
+                    str.append(getDefaultValueDisplayString(attributeValue, format));
+                }
+            } catch (DBCException e) {
+                str.append(e.getMessage());
+            }
+            str.append("}");
+            return str.toString();
+        } else if (value instanceof Collection) {
+            StringBuilder str = new StringBuilder("[");
             boolean first = true;
             for (Object item : (Collection)value) {
                 if (!first) str.append(", ");
                 first = false;
                 str.append(getDefaultValueDisplayString(item, format));
             }
-            str.append("}");
+            str.append("]");
             return str.toString();
+        } else if (value instanceof DBPNamedObject) {
+            return ((DBPNamedObject) value).getName();
         }
 
         String className = value.getClass().getName();

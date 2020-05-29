@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -73,8 +74,8 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
             filesTable.setHeaderVisible(true);
             filesTable.setLinesVisible(true);
 
-            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
-            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
+            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
+            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
 
             filesTable.addSelectionListener(new SelectionAdapter() {
                 @Override

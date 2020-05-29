@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,6 +41,7 @@ public class DiagramObjectCollector {
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();
     private boolean showViews;
+    private boolean showPartitions;
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
@@ -61,6 +64,14 @@ public class DiagramObjectCollector {
 
     public void setShowViews(boolean showViews) {
         this.showViews = showViews;
+    }
+
+    public boolean isShowPartitions() {
+        return showPartitions;
+    }
+
+    public void setShowPartitions(boolean showPartitions) {
+        this.showPartitions = showPartitions;
     }
 
     private static void collectTables(
@@ -128,10 +139,15 @@ public class DiagramObjectCollector {
                 // Skip hidden tables
                 continue;
             }
-            if (!showViews && table instanceof DBSTable && ((DBSTable) table).isView()) {
+            if (!showViews && ((table instanceof DBSView) || (table instanceof DBSTable && ((DBSTable) table).isView()))) {
                 // Skip views
                 continue;
             }
+            if (!showPartitions && table instanceof DBSTablePartition) {
+                // Skip partitions
+                continue;
+            }
+
             addDiagramEntity(monitor, table);
         }
 

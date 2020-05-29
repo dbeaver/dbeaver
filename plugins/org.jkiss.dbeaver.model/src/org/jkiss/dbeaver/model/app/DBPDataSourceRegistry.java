@@ -120,7 +120,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     // Auth profiles
 
     @Nullable
-    DBAAuthProfile getAuthProfile(String name);
+    DBAAuthProfile getAuthProfile(String id);
     @NotNull
     List<DBAAuthProfile> getAllAuthProfiles();
     @NotNull

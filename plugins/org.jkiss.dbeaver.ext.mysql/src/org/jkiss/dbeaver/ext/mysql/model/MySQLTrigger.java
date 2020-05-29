@@ -86,6 +86,18 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
         this.sqlMode = source.sqlMode;
     }
 
+    @Property(viewable = true, order = 2, listProvider = TriggerTimingListProvider.class)
+    public DBSActionTiming getActionTiming()
+    {
+        return super.getActionTiming();
+    }
+
+    @Property(viewable = true, order = 3, listProvider = TriggerTypeListProvider.class)
+    public DBSManipulationType getManipulationType()
+    {
+        return super.getManipulationType();
+    }
+
     public String getBody()
     {
         return body;

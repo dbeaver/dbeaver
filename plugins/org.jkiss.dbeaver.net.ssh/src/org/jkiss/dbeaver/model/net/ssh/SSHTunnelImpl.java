@@ -64,13 +64,13 @@ public class SSHTunnelImpl implements DBWTunnel {
                 implDesc = SSHImplementationRegistry.getInstance().getDescriptor(DEF_IMPLEMENTATION);
             }
             if (implDesc == null) {
-                throw new DBException("Can't find SSH tunnel implementation");
+                throw new DBException("Can't find SSH tunnel implementation '" + implId + "'");
             }
             if (implementation == null || implementation.getClass() != implDesc.getImplClass().getObjectClass()) {
                 implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
             }
         } catch (Throwable e) {
-            throw new DBException("Can't create SSH tunnel implementation", e);
+            throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
         return implementation.initTunnel(monitor, platform, configuration, connectionInfo);
     }

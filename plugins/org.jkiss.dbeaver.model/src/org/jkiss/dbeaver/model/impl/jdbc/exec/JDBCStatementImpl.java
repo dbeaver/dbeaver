@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -313,6 +314,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         this.executeError = null;
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.traceQueryBegin(getQueryString());
         }
         this.startBlock();
     }

@@ -25,11 +25,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.Bundle;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Preferences constants
@@ -73,6 +75,7 @@ public final class ModelPreferences
 
     public static final String RESULT_NATIVE_DATETIME_FORMAT = "resultset.format.datetime.native"; //$NON-NLS-1$
     public static final String RESULT_NATIVE_NUMERIC_FORMAT = "resultset.format.numeric.native"; //$NON-NLS-1$
+    public static final String RESULT_SCIENTIFIC_NUMERIC_FORMAT = "resultset.format.numeric.scientific"; //$NON-NLS-1$
     public static final String RESULT_TRANSFORM_COMPLEX_TYPES = "resultset.transform.complex.type"; //$NON-NLS-1$
 
     // Network
@@ -186,6 +189,7 @@ public final class ModelPreferences
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_NATIVE_DATETIME_FORMAT, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_NATIVE_NUMERIC_FORMAT, false);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SCIENTIFIC_NUMERIC_FORMAT, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_TRANSFORM_COMPLEX_TYPES, true);
 
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_REREAD_ON_SCROLLING, true);
@@ -253,5 +257,8 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT, false);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
+
+        // Data formats
+        DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
     }
 }

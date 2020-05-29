@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -84,7 +85,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
     {
         if (value instanceof Number) {
             if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
-                return DBValueFormatting.convertNumberToNativeString((Number) value);
+                return DBValueFormatting.convertNumberToNativeString(
+                    (Number) value,
+                    formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT));
             } else {
                 if (numberFormatter == null) {
                     try {

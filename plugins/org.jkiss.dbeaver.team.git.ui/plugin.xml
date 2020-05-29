@@ -9,6 +9,7 @@
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.projectFromGit" name="%command.org.jkiss.dbeaver.git.commands.projectFromGit.name"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="%command.org.jkiss.dbeaver.git.commands.commit.name"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="%command.org.jkiss.dbeaver.git.commands.update.name"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.showHistory" name="%command.org.jkiss.dbeaver.git.commands.showHistory.name"/>
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
@@ -47,6 +48,8 @@
                 <test property="GitSelection.resourcesSingleRepository"/>
             </activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.git.commands.showHistory" class="org.jkiss.dbeaver.team.git.ui.handlers.GITHistoryHandler">
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -55,7 +58,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+        <menuContribution locationURI="menu:file?before=properties">
+            <separator name="git" visible="true"/>
             <menu id="org.jkiss.dbeaver.team.git.menu" label="Git" mnemonic="M">
                 <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
                     <visibleWhen checkEnabled="true">
@@ -80,13 +84,8 @@
                 </command>
             </menu>
         </menuContribution>
-        <menuContribution locationURI="toolbar:dbeaver-tools?after=additions">
-            <separator name="git" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
-                <visibleWhen checkEnabled="true">
-                    <reference definitionId="DBeaverPerspectiveActive"/>
-                </visibleWhen>
-            </command>
+
+        <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.git">
             <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
                 <visibleWhen checkEnabled="true">
                     <reference definitionId="DBeaverPerspectiveActive"/>
@@ -94,6 +93,21 @@
             </command>
             <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
                 <visibleWhen checkEnabled="true">
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
+            <separator name="share" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
+                <visibleWhen checkEnabled="true">
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="git" visible="false"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.showHistory" icon="icons/clone.png" label="Git" style="pulldown" id="org.jkiss.dbeaver.menu.git">
+                <visibleWhen>
                     <reference definitionId="DBeaverPerspectiveActive"/>
                 </visibleWhen>
             </command>

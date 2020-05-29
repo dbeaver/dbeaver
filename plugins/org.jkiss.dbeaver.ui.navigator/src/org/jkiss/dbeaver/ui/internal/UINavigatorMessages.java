@@ -91,6 +91,10 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_order_elements_alphabetically;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
+    public static String pref_page_database_general_label_show_host_name;
+    public static String pref_page_database_general_label_show_host_name_tip;
+    public static String pref_page_database_general_label_show_statistics;
+    public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_color_all_nodes;
     public static String pref_page_database_general_label_color_all_nodes_tip;
     public static String pref_page_database_general_label_show_folder_placeholders;

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 /**
  * DB2 SQL dialect
@@ -34,6 +35,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 public class DB2SQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{"call"};
+
+    private static final String[][] DB2_BEGIN_END_BLOCK = new String[][]{
+    };
 
     public DB2SQLDialect() {
         super("DB2 LUW");
@@ -75,5 +79,10 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHexString.INSTANCE;
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return DB2_BEGIN_END_BLOCK;
     }
 }

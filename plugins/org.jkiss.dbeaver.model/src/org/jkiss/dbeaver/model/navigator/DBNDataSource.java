@@ -126,6 +126,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     }
 
     @Override
+    public String getNodeItemPath() {
+        return NodePathType.database.getPrefix() + dataSource.getId();
+    }
+
+    @Override
     public boolean isManagable()
     {
         return true;

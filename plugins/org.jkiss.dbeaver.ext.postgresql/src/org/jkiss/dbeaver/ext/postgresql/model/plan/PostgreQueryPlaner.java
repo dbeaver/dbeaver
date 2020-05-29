@@ -42,6 +42,8 @@ import java.util.Map;
  */
 public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner 
 {
+    public static final String PARAM_ANALYSE = "use.analyze";
+
     private final PostgreDataSource dataSource;
 
     public final static String FORMAT_VERSION = "1";
@@ -57,11 +59,12 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 
     @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBCException {
         PostgreExecutionPlan plan = new PostgreExecutionPlan(
             !dataSource.getServerType().supportsExplainPlanXML(),
             dataSource.getServerType().supportsExplainPlanVerbose(),
-            query);
+            query,
+            configuration);
         plan.explain(session);
         return plan;
     }

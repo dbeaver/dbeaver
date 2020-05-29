@@ -104,10 +104,18 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return minValue;
     }
 
+    public void setMinValue(Number minValue) {
+        this.minValue = minValue;
+    }
+
     @Override
     @Property(viewable = true, order = 4)
     public Number getMaxValue() {
         return maxValue;
+    }
+
+    public void setMaxValue(Number maxValue) {
+        this.maxValue = maxValue;
     }
 
     @Override
@@ -116,4 +124,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return incrementBy;
     }
 
+    public void setIncrementBy(Number incrementBy) {
+        this.incrementBy = incrementBy;
+    }
 }

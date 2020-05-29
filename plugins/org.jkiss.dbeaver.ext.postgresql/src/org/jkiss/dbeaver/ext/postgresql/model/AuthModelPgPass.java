@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -32,14 +32,15 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.util.Properties;
 
-public class AuthModelPgPass implements DBAAuthModel {
+public class AuthModelPgPass extends AuthModelDatabaseNative {
 
     private static final Log log = Log.getLog(AuthModelPgPass.class);
     public static final String PGPASSFILE_ENV_VARIABLE = "PGPASSFILE";
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         loadPasswordFromPgPass(configuration, connProperties);
+        super.initAuthentication(monitor, dataSource, configuration, connProperties);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class AuthModelPgPass implements DBAAuthModel {
                     if (!user.equals("*")) {
                         configuration.setUserName(user);
                     }
-                    connProperties.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, password);
+                    configuration.setUserPassword(password);
                     return;
                 }
             }

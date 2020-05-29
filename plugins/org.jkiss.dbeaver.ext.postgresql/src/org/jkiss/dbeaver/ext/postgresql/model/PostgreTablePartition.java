@@ -23,11 +23,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
 import java.util.Map;
 
-public class PostgreTablePartition extends PostgreTable {
+public class PostgreTablePartition extends PostgreTable implements DBSTablePartition {
 
     public static final String CAT_PARTITIONING = "Partitioning";
 

@@ -260,10 +260,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 Properties shutdownProps = new Properties();
                 DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
                 if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, connectionInfo.getUserName());
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+                    shutdownProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, connectionInfo.getUserPassword());
                 }
 
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
@@ -349,7 +349,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
 
     @Override
-    public Collection<GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 

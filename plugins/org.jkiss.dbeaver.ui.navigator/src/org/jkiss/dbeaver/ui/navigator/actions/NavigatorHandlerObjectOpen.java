@@ -202,11 +202,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     } else {
                         DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
                         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
-                            if (databaseObject instanceof DBSObjectContainer) {
-                                // do not auto-refresh object containers (too expensive)
-                            } else {
-                                refreshDatabaseNode(dnNode);
-                            }
+                            refreshDatabaseNode(dnNode);
                         }
                         setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
                         return workbenchWindow.getActivePage().openEditor(

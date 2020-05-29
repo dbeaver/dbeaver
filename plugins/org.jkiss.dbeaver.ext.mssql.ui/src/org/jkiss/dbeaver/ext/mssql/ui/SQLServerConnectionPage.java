@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -40,6 +41,10 @@ import java.util.List;
 
 public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
+
+    private static final ImageDescriptor LOG_AZURE = SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png");
+    private static final ImageDescriptor LOGO_SQLSERVER = SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png");
+    private static final ImageDescriptor LOGO_SYBASE = SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png");
 
     private Text hostText;
     private Text portText;
@@ -97,7 +102,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
                 portText = new Text(settingsGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
-                gd.widthHint = 60;
+                gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
             }
         }
@@ -214,9 +219,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         {
             setImageDescriptor(isSqlServer ?
                 (isDriverAzure ?
-                    SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png") :
-                    SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png")) :
-                SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png"));
+                    LOG_AZURE :
+                    LOGO_SQLSERVER) :
+                LOGO_SYBASE);
         }
 
         // Load values from new connection info

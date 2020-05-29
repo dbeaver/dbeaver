@@ -9,7 +9,7 @@
                 id="exasol"
                 label="%datasource.exasol.label"
                 dialect="exasol">
-            <tree icon="icons/Exasol_icon.png" label="Exasol data source" path="exasol">
+            <tree icon="icons/exasol_icon.png" label="Exasol data source" path="exasol">
                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
                         icon="#folder_schema" description="%tree.schemas.node.description">
                     <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
@@ -45,18 +45,40 @@
                                 </folder>
                                 <folder
                                       description="%tree.partition_columns.node.description"
-                                      icon="#columns"
+                                      icon="#folder_table"
                                       label="%tree.partition_columns.node.name"
                                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn"
-                                      visibleIf="object.dataSource.hasPriorityGroups"
+                                      visibleIf="object.dataSource.hasPartitionColumns"
                                       >
                                     <items
-                                         icon="#column"
+                                         icon="#partition"
                                          label="%tree.partition_column.node.name"
                                          path="partition"
                                          property="partitions"
                                          navigable="true"
                                          >
+                                   </items>
+                                </folder>
+                                <folder
+                                      description="%tree.indexes.node.description"
+                                      icon="#indexes"
+                                      label="%tree.indexes.node.name"
+                                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex">
+                                   <items
+                                         icon="#index"
+                                         label="%tree.index.node.name"
+                                         path="index"
+                                         property="indexes">
+                                      <items
+                                            icon="#column"
+                                            inline="true"
+                                            itemLabel="%tree.column.node.name"
+                                            label="%tree.index_columns.node.name"
+                                            navigable="false"
+                                            path="column"
+                                            property="attributeReferences"
+                                            virtual="true">
+                                      </items>
                                    </items>
                                 </folder>
                             </items>
@@ -201,24 +223,8 @@
                       </items>
                    </items>
                 </folder>
-                <folder
-                      description="%tree.administer.node.description"
-                      icon="#folder_admin"
-                      label="%tree.administer.node.name"
-                      visibleIf="object.dataSource.UserAuthorizedForSessions">
-                    <object type="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession"
-                            label="%tree.sessions.node.name"
-                            icon="#admin"
-                            description="%tree.sessions.node.description"
-                            editor="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                            />
-                    <object
-                          description="%tree.locks.node.description"
-                          editor="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
-                          icon="#locks"
-                          label="%tree.locks.node.name"
-                          type="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
-                    </object>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
                       description="%tree.connections.node.description"
@@ -424,7 +430,7 @@
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section"
                         categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE" type="jar" bundle="!drivers.exasol"/>
-                    <file type="jar" path="drivers/exasol/exasol-jdbc.jar" bundle="drivers.exasol"/>
+                    <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
@@ -434,24 +440,6 @@
                 </driver>
             </drivers>
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceWizardView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage"
-                icon="icons/Exasol_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.exasol.dataSourceEditorView"
-                dataSource="exasol"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage">
-        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
@@ -464,6 +452,7 @@
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableIndexManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
         <manager
@@ -482,92 +471,6 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
         </manager>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                description="%editor.source.ddl.description"
-                icon="#sql_text"
-                id="source.ddl"
-                label="%editor.source.ddl.name"
-                position="additions_middle"
-                type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="%editor.source.declaration.description"
-              embeddable="true"
-              icon="#sql_text"
-              id="source.declaration"
-              label="%meta.org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema.adapterNotes.name"
-              position="additions_middle"
-              type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"/>
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceViewEditor"
-              contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-              description="%editor.exasol.source.view.description"
-              icon="#sql_text"
-              id="exasol.source.view"
-              label="%editor.exasol.source.view.label"
-              position="additions_middle"
-              type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
-           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
-        </editor>
-    </extension>
-
-    <extension point="org.eclipse.ui.editors">
-        <editor
-                name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
-                icon="icons/compile.png"
-                class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
-        <editor
-            name="%editor.org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor.name"
-            class="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
-            id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
-        </editor>
-
-    </extension>
-    <extension point="org.jkiss.dbeaver.tools">
-      <tools>
-         <tool
-               class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
-               description="%tool.org.jkiss.dbeaver.ext.exasol.table.export.description"
-               id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolExportTableTool"
-               label="%tool.org.jkiss.dbeaver.ext.exasol.table.export.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
-         </tool>
-         <tool
-               class="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
-               description="%tool.org.jkiss.dbeaver.ext.exasol.table.import.description"
-               id="org.jkiss.dbeaver.ext.exasol.tools.maintenance.ExasolImportTableTool"
-               label="%tool.org.jkiss.dbeaver.ext.exasol.table.import.name">
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-            </objectType>
-            <objectType
-                  name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-            </objectType>
-         </tool>
-      </tools>
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">

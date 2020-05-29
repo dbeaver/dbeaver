@@ -61,11 +61,11 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -949,7 +949,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (!resultsSash.isDisposed()) {
                 int[] weights = resultsSash.getWeights();
                 IPreferenceStore prefs = getPreferenceStore();
-                if (prefs != null) {
+                if (prefs != null && weights.length == 2) {
                     prefs.setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
                 }
             }
@@ -1610,7 +1610,6 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         explainQueryPlan((SQLQuery) scriptElement);
-
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery) {
@@ -1619,15 +1618,16 @@ public class SQLEditor extends SQLEditorBase implements
         DBCPlanStyle planStyle = planner.getPlanStyle();
         if (planStyle == DBCPlanStyle.QUERY) {
             explainPlanFromQuery(planner, sqlQuery);
-            return;
+        } else if (planStyle == DBCPlanStyle.OUTPUT) {
+            explainPlanFromQuery(planner, sqlQuery);
+            showOutputPanel();
+        } else {
+            ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
+
+            if (planView != null) {
+                planView.explainQueryPlan(sqlQuery, planner);
+            }
         }
-
-        ExplainPlanViewer planView = getPlanView(sqlQuery,planner);
-
-        if (planView != null) {
-            planView.explainQueryPlan(sqlQuery, planner);
-        }
-
     }
 
     private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
@@ -1688,8 +1688,12 @@ public class SQLEditor extends SQLEditorBase implements
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
         final String[] planQueryString = new String[1];
         DBRRunnableWithProgress queryObtainTask = monitor -> {
+            DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
+            if (configuration == null) {
+                return;
+            }
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
-                DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText());
+                DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText(), configuration);
                 planQueryString[0] = plan.getPlanQueryString();
             } catch (Exception e) {
                 log.error(e);
@@ -1890,10 +1894,11 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (!newTab || !isSingleQuery) {
                 // We don't need new tab or we are executing a script - so close all extra tabs
-                if (!closeExtraResultTabs(null, true)) {
+                int tabsClosed = closeExtraResultTabs(null, true);
+                if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
                 }
-                extraTabsClosed = true;
+                extraTabsClosed = tabsClosed == IDialogConstants.YES_ID;
             }
         }
 
@@ -1906,7 +1911,12 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
-                QueryProcessor queryProcessor = createQueryProcessor(queries.size() == 1, false);
+                QueryProcessor queryProcessor;
+                if (i == 0 && (extraTabsClosed || !curQueryProcessor.getFirstResults().hasData())) {
+                    queryProcessor = curQueryProcessor;
+                } else {
+                    queryProcessor = createQueryProcessor(queries.size() == 1, false);
+                }
                 queryProcessor.processQueries(
                     scriptContext,
                     Collections.singletonList(query),
@@ -1936,7 +1946,7 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 if (!extraTabsClosed) {
-                    if (!closeExtraResultTabs(curQueryProcessor, true)) {
+                    if (closeExtraResultTabs(curQueryProcessor, true) == IDialogConstants.CANCEL_ID) {
                         return false;
                     }
                 }
@@ -1967,7 +1977,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
+    private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
     {
         // Close all tabs except first one
         List<CTabItem> tabsToClose = new ArrayList<>();
@@ -1998,7 +2008,7 @@ public class SQLEditor extends SQLEditorBase implements
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     tabsToClose.size() + 1);
                 if (confirmResult == IDialogConstants.CANCEL_ID) {
-                    return false;
+                    return IDialogConstants.CANCEL_ID;
                 }
             }
             if (confirmResult == IDialogConstants.YES_ID) {
@@ -2006,8 +2016,9 @@ public class SQLEditor extends SQLEditorBase implements
                     item.dispose();
                 }
             }
+            return confirmResult;
         }
-        return true;
+        return IDialogConstants.NO_ID;
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
@@ -2316,7 +2327,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
             return ISaveablePart2.YES;
         }
-        return ISaveablePart2.NO;
+
+        if (super.isDirty()) {
+            return ISaveablePart2.DEFAULT;
+        }
+        return ISaveablePart2.YES;
     }
 
     protected void afterSaveToFile(File saveFile) {
@@ -2851,6 +2866,10 @@ public class SQLEditor extends SQLEditorBase implements
         public ResultSetViewer getResultSetController()
         {
             return viewer;
+        }
+
+        boolean hasData() {
+            return viewer != null && viewer.hasData();
         }
 
         @Nullable

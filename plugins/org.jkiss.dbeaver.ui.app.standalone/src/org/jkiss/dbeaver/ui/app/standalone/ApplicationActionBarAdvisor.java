@@ -207,10 +207,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         IWorkbenchWindow workbenchWindow = getActionBarConfigurer().getWindowConfigurer().getWindow();
         {
             // File
-            //MenuManager recentMenu = new MenuManager("Recent editors");
-            //recentMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
 
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+            /*fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             fileMenu.add(new Separator());
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
@@ -221,8 +219,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(new Separator());
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
             fileMenu.add(new Separator());
-            //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
-            //fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
+            fileMenu.add(new Separator());*/
 
             MenuManager recentEditors = new MenuManager("Recent editors");
             recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(workbenchWindow));

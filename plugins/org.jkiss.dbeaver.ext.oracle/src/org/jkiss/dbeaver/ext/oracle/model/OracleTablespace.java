@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -43,7 +45,7 @@ import java.util.Collection;
 /**
  * Oracle tablespace
  */
-public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject
+public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics
 {
 
     public enum Status {
@@ -291,20 +293,53 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        availableSize = null;
+        usedSize = null;
         fileCache.clearCache();
         segmentCache.clearCache();
         return this;
     }
 
+    ///////////////////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean hasStatistics() {
+        return usedSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return usedSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
     private void loadSizes(DBRProgressMonitor monitor) throws DBException {
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
-            availableSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
-                "SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?", getName()));
-            usedSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
-                "SELECT SUM(S.BYTES) USED_SPACE FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_SEGMENTS S WHERE S.TABLESPACE_NAME=?", getName()));
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM\n" +
+                "(SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?) XDF,\n" +
+                "(SELECT SUM(S.BYTES) USED_SPACE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_SEGMENTS S WHERE S.TABLESPACE_NAME=?) XS")) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        fetchSizes(dbResult);
+                    }
+                }
+            }
         } catch (SQLException e) {
             throw new DBException("Can't read tablespace statistics", e, getDataSource());
         }
+    }
+
+    void fetchSizes(JDBCResultSet dbResult) throws SQLException {
+        availableSize = dbResult.getLong("AVAILABLE_SPACE");
+        usedSize = dbResult.getLong("USED_SPACE");
     }
 
 

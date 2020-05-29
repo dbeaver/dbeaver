@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -171,7 +172,7 @@ class DataFilterRegistry {
     }
 
     private class ConfigSaver extends AbstractJob {
-        protected ConfigSaver() {
+        ConfigSaver() {
             super("Data filters config save");
         }
 
@@ -207,7 +208,10 @@ class DataFilterRegistry {
                                         xml.addAttribute("visible", false);
                                     }
                                     xml.addAttribute("pos", attrC.getVisualPosition());
-                                    xml.addAttribute("order", attrC.getOrderPosition());
+                                    if (attrC.getOrderPosition() > 0) {
+                                        xml.addAttribute("order", attrC.getOrderPosition());
+                                        xml.addAttribute("orderDesc", attrC.isOrderDescending());
+                                    }
                                     if (!CommonUtils.isEmpty(attrC.getCriteria())) {
                                         xml.addAttribute("criteria", attrC.getCriteria());
                                     }
@@ -221,6 +225,15 @@ class DataFilterRegistry {
                                         xml.startElement("value");
                                         xml.addText(GeneralUtils.serializeObject(attrC.getValue()));
                                         xml.endElement();
+                                    }
+                                    Object[] options = attrC.getOptions();
+                                    if (!ArrayUtils.isEmpty(options)) {
+                                        for (int i = 0; i < options.length; i += 2) {
+                                            xml.startElement("option");
+                                            xml.addAttribute("name", CommonUtils.toString(options[i]));
+                                            xml.addText(GeneralUtils.serializeObject(options[i + 1]));
+                                            xml.endElement();
+                                        }
                                     }
                                 }
                             }
@@ -240,6 +253,7 @@ class DataFilterRegistry {
         private SavedDataFilter curSavedDataFilter = null;
         private DBDAttributeConstraintBase curSavedConstraint = null;
         private boolean isInValue = false;
+        private String curOptionName = null;
 
         private DataFilterParser() {
         }
@@ -259,7 +273,10 @@ class DataFilterRegistry {
                         curSavedConstraint = new DBDAttributeConstraintBase();
                         String name = atts.getValue("name");
                         curSavedConstraint.setVisualPosition(CommonUtils.toInt(atts.getValue("pos")));
-                        curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
+                        if (atts.getValue("order") != null) {
+                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
+                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(atts.getValue("orderDesc")));
+                        }
                         curSavedConstraint.setCriteria(atts.getValue("criteria"));
                         curSavedConstraint.setVisible(CommonUtils.getBoolean(atts.getValue("visible"), true));
                         String operName = atts.getValue("operator");
@@ -281,6 +298,12 @@ class DataFilterRegistry {
                     }
                     break;
                 }
+                case "option": {
+                    if (curSavedConstraint != null) {
+                        curOptionName = CommonUtils.toString(atts.getValue("name"));
+                    }
+                    break;
+                }
             }
         }
 
@@ -299,6 +322,10 @@ class DataFilterRegistry {
                     isInValue = false;
                     break;
                 }
+                case "option": {
+                    curOptionName = null;
+                    break;
+                }
             }
         }
 
@@ -306,6 +333,9 @@ class DataFilterRegistry {
         public void saxText(SAXReader reader, String data) throws XMLException {
             if (isInValue) {
                 curSavedConstraint.setValue(GeneralUtils.deserializeObject(data));
+            } else if (curOptionName != null) {
+                curSavedConstraint.setOption(curOptionName, GeneralUtils.deserializeObject(data));
+                curSavedConstraint.setOption(curOptionName, GeneralUtils.deserializeObject(data));
             }
         }
     }

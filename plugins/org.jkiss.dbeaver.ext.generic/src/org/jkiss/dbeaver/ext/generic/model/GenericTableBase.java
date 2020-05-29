@@ -53,6 +53,7 @@ import java.util.*;
 public abstract class GenericTableBase extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject
 {
     private static final Log log = Log.getLog(GenericTableBase.class);
+    public static final String CAT_STATISTICS = "Statistics";
 
     private String tableType;
     private boolean isSystem;
@@ -238,7 +239,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
-    @Property(viewable = false, expensive = true, order = 5, category = "Statistics")
+    @Property(viewable = false, expensive = true, order = 5, category = CAT_STATISTICS)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {

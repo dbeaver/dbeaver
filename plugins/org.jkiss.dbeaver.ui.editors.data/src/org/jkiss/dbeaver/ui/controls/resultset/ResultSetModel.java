@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
@@ -31,13 +29,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -787,9 +784,10 @@ public class ResultSetModel {
 
     void clearData() {
         // Refresh all rows
-        this.releaseAll();
+        this.curRows = new ArrayList<>();
+        this.totalRowCount = null;
 
-        hasData = false;
+        this.hasData = false;
     }
 
     public boolean hasData() {
@@ -906,26 +904,16 @@ public class ResultSetModel {
         }
     }
 
-    private void releaseAll() {
+    void releaseAllData() {
         final List<ResultSetRow> oldRows = curRows;
-        this.curRows = new ArrayList<>();
-        this.totalRowCount = null;
-
         // Cleanup in separate job.
         // Sometimes model cleanup takes much time (e.g. freeing LOB values)
         // So let's do it in separate job to avoid UI locking
-        new AbstractJob("Cleanup model") {
-            {
-                setSystem(true);
+        RuntimeUtils.runTask(monitor -> {
+            for (ResultSetRow row : oldRows) {
+                row.release();
             }
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                for (ResultSetRow row : oldRows) {
-                    row.release();
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+        }, "Release values", 5000);
     }
 
     public DBDDataFilter getDataFilter() {
@@ -1006,6 +994,7 @@ public class ResultSetModel {
             if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
                 filterConstraint.setVisualPosition(constraint.getVisualPosition());
             }
+            filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
             if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {

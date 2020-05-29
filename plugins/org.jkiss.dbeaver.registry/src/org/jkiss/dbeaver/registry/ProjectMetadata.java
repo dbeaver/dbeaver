@@ -183,6 +183,11 @@ public class ProjectMetadata implements DBPProject {
         return dataSourceRegistry != null;
     }
 
+    @Override
+    public boolean isModernProject() {
+        return getFormat() == ProjectFormat.MODERN;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {

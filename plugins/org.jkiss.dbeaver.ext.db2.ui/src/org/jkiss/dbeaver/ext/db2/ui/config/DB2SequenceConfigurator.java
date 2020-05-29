@@ -20,8 +20,8 @@ public class DB2SequenceConfigurator implements DBEObjectConfigurator<DB2Sequenc
                 if (!page.edit()) {
                     return null;
                 }
-
-                return new DB2Sequence(schema, page.getEntityName());
+                sequence.setName(page.getEntityName());
+                return sequence;
             }
         }.execute();
     }

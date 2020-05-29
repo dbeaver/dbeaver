@@ -745,7 +745,13 @@ public final class SQLUtils {
             }
             prevChar = c;
         }
-        String alias = buf.toString().toLowerCase(Locale.ENGLISH);
+        String alias;
+        if(!CommonUtils.isEmpty(buf)) {
+            alias = buf.toString().toLowerCase(Locale.ENGLISH);
+        }
+        else{
+            alias = "t";
+        }
 
         String result = alias;
         for (int i = 2; i < 500; i++) {

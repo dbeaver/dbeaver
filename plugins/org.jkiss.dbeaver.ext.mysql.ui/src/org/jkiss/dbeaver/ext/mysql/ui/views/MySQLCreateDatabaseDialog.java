@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -49,6 +50,8 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
         final Composite composite = super.createDialogArea(parent);
 
         final Composite group = UIUtils.createComposite(composite, 2);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        group.setLayoutData(gd);
 
         final Text nameText = UIUtils.createLabelText(group, "Database name", "");
         nameText.addModifyListener(e -> {

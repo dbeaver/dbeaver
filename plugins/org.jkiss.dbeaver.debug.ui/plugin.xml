@@ -136,7 +136,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
-            <separator name="debug" visible="true"/>
+            <separator name="debug" visible="false"/>
             <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
                      label="%commands.command.debugConfigurations.name"
                      tooltip="%commands.command.debugConfigurations.description" style="pulldown">

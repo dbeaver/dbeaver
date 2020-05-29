@@ -276,7 +276,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
+                    webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="%driver.postgresql.description"
                     promoted="1"
@@ -287,11 +287,10 @@
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <!-- Postgis -->
-                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" optional="true" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/waffle-jna.jar" optional="true" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/caffeine.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
+<!--                    <file type="jar" path="drivers/waffle" optional="true" bundle="drivers.postgresql"/>-->
 
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
@@ -308,7 +307,7 @@
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
+                    webURL="https://jdbc.postgresql.org/"
                     description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
                     categories="sql">
                 </driver>
@@ -341,10 +340,9 @@
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" optional="true" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/waffle-jna.jar" optional="true" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/waffle/caffeine.jar" optional="true" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
+<!--                    <file type="jar" path="drivers/waffle" optional="true" bundle="drivers.postgresql"/>-->
                     <parameter name="serverType" value="timescale"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -359,14 +357,14 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5432"
-                        webURL="http://yellowbrick.io/"
+                        webURL="https://yellowbrick.io/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="Yellowbrick JDBC driver"
                         categories="sql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="yellowbrick"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -389,7 +387,7 @@
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="cockroach"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -406,7 +404,7 @@
                         useURL="true"
                         defaultPort="5439"
                         description="AWS Redshift JDBC driver"
-                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
@@ -428,7 +426,7 @@
                         sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
                         useURL="true"
                         defaultPort="5444"
-                        webURL="http://enterprisedb.com/"
+                        webURL="https://enterprisedb.com/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">

@@ -1,15 +1,15 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
+//import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
+//import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+//import org.jkiss.dbeaver.ui.UITask;
+//import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -47,24 +47,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
     protected ExasolUser createDatabaseObject(DBRProgressMonitor monitor,
                                               DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
         throws DBException {
-        return new UITask<ExasolUser>() {
-            @Override
-            protected ExasolUser runTask() {
-                ExasolUserDialog dialog = new ExasolUserDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                ExasolUser user = new ExasolUser(
-                    (ExasolDataSource) container,
-                    dialog.getName(),
-                    dialog.getComment(),
-                    dialog.getLDAPDN(),
-                    dialog.getPassword(),
-                    dialog.getKerberosPrincipal(),
-                    dialog.getUserType());
-                return user;
-            }
-        }.execute();
+    	return new ExasolUser((ExasolDataSource) container, "user", "", "", "password", "", ExasolUserType.LOCAL);
     }
 
     @Override
@@ -160,7 +143,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
         }
 
         if (command.getProperties().containsKey("kerberosPrincipal")) {
-            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
+            String script = String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
             actionList.add(new SQLDatabasePersistAction("alter user", script));
             return;
         }
@@ -169,7 +152,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 
             StringBuilder script = new StringBuilder("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED ");
             script.append(" BY \"" + obj.getPassword() + "\" ");
-            ExasolDataSource ds = (ExasolDataSource) obj.getDataSource();
+            /*ExasolDataSource ds = (ExasolDataSource) obj.getDataSource();
             if (!ds.hasAlterUserPrivilege()) {
                 String oldPassword = new UITask<String>() {
                     @Override
@@ -189,7 +172,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
                 }
 
                 script.append(" REPLACE \"" + oldPassword + "\"");
-            }
+            }*/
 
             actionList.add(new SQLDatabasePersistAction("Modify User", script.toString()));
         }

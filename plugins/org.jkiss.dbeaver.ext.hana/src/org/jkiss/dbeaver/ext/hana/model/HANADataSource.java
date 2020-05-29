@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
@@ -85,14 +86,16 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     /*
      * explain
      */
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
     throws DBCException {
         HANAPlanAnalyser plan = new HANAPlanAnalyser(this, query);
         plan.explain(session);
         return plan;
     }
 
+    @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;

@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.test;singleton:=true
-Bundle-Version: 1.0.136.qualifier
-Bundle-Release-Date: 20200504
+Bundle-Version: 1.0.138.qualifier
+Bundle-Release-Date: 20200601
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,

@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -219,12 +220,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // Connection related Info
     // -----------------------
 
-    @Override
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserName();
-    }
-
     @NotNull
     @Override
     public DB2DataSource getDataSource()
@@ -381,7 +376,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
 
     @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBCException
     {
         String ptSchemaname = getExplainTablesSchemaName(session);
         if (ptSchemaname == null) {
