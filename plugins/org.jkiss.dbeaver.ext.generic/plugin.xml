@@ -1068,7 +1068,7 @@
                         description="SQream DB - SQL Data Warehouse"
                         webURL="https://docs.sqream.com/en/latest/guides/client_drivers/jdbc/index.html"
                         categories="sql,analytic,columns">
-                    <file type="jar" path="http://downloads.sqream.com/drivers/latest/sqream-jdbc.jar"/>
+                        <file type="jar" path="maven:/com.sqream:sqream-jdbc:RELEASE"/>
                  </driver>
 
                 <!-- KDB - removed as it doesn't work anyway -->
