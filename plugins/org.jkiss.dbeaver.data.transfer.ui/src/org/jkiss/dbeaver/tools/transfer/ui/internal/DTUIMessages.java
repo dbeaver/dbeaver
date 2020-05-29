@@ -34,8 +34,41 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
 	public static String data_transfer_wizard_final_title;
+	
+	
+	
+	public static String data_transfer_wizard_final_output_page_name;
+	
+	public static String data_transfer_wizard_final_output_title;
+	public static String data_transfer_wizard_final_output_description;
+	public static String data_transfer_wizard_final_output_label_data;
+	public static String data_transfer_wizard_final_output_label_performance;
+	public static String data_transfer_wizard_final_output_label_general;
+	
+	
+	public static String data_transfer_wizard_output_checkbox_auto_generated_columns;
+	public static String data_transfer_wizard_output_checkbox_truncate_table;
+	
+	public static String data_transfer_wizard_output_checkbox_transactions;
+	public static String data_transfer_wizard_final_output_spinner_commit_after_insert;
+	
+	public static String data_transfer_wizard_output_checkbox_open_table_on_finish;
 
+	public static String data_transfer_wizard_output_checkbox_auto_generated_columns_description;
+	
+	public static String data_transfer_wizard_final_output_label_data_truncate_attention;
+	
+	public static String data_transfer_wizard_output_checkbox_truncate_table_attention_option_enabled;
 
+	public static String data_transfer_wizard_final_output_label_data_truncate_attention_description_part1;
+	
+	public static String data_transfer_wizard_final_output_label_data_truncate_attention_description_part2;
+	
+	public static String data_transfer_wizard_final_output_label_data_truncate_attention_description_part3;
+	
+	public static String data_transfer_wizard_final_output_label_data_truncate_attention_description_part4;
+	
+	public static String data_transfer_wizard_final_output_label_finish_message;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTUIMessages.class);
