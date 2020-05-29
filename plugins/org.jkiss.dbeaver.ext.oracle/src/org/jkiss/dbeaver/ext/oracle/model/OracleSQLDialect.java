@@ -82,6 +82,17 @@ class OracleSQLDialect extends JDBCSQLDialect {
         "ELSIF",
         "EXIT",
     };
+
+    public static final String[] OTHER_TYPES = {
+            //functions without parentheses #8710
+            "CURRENT_DATE",
+            "CURRENT_TIMESTAMP",
+            "DBTIMEZONE",
+            "SESSIONTIMEZONE",
+            "SYSDATE",
+            "SYSTIMESTAMP"
+    };
+
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -138,7 +149,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
                 //Datetime Functions:
                 "ADD_MONTHS",
-                "DBTIMEZONE",
+                //"DBTIMEZONE",
                 "FROM_TZ",
                 "LAST_DAY",
                 "MONTHS_BETWEEN",
@@ -146,9 +157,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "NEXT_DAY",
                 "NUMTODSINTERVAL",
                 "NUMTOYMINTERVAL",
-                "SESSIONTIMEZONE",
+                //"SESSIONTIMEZONE",
                 "SYS_EXTRACT_UTC",
-                "SYSDATE",
+                //"SYSDATE",
                 "SYSTIMESTAMP",
                 "TO_CHAR",
                 "TO_TIMESTAMP",
@@ -322,6 +333,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
         for (String kw : ADVANCED_KEYWORDS) {
             addSQLKeyword(kw);
+        }
+
+        for (String otherWords : OTHER_TYPES) {
+            addSQLKeyword(otherWords);
         }
     }
 
