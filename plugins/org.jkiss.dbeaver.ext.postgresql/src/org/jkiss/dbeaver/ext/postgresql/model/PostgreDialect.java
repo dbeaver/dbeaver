@@ -59,6 +59,11 @@ public class PostgreDialect extends JDBCSQLDialect {
         "CALL"
     };
 
+    //Function without arguments/parameters #8710
+    private static final String[] OTHER_TYPES = {
+        "CURRENT_DATE"
+    };
+
     //region KeyWords
 
     public static String[] POSTGRE_EXTRA_KEYWORDS = new String[]{
@@ -695,6 +700,8 @@ public class PostgreDialect extends JDBCSQLDialect {
         addExtraKeywords(POSTGRE_EXTRA_KEYWORDS);
         // Not sure about one char keywords. May confuse users
         //addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
+
+        addExtraKeywords(OTHER_TYPES);
 
         addExtraFunctions(PostgreConstants.POSTGIS_FUNCTIONS);
 
