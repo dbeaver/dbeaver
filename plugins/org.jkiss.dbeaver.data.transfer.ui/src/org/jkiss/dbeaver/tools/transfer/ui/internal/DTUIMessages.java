@@ -34,6 +34,21 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
 	public static String data_transfer_wizard_final_title;
+	
+	public static String data_transfer_db_page_load_settings_name;
+	public static String data_transfer_db_page_load_settings_title;
+	public static String data_transfer_db_page_load_settings_description;
+	public static String data_transfer_db_page_load_settings_checkbox_aoutogenerate_col;
+	public static String data_transfer_db_page_load_settings_tooltip_aoutogenerate_col;
+	public static String data_transfer_db_page_load_settings_checkbox_truncate_target_table;
+	public static String data_transfer_db_page_load_settings_group_perfomance;
+	public static String data_transfer_db_page_load_settings_checkbox_transactions;
+	public static String data_transfer_db_page_load_settings_spinner_commit_after_edit;	
+	public static String data_transfer_db_page_load_settings_group_general;
+	public static String data_transfer_db_page_load_settings_checkbox_show_table;
+	public static String data_transfer_db_page_load_settings_checkbox_show_final_message;
+	public static String data_transfer_db_page_load_settings_dialog_truncate_attention_title;
+	public static String data_transfer_db_page_load_settings_dialog_truncate_attention_text;
 
 
 	static {
