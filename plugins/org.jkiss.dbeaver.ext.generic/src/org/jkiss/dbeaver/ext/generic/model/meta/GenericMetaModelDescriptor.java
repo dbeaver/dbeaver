@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GenericMetaModelDescriptor extends AbstractDescriptor {
@@ -39,6 +41,7 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
     private final Map<String, GenericMetaObject> objects = new HashMap<>();
     private String[] driverClass;
     private final String dialectId;
+    private List<String> modelReplacements;
 
     public GenericMetaModelDescriptor() {
         super("org.jkiss.dbeaver.ext.generic");
@@ -69,6 +72,15 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
 
         implType = new ObjectType(cfg.getAttribute("class"));
         dialectId = CommonUtils.toString(cfg.getAttribute("dialect"), GenericSQLDialect.GENERIC_DIALECT_ID);
+
+        IConfigurationElement[] replaceElements = cfg.getChildren("replace");
+        for (IConfigurationElement replace : replaceElements) {
+            String modelId = replace.getAttribute("model");
+            if (modelReplacements == null) {
+                modelReplacements = new ArrayList<>();
+            }
+            modelReplacements.add(modelId);
+        }
     }
 
     public String getId()
@@ -88,6 +100,14 @@ public class GenericMetaModelDescriptor extends AbstractDescriptor {
 
     public SQLDialectMetadata getDialect() {
         return SQLDialectRegistry.getInstance().getDialect(dialectId);
+    }
+
+    public List<String> getModelReplacements() {
+        return CommonUtils.safeList(modelReplacements);
+    }
+
+    public void setModelReplacements(List<String> modelReplacements) {
+        this.modelReplacements = modelReplacements;
     }
 
     public GenericMetaModel getInstance() throws DBException {

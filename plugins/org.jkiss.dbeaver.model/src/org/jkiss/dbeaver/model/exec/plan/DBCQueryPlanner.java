@@ -20,17 +20,19 @@ package org.jkiss.dbeaver.model.exec.plan;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
- * Execution plan builder
+ * Execution plan builder.
+ * Extends DBPObject to enable configurators
  */
-public interface DBCQueryPlanner {
+public interface DBCQueryPlanner extends DBPObject {
 
     DBPDataSource getDataSource();
 
     @NotNull
-    DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+    DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
         throws DBException;
 
     @NotNull

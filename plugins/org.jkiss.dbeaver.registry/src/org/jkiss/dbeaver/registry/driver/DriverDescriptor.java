@@ -63,6 +63,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private static final String LICENSE_ACCEPT_KEY = "driver.license.accept.";
 
+    public static final DriverDescriptor NULL_DRIVER = new DriverDescriptor("NULL");
+
     public static class DriverFileInfo {
         private final String id;
         private final String version;
@@ -161,6 +163,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     static {
         File driversHome = DriverDescriptor.getCustomDriversHome();
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+    }
+
+    private DriverDescriptor(String id) {
+        this(DataSourceProviderDescriptor.NULL_PROVIDER, id);
     }
 
     // New driver constructor
@@ -374,6 +380,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return nativeClientHomes;
     }
 
+    @Override
     public DriverDescriptor getReplacedBy() {
         return replacedBy;
     }
@@ -407,6 +414,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return classLoader;
     }
 
+    @NotNull
+    @Override
     public DataSourceProviderDescriptor getProviderDescriptor() {
         return providerDescriptor;
     }
@@ -434,6 +443,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return id;
     }
 
+    @NotNull
     @Override
     public String getProviderId() {
         return providerDescriptor.getId();
@@ -489,6 +499,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      *
      * @return plain icon
      */
+    @Override
     @NotNull
     public DBPImage getPlainIcon() {
         return iconPlain;
@@ -815,6 +826,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    public void disabledAllDefaultLibraries() {
+        libraries.stream()
+                .filter(s -> !s.isCustom())
+                .forEach(libr -> libr.setDisabled(true));
+    }
+
     @NotNull
     public List<DriverFileSource> getDriverFileSources() {
         return fileSources;
@@ -962,8 +979,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    private void loadLibraries()
-            throws DBException {
+    private void loadLibraries() throws DBException {
         this.classLoader = null;
 
         List<File> allLibraryFiles = validateFilesPresence(false);
@@ -985,6 +1001,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 this,
                 libraryURLs.toArray(new URL[0]),
                 getDataSourceProvider().getClass().getClassLoader());
+    }
+
+    public List<File> getAllLibraryFiles() {
+        return validateFilesPresence(false);
     }
 
     public void updateFiles() {
@@ -1081,8 +1101,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 }
             } else {
-                if (library.getLocalFile() != null) {
-                    result.add(library.getLocalFile());
+                if (library.getType() == DBPDriverLibrary.FileType.license) {
+                    continue;
+                }
+                File localFile = library.getLocalFile();
+                if (localFile != null) {
+                    if (localFile.isDirectory()) {
+                        File[] folderFiles = localFile.listFiles((dir, name1) ->
+                            name1.endsWith(".jar") || name1.endsWith(".zip"));
+                        if (folderFiles != null) {
+                            Collections.addAll(result, folderFiles);
+                        }
+                    }
+                    result.add(localFile);
                 }
             }
         }

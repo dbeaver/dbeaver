@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +105,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(localFilePath);
         if (url == null) {
             // Find in external resources
-            url = driver.getProviderDescriptor().getRegistry().findResourceURL(localFilePath);
+            url = DataSourceProviderRegistry.getInstance().findResourceURL(localFilePath);
         }
         if (url != null) {
             try {
@@ -166,7 +167,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     public DBIcon getIcon() {
         File localFile = getLocalFile();
         if (localFile != null && localFile.isDirectory()) {
-            return DBIcon.TREE_FOLDER;
+            return DBIcon.TREE_FOLDER_ADMIN;
         } else {
             switch (type) {
                 case lib: return DBIcon.LIBRARY;

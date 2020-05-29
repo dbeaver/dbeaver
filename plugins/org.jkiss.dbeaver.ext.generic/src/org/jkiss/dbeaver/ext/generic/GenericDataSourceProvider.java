@@ -33,9 +33,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
@@ -46,12 +49,20 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     public GenericDataSourceProvider()
     {
         metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModelDescriptor());
+
+        List<String> replacedModels = new ArrayList<>();
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             GenericMetaModelDescriptor metaModel = new GenericMetaModelDescriptor(ext);
             metaModels.put(metaModel.getId(), metaModel);
-            for (String driverClass : metaModel.getDriverClass()) {
+            replacedModels.addAll(metaModel.getModelReplacements());
+        }
+        for (String rm : replacedModels) {
+            metaModels.remove(rm);
+        }
+        for (GenericMetaModelDescriptor metaModel : new ArrayList<>(metaModels.values())) {
+            for (String driverClass : ArrayUtils.safeArray(metaModel.getDriverClass())) {
                 metaModels.put(driverClass, metaModel);
             }
         }

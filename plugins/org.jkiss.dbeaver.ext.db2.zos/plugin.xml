@@ -45,14 +45,14 @@
                     <parameter name="omit-type-cache" value="true"/>
                     <parameter name="omit-catalog" value="true"/>
 
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                    <fileSource url="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                                 name="DB2 JCC drivers"
                                 instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>
             </drivers>
 

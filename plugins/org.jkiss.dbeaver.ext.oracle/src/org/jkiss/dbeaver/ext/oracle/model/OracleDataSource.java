@@ -27,12 +27,13 @@ import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.auth.DBAAuthDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -63,7 +64,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBAUserCredentialsProvider, DBPObjectStatisticsCollector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -80,6 +81,7 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
     private String planTableName;
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
+    private boolean hasStatistics;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -279,10 +281,10 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
     }
 
     @Override
-    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
         String userName = connectionInfo.getUserName();
         String authModelId = connectionInfo.getAuthModelId();
-        if (!CommonUtils.isEmpty(authModelId) && !DBAAuthDatabaseNative.ID.equals(authModelId)) {
+        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
             return userName;
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
@@ -291,6 +293,11 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
         }
         final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? userName : userName + " AS " + role;
+    }
+
+    @Override
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return connectionInfo.getUserPassword();
     }
 
     @Override
@@ -730,6 +737,42 @@ public class OracleDataSource extends JDBCDataSource implements IAdaptable {
             }
         }
         return null;
+    }
+
+    ///////////////////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
+            // Tablespace stats
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT TS.TABLESPACE_NAME,SUM(F.BYTES) AVAILABLE_SPACE,SUM(S.BYTES) USED_SPACE \n" +
+                    "FROM SYS.DBA_TABLESPACES TS,DBA_DATA_FILES F,DBA_SEGMENTS S\n" +
+                    "WHERE F.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME\n" +
+                    "GROUP BY TS.TABLESPACE_NAME")) {
+                    while (dbResult.next()) {
+                        String tsName = dbResult.getString(1);
+                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, getDataSource(), tsName);
+                        if (tablespace != null) {
+                            tablespace.fetchSizes(dbResult);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't read tablespace statistics", e, getDataSource());
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     private class OracleOutputReader implements DBCServerOutputReader {

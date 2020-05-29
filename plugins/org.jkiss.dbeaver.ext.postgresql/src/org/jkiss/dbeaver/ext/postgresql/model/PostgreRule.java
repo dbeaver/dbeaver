@@ -46,6 +46,7 @@ public class PostgreRule implements PostgreObject, PostgreScriptObject, DBPQuali
     private String enabled;
     private boolean instead;
     private String definition;
+    public String body;
 
     protected String description;
 
@@ -137,7 +138,15 @@ public class PostgreRule implements PostgreObject, PostgreScriptObject, DBPQuali
     @Property(hidden = true, order = 80)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        return definition;
+        if (body == null) {
+            StringBuilder ddl = new StringBuilder();
+            ddl.append("-- DROP RULE ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
+                    .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+
+            ddl.append(definition);
+            this.body = ddl.toString();
+        }
+        return body;
     }
 
     @Override

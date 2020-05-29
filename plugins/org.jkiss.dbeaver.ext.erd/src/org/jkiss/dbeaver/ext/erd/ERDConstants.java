@@ -39,6 +39,7 @@ public class ERDConstants {
     public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
 
     public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
+    public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
     public static final String PREF_GRID_ENABLED = "erd.grid.enabled";
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";

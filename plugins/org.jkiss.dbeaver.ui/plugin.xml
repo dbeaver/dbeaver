@@ -12,6 +12,7 @@
 
     <!-- Notifications -->
 
+<!--
     <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
         <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
         <category id="org.jkiss.dbeaver.notifications.general.category" label="General"/>
@@ -42,6 +43,7 @@
             </description>
         </event>
     </extension>
+-->
     <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
         <handler adapter="org.eclipse.e4.ui.css.swt.dom.CTabFolderElement" composite="true"
                  handler="org.jkiss.dbeaver.ui.css.CustomSelectedTabFillHandler">

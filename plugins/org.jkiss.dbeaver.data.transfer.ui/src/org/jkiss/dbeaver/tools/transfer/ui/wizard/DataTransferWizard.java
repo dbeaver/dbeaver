@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferNodeConfiguratorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
@@ -236,7 +237,7 @@ public class DataTransferWizard extends TaskConfigurationWizard implements IExpo
 
     @Override
     protected String getDefaultWindowTitle() {
-        return DTMessages.data_transfer_wizard_name;
+        return DTUIMessages.data_transfer_wizard_name;
     }
 
     @Nullable

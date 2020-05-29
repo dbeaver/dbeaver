@@ -106,7 +106,7 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceConfigurationStorage origin;
     @NotNull
-    private DriverDescriptor driver;
+    private DBPDriver driver;
     @NotNull
     private DBPConnectionConfiguration connectionInfo;
     // Copy of connection info with resolved params (cache)
@@ -140,6 +140,7 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
     private boolean temporary;
+    private boolean hidden;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
@@ -151,17 +152,17 @@ public class DataSourceDescriptor
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
         @NotNull String id,
-        @NotNull DriverDescriptor driver,
+        @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
     }
 
-    DataSourceDescriptor(
+    public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
         @NotNull DBPDataSourceConfigurationStorage origin,
         @NotNull String id,
-        @NotNull DriverDescriptor driver,
+        @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.registry = registry;
@@ -205,7 +206,12 @@ public class DataSourceDescriptor
             this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
         }
         this.lockPasswordHash = source.lockPasswordHash;
-        this.folder = source.folder;
+        if (source.getRegistry() == registry) {
+            this.folder = source.folder;
+        } else if (source.folder != null) {
+            // Cross-registry copy
+            this.folder = (DataSourceFolder) registry.getFolder(source.folder.getFolderPath());
+        }
 
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
@@ -244,7 +250,7 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DriverDescriptor getDriver()
+    public DBPDriver getDriver()
     {
         return driver;
     }
@@ -580,6 +586,15 @@ public class DataSourceDescriptor
 
     public void setTemporary(boolean temporary) {
         this.temporary = temporary;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 
     @Override

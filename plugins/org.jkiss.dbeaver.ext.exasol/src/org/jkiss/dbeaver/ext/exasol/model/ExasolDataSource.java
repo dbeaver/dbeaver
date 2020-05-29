@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -413,13 +414,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	// Connection related Info
 	// -----------------------
 
-	@Override
-	protected String getConnectionUserName(
-			@NotNull DBPConnectionConfiguration connectionInfo)
-	{
-		return connectionInfo.getUserName();
-	}
-
 	@NotNull
 	@Override
 	public ExasolDataSource getDataSource()
@@ -773,6 +767,11 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		return this.exasolCurrentUserPrivileges.getatLeastV5();
 	}
 	
+	public boolean ishasPartitionColumns()
+	{
+		return this.exasolCurrentUserPrivileges.hasPartitionColumns();
+	}
+	
 	public boolean ishasConsumerGroups()
 	{
 		return this.exasolCurrentUserPrivileges.hasConsumerGroups();
@@ -909,7 +908,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 
 	@NotNull
 	@Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query)
+	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
 			throws DBCException
 	{
 		ExasolPlanAnalyser plan = new ExasolPlanAnalyser(this, query);

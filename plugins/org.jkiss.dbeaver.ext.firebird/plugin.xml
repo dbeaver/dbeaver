@@ -39,9 +39,7 @@
                     <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[4.0.0.java8]" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/jaybird/antlr4-runtime.jar" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/jaybird/connector-api.jar" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/jaybird/jaybird.jar" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/jaybird"/>
 
                     <property name="encoding" value="UTF8"/>
 

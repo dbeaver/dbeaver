@@ -56,8 +56,9 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBException {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {
         OracleExecutionPlan plan = new OracleExecutionPlan(dataSource, (JDBCSession) session, query);
         plan.explain();
         return plan;
@@ -72,6 +73,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
     }
      */
 
+    @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;

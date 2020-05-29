@@ -99,6 +99,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public void createPartControl(Composite parent)
     {
         this.tree = createNavigatorTree(parent, null);
+        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer());
 
         getViewSite().setSelectionProvider(tree.getViewer());
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
@@ -113,6 +114,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     {
         // Create tree
         final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
+
+        createTreeColumns(navigatorTree);
 
         navigatorTree.getViewer().addSelectionChangedListener(
             event -> onSelectionChange((IStructuredSelection)event.getSelection())
@@ -199,6 +202,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return navigatorTree;
     }
 
+    protected void createTreeColumns(DatabaseNavigatorTree tree) {
+
+    }
+
     private void toggleNode(TreeViewer viewer, Object node) {
         if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
             viewer.collapseToLevel(node, 1);
@@ -231,7 +238,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     protected int getTreeStyle()
     {
-        return SWT.MULTI;
+        return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
     @Override
@@ -301,6 +308,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
                 tree.getViewer().refresh();
+                break;
+            case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
+            case NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME:
+                tree.getViewer().getTree().redraw();
                 break;
         }
     }

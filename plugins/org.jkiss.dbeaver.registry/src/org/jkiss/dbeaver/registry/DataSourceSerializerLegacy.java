@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -201,8 +198,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 dataSource.getRegistry().getProject(),
                 dataSource,
                 null,
-                connectionInfo.getUserName(),
-                dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+                new SecureCredentials(dataSource));
 
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -263,8 +259,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                         dataSource.getRegistry().getProject(),
                         dataSource,
                         "network/" + configuration.getId(),
-                        configuration.getUserName(),
-                        configuration.isSavePassword() ? configuration.getPassword() : null);
+                        new SecureCredentials(configuration));
                 }
                 for (Map.Entry<String, Object> entry : configuration.getProperties().entrySet()) {
                     if (entry.getValue() == null) {
@@ -358,15 +353,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         xml.endElement();
     }
 
-    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, String userName, String password) throws IOException {
-        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, userName, password);
+    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, SecureCredentials creds) throws IOException {
+        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, creds);
         if (!saved) {
             try {
-                if (!CommonUtils.isEmpty(userName)) {
-                    xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(userName));
+                if (!CommonUtils.isEmpty(creds.getUserName())) {
+                    xml.addAttribute(RegistryConstants.ATTR_USER, creds.getUserName());
                 }
-                if (!CommonUtils.isEmpty(password)) {
-                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(password));
+                if (!CommonUtils.isEmpty(creds.getUserPassword())) {
+                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(creds.getUserPassword()));
                 }
             } catch (EncryptionException e) {
                 log.error("Error encrypting password", e);
@@ -533,11 +528,13 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 }
                 case RegistryConstants.TAG_CONNECTION:
                     if (curDataSource != null) {
-                        DriverDescriptor driver = curDataSource.getDriver();
+                        DBPDriver driver = curDataSource.getDriver();
                         if (CommonUtils.isEmpty(driver.getName())) {
-                            // Broken driver - seems to be just created
-                            driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
-                            driver.setDriverClassName("java.sql.Driver");
+                            if (driver instanceof DriverDescriptor) {
+                                // Broken driver - seems to be just created
+                                ((DriverDescriptor)driver).setName(atts.getValue(RegistryConstants.ATTR_URL));
+                                ((DriverDescriptor)driver).setDriverClassName("java.sql.Driver");
+                            }
                         }
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
                         config.setHostName(atts.getValue(RegistryConstants.ATTR_HOST));

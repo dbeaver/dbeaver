@@ -246,7 +246,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 while (st.hasMoreTokens()) {
                     newName = st.nextToken();
                 }
-                newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
+                //newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
                 newName = CommonUtils.truncateString(newName, 50);
             }
 

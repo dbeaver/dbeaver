@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.CursorViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.CursorPanelEditor;
 
 /**
  * Object value manager.
@@ -33,9 +34,12 @@ public class ObjectValueManager extends StringValueManager {
         throws DBException
     {
         final Object value = controller.getValue();
-        if (controller.getEditType() == IValueController.EditType.EDITOR) {
-            if (value instanceof DBDCursor) {
-                return new CursorViewDialog(controller);
+        if (value instanceof DBDCursor) {
+            switch (controller.getEditType()) {
+                case EDITOR:
+                    return new CursorViewDialog(controller);
+                case PANEL:
+                    return new CursorPanelEditor(controller);
             }
         }
         return super.createEditor(controller);

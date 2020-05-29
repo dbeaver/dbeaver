@@ -201,12 +201,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             // init sub pages (if any)
             IDialogPage[] allSubPages = getSubPages(false, true);
 
-            if (!ArrayUtils.isEmpty(allSubPages)) {
+            {
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
-                // Add sub pages
-                Collections.addAll(allPages, allSubPages);
+                if (!ArrayUtils.isEmpty(allSubPages)) {
+                    // Add sub pages
+                    Collections.addAll(allPages, allSubPages);
+                }
 
                 tabFolder = new TabFolder(parent, SWT.TOP);
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -232,10 +234,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         activateCurrentItem();
                     }
                 });
-            } else {
-                // Create single editor control
-                this.connectionEditor.createControl(parent);
-                setControl(this.connectionEditor.getControl());
             }
 
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);

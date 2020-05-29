@@ -336,7 +336,9 @@ public class ResultSetViewer extends Viewer
                 this.panelFolder.addListener(SWT.Resize, event -> {
                     if (!viewerSash.isDisposed() && !isUIUpdateRunning) {
                         int[] weights = viewerSash.getWeights();
-                        getPresentationSettings().panelRatio = weights[1];
+                        if (weights.length == 2) {
+                            getPresentationSettings().panelRatio = weights[1];
+                        }
                     }
                 });
                 this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
@@ -2466,7 +2468,7 @@ public class ResultSetViewer extends Viewer
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
-        manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        //manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
     }
@@ -3303,7 +3305,7 @@ public class ResultSetViewer extends Viewer
                     throw new InvocationTargetException(e);
                 }
             };
-            RuntimeUtils.runTask(restoreTask, "Restore data filter", 60000);
+            RuntimeUtils.runTask(restoreTask, "Restore data filter", 10000);
             if (dataFilter.hasFilters()) {
                 return dataFilter;
             }
@@ -3597,6 +3599,7 @@ public class ResultSetViewer extends Viewer
 
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
+                model.releaseAllData();
                 if (filtersPanel != null) {
                     UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
                 }
@@ -3685,8 +3688,11 @@ public class ResultSetViewer extends Viewer
                                 log.debug("Error handling resulset load", e);
                             }
                         }
-                        updateFiltersText(true);
-                        updateToolbar();
+                        UIUtils.asyncExec(() -> {
+                            updateFiltersText(true);
+                            updateToolbar();
+                        });
+
                         // auto-refresh
                         autoRefreshControl.scheduleAutoRefresh(error != null);
                     } finally {
@@ -3751,6 +3757,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData()
     {
+        this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
         this.activePresentation.clearMetaData();

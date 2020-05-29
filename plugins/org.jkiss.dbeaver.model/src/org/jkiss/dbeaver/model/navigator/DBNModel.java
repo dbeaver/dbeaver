@@ -73,7 +73,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final boolean global;
+    private final Object modelContext;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -82,11 +82,11 @@ public class DBNModel implements IResourceChangeListener {
 
     /**
      * Creates navigator model.
-     * @param global Global navigator. If set to false then it won't register resource listeners and won't raise navigator events.
+     * @param modelContext Model context. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, boolean global) {
+    public DBNModel(DBPPlatform platform, @Nullable Object modelContext) {
         this.platform = platform;
-        this.global = global;
+        this.modelContext = modelContext;
     }
 
     public DBPPlatform getPlatform() {
@@ -94,7 +94,11 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     public boolean isGlobal() {
-        return global;
+        return modelContext == null;
+    }
+
+    public Object getModelContext() {
+        return modelContext;
     }
 
     public void initialize()
@@ -104,7 +108,7 @@ public class DBNModel implements IResourceChangeListener {
         }
         this.root = new DBNRoot(this);
 
-        if (global) {
+        if (isGlobal()) {
             platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
             new EventProcessingJob().schedule();
         }
@@ -112,13 +116,16 @@ public class DBNModel implements IResourceChangeListener {
 
     public void dispose()
     {
-        if (global) {
+        if (isGlobal()) {
             platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
         }
 
-        this.root.dispose(false);
-        synchronized (nodeMap) {
-            this.nodeMap.clear();
+        if (root != null) {
+            this.root.dispose(false);
+            synchronized (nodeMap) {
+                this.nodeMap.clear();
+            }
+            this.root = null;
         }
         synchronized (this.listeners) {
             if (!listeners.isEmpty()) {
@@ -129,7 +136,6 @@ public class DBNModel implements IResourceChangeListener {
             this.listeners.clear();
             this.listenersCopy = null;
         }
-        this.root = null;
     }
 
     public DBNRoot getRoot()
@@ -227,7 +233,7 @@ public class DBNModel implements IResourceChangeListener {
 
     @NotNull
     private NodePath getNodePath(@NotNull String path) {
-        DBNNode.NodePathType nodeType = DBNNode.NodePathType.database;
+        DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
         for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
             final String prefix = type.getPrefix();
             if (path.startsWith(prefix)) {
@@ -282,6 +288,9 @@ public class DBNModel implements IResourceChangeListener {
                     }
                 }
             }
+        } else if (nodePath.type == DBNNode.NodePathType.other) {
+            return findNodeByPath(monitor, nodePath,
+                root, 0);
         } else {
             for (DBNProject projectNode : getRoot().getProjects()) {
                 if (projectNode.getName().equals(nodePath.first())) {
@@ -555,7 +564,7 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        if (!global || platform.isShuttingDown()) {
+        if (!isGlobal() || platform.isShuttingDown()) {
             return;
         }
         synchronized (eventCache) {

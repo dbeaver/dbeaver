@@ -136,7 +136,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
 
             portText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.CENTER);
-            gd.widthHint = 60;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             //portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
             portText.addModifyListener(textListener);
@@ -539,12 +539,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
         List<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
-                GridData gd = (GridData)control.getLayoutData();
+                Object gd = control.getLayoutData();
                 if (gd == null) {
                     gd = new GridData(GridData.BEGINNING);
                     control.setLayoutData(gd);
                 }
-                gd.exclude = !show;
+                if (gd instanceof GridData) {
+                    ((GridData)gd).exclude = !show;
+                }
                 control.setVisible(show);
             }
         }

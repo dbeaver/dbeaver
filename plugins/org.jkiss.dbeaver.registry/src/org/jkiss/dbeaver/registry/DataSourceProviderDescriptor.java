@@ -51,6 +51,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
+    public static final DataSourceProviderDescriptor NULL_PROVIDER = new DataSourceProviderDescriptor(null, "NULL");
+
     private DataSourceProviderRegistry registry;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
@@ -191,6 +193,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return registry;
     }
 
+    @Override
     public DataSourceProviderDescriptor getParentProvider() {
         return parentProvider;
     }

@@ -24,13 +24,16 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Iterator;
+import java.util.Map;
 
-public class NavigatorHandlerExpandAll extends AbstractHandler {
+public class NavigatorHandlerExpandAll extends AbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -50,5 +53,11 @@ public class NavigatorHandlerExpandAll extends AbstractHandler {
             }
         }
         return null;
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        element.setText("Expand selected");
+        element.setTooltip("Expand selected");
     }
 }

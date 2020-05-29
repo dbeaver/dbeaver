@@ -21,22 +21,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.ext.wmi.WMIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * WMIConnectionPage
  */
-public class WMIConnectionPage extends ConnectionPageAbstract
+public class WMIConnectionPage extends ConnectionPageWithAuth
 {
     private static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
     private static final String DEFAULT_NAMESPACE = "root/cimv2"; //$NON-NLS-1$
@@ -45,9 +43,8 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     private Text hostText;
     private Combo namespaceCombo;
     private Combo localeCombo;
-    private Text usernameText;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png"); //$NON-NLS-1$
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_icon_big.png"); //$NON-NLS-1$
 
     public WMIConnectionPage()
     {
@@ -69,70 +66,44 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         ModifyListener textListener = e -> evaluateURL();
 
         Composite addrGroup = new Composite(composite, SWT.NONE);
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
+        GridLayout gl = new GridLayout(1, false);
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_host);
-        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        hostText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        hostText.setLayoutData(gd);
-        hostText.addModifyListener(textListener);
-
-        Label domainLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_domain);
-        domainLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        domainText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        domainText.setLayoutData(gd);
-        domainText.addModifyListener(textListener);
-
-        Label namespaceLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_namespace);
-        namespaceLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-        namespaceCombo = new Combo(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
-        namespaceCombo.setLayoutData(gd);
-        namespaceCombo.addModifyListener(textListener);
-
-        Label divLabel = new Label(addrGroup, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 4;
-        divLabel.setLayoutData(gd);
-
         {
-            Label usernameLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_user);
-            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            Group hostGroup = UIUtils.createControlGroup(addrGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
+            Label hostLabel = UIUtils.createControlLabel(hostGroup, WMIMessages.wmi_connection_page_label_host);
+            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            usernameText = new Text(addrGroup, SWT.BORDER);
+            hostText = new Text(hostGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            usernameText.setLayoutData(gd);
-            usernameText.addModifyListener(textListener);
+            hostText.setLayoutData(gd);
+            hostText.addModifyListener(textListener);
 
-            UIUtils.createEmptyLabel(addrGroup, 2, 1);
+            Label domainLabel = UIUtils.createControlLabel(hostGroup, WMIMessages.wmi_connection_page_label_domain);
+            domainLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            Label passwordLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_password);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            Text passwordText = createPasswordText(addrGroup, null);
+            domainText = new Text(hostGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
-            passwordText.addModifyListener(textListener);
+            domainText.setLayoutData(gd);
+            domainText.addModifyListener(textListener);
 
-            createPasswordControls(addrGroup, 2);
+            Label namespaceLabel = UIUtils.createControlLabel(hostGroup, WMIMessages.wmi_connection_page_label_namespace);
+            namespaceLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            namespaceCombo = new Combo(hostGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.horizontalSpan = 3;
+            namespaceCombo.setLayoutData(gd);
+            namespaceCombo.addModifyListener(textListener);
         }
+
+        createAuthPanel(addrGroup, 1);
+        createDriverPanel(addrGroup);
 
         setControl(addrGroup);
     }
@@ -140,7 +111,8 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     @Override
     public boolean isComplete()
     {
-        return hostText != null && namespaceCombo != null &&
+        return super.isComplete() &&
+            hostText != null && namespaceCombo != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(namespaceCombo.getText());
     }
@@ -163,12 +135,6 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         if (domainText != null) {
             domainText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
         }
-        if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-        }
         if (namespaceCombo != null) {
             namespaceCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
@@ -187,12 +153,6 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         }
         if (namespaceCombo != null) {
             connectionInfo.setDatabaseName(namespaceCombo.getText().trim());
-        }
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
-        if (passwordText != null) {
-            connectionInfo.setUserPassword(passwordText.getText());
         }
         super.saveSettings(dataSource);
     }

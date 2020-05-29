@@ -168,7 +168,7 @@
 
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -183,7 +183,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
-                        webURL="http://www.mysql.com/products/connector/"
+                        webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
                         categories="sql">
@@ -192,8 +192,7 @@
                     <replace provider="mysql" driver="mysql5"/>-->
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.17]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -214,8 +213,7 @@
                     categories="sql">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -238,7 +236,7 @@
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.4.3]" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
-                    <file type="jar" path="drivers/mariadb/mariadb-java-client.jar" bundle="drivers.mariadb"/>
+                    <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
@@ -372,6 +370,7 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <category id="mysql" name="MySQL" description="MySQL database task" icon="icons/mysql_icon.png"/>
+        <category id="mysqlTool" parent="mysql" name="Tools" description="MySQL database tools" icon="icons/mysql_icon.png"/>
 
         <task id="mysqlDatabaseBackup" name="MySQL dump" description="MySQL database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
@@ -385,11 +384,9 @@
         </task>
 
         <!-- SQL tools -->
-<!--
-        <task id="mysqlToolCheckTable" name="Check" description="Check table(s)" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+        <task id="mysqlToolCheckTable" name="Check table" description="Check table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableCheck">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
--->
 
     </extension>
 

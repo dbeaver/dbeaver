@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -43,10 +44,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
 
     private final DBDDataFormatterProfile formatterProfile;
+    private final boolean useScientificNotation;
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
         this.formatterProfile = formatterProfile;
+        this.useScientificNotation = formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @Override
@@ -77,7 +80,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             }
         }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
-            return DBValueFormatting.convertNumberToNativeString((Number) value);
+            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation);
         }
         return getFormatter(column).formatValue(value);
     }
@@ -240,7 +243,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     } else {
                         statement.setLong(paramIndex, number.longValue());
                     }
-                    statement.setLong(paramIndex, number.longValue());
                     break;
                 case Types.FLOAT:
                     if (number instanceof BigDecimal) {
@@ -255,6 +257,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 case Types.REAL:
                     if (number instanceof BigDecimal) {
                         statement.setBigDecimal(paramIndex, (BigDecimal) number);
+                    } else if (number instanceof Float) {
+                        statement.setFloat(paramIndex, number.floatValue());
                     } else {
                         statement.setDouble(paramIndex, number.doubleValue());
                     }
@@ -364,8 +368,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                     return Float.class;
                 }
                 return BigDecimal.class;
+            //Workaround for MySQL Unsigned INTEGER #8786
             case Types.INTEGER:
-                return Integer.class;
+                return Long.class;
             case Types.SMALLINT:
             case Types.TINYINT:
                 return Short.class;

@@ -532,6 +532,9 @@ public class GenericMetaModel {
             tableName,
             tableType,
             dbResult);
+        if (table == null) {
+            return null;
+        }
 
         boolean isSystemTable = table.isSystem();
         if (isSystemTable && !owner.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects()) {

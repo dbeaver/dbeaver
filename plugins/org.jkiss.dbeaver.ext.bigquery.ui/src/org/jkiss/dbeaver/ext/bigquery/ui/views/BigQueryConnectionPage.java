@@ -126,7 +126,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
 
             portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
             GridData gd = (GridData) portText.getLayoutData();
-            gd.widthHint = 40;
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
         }

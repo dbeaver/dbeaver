@@ -980,7 +980,7 @@ public final class DBUtils {
         }
 
         List<DBSEntityConstraint> identifiers = new ArrayList<>();
-        List<DBSEntityConstraint> nonIdentifyingConstraints = null;
+        //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
         // Check indexes
         if (entity instanceof DBSTable) {
@@ -1005,10 +1005,10 @@ public final class DBUtils {
                 for (DBSEntityConstraint constraint : uniqueKeys) {
                     if (isIdentifierConstraint(monitor, constraint)) {
                         identifiers.add(constraint);
-                    } else {
+                    }/* else {
                         if (nonIdentifyingConstraints == null) nonIdentifyingConstraints = new ArrayList<>();
                         nonIdentifyingConstraints.add(constraint);
-                    }
+                    }*/
                 }
             }
         }
@@ -1030,9 +1030,9 @@ public final class DBUtils {
                 getEntityAttributes(monitor, (DBSEntityReferrer)uniqueId)
                 : Collections.<DBSTableColumn>emptyList();
         } else {
-            if (nonIdentifyingConstraints != null) {
-                return getEntityAttributes(monitor, (DBSEntityReferrer)nonIdentifyingConstraints.get(0));
-            }
+//            if (nonIdentifyingConstraints != null) {
+//                return getEntityAttributes(monitor, (DBSEntityReferrer)nonIdentifyingConstraints.get(0));
+//            }
             return Collections.emptyList();
         }
     }
@@ -1063,8 +1063,10 @@ public final class DBUtils {
                 }
                 for (DBSEntityAttributeRef col : attrs) {
                     if (col.getAttribute() == null || !col.getAttribute().isRequired()) {
-                        // Do not use constraints with NULL columns (because they are not actually unique: #424)
-                        return false;
+                        if (!constraint.getDataSource().getInfo().supportsNullableUniqueConstraints()) {
+                            // Do not use constraints with NULL columns (because they are not actually unique: #424)
+                            return false;
+                        }
                     }
                 }
                 return true;
@@ -1463,7 +1465,7 @@ public final class DBUtils {
         return dataTypeProvider.getLocalDataType(fullTypeName);
     }
 
-    public static DBPObject getPublicObject(@Nullable DBPObject object)
+    public static DBSObject getPublicObject(@Nullable DBSObject object)
     {
         if (object instanceof DBPDataSourceContainer) {
             return ((DBPDataSourceContainer) object).getDataSource();

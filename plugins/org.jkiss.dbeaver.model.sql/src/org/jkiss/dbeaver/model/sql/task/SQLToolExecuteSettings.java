@@ -35,6 +35,9 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> {
 
     private List<OBJECT_TYPE> objectList = new ArrayList<>();
 
+    protected SQLToolExecuteSettings() {
+    }
+
     public List<OBJECT_TYPE> getObjectList() {
         return objectList;
     }

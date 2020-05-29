@@ -26,6 +26,7 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
 
     private SQLFormatterDescriptor formatterDescriptor;
     private SQLFormatterConfiguration configuration;
+    public Runnable changeListener;
 
     public BaseFormatterConfigurationPage()
     {
@@ -58,9 +59,10 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
     protected abstract Composite createFormatSettings(Composite parent);
 
     @Override
-    public void configure(SQLFormatterDescriptor formatterDescriptor) {
+    public void configure(SQLFormatterDescriptor formatterDescriptor, Runnable changeListener) {
         this.formatterDescriptor = formatterDescriptor;
         this.configuration = configuration;
+        this.changeListener = changeListener;
     }
 
     @Override

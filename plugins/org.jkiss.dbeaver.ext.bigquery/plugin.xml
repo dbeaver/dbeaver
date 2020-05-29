@@ -28,7 +28,7 @@
                         defaultPort="443"
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
-                        propertiesURL="http://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
+                        propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
                         categories="bigdata">
                     <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.1.1001.zip"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>

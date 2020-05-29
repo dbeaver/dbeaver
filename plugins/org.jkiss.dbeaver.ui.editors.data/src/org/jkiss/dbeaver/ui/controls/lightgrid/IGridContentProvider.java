@@ -52,6 +52,8 @@ public interface IGridContentProvider extends IContentProvider {
 
     int getColumnAlign(@Nullable Object element);
 
+    int getColumnPinIndex(@NotNull Object element);
+
     boolean isElementSupportsFilter(@Nullable Object element);
 
     boolean isElementSupportsSort(@Nullable Object element);

@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,13 +48,14 @@ import java.util.Map;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPImageProvider
+public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPObjectStatistics, DBPImageProvider
 {
     private static final Log log = Log.getLog(OracleTable.class);
 
     private OracleDataType tableType;
     private String iotType;
     private String iotName;
+    private Long tableSize;
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
@@ -164,6 +167,65 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
             }
             return additionalInfo;
         }
+    }
+
+    ///////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean hasStatistics() {
+        return tableSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return tableSize == null ? 0 : tableSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+
+    @Property(viewable = false, category = CAT_STATISTICS, formatter = ByteNumberFormat.class)
+    public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
+        if (tableSize == null) {
+            loadSize(monitor);
+        }
+        return tableSize;
+    }
+
+    public void setTableSize(Long tableSize) {
+        this.tableSize = tableSize;
+    }
+
+    private void loadSize(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            boolean hasDBA = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "DBA_SEGMENTS");
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT SUM(bytes) TABLE_SIZE\n" +
+                    "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
+                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.OWNER = ? AND s.SEGMENT_NAME = ?"))
+            {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        fetchTableSize(dbResult);
+                    } else {
+                        tableSize = 0L;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        }
+    }
+
+    void fetchTableSize(JDBCResultSet dbResult) throws SQLException {
+        tableSize = dbResult.getLong("TABLE_SIZE");
     }
 
     @Override
