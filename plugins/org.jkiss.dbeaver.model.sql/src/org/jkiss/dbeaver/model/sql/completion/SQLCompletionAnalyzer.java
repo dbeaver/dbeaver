@@ -467,7 +467,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private void makeProposalsFromQueryParts() {
         String wordPart = request.getWordPart();
         // Find all aliases matching current word
-        if (!CommonUtils.isEmpty(request.getActiveQuery().getText()) && !CommonUtils.isEmpty(wordPart)) {
+        SQLScriptElement activeQuery = request.getActiveQuery();
+        if (activeQuery != null && !CommonUtils.isEmpty(activeQuery.getText()) && !CommonUtils.isEmpty(wordPart)) {
             if (wordPart.indexOf(request.getContext().getSyntaxManager().getStructSeparator()) != -1 || wordPart.equals(ALL_COLUMNS_PATTERN)) {
                 return;
             }
