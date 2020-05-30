@@ -326,6 +326,15 @@ public class JSONUtils {
         return Collections.emptyList();
     }
 
+    @NotNull
+    public static List<String> getStringList(@NotNull Map<String, Object> map, @NotNull String name) {
+        Object value = map.get(name);
+        if (value instanceof List) {
+            return  (List<String>) value;
+        }
+        return Collections.emptyList();
+    }
+
     @Nullable
     public static Map<String, Object> deserializeProperties(Map<String, Object> map, String name) {
         Object propMap = map.get(name);
