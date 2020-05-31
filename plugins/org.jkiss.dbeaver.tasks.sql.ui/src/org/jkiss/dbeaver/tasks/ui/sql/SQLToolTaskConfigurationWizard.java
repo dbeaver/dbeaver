@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -69,12 +70,12 @@ class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        //pageSettings.saveSettings();
+        pageSettings.saveSettings();
 
         settings.saveConfiguration(state);
     }
 
-    public SQLToolExecuteSettings getSettings() {
+    public SQLToolExecuteSettings<DBSObject> getSettings() {
         return settings;
     }
 }
