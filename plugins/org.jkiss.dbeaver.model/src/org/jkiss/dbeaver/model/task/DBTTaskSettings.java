@@ -21,5 +21,10 @@ package org.jkiss.dbeaver.model.task;
  */
 public interface DBTTaskSettings<INPUT_OBJECT_TYPE> {
 
+    //void loadSettingsFromInput(List<INPUT_OBJECT_TYPE> inputObjects);
+
+    //void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> state);
+
+    //void saveSettings(Map<String, Object> state);
 
 }
