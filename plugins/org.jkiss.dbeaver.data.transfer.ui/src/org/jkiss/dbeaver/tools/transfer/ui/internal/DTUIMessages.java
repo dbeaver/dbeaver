@@ -27,12 +27,26 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_wizard_final_column_source_container;
 	public static String data_transfer_wizard_final_column_target;
 	public static String data_transfer_wizard_final_column_target_container;
+	public static String data_transfer_wizard_final_configuration_of_table_data_load;
+	public static String data_transfer_wizard_final_data_load;
+	public static String data_transfer_wizard_final_data_load_remove_all_data_from_target_table_task;
+	public static String data_transfer_wizard_final_data_load_settings;
+	public static String data_transfer_wizard_final_data_load_transger_auto_generated_columns;
+	public static String data_transfer_wizard_final_data_load_transger_auto_generated_columns_tooltip;
+	public static String data_transfer_wizard_final_data_load_truncate_attention;
+	public static String data_transfer_wizard_final_data_load_truncate_target_table_before_load;
 	public static String data_transfer_wizard_final_description;
+	public static String data_transfer_wizard_final_general;
+	public static String data_transfer_wizard_final_general_open_table_editor_on_finish;
+	public static String data_transfer_wizard_final_general_show_finish_message;
 	public static String data_transfer_wizard_final_group_tables;
 	public static String data_transfer_wizard_final_group_objects;
 	public static String data_transfer_wizard_final_group_settings_source;
 	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
+	public static String data_transfer_wizard_final_performance;
+	public static String data_transfer_wizard_final_performance_commit_after_insert_of; 
+	public static String data_transfer_wizard_final_performance_use_transactions;
 	public static String data_transfer_wizard_final_title;
 
 
