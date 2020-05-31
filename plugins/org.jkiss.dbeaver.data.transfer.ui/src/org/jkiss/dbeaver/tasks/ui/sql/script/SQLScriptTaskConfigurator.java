@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.tools.sql.ui.wizard;
+package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 /**
  * SQL task configurator
  */
-public class SQLTaskConfigurator implements DBTTaskConfigurator {
+public class SQLScriptTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public DBTTaskConfigPanel createInputConfigurator(DBRRunnableContext runnableContext, @NotNull DBTTaskType taskType) {
@@ -37,7 +37,7 @@ public class SQLTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new SQLTaskConfigurationWizard(taskConfiguration);
+        return new SQLScriptTaskConfigurationWizard(taskConfiguration);
     }
 
 }

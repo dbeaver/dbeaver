@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.sql.ui.wizard;
+package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -52,11 +52,11 @@ import java.util.*;
 /**
  * SQL task settings page
  */
-class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
+class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurationWizard> {
 
-    private static final Log log = Log.getLog(SQLTaskPageSettings.class);
+    private static final Log log = Log.getLog(SQLScriptTaskPageSettings.class);
 
-    private SQLTaskConfigurationWizard sqlWizard;
+    private SQLScriptTaskConfigurationWizard sqlWizard;
     private Button ignoreErrorsCheck;
     private Button dumpQueryCheck;
     private Button autoCommitCheck;
@@ -66,7 +66,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
     private List<DBNResource> selectedScripts = new ArrayList<>();
     private List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
-    SQLTaskPageSettings(SQLTaskConfigurationWizard wizard) {
+    SQLScriptTaskPageSettings(SQLScriptTaskConfigurationWizard wizard) {
         super(DTMessages.sql_script_task_title);
         setTitle(DTMessages.sql_script_task_page_settings_title);
         setDescription(DTMessages.sql_script_task_page_settings_description);
@@ -109,7 +109,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             gd.heightHint = 300;
             gd.widthHint = 400;
             scriptsViewer.getTable().setLayoutData(gd);
-            SQLTaskScriptSelectorDialog.createScriptColumns(scriptsViewer);
+            SQLScriptTaskScriptSelectorDialog.createScriptColumns(scriptsViewer);
 
             final Table scriptTable = scriptsViewer.getTable();
             scriptTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -119,7 +119,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             UIUtils.createToolItem(buttonsToolbar, "Add script", UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    SQLTaskScriptSelectorDialog dialog = new SQLTaskScriptSelectorDialog(getShell(), projectNode);
+                    SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         for (DBNResource script : dialog.getSelectedScripts()) {
                             if (!selectedScripts.contains(script)) {
@@ -207,7 +207,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
             UIUtils.createToolItem(buttonsToolbar, "Add datasource", UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    SQLTaskDataSourceSelectorDialog dialog = new SQLTaskDataSourceSelectorDialog(getShell(), projectNode);
+                    SQLScriptTaskDataSourceSelectorDialog dialog = new SQLScriptTaskDataSourceSelectorDialog(getShell(), projectNode);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         for (DBNDataSource ds : dialog.getSelectedDataSources()) {
                             if (!selectedDataSources.contains(ds)) {
@@ -215,6 +215,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                             }
                         }
                         refreshDataSources();
+                        updatePageCompletion();
                     }
                 }
             });
@@ -229,6 +230,7 @@ class SQLTaskPageSettings extends ActiveWizardPage<SQLTaskConfigurationWizard> {
                             }
                         }
                         refreshDataSources();
+                        updatePageCompletion();
                     }
                 }
             });

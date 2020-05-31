@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.sql.ui.wizard;
+package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
-class SQLTaskConfigurationWizard extends TaskConfigurationWizard {
+class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard {
     private SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
-    private SQLTaskPageSettings pageSettings;
+    private SQLScriptTaskPageSettings pageSettings;
 
-    public SQLTaskConfigurationWizard() {
+    public SQLScriptTaskConfigurationWizard() {
     }
 
-    public SQLTaskConfigurationWizard(@NotNull DBTTask task) {
+    public SQLScriptTaskConfigurationWizard(@NotNull DBTTask task) {
         super(task);
         settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task.getProperties());
     }
@@ -51,7 +51,7 @@ class SQLTaskConfigurationWizard extends TaskConfigurationWizard {
     @Override
     public void addPages() {
         super.addPages();
-        pageSettings = new SQLTaskPageSettings(this);
+        pageSettings = new SQLScriptTaskPageSettings(this);
         addPage(pageSettings);
     }
 
