@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
@@ -125,6 +126,11 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     @Override
     public Class<? extends DBTTaskHandler> getHandlerClass() {
         return handlerImplType.getObjectClass(DBTTaskHandler.class);
+    }
+
+    @Override
+    public boolean isObjectApplicable(Object object) {
+        return object instanceof DBPObject && appliesTo((DBPObject) object);
     }
 
     @Override

@@ -161,7 +161,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @Override
     public void updateTaskConfiguration(@NotNull DBTTask task) throws DBException {
-        if (TEMPORARY_ID.equals(task.getId())) {
+        if (task.isTemporary()) {
             return;
         }
         DBTTask prevTask = getTaskByName(task.getName());

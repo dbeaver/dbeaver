@@ -27,11 +27,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
+import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Task configuration wizard dialog
@@ -51,6 +63,18 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard, IStructuredSelection selection) {
         super(window, wizard, selection);
         setFinishButtonLabel(UIMessages.button_start);
+
+        if (selection != null && !selection.isEmpty()) {
+            if (wizard.getSettings() instanceof DBTTaskSettingsInput) {
+                List<Object> inputObjects = new ArrayList<>();
+                for (Object so : selection.toArray()) {
+                    if (wizard.getTaskType().isObjectApplicable(so)) {
+                        inputObjects.add(so);
+                    }
+                }
+                ((DBTTaskSettingsInput) wizard.getSettings()).loadSettingsFromInput(inputObjects);
+            }
+        }
     }
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window) {
@@ -167,4 +191,25 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
     }
+
+    public static int openNewTaskDialog(IWorkbenchWindow window, DBPProject project, String taskTypeId, IStructuredSelection selection) {
+        TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
+        if (taskType == null) {
+            DBWorkbench.getPlatformUI().showError("Bad task type", "Task type '" + taskTypeId + "' not found");
+            return IDialogConstants.CANCEL_ID;
+        }
+        try {
+            DBTTask task = project.getTaskManager().createTemporaryTask(taskType, taskType.getName());
+            task.setProperties(new HashMap<>());
+            DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
+            TaskConfigurationWizard configWizard = configurator.createTaskConfigWizard(task);
+
+            TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(window, configWizard, selection);
+            return dialog.open();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
+            return IDialogConstants.CANCEL_ID;
+        }
+    }
+
 }
