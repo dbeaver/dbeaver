@@ -86,6 +86,8 @@ public interface UIServiceSQL {
 
     void setSQLPanelText(Object panelObject, String sqlText);
 
+    String getSQLPanelText(Object panelObject);
+
     void disposeSQLPanel(Object panelObject);
 
     Object openNewScript(DBSObject forObject);

@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,7 +206,18 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
             }
         }
 
-        getWizard().createTaskSaveButtons(composite, true, 1);
+        Composite controlsPanel = UIUtils.createComposite(composite, 2);
+
+        UIUtils.createDialogButton(controlsPanel, "&Copy", new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String text = serviceSQL.getSQLPanelText(sqlPreviewPanel);
+                if (!CommonUtils.isEmpty(text)) {
+                    UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
+                }
+            }
+        });
+        getWizard().createTaskSaveButtons(controlsPanel, true, 1);
 
         loadSettings();
 

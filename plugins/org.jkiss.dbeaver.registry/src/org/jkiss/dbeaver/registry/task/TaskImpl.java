@@ -206,6 +206,11 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
         this.properties = new LinkedHashMap<>(properties);
     }
 
+    @Override
+    public boolean isTemporary() {
+        return TaskManagerImpl.TEMPORARY_ID.equals(id);
+    }
+
     @NotNull
     @Override
     public File getRunLogFolder() {

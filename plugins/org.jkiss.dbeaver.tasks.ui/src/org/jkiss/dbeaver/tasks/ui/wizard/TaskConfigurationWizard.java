@@ -196,7 +196,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     @Override
     public boolean performFinish() {
-        if (currentTask != null) {
+        if (currentTask != null && !currentTask.isTemporary()) {
             saveTask();
         }
 
@@ -238,7 +238,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     private void saveTask() {
         DBTTask currentTask = getCurrentTask();
-        if (currentTask == null) {
+        if (currentTask == null || currentTask.isTemporary()) {
             // Create new task
             DBTTaskType taskType = getTaskType();
             if (taskType == null) {

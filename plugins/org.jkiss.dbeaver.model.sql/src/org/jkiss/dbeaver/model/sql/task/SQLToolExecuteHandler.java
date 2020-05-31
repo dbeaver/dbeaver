@@ -108,7 +108,13 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             }
         }
 
-        return queries.stream().map(DBEPersistAction::getScript).collect(Collectors.joining(";\n")) + ";\n";
+        String script = queries.stream().map(DBEPersistAction::getScript).collect(Collectors.joining(";\n"));
+        script = script.trim();
+        if (!script.isEmpty()) {
+            // Add trailing delimiter (join doesn't do it)
+            script += ";\n";
+        }
+        return script;
     }
 
     @NotNull
