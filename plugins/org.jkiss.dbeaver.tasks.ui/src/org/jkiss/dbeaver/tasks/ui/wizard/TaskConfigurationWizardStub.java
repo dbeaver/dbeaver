@@ -33,9 +33,14 @@ import java.util.Map;
  * We need it because there is no wizard before user select some particular task type.
  * Once he does we "replace" this wizard with real one om wizard dialog.
  */
-class TaskConfigurationWizardStub extends TaskConfigurationWizard {
+class TaskConfigurationWizardStub extends TaskConfigurationWizard<TaskConfigurationSettingsStub> {
 
     protected TaskConfigurationWizardStub() {
+    }
+
+    @Override
+    protected TaskConfigurationSettingsStub getSettings() {
+        return new TaskConfigurationSettingsStub();
     }
 
     @Override

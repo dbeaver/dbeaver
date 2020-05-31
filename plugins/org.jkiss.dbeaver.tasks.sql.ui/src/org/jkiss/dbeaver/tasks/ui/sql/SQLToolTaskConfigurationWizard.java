@@ -21,14 +21,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
-class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
+class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
     private SQLToolExecuteSettings settings;
     private SQLToolTaskPageSettings pageSettings;
     private SQLToolExecuteHandler taskHandler;
@@ -75,7 +74,8 @@ class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
         settings.saveConfiguration(state);
     }
 
-    public SQLToolExecuteSettings<DBSObject> getSettings() {
+    @Override
+    public SQLToolExecuteSettings getSettings() {
         return settings;
     }
 }

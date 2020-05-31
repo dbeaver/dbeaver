@@ -50,7 +50,7 @@ import java.util.List;
  * Abstract wizard
  */
 public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
-    extends TaskConfigurationWizard {
+    extends TaskConfigurationWizard<SETTINGS> {
 
     private static final Log log = Log.getLog(AbstractNativeToolWizard.class);
 
@@ -60,9 +60,6 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
     protected String taskTitle;
     protected final NativeToolWizardPageLog logPage;
     private boolean finished;
-    protected boolean transferFinished;
-    private boolean refreshObjects;
-    private boolean isSuccess;
     private String errorMessage;
 
     protected AbstractNativeToolWizard(@NotNull Collection<BASE_OBJECT> databaseObjects, @NotNull String taskTitle) {
@@ -83,6 +80,7 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     protected abstract SETTINGS createSettings();
 
+    @Override
     public SETTINGS getSettings() {
         return settings;
     }

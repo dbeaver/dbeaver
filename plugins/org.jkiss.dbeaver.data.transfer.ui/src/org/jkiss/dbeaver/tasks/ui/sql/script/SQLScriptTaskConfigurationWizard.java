@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
-class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard {
+class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScriptExecuteSettings> {
     private SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
     private SQLScriptTaskPageSettings pageSettings;
 
@@ -62,6 +62,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard {
         settings.saveConfiguration(state);
     }
 
+    @Override
     public SQLScriptExecuteSettings getSettings() {
         return settings;
     }

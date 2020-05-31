@@ -42,9 +42,6 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
     }
 
     @Override
-    protected abstract SETTINGS createSettings();
-
-    @Override
     protected boolean isSingleTimeWizard() {
         return false;
     }
