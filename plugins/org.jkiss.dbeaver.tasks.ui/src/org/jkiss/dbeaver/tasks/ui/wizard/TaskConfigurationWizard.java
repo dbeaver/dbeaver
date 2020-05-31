@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskContext;
-import org.jkiss.dbeaver.model.task.DBTTaskType;
-import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
@@ -55,7 +52,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class TaskConfigurationWizard extends BaseWizard implements IWorkbenchWizard {
+public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> extends BaseWizard implements IWorkbenchWizard {
 
     private static final Log log = Log.getLog(TaskConfigurationWizard.class);
 
@@ -72,6 +69,8 @@ public abstract class TaskConfigurationWizard extends BaseWizard implements IWor
     protected TaskConfigurationWizard(@Nullable DBTTask task) {
         this.currentTask = task;
     }
+
+    protected abstract SETTINGS getSettings();
 
     protected abstract String getDefaultWindowTitle();
 

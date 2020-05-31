@@ -56,7 +56,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class DataTransferWizard extends TaskConfigurationWizard implements IExportWizard, IImportWizard {
+public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSettings> implements IExportWizard, IImportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
     private static final Log log = Log.getLog(DataTransferWizard.class);
