@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.ext.mysql.tasks;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,11 +39,11 @@ public class MySQLToolTableCheck extends SQLToolExecuteHandler<MySQLTableBase, M
         return new MySQLToolTableCheckSettings();
     }
 
-    public void generateObjectQueries(DBCSession session, MySQLToolTableCheckSettings settings, List<String> queries, MySQLTableBase object) {
+    public void generateObjectQueries(DBCSession session, MySQLToolTableCheckSettings settings, List<DBEPersistAction> queries, MySQLTableBase object) {
         String sql = "CHECK TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
         String option = settings.getOption();
         if (!CommonUtils.isEmpty(option)) sql += " " + option;
-        queries.add(sql);
+        queries.add(new SQLDatabasePersistAction(sql));
     }
 
 }

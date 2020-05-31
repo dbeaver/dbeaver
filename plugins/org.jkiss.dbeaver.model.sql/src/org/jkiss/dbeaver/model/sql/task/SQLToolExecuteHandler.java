@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -89,19 +88,18 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         for (OBJECT_TYPE object : objectList) {
             monitor.subTask(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
             try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
-                List<String> queries = new ArrayList<>();
+                List<DBEPersistAction> queries = new ArrayList<>();
                 generateObjectQueries(session, settings, queries, object);
 
-                List<DBEPersistAction> actions = queries.stream().map(SQLDatabasePersistAction::new).collect(Collectors.toList());
-                DBExecUtils.executeScript(monitor, session.getExecutionContext(), task.getType().getName(), actions);
+                DBExecUtils.executeScript(monitor, session.getExecutionContext(), task.getType().getName(), queries);
             }
             monitor.worked(1);
         }
         monitor.done();
     }
 
-    public List<String> generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
-        List<String> queries = new ArrayList<>();
+    public String generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
+        List<DBEPersistAction> queries = new ArrayList<>();
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         for (OBJECT_TYPE object : objectList) {
@@ -110,12 +108,12 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             }
         }
 
-        return queries;
+        return queries.stream().map(DBEPersistAction::getScript).collect(Collectors.joining(";\n")) + ";\n";
     }
 
     @NotNull
     public abstract SETTINGS createToolSettings();
 
-    public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<String> queries, OBJECT_TYPE object) throws DBCException;
+    public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
 
 }
