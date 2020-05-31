@@ -49,7 +49,7 @@ import java.util.List;
 /**
  * SelectDatabaseDialog
  */
-public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
+public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 {
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
 

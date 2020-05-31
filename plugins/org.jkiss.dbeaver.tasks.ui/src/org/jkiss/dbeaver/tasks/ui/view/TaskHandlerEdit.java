@@ -41,6 +41,7 @@ public class TaskHandlerEdit extends AbstractHandler {
                 DBTTask task = (DBTTask) element;
                 DBTTaskType taskTypeDescriptor = task.getType();
                 if (!TaskUIRegistry.getInstance().supportsConfigurator(taskTypeDescriptor)) {
+                    DBWorkbench.getPlatformUI().showError("No configurator", "Task '" + taskTypeDescriptor.getName() + "' has no configurator");
                     return null;
                 }
                 try {

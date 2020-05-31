@@ -87,7 +87,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         for (OBJECT_TYPE object : objectList) {
-            try (DBCSession session = DBUtils.openMetaSession(monitor, object, "Generate tool queries")) {
+            try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Generate tool queries")) {
                 generateObjectQueries(session, settings, queries, object);
             }
         }

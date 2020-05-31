@@ -74,7 +74,18 @@ public class TaskUIRegistry {
     }
 
     public boolean supportsConfigurator(DBTTaskType taskType) {
-        return taskConfigurators.containsKey(taskType);
+        if (taskConfigurators.containsKey(taskType)) {
+            return true;
+        }
+        Class<? extends DBTTaskHandler> handlerClass = taskType.getHandlerClass();
+        if (handlerClass != null) {
+            for (TaskConfiguratorDescriptor tcd : taskHandlerConfigurators) {
+                if (tcd.getTaskHandlerType().getObjectClass().isAssignableFrom(handlerClass)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean supportsConfiguratorPage(DBTTaskType type) {
