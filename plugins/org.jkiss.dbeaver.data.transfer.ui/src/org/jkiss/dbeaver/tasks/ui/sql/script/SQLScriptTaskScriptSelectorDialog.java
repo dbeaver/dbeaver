@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.sql.ui.wizard;
+package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -44,13 +44,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class SQLTaskScriptSelectorDialog extends BaseDialog {
+class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
     private DBNProject projectNode;
     private DatabaseNavigatorTree scriptsTree;
     private List<DBNResource> selectedScripts = new ArrayList<>();
 
-    SQLTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
+    SQLScriptTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
         super(parentShell, DTMessages.sql_script_task_page_settings_group_files, null);
         this.projectNode = projectNode;
     }
