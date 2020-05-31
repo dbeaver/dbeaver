@@ -20,6 +20,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -91,6 +93,8 @@ public class PropertyTreeViewer extends TreeViewer {
     private IBaseLabelProvider extraLabelProvider;
     private ObjectViewerRenderer renderer;
     private ExpandMode expandMode = ExpandMode.ALL;
+
+    private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
 
     public PropertyTreeViewer(Composite parent, int style)
     {
@@ -669,6 +673,22 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         super.update(prop, null);
 
+        List<IPropertyChangeListener> listenersCopy;
+        synchronized (propertyListeners) {
+            listenersCopy = new ArrayList<>(propertyListeners);
+        }
+        if (!listenersCopy.isEmpty()) {
+            PropertyChangeEvent event = new PropertyChangeEvent(
+                this,
+                CommonUtils.toString(prop.property.getId()),
+                null,
+                getPropertyValue(prop));
+
+            for (IPropertyChangeListener listener : listenersCopy) {
+                listener.propertyChange(event);
+            }
+        }
+
         // Send modify event
         Event event = new Event();
         event.data = prop.property;
@@ -688,6 +708,18 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         handlePropertyChange(prop);
         super.refresh(prop.parent);
+    }
+
+    public void addPropertyChangeListener(IPropertyChangeListener listener) {
+        synchronized (propertyListeners) {
+            propertyListeners.add(listener);
+        }
+    }
+
+    public void removePropertyChangeListener(IPropertyChangeListener listener) {
+        synchronized (propertyListeners) {
+            propertyListeners.remove(listener);
+        }
     }
 
     public void setExpandMode(ExpandMode expandMode) {
