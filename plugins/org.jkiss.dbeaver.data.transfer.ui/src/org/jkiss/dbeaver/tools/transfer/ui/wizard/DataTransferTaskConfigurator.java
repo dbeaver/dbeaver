@@ -57,7 +57,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
 import java.lang.reflect.InvocationTargetException;
@@ -134,7 +134,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                             selNode = rootNode.getDataSource(lastDataSource.getContainer().getId());
                         }
                     }
-                    List<DBNNode> tables = BrowseObjectDialog.selectObjects(
+                    List<DBNNode> tables = ObjectBrowserDialog.selectObjects(
                         group.getShell(),
                         isExport ? "Choose source table(s)" : "Choose target table(s)",
                         rootNode,

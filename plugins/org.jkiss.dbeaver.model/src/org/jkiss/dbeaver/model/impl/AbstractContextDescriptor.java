@@ -68,6 +68,16 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
         return appliesTo(object, null);
     }
 
+    public boolean matchesType(Class<? extends DBSObject> objectClass)
+    {
+        for (ObjectType objectType : objectTypes) {
+            if (objectType.matchesType(objectClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean appliesTo(DBPObject object, Object context)
     {
         if (object instanceof DBSObject) {

@@ -37,11 +37,11 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * BrowseObjectDialog
+ * ObjectBrowserDialog
  *
  * @author Serge Rider
  */
-public class BrowseObjectDialog extends Dialog {
+public class ObjectBrowserDialog extends Dialog {
 
     private String title;
     private DBNNode rootNode;
@@ -54,7 +54,7 @@ public class BrowseObjectDialog extends Dialog {
     private TreeNodeSpecial specialNode;
     private DatabaseNavigatorTree navigatorTree;
 
-    private BrowseObjectDialog(
+    private ObjectBrowserDialog(
         Shell parentShell,
         String title,
         DBNNode rootNode,
@@ -209,7 +209,7 @@ public class BrowseObjectDialog extends Dialog {
 /*
     public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class ... allowedTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes);
+        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
@@ -220,7 +220,7 @@ public class BrowseObjectDialog extends Dialog {
 
     public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes, leafTypes);
+        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes, leafTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -231,7 +231,7 @@ public class BrowseObjectDialog extends Dialog {
 
     public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes, leafTypes);
+        ObjectBrowserDialog scDialog = new ObjectBrowserDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes, leafTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
