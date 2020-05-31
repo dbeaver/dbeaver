@@ -105,10 +105,10 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 }
 
             });
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            gd.widthHint = 400;
-            scriptsViewer.getTable().setLayoutData(gd);
+//            GridData gd = new GridData(GridData.FILL_BOTH);
+//            gd.heightHint = 300;
+//            gd.widthHint = 400;
+//            scriptsViewer.getTable().setLayoutData(gd);
             SQLScriptTaskScriptSelectorDialog.createScriptColumns(scriptsViewer);
 
             final Table scriptTable = scriptsViewer.getTable();
