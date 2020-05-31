@@ -17,18 +17,14 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,55 +32,16 @@ import java.util.List;
 /**
  * Auth model descriptor
  */
-public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements DBPAuthModelDescriptor {
+public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor implements DBPAuthModelDescriptor {
     private static final Log log = Log.getLog(DataSourceAuthModelDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceAuth"; //$NON-NLS-1$
-
-    public static class DataSourceInfo {
-        private String id;
-        private String driver;
-        private JexlExpression expression;
-
-        DataSourceInfo(IConfigurationElement cfg) {
-            String condition = cfg.getAttribute("if");
-            if (!CommonUtils.isEmpty(condition)) {
-                try {
-                    this.expression = parseExpression(condition);
-                } catch (DBException ex) {
-                    log.warn("Can't parse auth model datasource expression: " + condition, ex); //$NON-NLS-1$
-                }
-            }
-            this.id = cfg.getAttribute("id");
-            this.driver = cfg.getAttribute("driver");
-        }
-
-        public boolean appliesTo(DBPDriver driver, Object context) {
-            if (!CommonUtils.isEmpty(id) && !id.equals(driver.getProviderId())) {
-                return false;
-            }
-            if (!CommonUtils.isEmpty(this.driver) && !this.driver.equals(driver.getId())) {
-                return false;
-            }
-            if (expression != null) {
-                try {
-                    return CommonUtils.toBoolean(
-                        expression.evaluate(makeContext(driver, context)));
-                } catch (Exception e) {
-                    log.debug("Error evaluating expression '" + expression + "'", e);
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
 
     private final String id;
     private final ObjectType implType;
     private final String name;
     private final String description;
     private DBPImage icon;
-    private List<DataSourceInfo> dataSources = new ArrayList<>();
     private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
@@ -101,9 +58,6 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
             this.icon = DBIcon.TREE_PACKAGE;
         }
 
-        for (IConfigurationElement dsConfig : config.getChildren("datasource")) {
-            this.dataSources.add(new DataSourceInfo(dsConfig));
-        }
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             this.replaces.add(dsConfig.getAttribute("model"));
         }
@@ -151,15 +105,7 @@ public class DataSourceAuthModelDescriptor extends AbstractDescriptor implements
     }
 
     boolean appliesTo(DBPDriver driver) {
-        if (dataSources.isEmpty()) {
-            return true;
-        }
-        for (DataSourceInfo dsi : dataSources) {
-            if (dsi.appliesTo(driver, null)) {
-                return true;
-            }
-        }
-        return false;
+        return isDriverApplicable(driver);
     }
 
     public List<String> getReplaces() {

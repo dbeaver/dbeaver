@@ -21,12 +21,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
-import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.registry.DataSourceBindingDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * TaskTypeDescriptor
  */
-public class TaskTypeDescriptor extends AbstractContextDescriptor implements DBTTaskType, DBPNamedObjectLocalized {
+public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements DBTTaskType, DBPNamedObjectLocalized {
 
     private final TaskCategoryDescriptor category;
     private final IConfigurationElement config;

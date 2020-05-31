@@ -557,15 +557,18 @@
         <category id="postgresql" name="PostgreSQL" description="PostgreSQL database tasks" icon="icons/postgresql_icon.png"/>
 
         <task id="pgDatabaseBackup" name="PostgreSQL dump" description="PostgreSQL database dump task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler">
+            <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
         <task id="pgDatabaseRestore" name="PostgreSQL restore" description="PostgreSQL database restore task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler">
+            <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </task>
         <task id="pgScriptExecute" name="PostgreSQL script" description="PostgreSQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
+            <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
     </extension>
