@@ -60,8 +60,19 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
             }
             @Override
             public boolean select(Object element) {
-                if (element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource) {
+                if (element instanceof DBNProject || element instanceof DBNProjectDatabases) {
                     return true;
+                }
+                if (element instanceof DBNLocalFolder) {
+                    for (DBNDataSource ds : ((DBNLocalFolder) element).getNestedDataSources()) {
+                        if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                if (element instanceof DBNDataSource) {
+                    return taskType.isDriverApplicable(((DBNDataSource) element).getDataSourceContainer().getDriver());
                 }
                 if (element instanceof DBNDatabaseItem) {
                     return (DBSObjectContainer.class.isAssignableFrom(((DBNDatabaseItem) element).getObject().getClass()) ||

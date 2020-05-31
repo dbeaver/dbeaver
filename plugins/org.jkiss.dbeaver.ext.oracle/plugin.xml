@@ -397,6 +397,7 @@
         <category id="oracle" name="Oracle" description="Oracle database task" icon="icons/oracle_icon.png"/>
 
         <task id="oracleScriptExecute" name="Oracle SQL*Plus script" description="Oracle SQL*Plus script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+            <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
         </task>

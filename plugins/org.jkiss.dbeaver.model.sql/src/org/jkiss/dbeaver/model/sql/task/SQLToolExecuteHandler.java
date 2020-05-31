@@ -19,9 +19,13 @@ package org.jkiss.dbeaver.model.sql.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -34,6 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * SQLToolExecuteHandler
@@ -79,7 +84,20 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
-        generateScript(monitor, settings);
+        List<OBJECT_TYPE> objectList = settings.getObjectList();
+        monitor.beginTask(task.getType().getName(), objectList.size());
+        for (OBJECT_TYPE object : objectList) {
+            monitor.subTask(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
+            try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
+                List<String> queries = new ArrayList<>();
+                generateObjectQueries(session, settings, queries, object);
+
+                List<DBEPersistAction> actions = queries.stream().map(SQLDatabasePersistAction::new).collect(Collectors.toList());
+                DBExecUtils.executeScript(monitor, session.getExecutionContext(), task.getType().getName(), actions);
+            }
+            monitor.worked(1);
+        }
+        monitor.done();
     }
 
     public List<String> generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
