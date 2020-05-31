@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
-public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> extends ActiveWizardPage {
+public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage {
 
     protected final WIZARD wizard;
 
     protected Text extraCommandArgsText;
 
-    protected AbstractToolWizardPage(WIZARD wizard, String pageName)
+    protected AbstractNativeToolWizardPage(WIZARD wizard, String pageName)
     {
         super(pageName);
         this.wizard = wizard;

@@ -27,13 +27,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 
 
-abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
+abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> extends AbstractNativeToolWizardPage<WIZARD>
 {
 
     MySQLWizardPageSettings(WIZARD wizard, String title)

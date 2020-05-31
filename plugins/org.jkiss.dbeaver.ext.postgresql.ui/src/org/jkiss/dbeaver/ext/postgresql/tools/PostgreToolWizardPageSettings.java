@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizard;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 
 
-public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
+public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativeToolWizard> extends AbstractNativeToolWizardPage<WIZARD>
 {
 
     public PostgreToolWizardPageSettings(WIZARD wizard, String title)
