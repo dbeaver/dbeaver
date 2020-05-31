@@ -60,6 +60,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
     private DBCResultSet resultSet;
     private ResultSetViewer resultSetViewer;
     private CursorDataContainer dataContainer;
+    private boolean fetched;
 
     public CursorViewComposite(Composite parent, IValueController valueController) {
         super(parent, SWT.NONE);
@@ -102,6 +103,13 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         resultSetViewer.getControl().setLayoutData(gd);
 
         //resultSetViewer.refresh();
+    }
+
+    public void setValue(DBDCursor value) {
+        if (this.value != value) {
+            this.fetched = false;
+            this.value = value;
+        }
     }
 
     @Nullable
@@ -167,7 +175,12 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
     }
 
     public void refresh() {
-        resultSetViewer.refresh();
+        // Refresh only once.
+        // Cursor contents cannot change because it lives within current transaction
+        if (!fetched) {
+            resultSetViewer.refresh();
+            fetched = true;
+        }
     }
 
     public boolean isDirty() {

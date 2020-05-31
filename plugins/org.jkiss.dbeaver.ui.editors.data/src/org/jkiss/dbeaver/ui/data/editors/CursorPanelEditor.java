@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -44,6 +45,9 @@ public class CursorPanelEditor extends BaseValueEditor<CursorViewComposite> {
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         if (control != null) {
+            if (value instanceof DBDCursor) {
+                control.setValue((DBDCursor) value);
+            }
             control.refresh();
         }
     }
