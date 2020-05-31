@@ -41,6 +41,7 @@ public class CursorViewDialog extends ValueViewDialog {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
         cursorViewComposite = new CursorViewComposite(dialogGroup, getValueController());
         cursorViewComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        cursorViewComposite.refresh();
         return dialogGroup;
     }
 
