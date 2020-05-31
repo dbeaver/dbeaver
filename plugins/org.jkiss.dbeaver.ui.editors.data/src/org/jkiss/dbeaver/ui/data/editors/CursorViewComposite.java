@@ -101,7 +101,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         gd.grabExcessVerticalSpace = true;
         resultSetViewer.getControl().setLayoutData(gd);
 
-        resultSetViewer.refresh();
+        //resultSetViewer.refresh();
     }
 
     @Nullable
