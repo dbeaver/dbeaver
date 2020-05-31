@@ -51,7 +51,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     private final Class<OBJECT_TYPE> objectClass;
     private final Class<? extends DBPDataSourceProvider> providerClass;
 
-    private AbstractToolWizard ieWizard;
+    private AbstractNativeToolWizard ieWizard;
     private ClientHomesSelector homesSelector;
     private OBJECT_TYPE selectedObject;
     private DBPDataSourceContainer curDataSource;
@@ -71,7 +71,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
 
     @Override
     public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
-        ieWizard = (AbstractToolWizard) wizard;
+        ieWizard = (AbstractNativeToolWizard) wizard;
         {
             Group databasesGroup = UIUtils.createControlGroup(parent, "Select target database", 1, GridData.FILL_BOTH, 0);
 

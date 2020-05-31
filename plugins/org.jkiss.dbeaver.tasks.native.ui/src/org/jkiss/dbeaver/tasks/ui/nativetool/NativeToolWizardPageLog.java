@@ -40,16 +40,16 @@ import java.util.Date;
 import java.util.List;
 
 
-public class ToolWizardPageLog extends WizardPage {
+public class NativeToolWizardPageLog extends WizardPage {
 
-    private static final Log log = Log.getLog(ToolWizardPageLog.class);
+    private static final Log log = Log.getLog(NativeToolWizardPageLog.class);
 
     private TextConsoleViewer consoleViewer;
     private String task;
     private OutputStreamWriter writer;
     private MessageConsole console;
 
-    public ToolWizardPageLog(String task)
+    public NativeToolWizardPageLog(String task)
     {
         super(NLS.bind(TaskNativeUIMessages.tools_wizard_page_log_task_progress, task));
         this.task = task;
@@ -106,7 +106,7 @@ public class ToolWizardPageLog extends WizardPage {
             return;
         }
         UIUtils.syncExec(() -> {
-            synchronized (ToolWizardPageLog.this) {
+            synchronized (NativeToolWizardPageLog.this) {
                 console.clearConsole();
             }
         });
@@ -136,7 +136,7 @@ public class ToolWizardPageLog extends WizardPage {
         @Override
         public void run()
         {
-            AbstractToolWizard wizard = (AbstractToolWizard) getWizard();
+            AbstractNativeToolWizard wizard = (AbstractNativeToolWizard) getWizard();
 
             String lf = GeneralUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
@@ -209,7 +209,7 @@ public class ToolWizardPageLog extends WizardPage {
 
     private class LogConsoleViewer extends TextConsoleViewer implements IDocumentListener {
         LogConsoleViewer(Composite composite) {
-            super(composite, ToolWizardPageLog.this.console);
+            super(composite, NativeToolWizardPageLog.this.console);
         }
 
         @Override

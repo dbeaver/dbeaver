@@ -49,36 +49,36 @@ import java.util.List;
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
+public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
     extends TaskConfigurationWizard {
 
-    private static final Log log = Log.getLog(AbstractToolWizard.class);
+    private static final Log log = Log.getLog(AbstractNativeToolWizard.class);
 
     private final DBPPreferenceStore preferenceStore;
     private final SETTINGS settings;
 
     protected String taskTitle;
-    protected final ToolWizardPageLog logPage;
+    protected final NativeToolWizardPageLog logPage;
     private boolean finished;
     protected boolean transferFinished;
     private boolean refreshObjects;
     private boolean isSuccess;
     private String errorMessage;
 
-    protected AbstractToolWizard(@NotNull Collection<BASE_OBJECT> databaseObjects, @NotNull String taskTitle) {
+    protected AbstractNativeToolWizard(@NotNull Collection<BASE_OBJECT> databaseObjects, @NotNull String taskTitle) {
         this.preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         this.settings = createSettings();
         this.settings.getDatabaseObjects().addAll(databaseObjects);
         this.taskTitle = taskTitle;
-        this.logPage = new ToolWizardPageLog(taskTitle);
+        this.logPage = new NativeToolWizardPageLog(taskTitle);
     }
 
-    public AbstractToolWizard(@NotNull DBTTask task) {
+    public AbstractNativeToolWizard(@NotNull DBTTask task) {
         super(task);
         this.preferenceStore = new TaskPreferenceStore(task);
         this.settings = createSettings();
         this.taskTitle = task.getType().getName();
-        this.logPage = new ToolWizardPageLog(taskTitle);
+        this.logPage = new NativeToolWizardPageLog(taskTitle);
     }
 
     protected abstract SETTINGS createSettings();

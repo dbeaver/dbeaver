@@ -21,12 +21,12 @@ import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupRestoreInfo;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
 
 import java.util.Collection;
 
 abstract class PostgreBackupRestoreWizard<SETTINGS extends PostgreBackupRestoreSettings, PROCESS_ARG extends PostgreDatabaseBackupRestoreInfo>
-    extends AbstractImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
+    extends AbstractNativeImportExportWizard<SETTINGS, PROCESS_ARG> implements IExportWizard {
 
     PostgreBackupRestoreWizard(DBTTask task) {
         super(task);

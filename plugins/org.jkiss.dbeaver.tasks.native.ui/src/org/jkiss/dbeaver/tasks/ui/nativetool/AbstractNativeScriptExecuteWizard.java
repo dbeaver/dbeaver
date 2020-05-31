@@ -17,27 +17,32 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IExportWizard;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
+import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
+import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
 import java.util.Collection;
 
-public abstract class AbstractImportExportWizard<SETTINGS extends AbstractImportExportSettings<DBSObject>, PROCESS_ARG>
-    extends AbstractToolWizard<SETTINGS, DBSObject, PROCESS_ARG> implements IExportWizard {
+public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
+        extends AbstractNativeToolWizard<SETTINGS, BASE_OBJECT, PROCESS_ARG> implements IImportWizard
+{
+    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
+        super(dbObject, task);
+	}
 
-    protected AbstractImportExportWizard(Collection<DBSObject> objects, String title) {
-        super(objects, title);
-    }
-
-    protected AbstractImportExportWizard(DBTTask task) {
+    protected AbstractNativeScriptExecuteWizard(DBTTask task) {
         super(task);
     }
+
+    @Override
+    protected abstract SETTINGS createSettings();
 
     @Override
     protected boolean isSingleTimeWizard() {
@@ -52,32 +57,17 @@ public abstract class AbstractImportExportWizard<SETTINGS extends AbstractImport
 
     @Override
     public void addPages() {
+        // Do not add base wizard pages. They can be added explicitly thru addTaskConfigPages
+        //super.addPages();
         addPage(logPage);
     }
 
-    @Override
-    public boolean performFinish() {
-        if (isExportWizard()) {
-            final File dir = getSettings().getOutputFolder();
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-                    getContainer().updateMessage();
-                    return false;
-                }
-            }
-        }
-
-        return super.performFinish();
-    }
-
-    @Override
-    public boolean isVerbose() {
-        return true;
-    }
-
-    public boolean isExportWizard() {
-        return true;
-    }
+	@Override
+	public void onSuccess(long workTime) {
+        UIUtils.showMessageBox(getShell(),
+            taskTitle,
+                NLS.bind(TaskNativeUIMessages.tools_script_execute_wizard_task_completed, taskTitle, getObjectsName()) , //$NON-NLS-1$
+                        SWT.ICON_INFORMATION);
+	}
 
 }
