@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -245,18 +244,13 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
     }
 
     private String generateScriptText() {
-        List<String> scriptLines = new ArrayList<>();
         SQLToolExecuteHandler taskHandler = sqlWizard.getTaskHandler();
         try {
-            List<String> lines = taskHandler.generateScript(new LoggingProgressMonitor(), sqlWizard.getSettings());
-            if (!CommonUtils.isEmpty(lines)) {
-                scriptLines.addAll(lines);
-            }
+            return taskHandler.generateScript(new LoggingProgressMonitor(), sqlWizard.getSettings());
         } catch (DBCException e) {
             log.error(e);
+            return "-- Error: " + e.getMessage();
         }
-
-        return String.join(";\n", scriptLines);
     }
 
     private void loadSettings() {
