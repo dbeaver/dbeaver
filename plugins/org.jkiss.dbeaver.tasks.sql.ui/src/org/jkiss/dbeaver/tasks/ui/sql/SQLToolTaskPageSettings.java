@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +128,7 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
                             }
                         }
                         refreshObjects();
+                        updatePageCompletion();
                     }
                 }
             });
@@ -141,6 +143,7 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
                             }
                         }
                         refreshObjects();
+                        updatePageCompletion();
                     }
                 }
             });
@@ -182,6 +185,7 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
             Group optionsPanel = UIUtils.createControlGroup(settingsPanel, "Settings", 1, GridData.FILL_BOTH, 0);
 
             taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.BORDER);
+            taskOptionsViewer.addPropertyChangeListener(event -> updateScriptPreview());
         }
 
         Composite previewPanel = UIUtils.createComposite(previewSplitter, 1);
@@ -210,6 +214,8 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
 
     private void refreshObjects() {
         objectsViewer.refresh(true, true);
+        saveSettings();
+        updateScriptPreview();
     }
 
     @Override
@@ -242,7 +248,10 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
         List<String> scriptLines = new ArrayList<>();
         SQLToolExecuteHandler taskHandler = sqlWizard.getTaskHandler();
         try {
-            taskHandler.generateScript(new LoggingProgressMonitor(), sqlWizard.getSettings());
+            List<String> lines = taskHandler.generateScript(new LoggingProgressMonitor(), sqlWizard.getSettings());
+            if (!CommonUtils.isEmpty(lines)) {
+                scriptLines.addAll(lines);
+            }
         } catch (DBCException e) {
             log.error(e);
         }
@@ -250,11 +259,11 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
         return String.join(";\n", scriptLines);
     }
 
-    public void loadSettings() {
+    private void loadSettings() {
         {
             // Load objects
             selectedObjects.clear();
-            SQLToolExecuteSettings<? extends DBSObject> settings = sqlWizard.getSettings();
+            SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
             selectedObjects.addAll(settings.getObjectList());
             objectsViewer.setInput(selectedObjects);
         }
@@ -269,36 +278,22 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
         updateScriptPreview();
     }
 
-    public void saveSettings() {
+    void saveSettings() {
         if (sqlWizard == null) {
             return;
         }
-/*
-        SQLScriptExecuteSettings settings = sqlWizard.getSettings();
+        SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
 
-        List<String> scriptPaths = new ArrayList<>();
-        for (DBNResource resource : selectedScripts) {
-            IResource res = resource.getResource();
-            if (res instanceof IFile) {
-                scriptPaths.add(res.getFullPath().toString());
-            }
-        }
-        settings.setScriptFiles(scriptPaths);
-        List<DBPDataSourceContainer> dsList = new ArrayList<>();
-        for (DBNDataSource dsNode : selectedDataSources) {
-            dsList.add(dsNode.getDataSourceContainer());
-        }
-        settings.setDataSources(dsList);
-
-        settings.setIgnoreErrors(ignoreErrorsCheck.getSelection());
-        settings.setDumpQueryResultsToLog(dumpQueryCheck.getSelection());
-        settings.setAutoCommit(autoCommitCheck.getSelection());
-*/
+        settings.setObjectList(selectedObjects);
+        taskOptionsViewer.saveEditorValues();
     }
 
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
+        if (!selectedObjects.isEmpty()) {
+            DBUtils.getDefaultContext(selectedObjects.get(0), false);
+        }
         return null;
     }
 
