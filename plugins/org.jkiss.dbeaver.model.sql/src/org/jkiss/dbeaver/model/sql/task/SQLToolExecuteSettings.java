@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +36,7 @@ import java.util.Map;
 /**
  * SQLToolExecuteSettings
  */
-public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> {
+public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DBTTaskSettings<OBJECT_TYPE> {
 
     private static final Log log = Log.getLog(SQLToolExecuteSettings.class);
 
