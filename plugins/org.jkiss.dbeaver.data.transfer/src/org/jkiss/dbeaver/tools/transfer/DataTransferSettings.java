@@ -77,7 +77,14 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         boolean selectDefaultNodes,
         boolean isExport) {
         initializePipes(producers, consumers, isExport);
-        loadConfiguration(runnableContext, configuration, selectDefaultNodes);
+        loadSettings(runnableContext, configuration);
+
+        if (!selectDefaultNodes) {
+            // Now cleanup all nodes. We needed them only to load default producer/consumer settings
+            this.producer = null;
+            this.consumer = null;
+            this.processor = null;
+        }
     }
 
     public DataTransferSettings(
@@ -183,7 +190,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
     }
 
-    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config, boolean selectDefaultNodes) {
+    public void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> config) {
         this.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
         this.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), this.isShowFinalMessage()));
 
@@ -285,13 +292,6 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             if (nodeSettings != null) {
                 nodeSettings.loadSettings(runnableContext, this, nodeSection);
             }
-        }
-
-        if (!selectDefaultNodes) {
-            // Now cleanup all nodes. We needed them only to load default producer/consumer settings
-            this.producer = null;
-            this.consumer = null;
-            this.processor = null;
         }
     }
 
