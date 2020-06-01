@@ -55,6 +55,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 {
     private static final Log log = Log.getLog(OracleSchema.class);
 
+    // Synonyms read is very expensive. Exclude them from children by default
+    // Children are used in auto-completion which must be fast
+    private static boolean SYNONYMS_AS_CHILDREN = false;
+
     final public TableCache tableCache = new TableCache();
     final public MViewCache mviewCache = new MViewCache();
     final public ConstraintCache constraintCache = new ConstraintCache();
@@ -335,7 +339,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     {
         List<DBSObject> children = new ArrayList<>();
         children.addAll(tableCache.getAllObjects(monitor, this));
-        //children.addAll(synonymCache.getAllObjects(monitor, this));
+        if (SYNONYMS_AS_CHILDREN) {
+            children.addAll(synonymCache.getAllObjects(monitor, this));
+        }
         children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
@@ -348,9 +354,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         if (table != null) {
             return table;
         }
-        OracleSynonym synonym = synonymCache.getObject(monitor, this, childName);
-        if (synonym != null) {
-            return synonym;
+        if (SYNONYMS_AS_CHILDREN) {
+            OracleSynonym synonym = synonymCache.getObject(monitor, this, childName);
+            if (synonym != null) {
+                return synonym;
+            }
         }
         return packageCache.getObject(monitor, this, childName);
     }
@@ -486,7 +494,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             String tableTypeColumns = hasAllAllTables ? "t.TABLE_TYPE_OWNER,t.TABLE_TYPE" : "NULL as TABLE_TYPE_OWNER, NULL as TABLE_TYPE";
 
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS," + tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS," + tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
                     "\tFROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t\n" +
                     "\tWHERE t.OWNER=? AND NESTED='NO'" + (object == null && objectName == null ? "": " AND t.TABLE_NAME"+ tableOper + "?") + "\n" +
                 "UNION ALL\n" +
