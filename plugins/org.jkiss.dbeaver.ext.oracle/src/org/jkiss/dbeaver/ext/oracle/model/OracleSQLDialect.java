@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.data.OracleBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -55,6 +56,16 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
         "DECLARE",
+    };
+
+    public static final String[] OTHER_TYPES_FUNCTIONS = {
+        //functions without parentheses #8710
+        "CURRENT_DATE",
+        "CURRENT_TIMESTAMP",
+        "DBTIMEZONE",
+        "SESSIONTIMEZONE",
+        "SYSDATE",
+        "SYSTIMESTAMP"
     };
 
     public static final String[] ADVANCED_KEYWORDS = {
@@ -138,7 +149,6 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
                 //Datetime Functions:
                 "ADD_MONTHS",
-                "DBTIMEZONE",
                 "FROM_TZ",
                 "LAST_DAY",
                 "MONTHS_BETWEEN",
@@ -146,10 +156,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "NEXT_DAY",
                 "NUMTODSINTERVAL",
                 "NUMTOYMINTERVAL",
-                "SESSIONTIMEZONE",
                 "SYS_EXTRACT_UTC",
-                "SYSDATE",
-                "SYSTIMESTAMP",
                 "TO_CHAR",
                 "TO_TIMESTAMP",
                 "TO_TIMESTAMP_TZ",
@@ -323,6 +330,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
         for (String kw : ADVANCED_KEYWORDS) {
             addSQLKeyword(kw);
         }
+
+        addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
     }
 
     @Override

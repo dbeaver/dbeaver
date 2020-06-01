@@ -311,7 +311,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (keywordType == DBPKeywordType.TYPE) {
                         continue;
                     }
-                    if (request.getQueryType() == SQLCompletionRequest.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
+                    if (request.getQueryType() == SQLCompletionRequest.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.OTHER)) {
                         continue;
                     }
                     if (allowedKeywords != null && !allowedKeywords.contains(keyWord)) {
