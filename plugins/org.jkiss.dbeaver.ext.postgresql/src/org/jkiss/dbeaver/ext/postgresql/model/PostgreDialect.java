@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -57,6 +58,11 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     private static final String[] EXEC_KEYWORDS = {
         "CALL"
+    };
+
+    //Function without arguments/parameters #8710
+    private static final String[] OTHER_TYPES_FUNCTION = {
+        "CURRENT_DATE"
     };
 
     //region KeyWords
@@ -695,6 +701,8 @@ public class PostgreDialect extends JDBCSQLDialect {
         addExtraKeywords(POSTGRE_EXTRA_KEYWORDS);
         // Not sure about one char keywords. May confuse users
         //addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
+
+        addKeywords(Arrays.asList(OTHER_TYPES_FUNCTION), DBPKeywordType.OTHER);
 
         addExtraFunctions(PostgreConstants.POSTGIS_FUNCTIONS);
 
