@@ -634,6 +634,12 @@ public class ColorSettingsDialog extends BaseDialog {
         }
 
         @Override
+        public boolean isReadOnly() {
+            // Color range values are always editable
+            return false;
+        }
+
+        @Override
         public void updateValue(@Nullable Object value, boolean updatePresentation) {
             // Do not update
         }
