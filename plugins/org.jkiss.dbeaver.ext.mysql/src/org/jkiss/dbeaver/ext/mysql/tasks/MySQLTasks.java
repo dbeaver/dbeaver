@@ -22,5 +22,6 @@ public class MySQLTasks {
     public static final String TASK_DATABASE_BACKUP = "mysqlDatabaseBackup";
     public static final String TASK_DATABASE_RESTORE = "mysqlDatabaseRestore";
     public static final String TASK_SCRIPT_EXECUTE = "mysqlScriptExecute";
+    public static final String TASK_TABLE_REPAIR = "mysqlToolRepairTable";
 
 }

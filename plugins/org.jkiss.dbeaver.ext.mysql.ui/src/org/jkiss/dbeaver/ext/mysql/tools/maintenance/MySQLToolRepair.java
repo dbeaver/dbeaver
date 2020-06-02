@@ -17,23 +17,17 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Table repair
@@ -43,46 +37,10 @@ public class MySQLToolRepair implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<MySQLTable> tables = CommonUtils.filterCollection(objects, MySQLTable.class);
-        if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+        TaskConfigurationWizardDialog.openNewTaskDialog(
+                window,
+                NavigatorUtils.getSelectedProject(),
+                MySQLTasks.TASK_TABLE_REPAIR,
+                new StructuredSelection(objects.toArray()));
     }
-
-    static class SQLDialog extends TableToolDialog {
-
-        private Button quickCheck;
-        private Button extendedCheck;
-        private Button frmCheck;
-
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<MySQLTable> selectedTables)
-        {
-            super(partSite, "Repair table(s)", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            String sql = "REPAIR TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            if (quickCheck.getSelection()) sql += " QUICK";
-            if (extendedCheck.getSelection()) sql += " EXTENDED";
-            if (frmCheck.getSelection()) sql += " USE_FRM";
-            lines.add(sql);
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
-            optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            quickCheck = UIUtils.createCheckbox(optionsGroup, "Quick", false);
-            quickCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            extendedCheck = UIUtils.createCheckbox(optionsGroup, "Extended", false);
-            extendedCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            frmCheck = UIUtils.createCheckbox(optionsGroup, "Use FRM", false);
-            frmCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-
-            createObjectsSelector(parent);
-        }
-    }
-
 }
