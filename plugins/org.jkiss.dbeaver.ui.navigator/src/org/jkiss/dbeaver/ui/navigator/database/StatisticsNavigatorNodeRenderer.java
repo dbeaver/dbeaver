@@ -107,8 +107,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                                 }
                             }
                         }
-                        gc.setForeground(tree.getDisplay().getSystemColor(
-                            UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                        DBPDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
+                        Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
+
+                        gc.setForeground(
+                            bgColor == null ?
+                                tree.getDisplay().getSystemColor(
+                                    (UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW)) :
+                                UIUtils.getContrastColor(bgColor));
                         gc.setFont(getFontItalic(tree));
                         gc.drawText(" - " + hostText, event.x + event.width + 2, event.y, true);
                         gc.setFont(oldFont);

@@ -133,6 +133,11 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     {
         if (element instanceof DBNNode) {
             DBNNode node = (DBNNode)element;
+            if (node instanceof DBNDataSource) {
+                DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
+                Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
+                return bgColor == null ? null : UIUtils.getContrastColor(bgColor);
+            }
             if (node.isLocked()) {
                 return lockedForeground;
             }
@@ -146,6 +151,12 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Color getBackground(Object element)
     {
+        if (element instanceof DBNDataSource) {
+            DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
+            if (ds != null) {
+                return UIUtils.getConnectionColor(ds.getConnectionConfiguration());
+            }
+        }
         return null;
     }
 
