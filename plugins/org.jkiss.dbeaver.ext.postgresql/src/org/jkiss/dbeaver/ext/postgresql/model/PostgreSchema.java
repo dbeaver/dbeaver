@@ -88,7 +88,7 @@ public class PostgreSchema implements
     private final ProceduresCache proceduresCache = new ProceduresCache();
     public final IndexCache indexCache = new IndexCache();
     public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
-    private volatile boolean hasStatistics;
+    protected volatile boolean hasStatistics;
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException {

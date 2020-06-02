@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * RedshiftTable base
@@ -37,6 +41,23 @@ public class RedshiftTable extends PostgreTableRegular
         super(catalog, dbResult);
     }
 
+    protected void readTableStatistics(JDBCSession session) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT size, tbl_rows FROM SVV_TABLE_INFO WHERE \"schema\"=? AND table_id=?"))
+        {
+            dbStat.setString(1, getSchema().getName());
+            dbStat.setLong(2, getObjectId());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    fetchStatistics(dbResult);
+                }
+            }
+        }
+    }
 
+    protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+        diskSpace = dbResult.getLong("size") * 1024 * 1024;
+        rowCountEstimate = rowCount = dbResult.getLong("tbl_rows");
+    }
 
 }
