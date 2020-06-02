@@ -296,6 +296,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         @Override
         public Object[] getPossibleValues(PostgreTableBase object)
         {
+            if (!object.getDataSource().getServerType().supportsTablespaces()) {
+                return new Object[0];
+            }
             try {
                 Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
                 return tablespaces.toArray(new Object[0]);
