@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.GotoObjectDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -49,7 +50,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof DBPContextProvider) {
             context = ((DBPContextProvider) activePart).getExecutionContext();
-        } else if (activePart instanceof INavigatorModelView) {
+        } else if (GeneralUtils.adapt(activePart, INavigatorModelView.class) != null) {
             final ISelection selection = HandlerUtil.getCurrentSelection(event);
             if (selection instanceof IStructuredSelection) {
                 Object element = ((IStructuredSelection) selection).getFirstElement();
