@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -49,7 +50,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Method;
+import java.text.Format;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -64,6 +68,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final int PERCENT_FILL_WIDTH = 50;
 
     private final ByteNumberFormat numberFormat = new ByteNumberFormat();
+    private final Map<String, Format> classFormatMap = new HashMap<>();
 
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
@@ -125,7 +130,29 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                             log.debug("Object stat > 100%!");
                             percentFull = 100;
                         }
-                        sizeText = numberFormat.format(statObjectSize);
+                        Format format;
+                        synchronized (classFormatMap) {
+                            format = classFormatMap.get(object.getClass().getName());
+                            if (format == null) {
+                                try {
+                                    Method getStatObjectSizeMethod = object.getClass().getMethod("getStatObjectSize");
+                                    Property propAnnotation = getStatObjectSizeMethod.getAnnotation(Property.class);
+                                    if (propAnnotation != null) {
+                                        Class<? extends Format> formatterClass = propAnnotation.formatter();
+                                        if (formatterClass != Format.class) {
+                                            format = formatterClass.getConstructor().newInstance();
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    log.debug(e);
+                                }
+                                if (format == null) {
+                                    format = numberFormat;
+                                }
+                                classFormatMap.put(object.getClass().getName(), format);
+                            }
+                        }
+                        sizeText = format.format(statObjectSize);
                     } else {
                         sizeText = "...";
                         percentFull = 0;
