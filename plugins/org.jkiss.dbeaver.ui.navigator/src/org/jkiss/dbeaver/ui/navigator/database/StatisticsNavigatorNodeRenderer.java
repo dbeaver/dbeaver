@@ -121,9 +121,16 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 if (object instanceof DBPObjectStatistics) {
                     String sizeText;
                     int percentFull;
+                    boolean statsWasRead = false;
+                    long maxObjectSize = 0;
                     if (((DBPObjectStatistics) object).hasStatistics()) {
                         // Draw object size
-                        long maxObjectSize = getMaxObjectSize((TreeItem) event.item);
+                        maxObjectSize = getMaxObjectSize((TreeItem) event.item);
+                        if (maxObjectSize >= 0) {
+                            statsWasRead = true;
+                        }
+                    }
+                    if (statsWasRead) {
                         long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
                         percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
                         if (percentFull > 100) {
@@ -198,7 +205,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (maxSize instanceof Number) {
             return ((Number) maxSize).longValue();
         }
-        return 0;
+        return -1;
     }
 
     private boolean readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
