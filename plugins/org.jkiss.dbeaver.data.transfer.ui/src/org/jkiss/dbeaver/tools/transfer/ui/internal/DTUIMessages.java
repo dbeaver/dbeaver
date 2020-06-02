@@ -34,6 +34,20 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
 	public static String data_transfer_wizard_final_title;
+	public static String data_transfer_data_load;
+	public static String data_transfer_data_load_settings;
+	public static String data_transfer_configuration_of_the_table_data_load;
+	public static String data_transfer_transfer_auto_generated_columns;
+	public static String data_transfer_transfer_values_of_auto_generated_columns_description;
+	public static String data_transfer_truncate_target_table_before_load;
+	public static String data_transfer_performance;
+	public static String data_transfer_use_transactions;
+	public static String data_transfer_commit_after_insert_of;
+	public static String data_transfer_general;
+	public static String data_transfer_open_table_editor_on_finish;
+	public static String data_transfer_show_finish_message;
+	public static String data_transfer_confirmDataTruncate_method_description_1;
+	public static String data_transfer_confirmDataTruncate_method_description_2;
 
 
 	static {
