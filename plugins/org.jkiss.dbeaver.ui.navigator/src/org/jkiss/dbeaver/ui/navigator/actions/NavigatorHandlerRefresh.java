@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
 
@@ -61,12 +62,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         //final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart workbenchPart = HandlerUtil.getActivePart(event);
-        INavigatorModelView navigatorView;
-        if (workbenchPart instanceof INavigatorModelView) {
-            navigatorView = (INavigatorModelView) workbenchPart;
-        } else {
-            navigatorView = workbenchPart.getAdapter(INavigatorModelView.class);
-        }
+        INavigatorModelView navigatorView = GeneralUtils.adapt(workbenchPart, INavigatorModelView.class);
         if (navigatorView == null) {
             // Try to refresh as refreshable part
             if (workbenchPart instanceof IRefreshablePart) {
