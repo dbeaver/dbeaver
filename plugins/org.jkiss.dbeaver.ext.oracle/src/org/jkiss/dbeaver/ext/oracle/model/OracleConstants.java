@@ -100,6 +100,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_BFILE = "BFILE";
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
+    public static final String TYPE_NUMBER = "NUMBER";
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
