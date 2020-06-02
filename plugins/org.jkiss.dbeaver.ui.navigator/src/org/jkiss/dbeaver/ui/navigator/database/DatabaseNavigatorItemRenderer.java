@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface DatabaseNavigatorItemRenderer {
 
+    void drawNodeBackground(DBNNode element, Tree tree, GC gc, Event event);
+
     void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event);
 
 }

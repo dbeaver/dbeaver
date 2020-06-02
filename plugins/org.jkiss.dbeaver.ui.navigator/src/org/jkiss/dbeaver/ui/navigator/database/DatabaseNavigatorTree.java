@@ -126,12 +126,22 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.setItemRenderer(new DefaultNavigatorNodeRenderer());
 
         {
+            //tree.addListener(SWT.EraseItem, event -> eraseItem(tree, event));
             tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
         }
     }
 
     public void setItemRenderer(DatabaseNavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
+    }
+
+    private void eraseItem(Tree tree, Event event) {
+        if (itemRenderer != null) {
+            Object element = event.item.getData();
+            if (element instanceof DBNNode) {
+                itemRenderer.drawNodeBackground((DBNNode) element, tree, event.gc, event);
+            }
+        }
     }
 
     private void paintItem(Tree tree, Event event) {

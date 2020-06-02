@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -34,26 +34,53 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRenderer {
 
+    @Override
+    public void drawNodeBackground(DBNNode node, Tree tree, GC gc, Event event) {
+//        Color conColor = null;
+//        Object element = event.item.getData();
+//        if (element instanceof DBNDataSource) {
+//            DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
+//            conColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
+//        }
+//        if (conColor != null) {
+//
+//        }
+    }
+
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         Color conColor = null;
         Object element = event.item.getData();
-        if (element instanceof DBNDatabaseNode && !(element instanceof DBNDatabaseFolder)) {
+        if (element instanceof DBNDatabaseNode) {
             DBPDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
             conColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
         }
 
         if (conColor != null) {
-            int boxSize = event.height - 4;
-
-            //gc.setForeground(fg);
-            //gc.setBackground(conColor);
             gc.setForeground(conColor);
-            gc.setLineWidth(1);
-            gc.setLineStyle(SWT.LINE_SOLID);
+            if (element instanceof DBNDataSource) {
+                //int boxSize = event.height - 4;
 
-//            gc.fillRectangle(0, event.y + 2, textSize.x, textSize.y);
-//            gc.drawRectangle(0, event.y + 2, textSize.x - 1, textSize.y - 1);
-            gc.drawRectangle(event.x - 2, event.y + 1, event.width + 3, event.height - 2/*, event.height / 2, event.height / 2*/);
+                //gc.setLineWidth(2);
+                //gc.setLineStyle(SWT.LINE_SOLID);
+
+                //            gc.fillRectangle(0, event.y + 2, textSize.x, textSize.y);
+                //            gc.drawRectangle(0, event.y + 2, textSize.x - 1, textSize.y - 1);
+                //gc.drawRectangle(event.x - 2, event.y + 1, event.width + 3, event.height - 2/*, event.height / 2, event.height / 2*/);
+                //gc.drawLine(event.x, event.y, event.x + event.width, event.y);
+                //gc.drawLine(10, event.y + event.height - 1, event.x + event.width, event.y + event.height - 1);
+                //gc.drawLine(event.x, event.y + event.height - 1, event.x + event.width, event.y + event.height - 1);
+            } else {
+                int oldLineWidth = gc.getLineWidth();
+
+                gc.setForeground(conColor);
+                gc.setLineWidth(3);
+                if (((TreeItem)event.item).getItemCount() > 0) {
+                    gc.drawLine(event.x - 20, event.y - 1, event.x - 20, event.y + event.height + 1);
+                } else {
+                    gc.drawLine(event.x - 4, event.y - 1, event.x - 4, event.y + event.height + 1);
+                }
+                gc.setLineWidth(oldLineWidth);
+            }
         }
     }
 }
