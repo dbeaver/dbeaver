@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
-class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
+class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
     private SQLToolExecuteSettings settings;
     private SQLToolTaskPageSettings pageSettings;
     private SQLToolExecuteHandler taskHandler;
@@ -69,11 +69,12 @@ class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard {
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        //pageSettings.saveSettings();
+        pageSettings.saveSettings();
 
         settings.saveConfiguration(state);
     }
 
+    @Override
     public SQLToolExecuteSettings getSettings() {
         return settings;
     }

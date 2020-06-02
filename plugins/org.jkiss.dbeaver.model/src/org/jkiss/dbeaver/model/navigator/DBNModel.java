@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -73,7 +74,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final Object modelContext;
+    private final DBASession modelContext;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -84,7 +85,7 @@ public class DBNModel implements IResourceChangeListener {
      * Creates navigator model.
      * @param modelContext Model context. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @Nullable Object modelContext) {
+    public DBNModel(DBPPlatform platform, @NotNull DBASession modelContext) {
         this.platform = platform;
         this.modelContext = modelContext;
     }
@@ -94,10 +95,10 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     public boolean isGlobal() {
-        return modelContext == null;
+        return modelContext.isApplicationSession();
     }
 
-    public Object getModelContext() {
+    public DBASession getModelContext() {
         return modelContext;
     }
 

@@ -18,9 +18,13 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+
+import java.util.Map;
 
 /**
  * Table check settings
@@ -35,6 +39,18 @@ public class MySQLToolTableCheckSettings extends SQLToolExecuteSettings<MySQLTab
 
     public void setOption(String option) {
         this.option = option;
+    }
+
+    @Override
+    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+        super.loadConfiguration(runnableContext, config);
+        option = JSONUtils.getString(config, "option");
+    }
+
+    @Override
+    public void saveConfiguration(Map<String, Object> config) {
+        super.saveConfiguration(config);
+        config.put("option", option);
     }
 
     public static class CheckOptionListProvider implements IPropertyValueListProvider<MySQLToolTableCheckSettings> {

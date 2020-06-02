@@ -51,6 +51,8 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     void setProperties(@NotNull Map<String, Object> properties);
 
+    boolean isTemporary();
+
     @Nullable
     DBTTaskRun getLastRun();
 

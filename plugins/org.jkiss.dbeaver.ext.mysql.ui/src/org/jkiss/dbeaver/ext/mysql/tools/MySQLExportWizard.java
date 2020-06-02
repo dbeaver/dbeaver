@@ -31,14 +31,14 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractImportExportWizard;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeImportExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Map;
 
-class MySQLExportWizard extends AbstractImportExportWizard<MySQLExportSettings, MySQLDatabaseExportInfo> implements IExportWizard {
+class MySQLExportWizard extends AbstractNativeImportExportWizard<MySQLExportSettings, MySQLDatabaseExportInfo> implements IExportWizard {
 
     private MySQLExportWizardPageObjects objectsPage;
     private MySQLExportWizardPageSettings settingsPage;

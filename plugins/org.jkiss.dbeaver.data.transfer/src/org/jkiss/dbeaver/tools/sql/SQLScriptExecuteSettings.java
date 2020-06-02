@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.sql;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Path;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +37,7 @@ import java.util.Map;
 /**
  * SQLScriptExecuteSettings
  */
-public class SQLScriptExecuteSettings {
+public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
 
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 
@@ -153,4 +155,5 @@ public class SQLScriptExecuteSettings {
     public static IFile getWorkspaceFile(String filePath) {
         return DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
     }
+
 }

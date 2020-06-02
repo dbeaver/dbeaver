@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 
 import java.util.ArrayList;
@@ -43,7 +42,6 @@ public abstract class DataTransferHandler extends AbstractHandler {
         if (!(selection instanceof IStructuredSelection)) {
             return null;
         }
-        DataTransferProcessorDescriptor processorDescriptor = null;
         IStructuredSelection ss = (IStructuredSelection)selection;
         final List<IDataTransferProducer> producers = new ArrayList<>();
         final List<IDataTransferConsumer> consumers = new ArrayList<>();

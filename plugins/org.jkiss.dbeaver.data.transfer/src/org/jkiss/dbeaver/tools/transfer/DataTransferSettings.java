@@ -20,12 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -38,7 +40,7 @@ import java.util.*;
 /**
  * DataTransferSettings
  */
-public class DataTransferSettings {
+public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
 
     private static final Log log = Log.getLog(DataTransferSettings.class);
 
@@ -75,7 +77,14 @@ public class DataTransferSettings {
         boolean selectDefaultNodes,
         boolean isExport) {
         initializePipes(producers, consumers, isExport);
-        loadConfiguration(runnableContext, configuration, selectDefaultNodes);
+        loadSettings(runnableContext, configuration);
+
+        if (!selectDefaultNodes) {
+            // Now cleanup all nodes. We needed them only to load default producer/consumer settings
+            this.producer = null;
+            this.consumer = null;
+            this.processor = null;
+        }
     }
 
     public DataTransferSettings(
@@ -181,7 +190,7 @@ public class DataTransferSettings {
         }
     }
 
-    private void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config, boolean selectDefaultNodes) {
+    public void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> config) {
         this.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
         this.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), this.isShowFinalMessage()));
 
@@ -283,13 +292,6 @@ public class DataTransferSettings {
             if (nodeSettings != null) {
                 nodeSettings.loadSettings(runnableContext, this, nodeSection);
             }
-        }
-
-        if (!selectDefaultNodes) {
-            // Now cleanup all nodes. We needed them only to load default producer/consumer settings
-            this.producer = null;
-            this.consumer = null;
-            this.processor = null;
         }
     }
 

@@ -38,11 +38,11 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 /**
  * Tool wizard dialog
  */
-public class ToolWizardDialog extends TaskConfigurationWizardDialog {
+public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
 
     public static final int CLIENT_CONFIG_ID = 1000;
 
-    public ToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
+    public NativeToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         super(window, wizard);
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         setHelpAvailable(false);
@@ -56,8 +56,8 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        if (getWizard() instanceof AbstractToolWizard<?, ?, ?>) {
-            boolean nativeClientRequired = ((AbstractToolWizard) getWizard()).isNativeClientHomeRequired();
+        if (getWizard() instanceof AbstractNativeToolWizard<?, ?, ?>) {
+            boolean nativeClientRequired = ((AbstractNativeToolWizard) getWizard()).isNativeClientHomeRequired();
             if (nativeClientRequired) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
@@ -84,7 +84,7 @@ public class ToolWizardDialog extends TaskConfigurationWizardDialog {
     }
 
     private void openClientConfiguration() {
-        AbstractToolWizard toolWizard = (AbstractToolWizard) getWizard();
+        AbstractNativeToolWizard toolWizard = (AbstractNativeToolWizard) getWizard();
         DBPDataSourceContainer dataSource = toolWizard.getSettings().getDataSourceContainer();
         if (dataSource != null) {
             NativeClientConfigDialog dialog = new NativeClientConfigDialog(getShell(), dataSource);

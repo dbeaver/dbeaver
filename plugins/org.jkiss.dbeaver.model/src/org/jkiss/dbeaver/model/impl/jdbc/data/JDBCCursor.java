@@ -79,6 +79,14 @@ public class JDBCCursor implements DBDCursor {
 
     @Override
     public DBCResultSet openResultSet(DBCSession session) {
+        if (resultSet != null) {
+            // Scroll to the beginning
+            try {
+                resultSet.absolute(0);
+            } catch (SQLException e) {
+                log.debug(e);
+            }
+        }
         return resultSet;
     }
 

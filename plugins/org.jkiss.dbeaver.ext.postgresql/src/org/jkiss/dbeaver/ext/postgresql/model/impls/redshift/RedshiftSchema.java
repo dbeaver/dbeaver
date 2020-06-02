@@ -16,8 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,5 +48,33 @@ public class RedshiftSchema extends PostgreSchema {
     public String getTableColumnsQueryExtraParameters(PostgreTableContainer owner, PostgreTableBase forTable) {
         return ",format_encoding(a.attencodingtype::integer) AS \"encoding\"";
     }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                "SELECT table_id, size, tbl_rows FROM SVV_TABLE_INFO WHERE \"schema\"=?"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        long tableId = dbResult.getLong(1);
+                        PostgreTableBase table = getTable(monitor, tableId);
+                        if (table instanceof RedshiftTable) {
+                            ((RedshiftTable) table).fetchStatistics(dbResult);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException("Error reading schema relation statistics", e);
+            }
+        } finally {
+            hasStatistics = true;
+        }
+    }
+
 }
 

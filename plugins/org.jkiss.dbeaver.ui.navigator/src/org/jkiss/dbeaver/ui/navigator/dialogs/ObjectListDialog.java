@@ -51,11 +51,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * SelectObjectDialog
+ * ObjectListDialog
  *
  * @author Serge Rider
  */
-public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel {
+public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.SelectDatabaseObjectDialog";//$NON-NLS-1$
 
@@ -66,7 +66,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
     protected List<T> selectedObjects = new ArrayList<>();
     protected DatabaseObjectListControl<T> objectList;
 
-    public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
+    public ObjectListDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
     {
         super(parentShell, title);
         this.singleSelection = singleSelection;
@@ -164,7 +164,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
 
                         @Override
                         public Object getFamily() {
-                            return SelectObjectDialog.class;
+                            return ObjectListDialog.class;
                         }
                     },
                     new ObjectsLoadVisualizer() {
@@ -281,7 +281,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
 
     public static <T extends DBPObject> T selectObject(Shell parentShell, String title, String listId, Collection<T> objects)
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, listId, objects, null);
+        ObjectListDialog<T> scDialog = new ObjectListDialog<>(parentShell, title, true, listId, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
             return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);

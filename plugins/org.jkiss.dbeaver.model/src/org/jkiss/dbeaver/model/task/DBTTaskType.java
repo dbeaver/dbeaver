@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
@@ -55,4 +56,7 @@ public interface DBTTaskType {
 
     Class<? extends DBTTaskHandler> getHandlerClass();
 
+    boolean isDriverApplicable(DBPDriver driver);
+
+    boolean isObjectApplicable(Object object);
 }

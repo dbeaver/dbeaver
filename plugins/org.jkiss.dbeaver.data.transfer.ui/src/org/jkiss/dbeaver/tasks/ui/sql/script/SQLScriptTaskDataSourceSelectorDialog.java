@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.sql.ui.wizard;
+package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -40,13 +40,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class SQLTaskDataSourceSelectorDialog extends BaseDialog {
+class SQLScriptTaskDataSourceSelectorDialog extends BaseDialog {
 
     private DBNProject projectNode;
     private DatabaseNavigatorTree dataSourceTree;
     private List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
-    SQLTaskDataSourceSelectorDialog(Shell parentShell, DBNProject projectNode) {
+    SQLScriptTaskDataSourceSelectorDialog(Shell parentShell, DBNProject projectNode) {
         super(parentShell, DTMessages.sql_script_task_page_settings_group_connections, null);
         this.projectNode = projectNode;
     }

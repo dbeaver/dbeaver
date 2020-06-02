@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.ui.nativetool.ToolWizardDialog;
+import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
@@ -44,7 +44,7 @@ public class PostgreToolRestore implements IUserInterfaceTool
             } else {
                 continue;
             }
-            ToolWizardDialog dialog = new ToolWizardDialog(
+            NativeToolWizardDialog dialog = new NativeToolWizardDialog(
                 window,
                 new PostgreRestoreWizard(database));
             dialog.open();

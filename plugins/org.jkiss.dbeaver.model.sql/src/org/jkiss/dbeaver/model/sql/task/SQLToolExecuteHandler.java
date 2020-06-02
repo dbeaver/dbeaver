@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.model.sql.task;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -34,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * SQLToolExecuteHandler
@@ -79,25 +83,43 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
-        generateScript(monitor, settings);
+        List<OBJECT_TYPE> objectList = settings.getObjectList();
+        monitor.beginTask(task.getType().getName(), objectList.size());
+        for (OBJECT_TYPE object : objectList) {
+            monitor.subTask(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
+            try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
+                List<DBEPersistAction> queries = new ArrayList<>();
+                generateObjectQueries(session, settings, queries, object);
+
+                DBExecUtils.executeScript(monitor, session.getExecutionContext(), task.getType().getName(), queries);
+            }
+            monitor.worked(1);
+        }
+        monitor.done();
     }
 
-    public List<String> generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
-        List<String> queries = new ArrayList<>();
+    public String generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
+        List<DBEPersistAction> queries = new ArrayList<>();
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         for (OBJECT_TYPE object : objectList) {
-            try (DBCSession session = DBUtils.openMetaSession(monitor, object, "Generate tool queries")) {
+            try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Generate tool queries")) {
                 generateObjectQueries(session, settings, queries, object);
             }
         }
 
-        return queries;
+        String script = queries.stream().map(DBEPersistAction::getScript).collect(Collectors.joining(";\n"));
+        script = script.trim();
+        if (!script.isEmpty()) {
+            // Add trailing delimiter (join doesn't do it)
+            script += ";\n";
+        }
+        return script;
     }
 
     @NotNull
     public abstract SETTINGS createToolSettings();
 
-    public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<String> queries, OBJECT_TYPE object) throws DBCException;
+    public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
 
 }

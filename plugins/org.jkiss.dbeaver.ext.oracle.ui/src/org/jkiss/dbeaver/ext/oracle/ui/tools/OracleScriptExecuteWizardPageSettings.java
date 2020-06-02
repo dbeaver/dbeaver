@@ -23,14 +23,14 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractToolWizardPage;
+import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 
 import java.util.List;
 
 
-class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPage<OracleScriptExecuteWizard> {
+class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage<OracleScriptExecuteWizard> {
     private TextWithOpenFile inputFileText;
 
     OracleScriptExecuteWizardPageSettings(OracleScriptExecuteWizard wizard) {

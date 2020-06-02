@@ -49,10 +49,10 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     private static final Log log = Log.getLog(PostgreTableReal.class);
     public static final String CAT_STATISTICS = "Statistics";
 
-    private long rowCountEstimate;
-    private volatile Long rowCount;
-    private volatile Long diskSpace;
-    private volatile long tableRelSize;
+    protected long rowCountEstimate;
+    protected volatile Long rowCount;
+    protected volatile Long diskSpace;
+    protected volatile long tableRelSize;
     final TriggerCache triggerCache = new TriggerCache();
     final RuleCache ruleCache = new RuleCache();
 
@@ -152,19 +152,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         try {
             // Query disk size
             try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
-                try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
-                    "select " +
-                            "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
-                            "pg_catalog.pg_relation_size(?) as rel_size"))
-                {
-                    dbStat.setLong(1, getObjectId());
-                    dbStat.setLong(2, getObjectId());
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.next()) {
-                            fetchStatistics(dbResult);
-                        }
-                    }
-                }
+                readTableStatistics((JDBCSession) session);
             } catch (Exception e) {
                 log.debug("Can't fetch disk space", e);
             }
@@ -175,7 +163,23 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+    protected void readTableStatistics(JDBCSession session) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "select " +
+                    "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
+                    "pg_catalog.pg_relation_size(?) as rel_size"))
+        {
+            dbStat.setLong(1, getObjectId());
+            dbStat.setLong(2, getObjectId());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    fetchStatistics(dbResult);
+                }
+            }
+        }
+    }
+
+    protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
         diskSpace = dbResult.getLong("total_rel_size");
         tableRelSize = dbResult.getLong("rel_size");
     }

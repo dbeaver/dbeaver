@@ -194,6 +194,17 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
+    public String getSQLPanelText(Object panelObject) {
+        if (panelObject instanceof TextViewer) {
+            Object editor = ((TextViewer) panelObject).getData("editor");
+            if (editor instanceof SQLEditorBase) {
+                return ((SQLEditorBase) editor).getDocument().get();
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void disposeSQLPanel(Object panelObject) {
         if (panelObject instanceof TextViewer) {
             Object editor = ((TextViewer) panelObject).getData("editor");

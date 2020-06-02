@@ -21,6 +21,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.navigator
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.tasks.sql.ui
