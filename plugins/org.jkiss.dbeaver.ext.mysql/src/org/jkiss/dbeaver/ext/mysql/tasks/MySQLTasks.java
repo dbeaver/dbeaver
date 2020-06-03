@@ -25,5 +25,6 @@ public class MySQLTasks {
 
 
     public static final String TASK_TABLE_ANALYZE = "mysqlToolAnalyzeTable";
+    public static final String TASK_TABLE_OPTIMIZE = "mysqlToolOptimizeTable";
 
 }
