@@ -47,7 +47,6 @@ import java.util.Collection;
 public abstract class PostgreTableReal extends PostgreTableBase implements DBPObjectStatistics
 {
     private static final Log log = Log.getLog(PostgreTableReal.class);
-    public static final String CAT_STATISTICS = "Statistics";
 
     protected long rowCountEstimate;
     protected volatile Long rowCount;

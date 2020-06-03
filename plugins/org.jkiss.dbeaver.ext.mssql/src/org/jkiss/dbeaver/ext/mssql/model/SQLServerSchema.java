@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -51,7 +52,7 @@ import java.util.Map;
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSObjectWithScript {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSObjectWithScript, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(SQLServerSchema.class);
 
@@ -68,6 +69,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private SynonymCache synonymCache = new SynonymCache();
     private ProcedureCache procedureCache = new ProcedureCache();
     private TriggerCache triggerCache = new TriggerCache();
+    private volatile boolean hasTableStatistics;
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -177,6 +179,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         sequenceCache.clearCache();
         synonymCache.clearCache();
         procedureCache.clearCache();
+        hasTableStatistics = false;
 
         return this;
     }
@@ -275,6 +278,50 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     @Override
     public void setObjectDefinitionText(String source) {
         throw new IllegalStateException("Can't change schema definition");
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasTableStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasTableStatistics && !forceRefresh) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table statistics")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.name, p.rows, SUM(a.total_pages) * 8 AS totalSize, SUM(a.used_pages) * 8 AS usedSize\n" +
+                    "FROM " + SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t\n" +
+                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "indexes") + " i ON t.OBJECT_ID = i.object_id\n" +
+                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "partitions") + " p ON i.object_id = p.OBJECT_ID AND i.index_id = p.index_id\n" +
+                    "INNER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "allocation_units") + " a ON p.partition_id = a.container_id\n" +
+                    "LEFT OUTER JOIN " + SQLServerUtils.getSystemTableName(getDatabase(), "schemas") +  " s ON t.schema_id = s.schema_id\n" +
+                    "WHERE t.schema_id = ?\n" +
+                    "GROUP BY t.name, p.rows"))
+            {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = dbResult.getString("name");
+                        SQLServerTableBase table = getTable(monitor, tableName);
+                        if (table instanceof SQLServerTable) {
+                            ((SQLServerTable)table).fetchTableStats(dbResult);
+                        }
+                    }
+                }
+                for (SQLServerTableBase table : tableCache.getCachedObjects()) {
+                    if (table instanceof SQLServerTable && !((SQLServerTable)table).hasStatistics()) {
+                        ((SQLServerTable)table).setDefaultTableStats();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        } finally {
+            hasTableStatistics = true;
+        }
     }
 
     public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTableBase, SQLServerTableColumn> {
@@ -836,4 +883,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     }
 
+    @Override
+    public String toString() {
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
+    }
 }

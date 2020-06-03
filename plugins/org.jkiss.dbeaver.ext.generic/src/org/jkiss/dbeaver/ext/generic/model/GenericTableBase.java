@@ -53,7 +53,6 @@ import java.util.*;
 public abstract class GenericTableBase extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject
 {
     private static final Log log = Log.getLog(GenericTableBase.class);
-    public static final String CAT_STATISTICS = "Statistics";
 
     private String tableType;
     private boolean isSystem;

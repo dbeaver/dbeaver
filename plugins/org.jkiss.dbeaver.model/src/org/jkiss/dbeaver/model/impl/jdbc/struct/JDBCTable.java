@@ -58,6 +58,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 {
     private static final Log log = Log.getLog(JDBCTable.class);
 
+    protected static final String CAT_STATISTICS = "Statistics";
+
     private static final String DEFAULT_TABLE_ALIAS = "x";
 
     private boolean persisted;
