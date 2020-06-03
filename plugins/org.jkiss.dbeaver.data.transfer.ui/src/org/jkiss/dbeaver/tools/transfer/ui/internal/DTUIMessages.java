@@ -34,8 +34,28 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
 	public static String data_transfer_wizard_final_title;
-
-
+	
+	public static String data_transfer_wizard_output_title;
+	public static String data_transfer_wizard_output_name;
+	public static String data_transfer_wizard_output_description;
+	public static String data_transfer_wizard_output_group_data_load;
+	public static String data_transfer_wizard_output_group_perfomance;
+	public static String data_transfer_wizard_output_group_general;
+	public static String data_transfer_wizard_output_hover_transfer_auto_generated_columns;
+	public static String data_transfer_wizard_output_checkbox_transfer_auto_generated_columns;
+	public static String data_transfer_wizard_output_checkbox_truncate_target_table_before_load;
+	public static String data_transfer_wizard_output_checkbox_transactions;
+	public static String data_transfer_wizard_output_checkbox_table_editor_on_finish;
+	public static String data_transfer_wizard_output_checkbox_finish_message;
+	
+	public static String data_transfer_wizard_output_label_commit_after_insert_of;
+	
+	public static String data_transfer_wizard_output_dialog_directory_message;
+	public static String data_transfer_wizard_output_dialog_directory_text_first_lane;
+	public static String data_transfer_wizard_output_dialog_directory_text_second_lane;
+	public static String data_transfer_wizard_output_dialog_directory_text_third_lane;
+	public static String data_transfer_wizard_output_dialog_directory_text_fourth_lane;
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTUIMessages.class);
