@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.data.OracleBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -27,8 +30,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
@@ -414,5 +419,26 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isCRLFBroken() {
         return crlfBroken;
+    }
+
+    @Override
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.NUMERIC) {
+            if (OracleConstants.TYPE_NUMBER.equals(typeName)) {
+                OracleDataType dataType = (OracleDataType) DBUtils.getDataType(column);
+                Integer scale = column.getScale();
+                int precision = CommonUtils.toInt(column.getPrecision());
+                if (precision == 0 && dataType != null && scale != null && scale == dataType.getMinScale()) {
+                    return "";
+                }
+                if (precision == 0) {
+                    precision = (int) column.getMaxLength();
+                }
+                if (scale != null && scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                    return "(" + precision + ',' + scale + ')';
+                }
+            }
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }
