@@ -45,7 +45,8 @@ class MySQLDialect extends JDBCSQLDialect {
         "AUTO_INCREMENT",
         "DATABASES",
         "COLUMNS",
-        "ALGORITHM"
+        "ALGORITHM",
+        "REPAIR"
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
