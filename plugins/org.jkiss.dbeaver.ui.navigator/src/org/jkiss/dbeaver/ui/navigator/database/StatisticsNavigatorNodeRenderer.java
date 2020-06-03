@@ -190,7 +190,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     int treeWidth;
                     int xShift;
                     ScrollBar hSB = tree.getHorizontalBar();
-                    if (hSB == null || hSB.getMaximum() <= 0) {
+                    if (hSB == null || !hSB.isVisible()) {
                         treeWidth = tree.getClientArea().width;
                         xShift = 0;
                     } else {
@@ -230,7 +230,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private boolean readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
         DBSObject parentObject = DBUtils.getPublicObject(parentNode.getObject());
-        if (parentObject instanceof DBPObjectStatisticsCollector && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+        if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
+            // Read stats always event if it is already collected.
+            // Because we need to calc max object size anyway
             synchronized (statReaders) {
                 StatReadJob statReadJob = statReaders.get(parentObject);
                 if (statReadJob == null) {
@@ -258,7 +260,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                ((DBPObjectStatisticsCollector)collector).collectObjectStatistics(monitor, false, false);
+                ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
                 long maxStatSize = 0;
 
                 if (collector instanceof DBSObjectContainer) {

@@ -50,8 +50,6 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 {
     private static final Log log = Log.getLog(OracleTablePhysical.class);
 
-    public static final String CAT_STATISTICS = "Statistics";
-
     //private boolean valid;
     private long rowCount;
     private Long realRowCount;
