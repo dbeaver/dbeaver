@@ -191,7 +191,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     int xShift;
                     ScrollBar hSB = tree.getHorizontalBar();
                     if (hSB == null || hSB.getMaximum() <= 0) {
-                        treeWidth = tree.getBounds().width;
+                        treeWidth = tree.getClientArea().width;
                         xShift = 0;
                     } else {
                         treeWidth = hSB.getMaximum();
