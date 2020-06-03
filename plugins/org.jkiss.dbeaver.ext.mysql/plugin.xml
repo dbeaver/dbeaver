@@ -391,6 +391,10 @@
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
+        <task id="mysqlToolRepairTable" name="Repair table" description="Repair table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableRepair">
+            <datasource id="mysql"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </task>
 
     </extension>
 
