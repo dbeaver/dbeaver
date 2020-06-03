@@ -27,15 +27,15 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class MySQLToolTableOptimize extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableOptimizeSettings> {
+public class MySQLToolTableTruncate extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableTruncateSettings> {
     @Override
-    public MySQLToolTableOptimizeSettings createToolSettings() {
-        return new MySQLToolTableOptimizeSettings();
+    public MySQLToolTableTruncateSettings createToolSettings() {
+        return new MySQLToolTableTruncateSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, MySQLToolTableOptimizeSettings settings, List<DBEPersistAction> queries, MySQLTableBase object) throws DBCException {
-        String sql = "OPTIMIZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
+    public void generateObjectQueries(DBCSession session, MySQLToolTableTruncateSettings settings, List<DBEPersistAction> queries, MySQLTableBase object) throws DBCException {
+        String sql = "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
         queries.add(new SQLDatabasePersistAction(sql));
     }
 }
