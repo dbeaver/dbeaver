@@ -157,8 +157,9 @@ public class SQLServerView extends SQLServerTableBase implements DBSView
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.ddl = null;
 
-        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+        return super.refreshObject(monitor);
     }
 
     @Override

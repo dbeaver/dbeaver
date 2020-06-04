@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -33,10 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulatorExt;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,12 +53,10 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
-    private static final String CAT_STATISTICS = "Statistics";
-
     private long objectId;
     private String type;
     private String description;
-    private Long rowCount;
+    protected Long rowCount;
 
     protected SQLServerTableBase(SQLServerSchema schema)
     {
@@ -184,7 +180,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
-    public Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor) throws DBCException
     {
         if (rowCount != null || !isPersisted()) {
             return rowCount;
@@ -261,5 +257,10 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return false;
     }
 
-
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        rowCount = null;
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+    }
 }
