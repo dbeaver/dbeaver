@@ -120,6 +120,9 @@ public class AdvancedListItem extends Canvas {
 
     private void painItem(PaintEvent e) {
         Point itemSize = getSize();
+        if (itemSize.x <= 0 || itemSize.y <= 0) {
+            return;
+        }
         boolean isSelected = getList().getSelectedItem() == this;
 
         GC gc = e.gc;
@@ -150,7 +153,7 @@ public class AdvancedListItem extends Canvas {
         gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
             imgPosX - e.x, imgPosY, imageSize.x, imageSize.y);
 
-        this.textLayout.setWidth(getSize().x - BORDER_MARGIN * 2);
+        this.textLayout.setWidth(itemSize.x - BORDER_MARGIN * 2);
         this.textLayout.setAlignment(SWT.CENTER);
         this.textLayout.draw(gc, BORDER_MARGIN, imageSize.y + BORDER_MARGIN);
         /*String text = labelProvider.getText(getData());
