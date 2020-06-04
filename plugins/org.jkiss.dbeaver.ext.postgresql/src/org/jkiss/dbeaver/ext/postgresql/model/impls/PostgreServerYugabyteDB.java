@@ -150,7 +150,7 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsExplainPlanVerbose() {
-        return ture;
+        return true;
     }
 
     @Override
