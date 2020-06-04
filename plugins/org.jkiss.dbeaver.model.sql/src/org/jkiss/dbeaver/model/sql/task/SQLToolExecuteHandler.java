@@ -27,11 +27,13 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.WriterProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -66,7 +68,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    executeTool(monitor, task, settings, log, logStream);
+                    executeTool(new WriterProgressMonitor(monitor, logStream), task, settings, log, logStream);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -83,19 +85,25 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
+        PrintWriter outLog = new PrintWriter(logStream);
+        //outLog.println("Start " + task.getType().getName());
+
         List<OBJECT_TYPE> objectList = settings.getObjectList();
-        monitor.beginTask(task.getType().getName(), objectList.size());
+        monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
         for (OBJECT_TYPE object : objectList) {
             monitor.subTask(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
             try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
                 List<DBEPersistAction> queries = new ArrayList<>();
                 generateObjectQueries(session, settings, queries, object);
 
-                DBExecUtils.executeScript(monitor, session.getExecutionContext(), task.getType().getName(), queries);
+                DBExecUtils.executeScript(monitor, session.getExecutionContext(), "Process tool SQL script", queries);
             }
             monitor.worked(1);
         }
         monitor.done();
+
+        outLog.println("Tool execution finished");
+        outLog.flush();
     }
 
     public String generateScript(DBRProgressMonitor monitor, SETTINGS settings) throws DBCException {
@@ -121,5 +129,9 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     public abstract SETTINGS createToolSettings();
 
     public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
+
+    public boolean isOpenTargetObjectsOnFinish() {
+        return false;
+    }
 
 }

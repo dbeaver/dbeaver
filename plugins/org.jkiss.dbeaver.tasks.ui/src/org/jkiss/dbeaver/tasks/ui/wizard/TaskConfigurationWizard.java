@@ -83,7 +83,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     public abstract void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state);
 
     public boolean isRunTaskOnFinish() {
-        return getCurrentTask() != null && !getContainer().isSelectorMode();
+        return getCurrentTask() != null && !getCurrentTask().isTemporary() && !getContainer().isSelectorMode();
     }
 
     public IStructuredSelection getCurrentSelection() {

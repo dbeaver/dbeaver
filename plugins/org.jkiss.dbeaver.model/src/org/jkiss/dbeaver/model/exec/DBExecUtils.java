@@ -255,7 +255,9 @@ public class DBExecUtils {
                 if (monitor.isCanceled()) {
                     break;
                 }
-                monitor.subTask(action.getTitle());
+                if (!CommonUtils.isEmpty(action.getTitle())) {
+                    monitor.subTask(action.getTitle());
+                }
                 try {
                     if (action instanceof SQLDatabasePersistActionComment) {
                         continue;

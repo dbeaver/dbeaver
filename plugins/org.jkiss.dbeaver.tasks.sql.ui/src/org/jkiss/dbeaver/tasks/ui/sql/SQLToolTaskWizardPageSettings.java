@@ -59,11 +59,11 @@ import java.util.List;
 /**
  * SQL task settings page
  */
-class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationWizard> implements DBPContextProvider {
+class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> implements DBPContextProvider {
 
-    private static final Log log = Log.getLog(SQLToolTaskPageSettings.class);
+    private static final Log log = Log.getLog(SQLToolTaskWizardPageSettings.class);
 
-    private SQLToolTaskConfigurationWizard sqlWizard;
+    private SQLToolTaskWizard sqlWizard;
 
     private List<DBSObject> selectedObjects = new ArrayList<>();
     private PropertyTreeViewer taskOptionsViewer;
@@ -71,7 +71,7 @@ class SQLToolTaskPageSettings extends ActiveWizardPage<SQLToolTaskConfigurationW
     private TableViewer objectsViewer;
     private UIServiceSQL serviceSQL;
 
-    SQLToolTaskPageSettings(SQLToolTaskConfigurationWizard wizard) {
+    SQLToolTaskWizardPageSettings(SQLToolTaskWizard wizard) {
         super(wizard.getTaskType().getName() + " parameters");
         setTitle(wizard.getTaskType().getName() + " parameters");
         setDescription("Parameters for " + wizard.getTaskType().getName());

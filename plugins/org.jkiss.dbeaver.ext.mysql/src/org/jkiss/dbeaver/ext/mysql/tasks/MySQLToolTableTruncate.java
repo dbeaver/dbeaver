@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import java.util.List;
 
 public class MySQLToolTableTruncate extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableTruncateSettings> {
+    @NotNull
     @Override
     public MySQLToolTableTruncateSettings createToolSettings() {
         return new MySQLToolTableTruncateSettings();

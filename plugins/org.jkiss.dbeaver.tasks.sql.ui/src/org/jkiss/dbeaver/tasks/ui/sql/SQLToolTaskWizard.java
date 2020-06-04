@@ -16,26 +16,33 @@
  */
 package org.jkiss.dbeaver.tasks.ui.sql;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
-class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
+class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
+    private static final Log log = Log.getLog(SQLToolTaskWizard.class);
+
     private SQLToolExecuteSettings settings;
-    private SQLToolTaskPageSettings pageSettings;
+    private SQLToolTaskWizardPageSettings pageSettings;
+    private SQLToolTaskWizardPageStatus pageStatus;
     private SQLToolExecuteHandler taskHandler;
 
-    public SQLToolTaskConfigurationWizard() {
+    public SQLToolTaskWizard() {
     }
 
-    public SQLToolTaskConfigurationWizard(@NotNull DBTTask task) {
+    public SQLToolTaskWizard(@NotNull DBTTask task) {
         super(task);
         try {
             taskHandler = (SQLToolExecuteHandler) task.getType().createHandler();
@@ -63,8 +70,18 @@ class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard<SQLToolExec
     @Override
     public void addPages() {
         super.addPages();
-        pageSettings = new SQLToolTaskPageSettings(this);
+        pageSettings = new SQLToolTaskWizardPageSettings(this);
+        pageStatus = new SQLToolTaskWizardPageStatus(this);
         addPage(pageSettings);
+        addPage(pageStatus);
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        if (page == pageSettings) {
+            return null;
+        }
+        return super.getNextPage(page);
     }
 
     @Override
@@ -78,4 +95,29 @@ class SQLToolTaskConfigurationWizard extends TaskConfigurationWizard<SQLToolExec
     public SQLToolExecuteSettings getSettings() {
         return settings;
     }
+
+    @Override
+    public boolean performFinish() {
+        if (isRunTaskOnFinish()) {
+            // Only if task is not temporary
+            saveConfigurationToTask(getCurrentTask());
+            return super.performFinish();
+        }
+
+        try {
+            // Execute task in wizard
+            DBTTask task = getCurrentTask();
+            saveConfigurationToTask(task);
+
+            getContainer().showPage(pageStatus);
+
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, pageStatus.getLogWriter());
+            executor.executeTask();
+            return false;
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Error running task", e);
+            return false;
+        }
+    }
+
 }
