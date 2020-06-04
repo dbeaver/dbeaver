@@ -473,7 +473,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         } finally {
             hasStatistics = true;
         }
-
     }
 
     public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {

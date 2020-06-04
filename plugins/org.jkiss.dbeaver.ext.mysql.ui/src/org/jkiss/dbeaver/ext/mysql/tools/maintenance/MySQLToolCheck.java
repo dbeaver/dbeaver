@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -39,7 +40,7 @@ public class MySQLToolCheck implements IUserInterfaceTool
         TaskConfigurationWizardDialog.openNewTaskDialog(
             window,
             NavigatorUtils.getSelectedProject(),
-            "mysqlToolCheckTable",
+                MySQLTasks.TASK_TABLE_CHECK,
             new StructuredSelection(objects.toArray()));
     }
 

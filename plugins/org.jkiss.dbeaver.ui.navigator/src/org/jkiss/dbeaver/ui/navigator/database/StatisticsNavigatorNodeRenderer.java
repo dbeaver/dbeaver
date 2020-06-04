@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.DBException;
@@ -184,20 +185,33 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     Point textSize = gc.stringExtent(sizeText);
                     textSize.x += 4;
 
-                    int treeWidth = tree.getClientArea().width;
+                    int caWidth = tree.getClientArea().width;
                     int occupiedWidth = event.x + event.width + 4;
+                    int treeWidth;
+                    int xShift;
+                    ScrollBar hSB = tree.getHorizontalBar();
+                    if (hSB == null || !hSB.isVisible()) {
+                        treeWidth = tree.getClientArea().width;
+                        xShift = 0;
+                    } else {
+                        treeWidth = hSB.getMaximum();
+                        xShift = hSB.getSelection();
+                    }
 
-                    if (treeWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                        int x = treeWidth - textSize.x - 2;
+                    int xWidth = treeWidth - xShift;
+
+                    if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
                         {
                             CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
                             Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
                             gc.setBackground(fillColor);
                             int fillWidth = PERCENT_FILL_WIDTH * percentFull / 100 + 1;
-                            gc.fillRectangle(treeWidth - fillWidth - 2, event.y + 2, fillWidth, event.height - 4);
+                            int x = xWidth - fillWidth - 2;
+                            gc.fillRectangle(x, event.y + 2, fillWidth, event.height - 4);
                         }
 
                         gc.setForeground(tree.getForeground());
+                        int x = xWidth - textSize.x - 2;
                         gc.drawText(sizeText, x + 2, event.y, true);
                     }
                 }
@@ -216,7 +230,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private boolean readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
         DBSObject parentObject = DBUtils.getPublicObject(parentNode.getObject());
-        if (parentObject instanceof DBPObjectStatisticsCollector && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+        if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
+            // Read stats always event if it is already collected.
+            // Because we need to calc max object size anyway
             synchronized (statReaders) {
                 StatReadJob statReadJob = statReaders.get(parentObject);
                 if (statReadJob == null) {
@@ -244,7 +260,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                ((DBPObjectStatisticsCollector)collector).collectObjectStatistics(monitor, false, false);
+                ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
                 long maxStatSize = 0;
 
                 if (collector instanceof DBSObjectContainer) {
