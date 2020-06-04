@@ -40,7 +40,7 @@ public class SQLToolTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new SQLToolTaskConfigurationWizard(taskConfiguration);
+        return new SQLToolTaskWizard(taskConfiguration);
     }
 
 }
