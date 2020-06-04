@@ -396,6 +396,22 @@
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
 
+
+
+
+        <task id="mysqlToolAnalyzeTable" name="Analyze table" description="Analyze table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableAnalyze">
+            <datasource id="mysql"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </task>
+        <task id="mysqlToolOptimizeTable" name="Optimize table" description="Optimize table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableOptimize">
+            <datasource id="mysql"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </task>
+        <task id="mysqlToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableTruncate">
+            <datasource id="mysql"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </task>
+
     </extension>
 
 </plugin>
