@@ -17,22 +17,42 @@
  */
 package org.jkiss.dbeaver.tasks.ui.sql;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.model.sql.task.SQLToolStatistics;
+import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
@@ -41,9 +61,11 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
 
     private OutputStreamWriter writer;
     private MessageConsole console;
+    private ObjectListControl<SQLToolStatistics> statusTable;
+    private AbstractJob statusUpdateJob;
+    private final List<SQLToolStatistics> toolStatistics = new ArrayList<>();
 
-    public SQLToolTaskWizardPageStatus(SQLToolTaskWizard wizard)
-    {
+    SQLToolTaskWizardPageStatus(SQLToolTaskWizard wizard) {
         super("Tool status");
         setTitle("Execution status");
         setDescription("Tool execution status");
@@ -56,33 +78,58 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         return true;
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.BORDER);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new FillLayout());
 
+        SashForm partDivider = new SashForm(composite, SWT.VERTICAL);
+        partDivider.setSashWidth(5);
+
+        statusTable = new ObjectListControl<SQLToolStatistics>(partDivider, SWT.SHEET, new ListContentProvider()) {
+            @NotNull
+            @Override
+            protected String getListConfigId(List<Class<?>> classList) {
+                return "SQLToolStatus." + getWizard().getTaskType().getId();
+            }
+
+            @Override
+            protected DBPImage getObjectImage(SQLToolStatistics item) {
+                return DBValueFormatting.getObjectImage(item.getObject());
+            }
+
+            @Override
+            protected LoadingJob<Collection<SQLToolStatistics>> createLoadService() {
+                return LoadingJob.createService(
+                    new DummyLoadService(),
+                    new ObjectsLoadVisualizer());
+            }
+        };
+
         console = new MessageConsole("tool-log-console", null);
-        LogConsoleViewer consoleViewer = new LogConsoleViewer(composite);
-        console.setWaterMarks(1024*1024*3, 1024*1024*4);
+        LogConsoleViewer consoleViewer = new LogConsoleViewer(partDivider);
+        console.setWaterMarks(1024 * 1024 * 3, 1024 * 1024 * 4);
 
         writer = new OutputStreamWriter(console.newMessageStream(), StandardCharsets.UTF_8);
 
         setControl(composite);
     }
 
-    public Writer getLogWriter() {
+    Writer getLogWriter() {
         return writer;
     }
 
-    public void appendLine(final String line)
-    {
+    void clearLog() {
+        statusTable.clearListData();
+        console.clearConsole();
+    }
+
+    public void appendLine(final String line) {
         if (getShell().isDisposed()) {
             return;
         }
@@ -94,6 +141,34 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
         }
     }
 
+    void addStatistics(DBPObject object, List<? extends SQLToolStatistics> statistics) {
+        synchronized (toolStatistics) {
+            toolStatistics.addAll(statistics);
+        }
+        if (statusUpdateJob == null) {
+            statusUpdateJob = new AbstractJob("Update tool status") {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+                @Override
+                protected IStatus run(DBRProgressMonitor monitor) {
+                    List<SQLToolStatistics> statsCopy;
+                    synchronized (toolStatistics) {
+                        statsCopy = new ArrayList<>(SQLToolTaskWizardPageStatus.this.toolStatistics);
+                        SQLToolTaskWizardPageStatus.this.toolStatistics.clear();
+                    }
+                    UIUtils.asyncExec(() -> {
+                        statusTable.appendListData(statsCopy);
+                        statusTable.repackColumns();
+                    });
+                    return Status.OK_STATUS;
+                }
+            };
+        }
+        statusUpdateJob.schedule(100);
+    }
+
     private class LogConsoleViewer extends TextConsoleViewer implements IDocumentListener {
         LogConsoleViewer(Composite composite) {
             super(composite, console);
@@ -101,7 +176,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
 
         @Override
         public void setDocument(IDocument document) {
-            IDocument oldDocument= getDocument();
+            IDocument oldDocument = getDocument();
             super.setDocument(document);
             if (oldDocument != null) {
                 oldDocument.removeDocumentListener(this);
@@ -120,4 +195,26 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
             revealEndOfDocument();
         }
     }
+
+    private class DummyLoadService extends AbstractLoadService<Collection<SQLToolStatistics>> {
+        DummyLoadService() {
+            super("Load status");
+        }
+
+        @Override
+        public Collection<SQLToolStatistics> evaluate(DBRProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException {
+            try {
+                return Collections.emptyList();
+            } catch (Throwable ex) {
+                throw new InvocationTargetException(ex);
+            }
+        }
+
+        @Override
+        public Object getFamily() {
+            return getWizard().getTaskType();
+        }
+    }
+
 }

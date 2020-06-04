@@ -20,15 +20,21 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+import org.jkiss.dbeaver.model.sql.task.SQLToolRunListener;
+import org.jkiss.dbeaver.model.sql.task.SQLToolStatistics;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.List;
 import java.util.Map;
 
 class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
@@ -109,14 +115,26 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             DBTTask task = getCurrentTask();
             saveConfigurationToTask(task);
 
+            pageStatus.clearLog();
             getContainer().showPage(pageStatus);
 
-            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, pageStatus.getLogWriter());
+            TaskWizardExecutor executor = new SQLTaskExecutor(task);
             executor.executeTask();
             return false;
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), "Error running task", e);
             return false;
+        }
+    }
+
+    private class SQLTaskExecutor extends TaskWizardExecutor implements SQLToolRunListener {
+        SQLTaskExecutor(DBTTask task) {
+            super(SQLToolTaskWizard.this.getRunnableContext(), task, SQLToolTaskWizard.log, SQLToolTaskWizard.this.pageStatus.getLogWriter());
+        }
+
+        @Override
+        public void handleActionStatistics(DBPObject object, DBEPersistAction action, DBCSession session, List<? extends SQLToolStatistics> statistics) {
+            pageStatus.addStatistics(object, statistics);
         }
     }
 
