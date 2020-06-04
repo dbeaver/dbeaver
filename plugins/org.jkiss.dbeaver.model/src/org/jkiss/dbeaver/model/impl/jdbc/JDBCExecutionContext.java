@@ -272,6 +272,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT)) {
                 throw new DBCException("Can't determine transaction isolation - timeout");
             }
+            if (transactionIsolationLevel == null) {
+                transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                log.error("Cannot determine transaction isolation level due to connection hanging. Setting to NONE.");
+            }
         }
         return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
     }
