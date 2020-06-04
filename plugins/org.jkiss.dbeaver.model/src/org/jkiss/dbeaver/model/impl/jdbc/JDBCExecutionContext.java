@@ -309,6 +309,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }, "Get auto commit state", TXN_INFO_READ_TIMEOUT)) {
                 throw new DBCException("Can't determine auto-commit state - timeout");
             }
+            if (autoCommit == null) {
+                log.error("Cannot determine autocommit state due to connection hanging. Setting to manual commit mode.");
+                autoCommit = false;
+            }
         }
         return autoCommit;
     }
