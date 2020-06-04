@@ -16,22 +16,17 @@
  */
 package org.jkiss.dbeaver.model.sql.task;
 
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
 /**
- * SQLToolRunStatisticsGenerator
+ * SQLToolRunListener
  */
-public interface SQLToolRunStatisticsGenerator<
-    OBJECT_TYPE extends DBSObject,
-    SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>,
-    PERSIST_ACTION extends DBEPersistAction> {
+public interface SQLToolRunListener {
 
-    List<? extends SQLToolStatistics<OBJECT_TYPE>> getExecuteStatistics(OBJECT_TYPE object, SETTINGS settings, PERSIST_ACTION action, DBCSession session, DBCStatement dbStat) throws DBCException;
+    void handleActionStatistics(DBPObject object, DBEPersistAction action, DBCSession session, List<? extends SQLToolStatistics> statistics);
 
 }

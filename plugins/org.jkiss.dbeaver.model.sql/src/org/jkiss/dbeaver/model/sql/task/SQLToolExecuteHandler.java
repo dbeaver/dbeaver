@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.WriterProgressMonitor;
@@ -32,6 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -68,7 +72,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    executeTool(new WriterProgressMonitor(monitor, logStream), task, settings, log, logStream);
+                    executeTool(new WriterProgressMonitor(monitor, logStream), task, settings, log, logStream, listener);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -84,23 +88,78 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         listener.taskFinished(settings, error);
     }
 
-    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream) throws DBException {
+    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream, DBTTaskExecutionListener listener) throws DBException {
         PrintWriter outLog = new PrintWriter(logStream);
-        //outLog.println("Start " + task.getType().getName());
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
-        monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
-        for (OBJECT_TYPE object : objectList) {
-            monitor.subTask(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
-            try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
-                List<DBEPersistAction> queries = new ArrayList<>();
-                generateObjectQueries(session, settings, queries, object);
+        Exception lastError = null;
 
-                DBExecUtils.executeScript(monitor, session.getExecutionContext(), "Process tool SQL script", queries);
+        listener.taskStarted(task);
+
+        try {
+            monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
+            for (OBJECT_TYPE object : objectList) {
+                monitor.subTask("Process [" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "]");
+                try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
+                    List<DBEPersistAction> queries = new ArrayList<>();
+                    generateObjectQueries(session, settings, queries, object);
+
+                    for (DBEPersistAction action : queries) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        if (!CommonUtils.isEmpty(action.getTitle())) {
+                            monitor.subTask(action.getTitle());
+                        }
+                        try {
+                            if (action instanceof SQLDatabasePersistActionComment) {
+                                continue;
+                            }
+                            String script = action.getScript();
+                            if (!CommonUtils.isEmpty(script)) {
+                                long startTime = System.currentTimeMillis();
+                                try (final DBCStatement statement = session.prepareStatement(
+                                    DBCStatementType.SCRIPT,
+                                    script,
+                                    false,
+                                    false,
+                                    false)) {
+                                    long execTime = System.currentTimeMillis() - startTime;
+                                    if (statement.executeStatement()) {
+                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator && listener instanceof SQLToolRunListener) {
+                                            List<? extends SQLToolStatistics> executeStatistics =
+                                                ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
+                                                    object,
+                                                    settings,
+                                                    action,
+                                                    session,
+                                                    statement);
+                                            monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
+                                            if (!CommonUtils.isEmpty(executeStatistics)) {
+                                                for (SQLToolStatistics stat : executeStatistics) {
+                                                    stat.setExecutionTime(execTime);
+                                                }
+                                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.debug("Error executing query", e);
+                        } finally {
+                            monitor.worked(1);
+                        }
+                    }
+                }
+                monitor.worked(1);
             }
-            monitor.worked(1);
+        } catch (Exception e) {
+            lastError = e;
+        } finally {
+            monitor.done();
+            listener.taskFinished(task, lastError);
         }
-        monitor.done();
 
         outLog.println("Tool execution finished");
         outLog.flush();
@@ -129,6 +188,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     public abstract SETTINGS createToolSettings();
 
     public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
+
+    public boolean isRunInSeparateTransaction() {
+        return false;
+    }
 
     public boolean isOpenTargetObjectsOnFinish() {
         return false;

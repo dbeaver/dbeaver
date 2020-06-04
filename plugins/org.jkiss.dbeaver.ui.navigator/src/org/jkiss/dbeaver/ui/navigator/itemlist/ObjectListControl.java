@@ -516,6 +516,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setListData(items, true);
     }
 
+    public void repackColumns() {
+        if (columnController != null) {
+            columnController.repackColumns();
+        }
+    }
+
     public Collection<OBJECT_TYPE> getListData() {
         return objectList;
     }

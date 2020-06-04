@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.List;
 /**
  * Table check
  */
-public class MySQLToolTableCheck extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableCheckSettings> {
+public class MySQLToolTableCheck extends MySQLToolWithStatus<MySQLTableBase, MySQLToolTableCheckSettings> {
 
     @NotNull
     @Override

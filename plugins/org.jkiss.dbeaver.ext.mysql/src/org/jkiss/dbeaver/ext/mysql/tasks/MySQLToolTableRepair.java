@@ -7,11 +7,10 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class MySQLToolTableRepair extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableRepairSettings> {
+public class MySQLToolTableRepair extends MySQLToolWithStatus<MySQLTableBase, MySQLToolTableRepairSettings> {
     @NotNull
     @Override
     public MySQLToolTableRepairSettings createToolSettings() {

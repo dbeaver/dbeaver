@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -259,7 +259,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
     private String generateScriptText() {
         SQLToolExecuteHandler taskHandler = sqlWizard.getTaskHandler();
         try {
-            return taskHandler.generateScript(new LoggingProgressMonitor(), sqlWizard.getSettings());
+            return taskHandler.generateScript(new VoidProgressMonitor(), sqlWizard.getSettings());
         } catch (DBCException e) {
             log.error(e);
             return "-- Error: " + e.getMessage();

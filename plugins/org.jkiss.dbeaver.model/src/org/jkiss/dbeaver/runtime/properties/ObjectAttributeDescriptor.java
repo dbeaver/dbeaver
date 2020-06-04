@@ -115,7 +115,7 @@ public abstract class ObjectAttributeDescriptor {
     }
 
     public boolean isNameProperty() {
-        return id.equals(DBConstants.PROP_ID_NAME);
+        return id.equals(DBConstants.PROP_ID_NAME) || orderNumber == 1;
     }
 
     public boolean isRemote()

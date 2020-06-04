@@ -24,11 +24,10 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class MySQLToolTableAnalyze extends SQLToolExecuteHandler<MySQLTableBase, MySQLToolTableAnalyzeSettings> {
+public class MySQLToolTableAnalyze extends MySQLToolWithStatus<MySQLTableBase, MySQLToolTableAnalyzeSettings> {
     @NotNull
     @Override
     public MySQLToolTableAnalyzeSettings createToolSettings() {
