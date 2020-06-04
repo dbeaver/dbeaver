@@ -17,51 +17,30 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Table truncate
+ * Table analyze
  */
 public class MySQLToolAnalyse implements IUserInterfaceTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<MySQLTable> tables = CommonUtils.filterCollection(objects, MySQLTable.class);
-        if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+        TaskConfigurationWizardDialog.openNewTaskDialog(
+                window,
+                NavigatorUtils.getSelectedProject(),
+                MySQLTasks.TASK_TABLE_ANALYZE,
+                new StructuredSelection(objects.toArray()));
     }
-
-    static class SQLDialog extends TableToolDialog {
-
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<MySQLTable> selectedTables)
-        {
-            super(partSite, "Analyse table(s)", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            lines.add("ANALYZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            createObjectsSelector(parent);
-        }
-    }
-
 }

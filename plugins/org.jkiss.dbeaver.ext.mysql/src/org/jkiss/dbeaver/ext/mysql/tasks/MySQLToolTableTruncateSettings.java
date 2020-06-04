@@ -17,17 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
-public class MySQLTasks {
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-    public static final String TASK_DATABASE_BACKUP = "mysqlDatabaseBackup";
-    public static final String TASK_DATABASE_RESTORE = "mysqlDatabaseRestore";
-    public static final String TASK_SCRIPT_EXECUTE = "mysqlScriptExecute";
-    public static final String TASK_TABLE_REPAIR = "mysqlToolRepairTable";
-    public static final String TASK_TABLE_CHECK = "mysqlToolCheckTable";
-
-
-    public static final String TASK_TABLE_ANALYZE = "mysqlToolAnalyzeTable";
-    public static final String TASK_TABLE_OPTIMIZE = "mysqlToolOptimizeTable";
-    public static final String TASK_TABLE_TRUNCATE = "mysqlToolTruncateTable";
-
+public class MySQLToolTableTruncateSettings extends SQLToolExecuteSettings<MySQLTableBase> {
 }
