@@ -1196,7 +1196,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public boolean isRelationalObject(DBSObject object) {
-        return true;
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource != null && dataSource.getInfo().supportsReferentialIntegrity();
     }
 
 }

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -715,7 +716,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public boolean isRelationalObject(DBSObject object) {
-        return true;
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource != null && dataSource.getInfo().supportsReferentialIntegrity();
     }
 
     @Override
