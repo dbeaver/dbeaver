@@ -555,7 +555,7 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <category id="postgresql" name="PostgreSQL" description="PostgreSQL database tasks" icon="icons/postgresql_icon.png"/>
-        <category id="postgreTool" parent="postgre" name="Tools" description="PostgreSQL database tools" icon="icons/postgresql_icon.png"/>
+        <category id="postgreTool" parent="postgresql" name="Tools" description="PostgreSQL database tools" icon="icons/postgresql_icon.png"/>
 
         <task id="pgDatabaseBackup" name="PostgreSQL dump" description="PostgreSQL database dump task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler">
             <datasource id="postgresql"/>
