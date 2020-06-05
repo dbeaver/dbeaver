@@ -39,4 +39,9 @@ public class MySQLToolTableTruncate extends MySQLToolWithStatus<MySQLTableBase, 
         String sql = "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    @Override
+    public boolean isNeedConfirmation() {
+        return true;
+    }
 }
