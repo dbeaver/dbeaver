@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-public class PostgreSQLTasks {
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
-    public static final String TASK_DATABASE_BACKUP = "pgDatabaseBackup";
-    public static final String TASK_DATABASE_RESTORE = "pgDatabaseRestore";
-    public static final String TASK_SCRIPT_EXECUTE = "pgScriptExecute";
-    public static final String TASK_MVIEW_REFRESH = "pgToolRefreshMView";
-    public static final String TASK_DATABASE_ANALYZE = "pgToolDatabaseAnalyze";
-    public static final String TASK_TABLE_ANALYZE = "pgToolTableAnalyze";
-    public static final String TASK_DATABASE_VACUUM = "pgToolDatabaseVacuum";
-    public static final String TASK_TABLE_VACUUM = "pgToolTableVacuum";
+public class PostgreToolDatabaseAnalyzeSettings extends SQLToolExecuteSettings<PostgreDatabase> {
 
 }
