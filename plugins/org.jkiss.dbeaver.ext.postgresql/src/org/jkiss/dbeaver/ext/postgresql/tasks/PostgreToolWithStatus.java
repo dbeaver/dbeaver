@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
@@ -33,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class PostgreToolWithStatus<OBJECT_TYPE extends DBSObject, SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>>
@@ -41,10 +38,6 @@ public abstract class PostgreToolWithStatus<OBJECT_TYPE extends DBSObject, SETTI
 
     @Override
     public List<ToolStatus> getExecuteStatistics(OBJECT_TYPE object, SETTINGS settings, DBEPersistAction action, DBCSession session, DBCStatement dbStat) throws DBCException {
-        DBCResultSet dbResult = dbStat.openResultSet();
-        if (!(dbResult instanceof JDBCResultSet)) {
-            return Collections.emptyList();
-        }
         List<ToolStatus> statusList = new ArrayList<>();
         try {
             int warnNum = 0;
@@ -64,13 +57,11 @@ public abstract class PostgreToolWithStatus<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     public class ToolStatus extends SQLToolStatistics<OBJECT_TYPE> {
-        private final String messageOne;
-        //private final String messageTwo;
+        private final String message;
 
-        ToolStatus(OBJECT_TYPE object, String messageOne) {
+        ToolStatus(OBJECT_TYPE object, String message) {
             super(object);
-            this.messageOne = messageOne;
-            //this.messageTwo = messageTwo;
+            this.message = message;
         }
 
         @Property(viewable = true, order = 1)
@@ -80,14 +71,8 @@ public abstract class PostgreToolWithStatus<OBJECT_TYPE extends DBSObject, SETTI
         }
 
         @Property(viewable = true, order = 2)
-        public String getMessageOne() {
-            return messageOne;
+        public String getMessage() {
+            return message;
         }
-
-       // @Property(viewable = true, order = 3)
-       // public String getMessageText() {
-      //      return messageTwo;
-       // }
-
     }
 }

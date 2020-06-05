@@ -586,6 +586,10 @@
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
+        <task id="pgToolTableTruncate" name="Truncate table" description="%tasks.truncate.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTruncate">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+        </task>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">
