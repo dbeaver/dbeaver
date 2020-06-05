@@ -193,6 +193,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         return false;
     }
 
+    public boolean isNeedConfirmation() {
+        return false;
+    }
+
     public boolean isOpenTargetObjectsOnFinish() {
         return false;
     }
