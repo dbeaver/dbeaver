@@ -16,17 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.maintenance;
 
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreSQLTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,46 +38,23 @@ import java.util.List;
 public class PostgreToolAnalyze implements IUserInterfaceTool
 {
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException {
         List<PostgreTableBase> tables = CommonUtils.filterCollection(objects, PostgreTableBase.class);
         if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
+            TaskConfigurationWizardDialog.openNewTaskDialog(
+                    window,
+                    NavigatorUtils.getSelectedProject(),
+                    PostgreSQLTasks.TASK_TABLE_ANALYZE,
+                    new StructuredSelection(objects.toArray()));
         } else {
             List<PostgreDatabase> databases = CommonUtils.filterCollection(objects, PostgreDatabase.class);
             if (!databases.isEmpty()) {
-                SQLDialog dialog = new SQLDialog(activePart.getSite(), databases.get(0));
-                dialog.open();
+                TaskConfigurationWizardDialog.openNewTaskDialog(
+                        window,
+                        NavigatorUtils.getSelectedProject(),
+                        PostgreSQLTasks.TASK_DATABASE_ANALYZE,
+                        new StructuredSelection(objects.toArray()));
             }
         }
     }
-
-    static class SQLDialog extends TableToolDialog {
-
-        public SQLDialog(IWorkbenchPartSite partSite, List<PostgreTableBase> selectedTables)
-        {
-            super(partSite, PostgreMessages.tool_analyze_title_table, selectedTables);
-        }
-
-        public SQLDialog(IWorkbenchPartSite partSite, PostgreDatabase database)
-        {
-            super(partSite, PostgreMessages.tool_analyze_title_database, database);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, PostgreObject object) {
-            if (object instanceof PostgreTableBase) {
-                lines.add("ANALYZE VERBOSE " + ((PostgreTableBase)object).getFullyQualifiedName(DBPEvaluationContext.DDL));
-            } else if (object instanceof PostgreDatabase) {
-                lines.add("ANALYZE VERBOSE");
-            }
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            createObjectsSelector(parent);
-        }
-    }
-
 }

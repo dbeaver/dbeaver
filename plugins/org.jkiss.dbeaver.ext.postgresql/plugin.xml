@@ -555,6 +555,7 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <category id="postgresql" name="PostgreSQL" description="PostgreSQL database tasks" icon="icons/postgresql_icon.png"/>
+        <category id="postgreTool" parent="postgre" name="Tools" description="PostgreSQL database tools" icon="icons/postgresql_icon.png"/>
 
         <task id="pgDatabaseBackup" name="PostgreSQL dump" description="PostgreSQL database dump task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler">
             <datasource id="postgresql"/>
@@ -570,6 +571,24 @@
         <task id="pgScriptExecute" name="PostgreSQL script" description="PostgreSQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+        </task>
+
+        <!-- SQL tools -->
+        <task id="pgToolRefreshMView" name="Refresh MView" description="Refresh MView(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolMViewRefresh">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+        </task>
+        <task id="pgToolTableAnalyze" name="Analyze table" description="Analyze table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+        </task>
+        <task id="pgToolDatabaseAnalyze" name="Analyze database" description="Analyze database(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+        </task>
+        <task id="pgToolTableTruncate" name="Truncate table" description="%tasks.truncate.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTruncate">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
     </extension>
 
