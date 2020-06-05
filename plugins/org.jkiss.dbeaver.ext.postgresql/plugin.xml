@@ -578,11 +578,11 @@
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
         </task>
-        <task id="pgToolTableAnalyze" name="Analyze table" description="Analyze table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableAnalyze">
+        <task id="pgToolTableAnalyze" name="Analyze table" description="Analyze table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgToolDatabaseAnalyze" name="Analyze database" description="Analyze database(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolDatabaseAnalyze">
+        <task id="pgToolDatabaseAnalyze" name="Analyze database" description="Analyze database(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
