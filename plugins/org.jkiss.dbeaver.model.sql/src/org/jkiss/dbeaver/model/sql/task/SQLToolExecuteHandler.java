@@ -125,7 +125,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                     false,
                                     false)) {
                                     long execTime = System.currentTimeMillis() - startTime;
-                                    if (statement.executeStatement()) {
+                                    statement.executeStatement();
+                                    {
                                         if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator && listener instanceof SQLToolRunListener) {
                                             List<? extends SQLToolStatistics> executeStatistics =
                                                 ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
