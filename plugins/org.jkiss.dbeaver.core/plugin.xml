@@ -823,6 +823,7 @@
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
+            <separator name="settings" visible="false"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
@@ -831,6 +832,7 @@
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
+            <separator name="settings" visible="false"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.shellProcess">
