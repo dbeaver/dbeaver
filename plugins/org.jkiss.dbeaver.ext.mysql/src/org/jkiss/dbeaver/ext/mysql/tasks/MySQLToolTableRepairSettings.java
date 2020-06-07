@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,16 +59,16 @@ public class MySQLToolTableRepairSettings extends SQLToolExecuteSettings<MySQLTa
     @Override
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         super.loadConfiguration(runnableContext, config);
-        isQuick = JSONUtils.getBoolean(config, "Quick");
-        isExtended = JSONUtils.getBoolean(config, "Extended");
-        useFRM = JSONUtils.getBoolean(config, "Use FRM");
+        isQuick = JSONUtils.getBoolean(config, "quick");
+        isExtended = JSONUtils.getBoolean(config, "extended");
+        useFRM = JSONUtils.getBoolean(config, "use_frm");
     }
 
     @Override
     public void saveConfiguration(Map<String, Object> config) {
         super.saveConfiguration(config);
-        config.put("Quick", isQuick);
-        config.put("Extended", isExtended);
-        config.put("Use FRM", useFRM);
+        config.put("quick", isQuick);
+        config.put("extended", isExtended);
+        config.put("use_frm", useFRM);
     }
 }
