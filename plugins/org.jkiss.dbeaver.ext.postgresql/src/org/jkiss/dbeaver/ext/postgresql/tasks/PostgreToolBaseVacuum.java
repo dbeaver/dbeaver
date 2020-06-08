@@ -32,6 +32,14 @@ public class PostgreToolBaseVacuum extends PostgreToolWithStatus<DBSObject, Post
         if(isDisabled && (postgreDataSource.isServerVersionAtLeast(9, 6))){
             sql += ", DISABLE_PAGE_SKIPPING";
         }
+        if(postgreDataSource.isServerVersionAtLeast(12, 0)){
+            boolean isSkipLocked = settings.isSkipLocked();
+            boolean isIndexCleaning = settings.isIndexCleaning();
+            boolean isTruncated = settings.isTruncated();
+            if(isSkipLocked) sql += ", SKIP_LOCKED";
+            if(isIndexCleaning) sql += ", INDEX_CLEANUP";
+            if(isTruncated) sql += ", TRUNCATE";
+        }
         sql += ")";
         if(object instanceof PostgreTableBase){
             PostgreTableBase postObject = (PostgreTableBase) object;
