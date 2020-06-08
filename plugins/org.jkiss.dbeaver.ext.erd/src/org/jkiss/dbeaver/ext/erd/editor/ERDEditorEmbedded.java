@@ -251,7 +251,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
             }
             boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
-            boolean showPartitions = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS);
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
@@ -265,9 +264,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
                         final DBSEntity entity1 = (DBSEntity) entity;
 
-                        if (!showPartitions && entity1 instanceof DBSTablePartition) {
-                            continue;
-                        }
                         if (entity1.getEntityType() == DBSEntityType.TABLE ||
                             entity1.getEntityType() == DBSEntityType.CLASS ||
                             entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY ||
@@ -347,6 +343,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         // Remove entities already loaded in the diagram
         for (ERDEntity diagramEntity : diagram.getEntities()) {
             result.remove(diagramEntity.getObject());
+        }
+
+        if (!ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS)) {
+            result.removeIf(entity -> entity instanceof DBSTablePartition);
         }
 
         return result;
