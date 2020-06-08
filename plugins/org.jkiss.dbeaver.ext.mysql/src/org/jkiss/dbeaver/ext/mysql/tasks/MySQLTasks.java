@@ -24,8 +24,6 @@ public class MySQLTasks {
     public static final String TASK_SCRIPT_EXECUTE = "mysqlScriptExecute";
     public static final String TASK_TABLE_REPAIR = "mysqlToolRepairTable";
     public static final String TASK_TABLE_CHECK = "mysqlToolCheckTable";
-
-
     public static final String TASK_TABLE_ANALYZE = "mysqlToolAnalyzeTable";
     public static final String TASK_TABLE_OPTIMIZE = "mysqlToolOptimizeTable";
     public static final String TASK_TABLE_TRUNCATE = "mysqlToolTruncateTable";
