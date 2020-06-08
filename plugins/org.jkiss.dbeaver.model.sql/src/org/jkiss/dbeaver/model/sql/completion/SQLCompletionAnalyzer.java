@@ -988,7 +988,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         @NotNull Map<String, Object> params)
     {
         String alias = null;
-        if (SQLConstants.KEYWORD_FROM.equals(request.getWordDetector().getPrevKeyWord()) || SQLConstants.KEYWORD_JOIN.equals(request.getWordDetector().getPrevKeyWord())) {
+        String prevWord = request.getWordDetector().getPrevKeyWord();
+        if (SQLConstants.KEYWORD_FROM.equals(prevWord) || SQLConstants.KEYWORD_JOIN.equals(prevWord)) {
             if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
                 if (dialect.supportsAliasInSelect()) {
