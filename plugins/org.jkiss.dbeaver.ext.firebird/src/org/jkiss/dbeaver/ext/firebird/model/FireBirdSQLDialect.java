@@ -61,6 +61,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        turnFunctionIntoKeyword("TRUNCATE");
     }
 
     @Override

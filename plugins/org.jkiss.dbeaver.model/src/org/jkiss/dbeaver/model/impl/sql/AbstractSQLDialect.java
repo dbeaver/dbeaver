@@ -127,6 +127,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
     }
 
+    protected void turnFunctionIntoKeyword(String function) {
+        functions.remove(function);
+        addKeywords(Collections.singletonList(function), DBPKeywordType.KEYWORD);
+    }
+
     protected void addDataTypes(Collection<String> allTypes) {
         for (String type : allTypes) {
             types.add(type.toUpperCase(Locale.ENGLISH));
