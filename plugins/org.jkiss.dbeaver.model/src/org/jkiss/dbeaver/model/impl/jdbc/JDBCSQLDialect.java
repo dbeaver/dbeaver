@@ -202,6 +202,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         }
 
         loadDriverKeywords(metaData);
+        turnFunctionIntoKeyword("TRUNCATE");
     }
 
     @NotNull
