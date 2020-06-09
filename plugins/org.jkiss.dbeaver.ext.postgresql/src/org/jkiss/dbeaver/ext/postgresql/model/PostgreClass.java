@@ -35,6 +35,8 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
         public static final RelKind t = new RelKind("t");  // TOAST table
         public static final RelKind f = new RelKind("f");  // = foreign table
         public static final RelKind p = new RelKind("p");  // partitionedtable
+        public static final RelKind I = new RelKind("I");  // partitioned index
+
         public static final RelKind R = new RelKind("R");  // partition
 
         // Redshift
