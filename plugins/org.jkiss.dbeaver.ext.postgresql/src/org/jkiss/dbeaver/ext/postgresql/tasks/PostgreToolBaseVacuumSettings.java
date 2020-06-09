@@ -44,6 +44,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isAnalyzed = analyzed;
     }
 
+    //Works since PostgreSQL 9.6
     @Property(viewable = true, editable = true, updatable = true)
     public boolean isDisableSkipping() {
         return isDisableSkipping;
@@ -53,6 +54,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isDisableSkipping = disableSkipping;
     }
 
+    //Works since PostgreSQL 12
     @Property(viewable = true, editable = true, updatable = true)
     public boolean isSkipLocked() {
         return isSkipLocked;
@@ -62,6 +64,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isSkipLocked = skipLocked;
     }
 
+    //Works since PostgreSQL 12
     @Property(viewable = true, editable = true, updatable = true)
     public boolean isIndexCleaning() {
         return isIndexCleaning;
@@ -71,6 +74,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isIndexCleaning = indexCleaning;
     }
 
+    //Works since PostgreSQL 12
     @Property(viewable = true, editable = true, updatable = true)
     public boolean isTruncated() {
         return isTruncated;
