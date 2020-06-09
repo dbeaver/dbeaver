@@ -48,6 +48,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             this.addSQLKeyword(kw);
         }
+        turnFunctionIntoKeyword("TRUNCATE");
     }
 
     @NotNull

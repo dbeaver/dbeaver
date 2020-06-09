@@ -337,6 +337,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         }
 
         addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
+        turnFunctionIntoKeyword("TRUNCATE");
     }
 
     @Override
