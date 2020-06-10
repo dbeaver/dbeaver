@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -55,6 +56,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
+    private IPropertyValueValidator valueValidator;
     private final Class<?> declaringClass;
     private Format displayFormat = null;
 
@@ -84,7 +86,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         Class<? extends IPropertyValueTransformer> valueTransformerClass = propInfo.valueTransformer();
         if (valueTransformerClass != IPropertyValueTransformer.class) {
             try {
-                valueTransformer = valueTransformerClass.newInstance();
+                valueTransformer = valueTransformerClass.getConstructor().newInstance();
             } catch (Throwable e) {
                 log.warn("Can't create value transformer", e);
             }
@@ -94,9 +96,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         Class<? extends IPropertyValueTransformer> valueRendererClass = propInfo.valueRenderer();
         if (valueRendererClass != IPropertyValueTransformer.class) {
             try {
-                valueRenderer = valueRendererClass.newInstance();
+                valueRenderer = valueRendererClass.getConstructor().newInstance();
             } catch (Throwable e) {
                 log.warn("Can't create value renderer", e);
+            }
+        }
+
+        // Obtain value validator
+        Class<? extends IPropertyValueValidator> valueValidatorClass = propInfo.valueValidator();
+        if (valueValidatorClass != IPropertyValueValidator.class) {
+            try {
+                valueValidator = valueValidatorClass.getConstructor().newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create value validator", e);
             }
         }
 
@@ -171,6 +183,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public IPropertyValueTransformer getValueRenderer() {
         return valueRenderer;
+    }
+
+    public IPropertyValueValidator getValueValidator() {
+        return valueValidator;
     }
 
     @Override

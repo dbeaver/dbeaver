@@ -135,4 +135,6 @@ public @interface Property
 
     Class<? extends IPropertyValueTransformer> valueRenderer() default IPropertyValueTransformer.class;
 
+    Class<? extends IPropertyValueValidator> valueValidator() default IPropertyValueValidator.class;
+
 }

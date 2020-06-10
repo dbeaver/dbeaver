@@ -30,7 +30,6 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
@@ -59,25 +58,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.controls.*;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1395,69 +1388,6 @@ public class UIUtils {
         link.setText(text);
         link.addSelectionListener(listener);
         return link;
-    }
-
-    public static CellEditor createPropertyEditor(final IServiceLocator serviceLocator, Composite parent, DBPPropertySource source, DBPPropertyDescriptor property, int style)
-    {
-        if (source == null) {
-            return null;
-        }
-        final Object object = source.getEditableValue();
-        if (!property.isEditable(object)) {
-            return null;
-        }
-        CellEditor cellEditor = UIUtils.createCellEditor(parent, object, property, style);
-        if (cellEditor != null) {
-            final Control editorControl = cellEditor.getControl();
-            addDefaultEditActionsSupport(serviceLocator, editorControl);
-        }
-        return cellEditor;
-    }
-
-    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property, int style)
-    {
-        // List
-        if (property instanceof IPropertyValueListProvider) {
-            final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
-            final Object[] items = listProvider.getPossibleValues(object);
-            if (items != null) {
-                final String[] strings = new String[items.length];
-                for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                    strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);
-                }
-                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
-                    parent,
-                    strings,
-                    SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY));
-                return editor;
-            }
-        }
-        Class<?> propertyType = property.getDataType();
-        if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
-            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
-                return new AdvancedTextCellEditor(parent);
-            } else {
-                return new CustomTextCellEditor(parent, SWT.SINGLE | ((style & SWT.PASSWORD) != 0 ? SWT.PASSWORD : SWT.NONE));
-            }
-        } else if (BeanUtils.isNumericType(propertyType)) {
-            return new CustomNumberCellEditor(parent, propertyType);
-        } else if (BeanUtils.isBooleanType(propertyType)) {
-            return new CustomCheckboxCellEditor(parent, style);
-            //return new CheckboxCellEditor(parent);
-        } else if (propertyType.isEnum()) {
-            final Object[] enumConstants = propertyType.getEnumConstants();
-            final String[] strings = new String[enumConstants.length];
-            for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
-                strings[i] = ((Enum)enumConstants[i]).name();
-            }
-            return new CustomComboBoxCellEditor(
-                parent,
-                strings,
-                SWT.DROP_DOWN | SWT.READ_ONLY);
-        } else {
-            log.warn("Unsupported property type: " + propertyType.getName());
-            return null;
-        }
     }
 
     public static void postEvent(Control ownerControl, final Event event) {
