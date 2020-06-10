@@ -40,9 +40,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -142,12 +140,17 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 }
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
                                             }
+                                        } else if(listener instanceof SQLToolRunListener){
+                                            
                                         }
                                     }
                                 }
                             }
                         } catch (Exception e) {
                             log.debug("Error executing query", e);
+                            outLog.println("Error executing query");
+                            SQLToolStatisticsError stat = new SQLToolStatisticsError(object, e.getMessage());
+                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                         } finally {
                             monitor.worked(1);
                         }
