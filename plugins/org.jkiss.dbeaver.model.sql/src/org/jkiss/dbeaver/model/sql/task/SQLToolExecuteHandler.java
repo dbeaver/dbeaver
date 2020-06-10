@@ -141,7 +141,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
                                             }
                                         } else if(listener instanceof SQLToolRunListener){
-                                            
+                                            SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
+                                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                         }
                                     }
                                 }
@@ -149,8 +150,9 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                         } catch (Exception e) {
                             log.debug("Error executing query", e);
                             outLog.println("Error executing query");
-                            SQLToolStatisticsError stat = new SQLToolStatisticsError(object, e.getMessage());
-                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
+                            SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
+                            errorStat.setErrorMessage(e.getMessage());
+                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
                         } finally {
                             monitor.worked(1);
                         }
