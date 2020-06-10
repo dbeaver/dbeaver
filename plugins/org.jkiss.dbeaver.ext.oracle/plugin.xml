@@ -408,6 +408,10 @@
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
+        <task id="oracleToolTableTruncate" name="%tasks.truncate.table.node.name" description="%tasks.truncate.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTruncate">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
     </extension>
 
 </plugin>
