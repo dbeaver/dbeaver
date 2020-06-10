@@ -40,6 +40,7 @@ import org.jkiss.utils.ByteNumberFormat;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgreTable base
@@ -194,8 +195,9 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         return getSchema().getConstraintCache().getObject(monitor, getSchema(), this, ukName);
     }
 
+    @Nullable
     @Association
-    public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
+    public List<PostgreTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache.getAllObjects(monitor, this);

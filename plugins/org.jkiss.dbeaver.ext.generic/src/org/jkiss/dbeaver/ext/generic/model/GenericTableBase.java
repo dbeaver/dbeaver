@@ -454,8 +454,9 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         }
     }
 
+    @Nullable
     @Association
-    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
             loadTriggers(monitor);
         }
