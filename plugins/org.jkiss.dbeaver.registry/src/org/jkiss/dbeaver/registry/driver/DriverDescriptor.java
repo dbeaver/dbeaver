@@ -705,7 +705,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isInstantiable() {
-        return instantiable && !CommonUtils.isEmpty(driverClassName);
+        return instantiable;
     }
 
     public void setInstantiable(boolean instantiable) {

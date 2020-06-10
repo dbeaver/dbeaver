@@ -116,7 +116,7 @@ public abstract class JDBCDataSource
         // It MUST be a JDBC driver
         Driver driverInstance = null;
         DBPDriver driver = getContainer().getDriver();
-        if (driver.isInstantiable()) {
+        if (driver.isInstantiable() && !CommonUtils.isEmpty(driver.getDriverClassName())) {
             try {
                 driverInstance = getDriverInstance(monitor);
             } catch (DBException e) {
