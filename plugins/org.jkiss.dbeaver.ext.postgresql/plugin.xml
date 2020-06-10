@@ -29,6 +29,7 @@
         <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" defaultDatbase="dev" defaultUser="awsuser" customURL="true"/>
         <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png" customURL="true"/>
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png" customURL="true"/>
+        <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" defaultDatbase="yugabyte" defaultUser="yugabyte" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root" customURL="true"/>
     </extension>
 
@@ -369,6 +370,28 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+
+                <driver
+                        id="postgres-yugabytedb-jdbc"
+                        label="YugabyteDB"
+                        icon="icons/yugabyte_icon.png"
+                        iconBig="icons/yugabyte_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        useURL="true"
+                        defaultPort="5433"
+                        webURL="https://www.yugabyte.com/yugabytedb/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        description="%driver.yugabytedb.description"
+                        categories="sql">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="yugabytedb"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
                 </driver>
 
                 <driver
