@@ -20,5 +20,6 @@ package org.jkiss.dbeaver.ext.oracle.tasks;
 public class OracleTasks {
 
     public static final String TASK_SCRIPT_EXECUTE = "oracleScriptExecute";
+    public static final String TASK_TABLE_VALIDATE_STRUCTURE = "oracleToolValidateStructure";
 
 }
