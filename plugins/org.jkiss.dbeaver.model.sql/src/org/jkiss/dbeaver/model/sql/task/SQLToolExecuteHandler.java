@@ -92,8 +92,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
 
-        listener.taskStarted(task);
-
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
             for (OBJECT_TYPE object : objectList) {
@@ -124,8 +122,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                     false)) {
                                     long execTime = System.currentTimeMillis() - startTime;
                                     statement.executeStatement();
-                                    {
-                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator && listener instanceof SQLToolRunListener) {
+                                    if (listener instanceof SQLToolRunListener){
+                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
                                             List<? extends SQLToolStatistics> executeStatistics =
                                                 ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
                                                     object,
@@ -140,7 +138,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 }
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
                                             }
-                                        } else if(listener instanceof SQLToolRunListener){
+                                        } else {
                                             SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
                                             ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                         }
@@ -150,9 +148,11 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                         } catch (Exception e) {
                             log.debug("Error executing query", e);
                             outLog.println("Error executing query");
-                            SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
-                            errorStat.setErrorMessage(e.getMessage());
-                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
+                            if(listener instanceof SQLToolRunListener) {
+                                SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
+                                errorStat.setMessage(e.getMessage());
+                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
+                            }
                         } finally {
                             monitor.worked(1);
                         }
@@ -164,7 +164,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             lastError = e;
         } finally {
             monitor.done();
-            listener.taskFinished(task, lastError);
         }
 
         outLog.println("Tool execution finished");
