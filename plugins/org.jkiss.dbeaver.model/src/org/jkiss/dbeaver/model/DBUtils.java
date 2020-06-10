@@ -611,6 +611,7 @@ public final class DBUtils {
             return null;
         }
         DBSObjectContainer sc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        DBSEntity finalEntity = null;
         if (sc != null) {
             for (int i = 1; i < names.length - 1; i++) {
                 String name = names[i];
@@ -621,20 +622,40 @@ public final class DBUtils {
                 }
                 if (child instanceof DBSObjectContainer) {
                     sc = (DBSObjectContainer) child;
+                } else if (child instanceof DBSEntity && i == names.length - 2) {
+                    sc = null;
+                    finalEntity = (DBSEntity) child;
+                    break;
                 } else {
-                    log.debug("Child object '" + name + "' is not a container");
+                    log.debug("Child object '" + name + "' is not a container or entity");
                     return null;
                 }
             }
         }
+        String objectName = names[names.length - 1];
         if (sc != null) {
-            String objectName = names[names.length - 1];
             DBSObject object = sc.getChild(monitor, objectName);
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                 return null;
             }
             return object;
+        } else if (finalEntity != null) {
+            DBSEntityAttribute attribute = finalEntity.getAttribute(monitor, objectName);
+            if (attribute != null) {
+                return attribute;
+            }
+            if (finalEntity instanceof DBSTable) {
+                List<? extends DBSTrigger> triggers = ((DBSTable) finalEntity).getTriggers(monitor);
+                if (triggers != null) {
+                    DBSTrigger trigger = DBUtils.findObject(triggers, objectName);
+                    if (trigger != null) {
+                        return trigger;
+                    }
+                }
+                log.debug("Object '" + objectName + "' not found in entity" + DBUtils.getObjectFullName(finalEntity, DBPEvaluationContext.UI));
+                return null;
+            }
         }
         return null;
     }

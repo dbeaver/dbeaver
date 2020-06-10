@@ -214,8 +214,9 @@ public class DB2Table extends DB2TableBase
     // Associations
     // -----------------
 
+    @Nullable
     @Association
-    public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException
+    public List<DB2Trigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return tableTriggerCache.getAllObjects(monitor, this);
     }
