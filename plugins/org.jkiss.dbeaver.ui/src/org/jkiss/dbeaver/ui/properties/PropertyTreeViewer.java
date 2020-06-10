@@ -471,7 +471,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (isHidePropertyValue(prop.property)) {
                 editStyle |= SWT.PASSWORD;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, editStyle);
+            final CellEditor cellEditor = PropertyEditorUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, editStyle);
             if (cellEditor == null) {
                 return;
             }

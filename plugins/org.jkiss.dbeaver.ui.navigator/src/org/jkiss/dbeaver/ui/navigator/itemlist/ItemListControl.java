@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
+import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -306,7 +307,7 @@ public class ItemListControl extends NodeListControl
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             if (property != null && property.isEditable(getObjectValue(object))) {
                 setFocusCell(object, objectColumn);
-                return UIUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property, SWT.NONE);
+                return PropertyEditorUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property, SWT.NONE);
             }
             return null;
         }
