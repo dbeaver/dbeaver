@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -89,7 +90,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         StringBuilder script = new StringBuilder();
         boolean hasSet;
         final MySQLDataSource dataSource = getObject().getDataSource();
-        if (dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7)) {
+        if (MySQLUtils.isAlterUSerSupported(dataSource)) {
             hasSet = generateAlterScript(script);
         } else {
             hasSet = generateUpdateScript(script);
@@ -97,7 +98,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         if (hasSet) {
             actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, script.toString()));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     private boolean generateUpdateScript(StringBuilder script) {
