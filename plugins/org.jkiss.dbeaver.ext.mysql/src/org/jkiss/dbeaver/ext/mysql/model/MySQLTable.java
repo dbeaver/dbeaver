@@ -271,8 +271,9 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         return foreignKeys;
     }
 
+    @Nullable
     @Association
-    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
+    public List<MySQLTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTrigger> triggers = new ArrayList<>();

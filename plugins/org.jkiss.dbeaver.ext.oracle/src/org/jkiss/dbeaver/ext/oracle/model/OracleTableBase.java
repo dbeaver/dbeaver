@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -232,8 +233,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
     }
 
+    @Nullable
     @Association
-    public Collection<OracleTableTrigger> getTriggers(DBRProgressMonitor monitor)
+    public List<OracleTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return triggerCache.getAllObjects(monitor, this);

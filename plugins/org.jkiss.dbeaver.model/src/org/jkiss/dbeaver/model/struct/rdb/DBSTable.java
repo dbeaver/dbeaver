@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Table
@@ -69,5 +70,8 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      */
 //    @Override
 //    Collection<? extends DBSTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    @Nullable
+    List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

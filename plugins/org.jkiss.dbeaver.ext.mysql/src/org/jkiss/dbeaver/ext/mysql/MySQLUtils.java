@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -147,4 +148,7 @@ public class MySQLUtils {
                 driver.getDriverClassName());
     }
 
+    public static boolean isAlterUSerSupported(MySQLDataSource dataSource) {
+        return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7);
+    }
 }

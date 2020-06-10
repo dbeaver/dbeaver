@@ -323,6 +323,11 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
     }
 
+    @Override
+    public String toString() {
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
+    }
+
     public static class ColumnNameTransformer implements IPropertyValueTransformer {
         @Override
         public Object transform(Object object, Object value) throws IllegalArgumentException {
