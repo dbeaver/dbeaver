@@ -63,9 +63,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SETTINGS settings) throws DBException {
-        // Start consumers
-        listener.taskStarted(settings);
-
         Throwable error = null;
         try {
             runnableContext.run(true, true, monitor -> {
@@ -83,7 +80,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         if (error != null) {
             log.error(error);
         }
-        listener.taskFinished(settings, error);
     }
 
     private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream, DBTTaskExecutionListener listener) throws DBException {
@@ -92,6 +88,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
 
+        listener.taskStarted(settings);
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
             for (OBJECT_TYPE object : objectList) {
@@ -162,9 +159,11 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             }
         } catch (Exception e) {
             lastError = e;
+            outLog.println("Process error\n" + e.getMessage());
         } finally {
             monitor.done();
         }
+        listener.taskFinished(settings, lastError);
 
         outLog.println("Tool execution finished");
         outLog.flush();
