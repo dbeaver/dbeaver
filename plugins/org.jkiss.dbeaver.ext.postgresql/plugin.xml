@@ -623,11 +623,11 @@
         </task>
         <task id="pgToolTriggerEnable" name="Enable trigger" description="Enable trigger" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerEnable">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState == 'D'"/>
         </task>
         <task id="pgToolTriggerDisable" name="Disable trigger" description="Disable trigger" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerDisable">
             <datasource id="postgresql"/>
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState != 'D'"/>
         </task>
     </extension>
 
