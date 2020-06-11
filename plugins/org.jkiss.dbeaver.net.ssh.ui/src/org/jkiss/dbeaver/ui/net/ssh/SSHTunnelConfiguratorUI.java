@@ -78,9 +78,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     public void createControl(Composite parent, Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
         //gd.minimumHeight = 200;
-        composite.setLayoutData(gd);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
 
         {
@@ -130,7 +129,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             Group advancedGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_advanced, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
 
             tunnelImplCombo = UIUtils.createLabelCombo(advancedGroup, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 3;
             tunnelImplCombo.setLayoutData(gd);
             for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
@@ -139,27 +138,28 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             localHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
+            localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             remoteHostText = UIUtils.createLabelText(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
+            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, 0, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
+            localPortSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             remotePortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_remote_port, 0, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
             remotePortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_port_description);
+            remotePortSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createHorizontalLine(advancedGroup, 4, 0);
 
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-
             keepAliveText = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
-            keepAliveText.setLayoutData(gd);
+            keepAliveText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
-            tunnelTimeout.setLayoutData(gd);
+            tunnelTimeout.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
         {
             Composite controlGroup = UIUtils.createComposite(composite, 2);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            controlGroup.setLayoutData(gd);
+            controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
                 @Override
