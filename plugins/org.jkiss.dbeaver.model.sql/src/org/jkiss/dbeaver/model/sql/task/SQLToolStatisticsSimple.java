@@ -1,21 +1,27 @@
 package org.jkiss.dbeaver.model.sql.task;
 
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.meta.Property;
 
 public class SQLToolStatisticsSimple extends SQLToolStatistics{
-    private String message;
+    private String statusMessage;
 
-    public void setMessage(String message) {
-        this.message = message;
+    @Property(viewable = true, editable = true, updatable = true)
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String message) {
+        this.statusMessage = message;
     }
 
     protected SQLToolStatisticsSimple(DBPObject object, boolean isError) {
         super(object);
         if(isError){
-            message = "ERROR";
+            statusMessage = "ERROR";
         }
         else{
-            message = "OK";
+            statusMessage = "OK";
         }
     }
 }

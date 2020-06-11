@@ -147,10 +147,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                             }
                         } catch (Exception e) {
                             log.debug("Error executing query", e);
-                            outLog.println("Error executing query");
+                            outLog.println("Error executing query\n" + e.getMessage());
                             if(listener instanceof SQLToolRunListener) {
                                 SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
-                                errorStat.setMessage(e.getMessage());
+                                errorStat.setStatusMessage(e.getMessage());
                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
                             }
                         } finally {
