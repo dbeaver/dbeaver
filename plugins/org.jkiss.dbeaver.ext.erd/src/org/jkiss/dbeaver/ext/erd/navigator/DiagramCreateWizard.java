@@ -152,7 +152,8 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             try {
                 Collection<DBSEntity> tables = DiagramObjectCollector.collectTables(
                     monitor,
-                    roots);
+                    roots,
+                    true);
                 diagram.fillEntities(monitor, tables, null);
 
                 diagramFile = ERDResourceHandler.createDiagram(diagram, diagram.getName(), folder, monitor);
