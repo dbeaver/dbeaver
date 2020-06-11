@@ -62,9 +62,6 @@ public class PostgreMessages extends NLS {
     public static String wizard_restore_page_setting_title;
     public static String wizard_restore_page_setting_title_setting;
 
-    public static String tool_run_in_separate_transaction;
-    public static String tool_run_in_separate_transaction_tooltip;
-
     /* tool script */
     public static String wizard_script_title_import_db;
     public static String wizard_script_title_execute_script;
@@ -74,37 +71,6 @@ public class PostgreMessages extends NLS {
     public static String tool_script_description_import;
     public static String tool_script_label_input;
     public static String tool_script_label_input_file;
-
-    /* tool analyze */
-    public static String tool_analyze_title_table;
-    public static String tool_analyze_title_database;
-
-    /* tool refresh mat view */
-    public static String tool_refresh_mview_title_table;
-
-    /* tool vacuum */
-    public static String tool_vacuum_analyze_check_tooltip;
-    public static String tool_vacuum_dps_check_tooltip;
-    public static String tool_vacuum_freeze_check_tooltip;
-    public static String tool_vacuum_full_check_tooltip;
-    public static String tool_vacuum_group_option;
-    public static String tool_vacuum_title_database;
-    public static String tool_vacuum_title_table;
-
-    /* tool truncate */
-    public static String tool_truncate_checkbox_cascade;
-    public static String tool_truncate_checkbox_cascade_tooltip;
-    public static String tool_truncate_checkbox_only;
-    public static String tool_truncate_checkbox_only_tooltip;
-    public static String tool_truncate_checkbox_restart;
-    public static String tool_truncate_checkbox_restart_tooltip;
-    public static String tool_truncate_group_option;
-    public static String tool_truncate_title_table;
-
-    /* tool refresh mat view */
-    public static String tool_refresh_mview_group_option;
-    public static String tool_refresh_mview_with_data;
-    public static String tool_refresh_mview_with_data_tooltip;
 
     /* dialog create db */
     public static String dialog_create_db_group_definition;

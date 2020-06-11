@@ -395,11 +395,22 @@
     -->
     <extension point="org.jkiss.dbeaver.task">
         <category id="oracle" name="Oracle" description="Oracle database task" icon="icons/oracle_icon.png"/>
+        <category id="oracleTool" parent="oracle" name="Tools" description="Oracle database tools" icon="icons/oracle_icon.png"/>
 
         <task id="oracleScriptExecute" name="Oracle SQL*Plus script" description="Oracle SQL*Plus script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+        </task>
+
+        <!-- SQL tools -->
+        <task id="oracleToolValidateStructure" name="%tasks.validate.structure.table.node.name" description="%tasks.validate.structure.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableValidateStructure">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
+        <task id="oracleToolTableTruncate" name="%tasks.truncate.table.node.name" description="%tasks.truncate.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTruncate">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
     </extension>
 
