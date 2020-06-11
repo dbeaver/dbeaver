@@ -17,21 +17,18 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,49 +41,22 @@ public class OracleToolGatherStatistics implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        if (!objects.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), objects);
-            dialog.open();
-        }
-    }
-
-    static class SQLDialog extends OracleMaintenanceDialog<DBSObject> {
-
-        private Spinner samplePercent;
-
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<DBSObject> selectedTables)
-        {
-            super(partSite, "Gather statistics", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, DBSObject object) {
-            if (object instanceof OracleTable) {
-                OracleTable table = (OracleTable)object;
-                String sql = "BEGIN \n" +
-                    " DBMS_STATS.GATHER_TABLE_STATS (\n" +
-                    " OWNNAME => '" + DBUtils.getQuotedIdentifier(table.getSchema()) + "',\n" +
-                    " TABNAME => '" + DBUtils.getQuotedIdentifier(table) + "',\n" +
-                    " estimate_percent => " + samplePercent.getSelection() + "\n" +
-                    " );\n" +
-                    "END;";
-                lines.add(sql);
-            } else if (object instanceof OracleTableIndex) {
-                OracleTableIndex index = (OracleTableIndex)object;
-                String sql = "ALTER INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPUTE STATISTICS";
-                lines.add(sql);
+        List<OracleTableBase> tables = CommonUtils.filterCollection(objects, OracleTableBase.class);
+        if (!tables.isEmpty()) {
+            TaskConfigurationWizardDialog.openNewTaskDialog(
+                    window,
+                    NavigatorUtils.getSelectedProject(),
+                    OracleTasks.TASK_TABLE_GATHER_STATISTICS,
+                    new StructuredSelection(objects.toArray()));
+        } else {
+            List<OracleTableIndex> databases = CommonUtils.filterCollection(objects, OracleTableIndex.class);
+            if (!databases.isEmpty()) {
+                TaskConfigurationWizardDialog.openNewTaskDialog(
+                        window,
+                        NavigatorUtils.getSelectedProject(),
+                        OracleTasks.TASK_INDEX_GATHER_STATISTICS,
+                        new StructuredSelection(objects.toArray()));
             }
         }
-
-        @Override
-        protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
-            optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            samplePercent = UIUtils.createLabelSpinner(optionsGroup, "Sample Percent", 5, 0, 100);
-            samplePercent .addSelectionListener(SQL_CHANGE_LISTENER);
-
-            createObjectsSelector(parent);
-        }
     }
-
 }

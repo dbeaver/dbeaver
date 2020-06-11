@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -26,16 +26,24 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 
 import java.util.List;
 
-public class OracleToolTableTruncate extends SQLToolExecuteHandler<OracleTableBase, OracleToolTableTruncateSettings> {
+public class OracleToolMViewRefresh extends SQLToolExecuteHandler<OracleMaterializedView, OracleToolMViewRefreshSettings> {
     @Override
-    public OracleToolTableTruncateSettings createToolSettings() {
-        return new OracleToolTableTruncateSettings();
+    public OracleToolMViewRefreshSettings createToolSettings() {
+        return new OracleToolMViewRefreshSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, OracleToolTableTruncateSettings settings, List<DBEPersistAction> queries, OracleTableBase object) throws DBCException {
-        String sql = "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-        if(settings.isReusable()) sql += " REUSE STORAGE";
+    public void generateObjectQueries(DBCSession session, OracleToolMViewRefreshSettings settings, List<DBEPersistAction> queries, OracleMaterializedView object) throws DBCException {
+        String method = "";
+        if (settings.isFast()) method += "f";
+        if (settings.isForce()) method += "?";
+        if (settings.isComplete()) method += "c";
+        if (settings.isAlways()) method += "a";
+        if (settings.isRecomputed()) method += "p";
+
+        String sql = "CALL DBMS_MVIEW.REFRESH('" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'," +
+                "'" + method + "'" +
+                ")";
         queries.add(new SQLDatabasePersistAction(sql));
     }
 }
