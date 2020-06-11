@@ -17,23 +17,17 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Table truncate
@@ -43,51 +37,17 @@ public class OracleToolTruncate implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<OracleTable> tables = CommonUtils.filterCollection(objects, OracleTable.class);
-        if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+        TaskConfigurationWizardDialog.openNewTaskDialog(
+                window,
+                NavigatorUtils.getSelectedProject(),
+                OracleTasks.TASK_TABLE_TRUNCATE,
+                new StructuredSelection(objects.toArray()));
     }
 
-    static class SQLDialog extends OracleMaintenanceDialog<OracleTable> {
-
-        private Button reuseStorage;
-
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<OracleTable> selectedTables)
-        {
-            super(partSite, "Truncate table(s)", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, OracleTable object) {
-            String sql = "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            if (reuseStorage.getSelection()) {
-                sql += " REUSE STORAGE";
-            }
-            lines.add(sql);
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
-            optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            reuseStorage = UIUtils.createCheckbox(optionsGroup, "Reuse storage", false);
-            reuseStorage.addSelectionListener(SQL_CHANGE_LISTENER);
-            reuseStorage.setToolTipText(
-                "Specify REUSE STORAGE to retain the space from the deleted rows allocated to the table.\n" +
-                "Storage values are not reset to the values when the table or cluster was created.\n" +
-                "This space can subsequently be used only by new data in the table or cluster resulting from insert or update operations.\n" +
-                "This clause leaves storage parameters at their current settings.");
-
-            createObjectsSelector(parent);
-        }
-
-        @Override
+     /*   @Override
         protected boolean needsRefreshOnFinish() {
             return true;
         }
-
-    }
+    }*/
 
 }

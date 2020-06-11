@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance;
 
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -26,9 +27,12 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.ext.oracle.tasks.OracleTasks;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,40 +47,10 @@ public class OracleToolValidateStructure implements IUserInterfaceTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        List<OracleTable> tables = CommonUtils.filterCollection(objects, OracleTable.class);
-        if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+        TaskConfigurationWizardDialog.openNewTaskDialog(
+                window,
+                NavigatorUtils.getSelectedProject(),
+                OracleTasks.TASK_TABLE_VALIDATE_STRUCTURE,
+                new StructuredSelection(objects.toArray()));
     }
-
-    static class SQLDialog extends OracleMaintenanceDialog<OracleTable> {
-
-        private Button cascadeCheck;
-
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<OracleTable> selectedTables)
-        {
-            super(partSite, "Validate table(s) structure", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, OracleTable object) {
-            String sql = "ANALYZE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " VALIDATE STRUCTURE";
-            if (cascadeCheck.getSelection()) {
-                sql += " CASCADE";
-            }
-            lines.add(sql);
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
-            optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            cascadeCheck = UIUtils.createCheckbox(optionsGroup, "Cascade", false);
-            cascadeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-
-            createObjectsSelector(parent);
-        }
-    }
-
 }
