@@ -247,8 +247,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
-    protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter)
-    {
+    protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter) throws DBException {
 
     }
 
