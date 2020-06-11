@@ -653,7 +653,14 @@ public final class DBUtils {
                         return trigger;
                     }
                 }
-                log.debug("Object '" + objectName + "' not found in entity" + DBUtils.getObjectFullName(finalEntity, DBPEvaluationContext.UI));
+                Collection<? extends DBSTableIndex> indices = ((DBSTable) finalEntity).getIndexes(monitor);
+                if (indices != null) {
+                    DBSTableIndex index = DBUtils.findObject(indices, objectName);
+                    if (index != null) {
+                        return index;
+                    }
+                }
+                log.debug("Object '" + objectName + "' not found in entity " + DBUtils.getObjectFullName(finalEntity, DBPEvaluationContext.UI));
                 return null;
             }
         }

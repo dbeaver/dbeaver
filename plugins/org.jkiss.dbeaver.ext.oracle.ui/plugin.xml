@@ -295,7 +295,7 @@
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
                 <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+                <!--<objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>-->
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
