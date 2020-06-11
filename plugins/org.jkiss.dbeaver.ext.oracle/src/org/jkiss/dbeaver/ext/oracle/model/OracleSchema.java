@@ -194,6 +194,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Association
+    public OracleMaterializedView getMaterializedView(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return mviewCache.getObject(monitor, this, name);
+    }
+
+    @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -475,7 +482,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
     }
 
-    public static class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
+    public class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
         TableCache()
         {
@@ -566,6 +573,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super.cacheChildren(parent, oracleTableColumns);
         }
 
+        @Override
+        protected void invalidateObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, Iterator<OracleTableBase> objectIter) throws DBException {
+            // Remove materialized views from cache
+            while (objectIter.hasNext()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                if (DBUtils.findObject(getMaterializedViews(monitor), objectIter.next().getName()) != null) {
+                    objectIter.remove();
+                }
+            }
+        }
     }
 
     /**
