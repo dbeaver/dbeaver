@@ -40,9 +40,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,8 +92,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
 
-        listener.taskStarted(task);
-
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
             for (OBJECT_TYPE object : objectList) {
@@ -126,8 +122,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                     false)) {
                                     long execTime = System.currentTimeMillis() - startTime;
                                     statement.executeStatement();
-                                    {
-                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator && listener instanceof SQLToolRunListener) {
+                                    if (listener instanceof SQLToolRunListener){
+                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
                                             List<? extends SQLToolStatistics> executeStatistics =
                                                 ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
                                                     object,
@@ -142,12 +138,21 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 }
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
                                             }
+                                        } else {
+                                            SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
+                                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                         }
                                     }
                                 }
                             }
                         } catch (Exception e) {
                             log.debug("Error executing query", e);
+                            outLog.println("Error executing query\n" + e.getMessage());
+                            if(listener instanceof SQLToolRunListener) {
+                                SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
+                                errorStat.setStatusMessage(e.getMessage());
+                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
+                            }
                         } finally {
                             monitor.worked(1);
                         }
@@ -159,7 +164,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             lastError = e;
         } finally {
             monitor.done();
-            listener.taskFinished(task, lastError);
         }
 
         outLog.println("Tool execution finished");
