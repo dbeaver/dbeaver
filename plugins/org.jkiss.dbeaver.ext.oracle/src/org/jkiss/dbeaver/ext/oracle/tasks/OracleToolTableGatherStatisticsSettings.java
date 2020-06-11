@@ -16,35 +16,44 @@
  */
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
-public class OracleToolTableTruncateSettings extends SQLToolExecuteSettings<OracleTableBase> {
-    private boolean isReusable;
+public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSettings<DBSObject> {
+    private int samplePercent;
 
-    @Property(viewable = true, editable = true, updatable = true)
-    public boolean isReusable() {
-        return isReusable;
+    @Property(viewable = true, editable = true, updatable = true, valueValidator = OracleStatisticPercentLimiter.class)
+    public int getSamplePercent() {
+        return samplePercent;
     }
 
-    public void setReusable(boolean reusable) {
-        isReusable = reusable;
+    public void setSamplePercent(int samplePercent) {
+        this.samplePercent = samplePercent;
     }
 
     @Override
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         super.loadConfiguration(runnableContext, config);
-        isReusable = JSONUtils.getBoolean(config, "reuse_storage");
+        samplePercent = JSONUtils.getInteger(config, "sample_percent");
     }
 
     @Override
     public void saveConfiguration(Map<String, Object> config) {
         super.saveConfiguration(config);
-        config.put("reuse_storage", isReusable);
+        config.put("sample_percent", samplePercent);
+    }
+
+    private class OracleStatisticPercentLimiter implements IPropertyValueValidator<DBSObject, Integer> {
+
+        @Override
+        public boolean isValidValue(DBSObject object, Integer value) throws IllegalArgumentException {
+            return 1 <= value && value <= 100;
+        }
     }
 }

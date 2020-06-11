@@ -412,6 +412,18 @@
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
+        <task id="oracleToolTableGatherStatistics" name="%tasks.gather.statistics.table.node.name" description="%tasks.gather.statistics.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolsTableGatherStatistics">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
+        <task id="oracleToolIndexGatherStatistics" name="%tasks.gather.statistics.index.node.name" description="%tasks.gather.statistics.index.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolIndexGatherStatistics">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
+        </task>
+        <task id="oracleToolMViewRefresh" name="%tasks.refresh.mview.node.name" description="%tasks.refresh.mview.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolMViewRefresh">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+        </task>
     </extension>
 
 </plugin>
