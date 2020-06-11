@@ -331,11 +331,15 @@ public class NavigatorUtils {
                         nodes.add((DBNNode)nextSelected);
                         String nodeName;
                         if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
-                            DBSObject object = ((DBNDatabaseNode)nextSelected).getObject();
+                            DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
                             if (object == null) {
                                 continue;
                             }
                             nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
+                            objects.add(object);
+                        } else if (nextSelected instanceof DBNDataSource) {
+                            DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
+                            nodeName = object.getName();
                             objects.add(object);
                         } else {
                             nodeName = ((DBNNode)nextSelected).getNodeTargetName();
