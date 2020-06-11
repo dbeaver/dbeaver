@@ -53,24 +53,7 @@ public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
     }
 
 
-    /*class SQLDialog extends TableToolDialog {
-
-        SQLDialog(IWorkbenchPartSite partSite, List<PostgreTrigger> selectedTrigger) {
-            super(partSite, (isEnable ? "Enable" : "Disable") + " trigger", selectedTrigger);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, PostgreObject object) {
-            lines.add("ALTER TABLE " + ((PostgreTrigger) object).getTable() + " " + (isEnable ? "ENABLE" : "DISABLE")
-                + " TRIGGER " + DBUtils.getQuotedIdentifier(object));
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            createObjectsSelector(parent);
-        }
-
-        @Override
+    /*        @Override
         protected boolean needsRefreshOnFinish() {
             return true;
         }
