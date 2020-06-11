@@ -430,11 +430,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPProject project = getProject();
         IDocument document = getDocument();
-
-        int totalLines = document.getNumberOfLines();
-        if (totalLines == 0) {
+        if (document == null || document.getNumberOfLines() == 0) {
             return null;
         }
+
         try {
             IRegion region = document.getLineInformation(0);
             String line = document.get(region.getOffset(), region.getLength());
