@@ -420,6 +420,10 @@
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
         </task>
+        <task id="oracleToolMViewRefresh" name="%tasks.refresh.mview.node.name" description="%tasks.refresh.mview.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolMViewRefresh">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+        </task>
     </extension>
 
 </plugin>
