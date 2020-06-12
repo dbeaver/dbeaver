@@ -96,7 +96,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                 // Datasources
                 for (DataSourceDescriptor dataSource : localDataSources) {
                     // Skip temporary
-                    if (!dataSource.isTemporary()) {
+                    if (!dataSource.isDetached()) {
                         saveDataSource(xml, dataSource);
                     }
                 }
