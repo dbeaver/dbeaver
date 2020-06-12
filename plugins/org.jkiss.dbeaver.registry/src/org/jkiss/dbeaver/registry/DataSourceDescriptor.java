@@ -1340,6 +1340,10 @@ public class DataSourceDescriptor
             CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 
+    public boolean isDetached() {
+        return hidden || temporary;
+    }
+
     public static class ContextInfo implements DBPObject {
         private final DBCExecutionContext context;
 

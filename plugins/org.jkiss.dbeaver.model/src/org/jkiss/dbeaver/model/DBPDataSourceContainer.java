@@ -89,6 +89,7 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     // We do not implement DBPHiddenObject because it is not really hidden.
     // This flag means that datasource shouldn't be included in the primary connection list.
+    // Also hidden connections are excluded from persistence
     boolean isHidden();
 
     boolean isConnectionReadOnly();

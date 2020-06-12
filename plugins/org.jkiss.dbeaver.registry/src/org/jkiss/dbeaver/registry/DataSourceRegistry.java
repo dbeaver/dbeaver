@@ -494,7 +494,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public void addDataSource(@NotNull DBPDataSourceContainer dataSource) {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
-        if (!dataSource.isTemporary()) {
+        if (!descriptor.isDetached()) {
             this.saveDataSources();
         }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
@@ -511,7 +511,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         synchronized (dataSources) {
             this.dataSources.remove(descriptor);
         }
-        if (!dataSource.isTemporary()) {
+        if (!descriptor.isDetached()) {
             this.saveDataSources();
         }
         try {
@@ -528,7 +528,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         if (!dataSources.contains(dataSource)) {
             addDataSource(dataSource);
         } else {
-            if (!dataSource.isTemporary()) {
+            if (!((DataSourceDescriptor) dataSource).isDetached()) {
                 this.saveDataSources();
             }
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);

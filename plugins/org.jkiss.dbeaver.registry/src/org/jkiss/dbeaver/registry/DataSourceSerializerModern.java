@@ -131,7 +131,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.beginObject();
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         // Skip temporary
-                        if (!dataSource.isTemporary()) {
+                        if (!dataSource.isDetached()) {
                             saveDataSource(jsonWriter, dataSource);
                             if (dataSource.getVirtualModel().hasValuableData()) {
                                 virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
