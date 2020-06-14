@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -25,10 +26,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -93,6 +91,21 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         log.error("Error detecting new object type " + objectType, e);
                     }
                 }
+            } else {
+                // No explicit object type. Try to detect from selection
+                IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+                if (activePart != null) {
+                    List<IContributionItem> actions = fillCreateMenuItems(activePart.getSite(), node);
+                    for (IContributionItem item : actions) {
+                        if (item instanceof CommandContributionItem) {
+                            ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
+                            if (command != null) {
+                                ActionUtils.runCommand(command.getId(), selection, command.getParameterMap(), activePart.getSite());
+                                return null;
+                            }
+                        }
+                    }
+                }
             }
             createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), node, newObjectType, null, isFolder);
         }
@@ -105,8 +118,33 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (!updateUI) {
             return;
         }
+        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
+        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+            return;
+        }
+
         Object typeName = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
         Object objectIcon = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+        if (typeName == null) {
+            // Try to get type from active selection
+            DBNNode node = NavigatorUtils.getSelectedNode(element);
+
+            List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
+            for (IContributionItem item : actions) {
+                if (item instanceof CommandContributionItem) {
+                    ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
+                    if (command != null) {
+                        typeName = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
+                        if (typeName != null) {
+                            // Prepend "Create new" as it is a single node
+                            typeName = NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName);
+                            objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
         if (typeName != null) {
             element.setText(typeName.toString());
         } else {
