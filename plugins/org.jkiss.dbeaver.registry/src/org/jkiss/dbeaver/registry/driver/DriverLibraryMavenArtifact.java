@@ -78,6 +78,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public void setReference(MavenArtifactReference reference) {
         this.reference = reference;
+        this.path = PATH_PREFIX + reference.toString();
         this.localVersion = null;
     }
 
