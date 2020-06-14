@@ -128,17 +128,17 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 if (object instanceof DBPObjectStatistics) {
                     String sizeText;
                     int percentFull;
-                    boolean statsWasRead = false;
-                    long maxObjectSize = 0;
-                    if (((DBPObjectStatistics) object).hasStatistics()) {
-                        // Draw object size
-                        maxObjectSize = getMaxObjectSize((TreeItem) event.item);
-                        if (maxObjectSize >= 0) {
-                            statsWasRead = true;
-                        }
+                    boolean statsWasRead = ((DBPObjectStatistics) object).hasStatistics();
+                    long maxObjectSize = getMaxObjectSize((TreeItem) event.item);
+                    if (!statsWasRead && maxObjectSize >= 0) {
+                        statsWasRead = true;
                     }
                     if (statsWasRead) {
                         long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
+                        if (statObjectSize == 0) {
+                            // Empty or no size - nothing to show
+                            return;
+                        }
                         percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
                         if (percentFull > 100) {
                             log.debug("Object stat > 100%!");
