@@ -176,7 +176,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
      * @param monitor progress monitor
      */
     @Override
-    public Collection<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().externalTableCache.getChildren(monitor, getContainer(), this);

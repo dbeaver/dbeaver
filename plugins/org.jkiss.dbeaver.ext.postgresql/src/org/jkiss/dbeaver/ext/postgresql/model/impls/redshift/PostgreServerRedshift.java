@@ -203,6 +203,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.v) {
+            return new RedshiftView(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
     }
