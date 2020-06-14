@@ -629,19 +629,24 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
             boolean first = true;
-            for (int i = 0; i < inParameters.size(); i++) {
-                DBSProcedureParameter parameter = inParameters.get(i);
-                if (!first) {
-                    sql.append(",");
-                }
+            for (DBSProcedureParameter parameter : inParameters) {
                 switch (parameter.getParameterKind()) {
                     case IN:
+                        if (!first) {
+                            sql.append(",");
+                        }
                         sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
                         break;
                     case RETURN:
                         continue;
                     default:
-                        sql.append("?");
+                        if (isStoredProcedureCallIncludesOutParameters()) {
+                            if (!first) {
+                                sql.append(",");
+                            }
+                            sql.append("?");
+                        }
+                        break;
                 }
                 String typeName = parameter.getParameterType().getFullTypeName();
 //                sql.append("\t-- put the ").append(parameter.getName())
@@ -656,6 +661,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             sql.append(" }");
         }
         sql.append("\n\n");
+    }
+
+    protected boolean isStoredProcedureCallIncludesOutParameters() {
+        return true;
     }
 
     @Override

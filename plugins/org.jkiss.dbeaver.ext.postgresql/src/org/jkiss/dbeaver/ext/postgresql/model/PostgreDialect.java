@@ -848,4 +848,9 @@ public class PostgreDialect extends JDBCSQLDialect {
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
+
+    @Override
+    protected boolean isStoredProcedureCallIncludesOutParameters() {
+        return false;
+    }
 }
