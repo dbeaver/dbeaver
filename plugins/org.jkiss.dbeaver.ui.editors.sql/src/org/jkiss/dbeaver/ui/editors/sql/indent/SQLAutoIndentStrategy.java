@@ -154,12 +154,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	        	if (prevChar == escapeChar) {
 		            switch (ch) {
 	                case 'n':
-	                    if (!endsWithLF(result)) {
+	                    if (!endsWithLF(result, '\n')) {
 	                        result.append("\n");
 	                    }
 	                    break;
 	                case 'r':
-	                    if (!endsWithLF(result)) {
+	                    if (!endsWithLF(result, '\r')) {
 	                        result.append("\r");
 	                    }
 	                    break;
@@ -182,10 +182,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 	                    }
 	                    if (inString) {
 	                        result.append(ch);
-	                    } else if (ch == '\n' && result.length() > 0) {
+	                    } else if ((ch == '\n' || ch == '\r')  && result.length() > 0) {
 	                        // Append linefeed even if it is outside of quotes
 	                        // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
-	                        if (!endsWithLF(result)) {
+	                        if (!endsWithLF(result, ch)) {
 	                            result.append(ch);
 	                        }
 	                    }
@@ -216,9 +216,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             		inString = true;
             		break;
                 case '\n':
+                case '\r':
                     // Line feed outside of actual query
-                    if (result.length() > 0 && result.charAt(result.length() - 1) != '\n') {
-                        result.append("\n");
+                    if (result.length() > 0 && result.charAt(result.length() - 1) != ch) {
+                        result.append(ch == '\n' ? "\n" : "\r");
                     }
                     break;
             	}
@@ -242,14 +243,14 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return true;
     }
 
-    private boolean endsWithLF(StringBuilder result) {
+    private boolean endsWithLF(StringBuilder result, char lfChar) {
         boolean endsWithLF = false;
         for (int k = result.length(); k > 0; k--) {
             final char lch = result.charAt(k - 1);
             if (!Character.isWhitespace(lch)) {
                 break;
             }
-            if (lch == '\n' || lch == '\r') {
+            if (lch == lfChar) {
                 endsWithLF = true;
                 break;
             }
