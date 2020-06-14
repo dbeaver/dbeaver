@@ -133,7 +133,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         StringBuilder ddl = new StringBuilder(source);
         if (!actions.isEmpty()) {
             ddl.append("\n\n").append(SQLUtils.generateScript(
-                getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+                getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
         }
 
         return ddl.toString();
@@ -144,8 +144,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
+    public void setObjectDefinitionText(String sourceText) {
         this.source = sourceText;
     }
 
