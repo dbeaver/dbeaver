@@ -356,9 +356,10 @@ public class DatabaseTasksTree {
         Set<DBTTaskCategory> categories = new LinkedHashSet<>();
         tasks.forEach(task -> {
             if (project == null || project == task.getProject()) {
-                DBTTaskCategory category = task.getType().getCategory();
-                if (parentCategory == category.getParent()) {
-                    categories.add(category);
+                for (DBTTaskCategory category = task.getType().getCategory(); category != null; category = category.getParent()) {
+                    if (parentCategory == category.getParent()) {
+                        categories.add(category);
+                    }
                 }
             }
         });
