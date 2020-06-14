@@ -673,6 +673,7 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null &&
+                        tableColumn.getDataKind().isComplex() == attrMeta.getDataKind().isComplex() &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
