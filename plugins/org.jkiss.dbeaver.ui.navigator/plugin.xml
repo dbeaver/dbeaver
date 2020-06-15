@@ -712,20 +712,20 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.ui.tools.select.connection" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler">
-            <enabledWhen>
+            <activeWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
                 </with>
-            </enabledWhen>
+            </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.tools.select.schema" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler">
-            <enabledWhen>
+            <activeWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                        <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
                     </adapt>
                 </with>
-            </enabledWhen>
+            </activeWhen>
         </handler>
 
     </extension>

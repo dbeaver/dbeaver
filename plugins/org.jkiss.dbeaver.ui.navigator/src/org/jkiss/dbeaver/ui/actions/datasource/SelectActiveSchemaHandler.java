@@ -70,6 +70,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(HandlerUtil.getActiveEditor(event)) == null) {
+            return null;
+        }
+
         DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(HandlerUtil.getActiveWorkbenchWindow(event));
         if (dataSourceContainer == null) {
             log.debug("No active connection. Action is in disabled state.");
@@ -217,6 +221,11 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            if (workbenchWindow.getActivePage() == null ||
+                SelectActiveDataSourceHandler.getDataSourceContainerProvider(workbenchWindow.getActivePage().getActivePart()) == null)
+            {
+                return;
+            }
             DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
             if (dataSourceContainer == null) {
                 return;
