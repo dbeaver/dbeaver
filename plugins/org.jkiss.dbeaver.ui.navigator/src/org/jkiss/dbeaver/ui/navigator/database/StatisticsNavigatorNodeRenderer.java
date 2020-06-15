@@ -133,14 +133,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     if (!statsWasRead && maxObjectSize >= 0) {
                         statsWasRead = true;
                     }
-                    if (statsWasRead) {
+                    if (statsWasRead && maxObjectSize >= 0) {
                         long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
                         if (statObjectSize == 0) {
                             // Empty or no size - nothing to show
                             return;
                         }
                         percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
-                        if (percentFull > 100) {
+                        if (percentFull < 0 || percentFull > 100) {
                             log.debug("Object stat > 100%!");
                             percentFull = 100;
                         }
