@@ -2893,7 +2893,8 @@ public abstract class LightGrid extends Canvas {
 
         // Special code to reflect mouse wheel events if using an external
         // scroller
-        addListener(SWT.MouseWheel, this::onMouseWheel);
+        addListener(SWT.MouseWheel, this::onMouseVerticalWheel);
+        addListener(SWT.MouseHorizontalWheel, this::onMouseHorizontalWheel);
     }
 
     private void onFocusIn() {
@@ -2924,13 +2925,20 @@ public abstract class LightGrid extends Canvas {
      *
      * @param e event
      */
-    private void onMouseWheel(Event e)
+    private void onMouseVerticalWheel(Event e)
     {
         if (vScroll.getVisible()) {
             vScroll.handleMouseWheel(e);
             if (getVerticalBar() == null)
                 e.doit = false;
-        } else if (hScroll.getVisible()) {
+        } else {
+            onMouseHorizontalWheel(e);
+        }
+    }
+
+    private void onMouseHorizontalWheel(Event e)
+    {
+        if (hScroll.getVisible()) {
             hScroll.handleMouseWheel(e);
             if (getHorizontalBar() == null)
                 e.doit = false;
