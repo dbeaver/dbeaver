@@ -1070,7 +1070,10 @@ public class SQLEditor extends SQLEditorBase implements
                         {
                             EnterNameDialog dialog = new EnterNameDialog(resultTabs.getShell(), "Tab title", activeTab.getText());
                             if (dialog.open() == IDialogConstants.OK_ID) {
-                                activeTab.setText(dialog.getResult());
+                                if (activeTab.getData() instanceof QueryResultsContainer) {
+                                    final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
+                                    resultsContainer.setTabName(dialog.getResult());
+                                }
                             }
                         }
                     });
@@ -2747,6 +2750,8 @@ public class SQLEditor extends SQLEditorBase implements
         private SQLScriptElement lastGoodQuery = null;
         // Data container and filter are non-null only in case of associations navigation
         private DBSDataContainer dataContainer;
+        private CTabItem resultsTab;
+        private String tabName;
 
         private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, boolean makeDefault)
         {
@@ -2782,18 +2787,18 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
-                CTabItem tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
+                resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
                 int queryIndex = queryProcessors.indexOf(queryProcessor);
                 String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
-                tabItem.setText(tabName);
-                tabItem.setImage(IMG_DATA_GRID);
-                tabItem.setData(this);
-                tabItem.setShowClose(true);
-                CSSUtils.setCSSClass(tabItem, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                resultsTab.setText(tabName);
+                resultsTab.setImage(IMG_DATA_GRID);
+                resultsTab.setData(this);
+                resultsTab.setShowClose(true);
+                CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-                tabItem.setControl(viewer.getControl());
-                tabItem.addDisposeListener(resultTabDisposeListener);
-                UIUtils.disposeControlOnItemDispose(tabItem);
+                resultsTab.setControl(viewer.getControl());
+                resultsTab.addDisposeListener(resultTabDisposeListener);
+                UIUtils.disposeControlOnItemDispose(resultsTab);
             }
 
             viewer.getControl().addDisposeListener(e -> {
@@ -2811,21 +2816,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private CTabItem getTabItem() {
-            return getTabItem(this);
-        }
-
-        private CTabItem getTabItem(QueryResultsContainer resultsContainer) {
-            for (CTabItem item : resultTabs.getItems()) {
-                if (item.getData() == resultsContainer) {
-                    return item;
-                }
-            }
-            return null;
+            return resultsTab;
         }
 
         void updateResultsName(String resultSetName, String toolTip) {
             if (resultTabs == null || resultTabs.isDisposed()) {
                 return;
+            }
+            if (CommonUtils.isEmpty(resultSetName)) {
+                resultSetName = tabName;
             }
             CTabItem tabItem = getTabItem();
             if (tabItem != null && !tabItem.isDisposed()) {
@@ -2888,7 +2887,7 @@ public class SQLEditor extends SQLEditorBase implements
         public void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter) {
             UIUtils.syncExec(() -> {
                 QueryResultsContainer resultsProvider = queryProcessor.createResultsProvider(dataContainer);
-                CTabItem tabItem = getTabItem(resultsProvider);
+                CTabItem tabItem = resultsProvider.getTabItem();
                 if (tabItem != null) {
                     tabItem.getParent().setSelection(tabItem);
                 }
@@ -3135,6 +3134,11 @@ public class SQLEditor extends SQLEditorBase implements
         public void setSmartAutoCommit(boolean smartAutoCommit) {
             SQLEditor.this.setSmartAutoCommit(smartAutoCommit);
         }
+
+        public void setTabName(String tabName) {
+            this.tabName = tabName;
+            resultsTab.setText(tabName);
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
@@ -3293,8 +3297,11 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                         if (resultsIndex < result.getExecuteResults().size()) {
                             SQLQueryResult.ExecuteResult executeResult = result.getExecuteResults(resultsIndex, true);
-                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
-                            results.updateResultsName(resultSetName, null);
+                            String resultSetName = results.tabName;
+                            if (CommonUtils.isEmpty(resultSetName)) {
+                                resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
+                                results.updateResultsName(resultSetName, null);
+                            }
                             ResultSetViewer resultSetViewer = results.getResultSetController();
                             if (resultSetViewer != null) {
                                 resultSetViewer.getModel().setStatistics(statistics);
