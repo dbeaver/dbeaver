@@ -16,24 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 public class SQLServerToolTriggerToggle implements IUserInterfaceTool {
-
-    private static final Log log = Log.getLog(SQLServerToolTriggerToggle.class);
 
     private boolean isEnable;
 
@@ -43,33 +36,25 @@ public class SQLServerToolTriggerToggle implements IUserInterfaceTool {
 
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) {
-        List<SQLServerTableTrigger> triggeList = CommonUtils.filterCollection(objects, SQLServerTableTrigger.class);
-        if (!triggeList.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), triggeList);
-            dialog.open();
+        if (isEnable) {
+            TaskConfigurationWizardDialog.openNewTaskDialog(
+                    window,
+                    NavigatorUtils.getSelectedProject(),
+                    "mssqlToolTriggerEnable",
+                    new StructuredSelection(objects.toArray()));
+        } else {
+            TaskConfigurationWizardDialog.openNewTaskDialog(
+                    window,
+                    NavigatorUtils.getSelectedProject(),
+                    "mssqlToolTriggerDisable",
+                    new StructuredSelection(objects.toArray()));
         }
     }
 
-    class SQLDialog extends TableToolDialog {
-
-        SQLDialog(IWorkbenchPartSite partSite, List<SQLServerTableTrigger> selectedTrigger) {
-            super(partSite, (isEnable ? "Enable" : "Disable") + " trigger", selectedTrigger);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, SQLServerObject object) {
-            lines.add("ALTER TABLE " + ((SQLServerTableTrigger) object).getTable() + " "
-                + (isEnable ? "ENABLE" : "DISABLE") + " TRIGGER " + DBUtils.getQuotedIdentifier(object) + " ");
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            createObjectsSelector(parent);
-        }
-
+    /*
         @Override
         protected boolean needsRefreshOnFinish() {
             return true;
         }
-    }
+    }*/
 }

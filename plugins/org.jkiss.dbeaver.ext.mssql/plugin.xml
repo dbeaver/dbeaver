@@ -447,4 +447,22 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="sqlServerTool" parent="sqlserver" name="Tools" description="SQLServer database tools" icon="icons/mssql_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="mssqlToolTableRebuild" name="%tasks.rebuild.table.node.name" description="%tasks.rebuild.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableRebuild">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase"/>
+        </task>
+        <task id="mssqlToolTriggerEnable" name="Enable trigger" description="Enable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerEnable">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.disabled"/>
+        </task>
+        <task id="mssqlToolTriggerDisable" name="Disable trigger" description="Disable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerDisable">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="!object.disabled"/>
+        </task>
+    </extension>
+
 </plugin>
