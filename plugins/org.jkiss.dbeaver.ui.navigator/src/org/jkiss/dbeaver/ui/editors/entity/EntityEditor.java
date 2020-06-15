@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
@@ -1022,6 +1023,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void recreateEditorControl() {
         recreatePages();
         firePropertyChange(PROP_OBJECT_INIT);
+        DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
     }
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;

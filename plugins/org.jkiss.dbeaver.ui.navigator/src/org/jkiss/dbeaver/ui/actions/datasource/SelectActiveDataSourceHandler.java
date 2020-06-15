@@ -23,6 +23,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
 
@@ -48,9 +50,23 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 {
     private static final int MAX_MENU_ITEM_SIZE = 25;
 
+    static IDataSourceContainerProviderEx getDataSourceContainerProvider(IWorkbenchPart workbenchPart) {
+        DBPContextProvider contextProvider = GeneralUtils.adapt(workbenchPart, DBPContextProvider.class);
+        if (contextProvider == null) {
+            return null;
+        }
+        if (contextProvider instanceof IDataSourceContainerProviderEx) {
+            return (IDataSourceContainerProviderEx)contextProvider;
+        } else {
+            return null;
+        }
+    }
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        if (getDataSourceContainerProvider(HandlerUtil.getActiveEditor(event)) == null) {
+            return null;
+        }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         openDataSourceSelector(workbenchWindow, dataSource);
