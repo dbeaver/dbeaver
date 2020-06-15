@@ -209,6 +209,12 @@ public final class DBStructUtils {
     }
 
     public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject) {
+        if (typedObject instanceof DBSObject) {
+            // If source and target datasources have the same type then just return the same type name
+            if (((DBSObject) typedObject).getDataSource().getClass() == objectContainer.getDataSource().getClass()) {
+                return typedObject.getFullTypeName();
+            }
+        }
         String typeName = typedObject.getTypeName();
         String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = typedObject.getDataKind();
