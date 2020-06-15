@@ -105,7 +105,7 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
     private void updateSelectedObjects() {
         selectedObjects.clear();
         for (Object element : dataSourceTree.getCheckboxViewer().getCheckedElements()) {
-            if (element instanceof DBNDatabaseItem) {
+            if (element instanceof DBNDatabaseItem && taskType.matchesType(((DBNDatabaseItem) element).getObject().getClass())) {
                 selectedObjects.add(((DBNDatabaseItem) element).getObject());
             }
         }
