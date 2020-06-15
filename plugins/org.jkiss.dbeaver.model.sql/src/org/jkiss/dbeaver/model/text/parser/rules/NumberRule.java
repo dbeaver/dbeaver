@@ -65,9 +65,11 @@ public class NumberRule implements TPRule {
 		int c= scanner.read();
 		if (Character.isDigit((char)c)) {
 			if (fColumn == UNDEFINED || (fColumn == scanner.getColumn() - 1)) {
+				int charNum = 0;
 				do {
-					c= scanner.read();
-				} while (Character.isDigit((char) c));
+					c = scanner.read();
+					charNum++;
+				} while (Character.isDigit((char) c) || (charNum > 0 && Character.toLowerCase(c) == 'e'));
 				scanner.unread();
 				return fToken;
 			}
