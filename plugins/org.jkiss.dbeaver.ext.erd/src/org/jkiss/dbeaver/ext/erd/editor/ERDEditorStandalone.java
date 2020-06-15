@@ -20,6 +20,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -35,12 +36,16 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ResourceBundle;
 
 /**
  * Standalone ERD editor
@@ -74,6 +79,23 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     public boolean isReadOnly()
     {
         return false;
+    }
+
+    @Override
+    public void refreshDiagram(boolean force, boolean refreshMetadata) {
+        if (isDirty()) {
+            if (ConfirmationDialog.showConfirmDialog(
+                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                null,
+                NavigatorPreferences.CONFIRM_ENTITY_REVERT,
+                ConfirmationDialog.QUESTION,
+                getTitle()) != IDialogConstants.YES_ID)
+            {
+                return;
+            }
+
+        }
+        super.refreshDiagram(force, refreshMetadata);
     }
 
     @Override
