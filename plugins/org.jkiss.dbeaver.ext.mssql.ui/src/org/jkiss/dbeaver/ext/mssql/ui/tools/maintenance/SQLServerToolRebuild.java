@@ -33,7 +33,7 @@ public class SQLServerToolRebuild implements IUserInterfaceTool {
         TaskConfigurationWizardDialog.openNewTaskDialog(
                 window,
                 NavigatorUtils.getSelectedProject(),
-                "sqlServerToolTableRebuild",
+                "mssqlToolTableRebuild",
                 new StructuredSelection(objects.toArray()));
     }
 }
