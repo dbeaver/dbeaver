@@ -16,46 +16,24 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance;
 
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 public class SQLServerToolRebuild implements IUserInterfaceTool {
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
-            throws DBException {
-        List<SQLServerTable> tables = CommonUtils.filterCollection(objects, SQLServerTable.class);
-        if (!tables.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException {
+        TaskConfigurationWizardDialog.openNewTaskDialog(
+                window,
+                NavigatorUtils.getSelectedProject(),
+                "mssqlToolTableRebuild",
+                new StructuredSelection(objects.toArray()));
     }
-
-    static class SQLDialog extends TableToolDialog {
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<SQLServerTable> selectedTables) {
-            super(partSite, "Rebuild index(s)", selectedTables);
-        }
-
-        @Override
-        protected void generateObjectCommand(List<String> lines, SQLServerObject object) {
-            lines.add("ALTER INDEX ALL ON " + ((SQLServerTable) object).getFullyQualifiedName(DBPEvaluationContext.DDL) + " REBUILD ");
-        }
-
-        @Override
-        protected void createControls(Composite parent) {
-            createObjectsSelector(parent);
-        }
-    }
-
 }
