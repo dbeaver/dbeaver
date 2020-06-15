@@ -6,6 +6,7 @@ Bundle-Version: 1.0.129.qualifier
 Bundle-Release-Date: 20200622
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  com.github.jsqlparser
 Export-Package: org.jkiss.dbeaver.ext.mssql,
