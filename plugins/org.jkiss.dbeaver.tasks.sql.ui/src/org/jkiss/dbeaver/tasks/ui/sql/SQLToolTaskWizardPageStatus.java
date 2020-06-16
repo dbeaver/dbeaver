@@ -115,7 +115,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
         LogConsoleViewer consoleViewer = new LogConsoleViewer(partDivider);
         console.setWaterMarks(1024 * 1024 * 3, 1024 * 1024 * 4);
 
-        writer = new OutputStreamWriter(console.newMessageStream(), StandardCharsets.UTF_8);
+        writer = new OutputStreamWriter(console.newMessageStream());
 
         setControl(composite);
     }
