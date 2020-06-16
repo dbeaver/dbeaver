@@ -1693,7 +1693,7 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        return (T) getDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+        return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
     }
 
     @Nullable
