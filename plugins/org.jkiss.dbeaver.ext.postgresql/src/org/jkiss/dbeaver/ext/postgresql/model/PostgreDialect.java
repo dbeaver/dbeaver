@@ -62,7 +62,9 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     //Function without arguments/parameters #8710
     private static final String[] OTHER_TYPES_FUNCTION = {
-        "CURRENT_DATE"
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP"
     };
 
     //region KeyWords

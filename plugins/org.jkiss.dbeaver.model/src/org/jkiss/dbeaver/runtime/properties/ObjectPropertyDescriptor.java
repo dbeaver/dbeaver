@@ -189,6 +189,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return valueValidator;
     }
 
+    public boolean isPropertyVisible(Object object, Object value) {
+        Class<? extends IPropertyValueValidator> visiblityCheckerClass = propInfo.visibleIf();
+        if (visiblityCheckerClass != IPropertyValueValidator.class) {
+            try {
+                IPropertyValueValidator checker = visiblityCheckerClass.getConstructor().newInstance();
+                return checker.isValidValue(object, value);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean isEditable(Object object)
     {

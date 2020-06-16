@@ -46,10 +46,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceCollection;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
+import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -271,6 +268,13 @@ public class PropertyTreeViewer extends TreeViewer {
         TreeNode lastCategory = null;
         final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getPropertyDescriptors2());
         for (DBPPropertyDescriptor prop : props) {
+            if (prop instanceof ObjectPropertyDescriptor) {
+                Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
+                if (!((ObjectPropertyDescriptor) prop).isPropertyVisible(propertySource.getEditableValue(), propertyValue)) {
+                    // Skip non-visible properties
+                    continue;
+                }
+            }
             String categoryName = prop.getCategory();
             if (CommonUtils.isEmpty(categoryName)) {
                 categoryName = CATEGORY_GENERAL;
