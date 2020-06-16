@@ -137,4 +137,6 @@ public @interface Property
 
     Class<? extends IPropertyValueValidator> valueValidator() default IPropertyValueValidator.class;
 
+    Class<? extends IPropertyValueValidator> visibleIf() default IPropertyValueValidator.class;
+
 }
