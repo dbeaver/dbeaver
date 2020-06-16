@@ -71,7 +71,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 }
             });
 
-            truncateTargetTable = UIUtils.createCheckbox(loadSettings, DTUIMessages.database_consumer_wizard_trunicate_checkbox_label, settings.isTruncateBeforeLoad());
+            truncateTargetTable = UIUtils.createCheckbox(loadSettings, DTUIMessages.database_consumer_wizard_truncate_checkbox_label, settings.isTruncateBeforeLoad());
             truncateTargetTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -161,8 +161,8 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         Shell shell = getContainer().getShell();
         if (shell.isVisible() || getSettings().isTruncateBeforeLoad()) {
             String tableNames = getWizard().getSettings().getDataPipes().stream().map(pipe -> pipe.getConsumer() == null ? "" : pipe.getConsumer().getObjectName()).collect(Collectors.joining(","));
-            String checkbox_question = NLS.bind(DTUIMessages.database_consumer_wizard_trunicate_checkbox_question, tableNames);
-            if (!UIUtils.confirmAction(shell, DTUIMessages.database_consumer_wizard_trunicate_checkbox_title, checkbox_question))
+            String checkbox_question = NLS.bind(DTUIMessages.database_consumer_wizard_truncate_checkbox_question, tableNames);
+            if (!UIUtils.confirmAction(shell, DTUIMessages.database_consumer_wizard_truncate_checkbox_title, checkbox_question))
             {
                 return false;
             }
