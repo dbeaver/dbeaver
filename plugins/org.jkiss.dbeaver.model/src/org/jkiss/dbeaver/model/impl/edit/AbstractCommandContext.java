@@ -113,7 +113,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
         }
         try {
-            executeCommands(monitor, options);
+            executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
             // Commit changes
             if (txnManager != null && !useAutoCommit) {
@@ -146,7 +146,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
-    private void executeCommands(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    private void executeCommands(DBRProgressMonitor monitor, Map<String, Object> options, DBCTransactionManager txnManager) throws DBException {
         List<CommandQueue> commandQueues = getCommandQueues();
 
         // Execute commands
@@ -204,6 +204,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 }
                                 if (error != null) {
                                     throw error;
+                                }
+                                if (txnManager != null) {
+                                    // Commit all processed changes
+                                    txnManager.commit(session);
                                 }
                             }
                             cmd.executed = true;
