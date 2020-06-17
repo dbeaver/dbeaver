@@ -482,7 +482,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return serverVersion;
     }
 
-    public boolean supportRoles() {
+    public boolean supportsRoles() {
         return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities();
     }
 
