@@ -44,17 +44,17 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
 
     private final DBDDataFormatterProfile formatterProfile;
-    private final boolean useScientificNotation;
+    private int useScientificNotation = -1;
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
         this.formatterProfile = formatterProfile;
-        this.useScientificNotation = formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @Override
     public void refreshValueHandlerConfiguration(DBSTypedObject type) {
         this.formatter = null;
+        this.useScientificNotation = -1;
     }
 
     /**
@@ -80,7 +80,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             }
         }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
-            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation);
+            if (useScientificNotation < 0) {
+                this.useScientificNotation =
+                    formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT) ? 1 : 0;
+            }
+
+            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation > 0);
         }
         return getFormatter(column).formatValue(value);
     }
