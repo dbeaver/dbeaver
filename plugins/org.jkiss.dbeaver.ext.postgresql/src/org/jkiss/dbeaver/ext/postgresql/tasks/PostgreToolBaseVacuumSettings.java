@@ -5,7 +5,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.sql.task.SQLToolTaskVersionValidator;
 
 import java.util.Map;
 
@@ -103,31 +102,5 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         config.put("skip_locked", isSkipLocked);
         config.put("index_cleanup", isIndexCleaning);
         config.put("truncate", isTruncated);
-    }
-
-    public static class PostgreVersionValidator12 extends SQLToolTaskVersionValidator<PostgreToolBaseVacuumSettings, DBSObject> {
-
-        @Override
-        public int getMajorVersion() {
-            return 12;
-        }
-
-        @Override
-        public int getMinorVersion() {
-            return 0;
-        }
-    }
-
-    public static class PostgreVersionValidator9and6 extends SQLToolTaskVersionValidator<PostgreToolBaseVacuumSettings, DBSObject> {
-
-        @Override
-        public int getMajorVersion() {
-            return 9;
-        }
-
-        @Override
-        public int getMinorVersion() {
-            return 6;
-        }
     }
 }
