@@ -247,6 +247,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    protected boolean isValidObject(DBRProgressMonitor monitor, OWNER owner, OBJECT object) throws DBException {
+        return true;
+    }
+
     protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter) throws DBException {
 
     }
