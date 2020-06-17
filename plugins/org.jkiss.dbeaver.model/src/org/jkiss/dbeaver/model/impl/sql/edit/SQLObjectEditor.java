@@ -310,6 +310,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration(monitor, (CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
+
+        @Override
+        public String toString() {
+            return "CMD:UpdateObject:" + getObject();
+        }
     }
 
     public class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> implements DBECommandWithOptions {
@@ -378,6 +383,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration(monitor, (CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
+
+        @Override
+        public String toString() {
+            return "CMD:CreateObject:" + getObject();
+        }
     }
 
     protected class ObjectDeleteCommand extends DBECommandDeleteObject<OBJECT_TYPE> {
@@ -399,6 +409,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             if (cache != null) {
                 cache.removeObject(object, false);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "CMD:DeleteObject:" + getObject();
         }
     }
 
@@ -440,6 +455,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 return renameCmd;
             }
             return super.merge(prevCommand, userParams);
+        }
+
+        @Override
+        public String toString() {
+            return "CMD:RenameObject:" + getObject();
         }
     }
 
@@ -525,6 +545,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 return reorderCmd;
             }
             return super.merge(prevCommand, userParams);
+        }
+
+        @Override
+        public String toString() {
+            return "CMD:ReorderPosition:" + getObject() + ":" + getOldPosition() + ":" + getNewPosition();
         }
     }
 

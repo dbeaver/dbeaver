@@ -68,7 +68,12 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !getCommandQueues().isEmpty();
+            for (CommandQueue queue : getCommandQueues()) {
+                if (!queue.isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -746,6 +751,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         {
             this.command = command;
             this.reflector = reflector;
+        }
+
+        @Override
+        public String toString() {
+            return command.toString() + " [executed=" + executed + ";merged by: " + mergedBy + "]";
         }
     }
 

@@ -882,7 +882,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Lists and commands should be refreshed only if we make real refresh from remote storage
             // Otherwise just update object's properties
             DBECommandContext commandContext = getCommandContext();
-            if (commandContext != null) {
+            if (commandContext != null && commandContext.isDirty()) {
                 // Just clear command context. Do not undo because object state was already refreshed
                 commandContext.resetChanges(true);
             }
@@ -1202,4 +1202,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return dataSource != null && dataSource.getInfo().supportsReferentialIntegrity();
     }
 
+    @Override
+    public String toString() {
+        DBSObject databaseObject = getDatabaseObject();
+        return databaseObject == null ? super.toString() : DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI);
+    }
 }

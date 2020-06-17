@@ -119,8 +119,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private void loadInfo(ResultSet dbResult)
         throws DBException
     {
-        setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION));
+        name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
+        ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
         String typeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DATA_TYPE);
         assert typeName != null;
         String keyTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_KEY);
