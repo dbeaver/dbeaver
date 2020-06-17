@@ -128,19 +128,20 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (typeName == null) {
             // Try to get type from active selection
             DBNNode node = NavigatorUtils.getSelectedNode(element);
-
-            List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
-            for (IContributionItem item : actions) {
-                if (item instanceof CommandContributionItem) {
-                    ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
-                    if (command != null) {
-                        typeName = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
-                        if (typeName != null) {
-                            // Prepend "Create new" as it is a single node
-                            typeName = NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName);
-                            objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+            if (node != null && !node.isDisposed()) {
+                List<IContributionItem> actions = fillCreateMenuItems(workbenchWindow.getActivePage().getActivePart().getSite(), node);
+                for (IContributionItem item : actions) {
+                    if (item instanceof CommandContributionItem) {
+                        ParameterizedCommand command = ((CommandContributionItem) item).getCommand();
+                        if (command != null) {
+                            typeName = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
+                            if (typeName != null) {
+                                // Prepend "Create new" as it is a single node
+                                typeName = NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName);
+                                objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -253,6 +254,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 }
             }
         } else {
+            if (node.getObject() == null) {
+                return;
+            }
             Class<?> nodeItemClass = node.getObject().getClass();
             DBNNode parentNode = node.getParentNode();
             if (isCreateSupported(

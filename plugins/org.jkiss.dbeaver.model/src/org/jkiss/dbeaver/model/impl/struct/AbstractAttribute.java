@@ -93,12 +93,11 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         this.name = columnName;
     }
 
-    @Property(viewable = true, order = 15)
+    @Property(viewable = true, order = 15, valueRenderer = DBPositiveNumberTransformer.class)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
     }
-
 
     public void setOrdinalPosition(int ordinalPosition)
     {
