@@ -68,7 +68,12 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !getCommandQueues().isEmpty();
+            for (CommandQueue queue : getCommandQueues()) {
+                if (!queue.isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

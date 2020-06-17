@@ -1202,4 +1202,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return dataSource != null && dataSource.getInfo().supportsReferentialIntegrity();
     }
 
+    @Override
+    public String toString() {
+        DBSObject databaseObject = getDatabaseObject();
+        return databaseObject == null ? super.toString() : DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI);
+    }
 }
