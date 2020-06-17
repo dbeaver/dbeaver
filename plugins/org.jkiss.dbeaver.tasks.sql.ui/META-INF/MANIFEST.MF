@@ -26,4 +26,3 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.navigator
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.tasks.sql.ui
-Export-Package: org.jkiss.dbeaver.tasks.ui.sql
