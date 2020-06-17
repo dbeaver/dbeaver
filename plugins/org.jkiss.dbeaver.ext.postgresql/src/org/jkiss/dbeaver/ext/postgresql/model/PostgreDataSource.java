@@ -482,6 +482,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return serverVersion;
     }
 
+    public boolean supportRoles() {
+        return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities();
+    }
+
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
     {
         @Override
