@@ -41,10 +41,7 @@ import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
-import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors;
-import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
-import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation;
+import org.jkiss.dbeaver.ui.editors.data.preferences.*;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
 import org.jkiss.dbeaver.ui.preferences.*;
@@ -170,7 +167,9 @@ public class EditConnectionWizard extends ConnectionWizard
         WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), CoreMessages.dialog_connection_edit_wizard_resultset,  CoreMessages.dialog_connection_edit_wizard_resultset_description);
         rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_editors, CoreMessages.dialog_connection_edit_wizard_editors_description);
         rsPage.addSubPage(new PrefPageDataFormat(), CoreMessages.dialog_connection_edit_wizard_data_format, CoreMessages.dialog_connection_edit_wizard_data_format_description);
-        rsPage.addSubPage(new PrefPageResultSetPresentation(), CoreMessages.dialog_connection_edit_wizard_presentation, CoreMessages.dialog_connection_edit_wizard_presentation_description);
+        WizardPrefPage pagePresentation = rsPage.addSubPage(PrefPageResultSetPresentation.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentation());
+        pagePresentation.addSubPage(PrefPageResultSetPresentationGrid.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationGrid());
+        pagePresentation.addSubPage(PrefPageResultSetPresentationPlainText.PAGE_ID, EditConnectionWizard.class, new PrefPageResultSetPresentationPlainText());
         WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), CoreMessages.dialog_connection_edit_wizard_sql_editor, CoreMessages.dialog_connection_edit_wizard_sql_editor_description);
         sqlPage.addSubPage(new PrefPageSQLExecute(), CoreMessages.dialog_connection_edit_wizard_sql_processing, CoreMessages.dialog_connection_edit_wizard_sql_processing_description);
     }

@@ -141,7 +141,7 @@ public class ReferenceValueEditor {
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                         if (editDictionaryPage.edit(parent.getShell())) {
-                            reloadSelectorValues(null);
+                            reloadSelectorValues(null, true);
                         }
                     }
                 });
@@ -227,7 +227,7 @@ public class ReferenceValueEditor {
 
             if (!valueFound) {
                 // Read dictionary
-                reloadSelectorValues(curEditorValue);
+                reloadSelectorValues(curEditorValue, false);
             }
         };
         if (control instanceof Text) {
@@ -241,7 +241,7 @@ public class ReferenceValueEditor {
             valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             valueFilterText.addModifyListener(e -> {
                 String filterPattern = valueFilterText.getText();
-                reloadSelectorValues(filterPattern);
+                reloadSelectorValues(filterPattern, false);
             });
             valueFilterText.addPaintListener(e -> {
                 if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
@@ -254,13 +254,13 @@ public class ReferenceValueEditor {
         }
         final Object curValue = valueController.getValue();
 
-        reloadSelectorValues(curValue);
+        reloadSelectorValues(curValue, false);
 
         return true;
     }
 
-    private void reloadSelectorValues(Object pattern) {
-        if (dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
+    private void reloadSelectorValues(Object pattern, boolean force) {
+        if (!force && dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
             selectCurrentValue();
             return;
         }
@@ -370,7 +370,7 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            reloadSelectorValues(lastPattern);
+            reloadSelectorValues(lastPattern, true);
         }
     }
 

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
@@ -82,11 +83,15 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         }
     }
 
-    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream, DBTTaskExecutionListener listener) throws DBException {
+    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream, DBTTaskExecutionListener listener) throws DBException, IOException {
         PrintWriter outLog = new PrintWriter(logStream);
 
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
+        if(objectList.isEmpty()){
+            logStream.write("Object(s) for tool execution not found");
+            log.debug("Object(s) for tool execution not found");
+        }
 
         listener.taskStarted(settings);
         try {
@@ -143,6 +148,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                 }
                             }
                         } catch (Exception e) {
+                            lastError = e;
                             log.debug("Error executing query", e);
                             outLog.println("Error executing query\n" + e.getMessage());
                             if(listener instanceof SQLToolRunListener) {

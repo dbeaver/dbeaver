@@ -63,11 +63,13 @@ public class DatabaseTasksTree {
     private boolean groupByCategory = false;
 
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
-    private final Color colorError;
+    private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
+        colorErrorForeground = UIUtils.getContrastColor(colorError);
+        composite.addDisposeListener(e -> colorErrorForeground.dispose());
 
         FilteredTree filteredTree = new FilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
@@ -628,8 +630,10 @@ public class DatabaseTasksTree {
                 DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
                 if (lastRun != null && !lastRun.isRunSuccess()) {
                     cell.setBackground(colorError);
+                    cell.setForeground(colorErrorForeground);
                 } else {
                     cell.setBackground(null);
+                    cell.setForeground(null);
                 }
             }
             cell.setText(CommonUtils.notEmpty(getCellText(element)));

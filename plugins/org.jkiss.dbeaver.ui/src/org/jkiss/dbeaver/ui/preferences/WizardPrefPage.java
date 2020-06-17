@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.graphics.Image;
@@ -24,9 +25,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Preference page adapter for wizard page
@@ -144,6 +149,38 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
 
     public WizardPrefPage addSubPage(IPreferencePage page, String title, String description) {
         WizardPrefPage wizardPrefPage = new WizardPrefPage(page, title, description);
+        subPages.add(wizardPrefPage);
+        // Sety the same element to sub page
+        if (preferencePage instanceof IWorkbenchPropertyPage && page instanceof IWorkbenchPropertyPage) {
+            ((IWorkbenchPropertyPage) page).setElement(((IWorkbenchPropertyPage) preferencePage).getElement());
+        }
+        return wizardPrefPage;
+    }
+
+    public WizardPrefPage addSubPage(String pageId, IPreferencePage page) {
+        return addSubPage(pageId, page.getClass(), page);
+    }
+
+    public WizardPrefPage addSubPage(String pageId, Class<?> ownerBundleClass, IPreferencePage page) {
+        String pageName = pageId, pageDescription = pageId;
+        try {
+            Bundle pageBundle = FrameworkUtil.getBundle(ownerBundleClass);
+            ResourceBundle resourceBundle = Activator.getDefault().getLocalization(pageBundle, Locale.getDefault().getLanguage());
+            try {
+                pageName = resourceBundle.getString("page." + pageId + ".name");
+            } catch (Exception e) {
+                pageName = pageId;
+            }
+            try {
+                pageDescription = resourceBundle.getString("page." + pageId + ".description");
+            } catch (Exception e) {
+                pageDescription = pageName;
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        WizardPrefPage wizardPrefPage = new WizardPrefPage(page, pageName, pageDescription);
         subPages.add(wizardPrefPage);
         // Sety the same element to sub page
         if (preferencePage instanceof IWorkbenchPropertyPage && page instanceof IWorkbenchPropertyPage) {
