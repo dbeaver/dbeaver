@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -47,6 +47,7 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     private DBVEntity dictionary;
     private Collection<DBSEntityAttribute> descColumns;
     private DBSEntity entity;
+    private Text columnDividerText;
 
     public EditDictionaryPage(
         final DBSEntity entity)
@@ -87,8 +88,7 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     @Override
     protected void createContentsAfterColumns(Composite panel)
     {
-        Composite group = new Composite(panel, SWT.NONE);
-        group.setLayout(new GridLayout(1, false));
+        Composite group = UIUtils.createComposite(panel, 1);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(group, "Custom criteria");
         criteriaText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
@@ -98,6 +98,13 @@ public class EditDictionaryPage extends AttributesSelectorPage {
         if (!CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             criteriaText.setText(dictionary.getDescriptionColumnNames());
         }
+
+        Composite settingsPanel = UIUtils.createComposite(group, 2);
+        settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        columnDividerText = UIUtils.createLabelText(
+            settingsPanel,
+            "Column divider",
+            entity.getDataSource().getContainer().getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER));
     }
 
     @Override
@@ -136,6 +143,9 @@ public class EditDictionaryPage extends AttributesSelectorPage {
 
     public void saveDictionarySettings() {
         dictionary.setDescriptionColumnNames(criteriaText.getText());
+        ModelPreferences.getPreferences().setValue(
+            ModelPreferences.DICTIONARY_COLUMN_DIVIDER,
+            columnDividerText.getText());
     }
 
 }

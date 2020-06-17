@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -213,6 +214,9 @@ public abstract class DBVUtils {
             colHandlers.add(DBUtils.findValueHandler(session, col));
         }
         boolean hasNulls = false;
+
+        String columnDivider = session.getDataSource().getContainer().getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
+
         // Extract enumeration values and (optionally) their descriptions
         while (dbResult.nextRow()) {
             // Check monitor
@@ -237,7 +241,7 @@ public abstract class DBVUtils {
                 for (int i = 1; i < colHandlers.size(); i++) {
                     Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
                     if (keyLabel2.length() > 0) {
-                        keyLabel2.append(" ");
+                        keyLabel2.append(columnDivider);
                     }
                     keyLabel2.append(colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE));
                 }
