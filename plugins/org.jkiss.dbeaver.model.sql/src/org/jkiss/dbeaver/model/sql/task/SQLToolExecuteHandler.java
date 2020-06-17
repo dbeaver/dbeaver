@@ -156,7 +156,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                             }
                         } finally {
                             monitor.worked(1);
-                            if(txnManager != null) txnManager.setAutoCommit(monitor, false);
+                            isRunInAutoCommit();
                         }
                     }
                 }
