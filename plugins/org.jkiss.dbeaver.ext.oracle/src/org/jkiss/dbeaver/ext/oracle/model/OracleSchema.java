@@ -346,6 +346,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     {
         List<DBSObject> children = new ArrayList<>();
         children.addAll(tableCache.getAllObjects(monitor, this));
+        children.addAll(mviewCache.getAllObjects(monitor, this));
         if (SYNONYMS_AS_CHILDREN) {
             children.addAll(synonymCache.getAllObjects(monitor, this));
         }
@@ -360,6 +361,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         final OracleTableBase table = tableCache.getObject(monitor, this, childName);
         if (table != null) {
             return table;
+        }
+        OracleMaterializedView mView = mviewCache.getObject(monitor, this, childName);
+        if (mView != null) {
+            return mView;
         }
         if (SYNONYMS_AS_CHILDREN) {
             OracleSynonym synonym = synonymCache.getObject(monitor, this, childName);
@@ -574,17 +579,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, Iterator<OracleTableBase> objectIter) throws DBException {
-            // Remove materialized views from cache
-            while (objectIter.hasNext()) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                if (DBUtils.findObject(getMaterializedViews(monitor), objectIter.next().getName()) != null) {
-                    objectIter.remove();
-                }
-            }
+        protected boolean isValidObject(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTableBase object) throws DBException {
+            return DBUtils.findObject(getMaterializedViews(monitor), object.getName()) == null;
         }
+
     }
 
     /**

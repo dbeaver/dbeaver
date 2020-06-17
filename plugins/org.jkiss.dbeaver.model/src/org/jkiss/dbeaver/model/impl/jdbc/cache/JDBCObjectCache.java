@@ -113,7 +113,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                 }
 
                                 OBJECT object = fetchObject(session, owner, dbResult);
-                                if (object == null) {
+                                if (object == null || !isValidObject(monitor, owner, object)) {
                                     continue;
                                 }
                                 tmpObjectList.add(object);
