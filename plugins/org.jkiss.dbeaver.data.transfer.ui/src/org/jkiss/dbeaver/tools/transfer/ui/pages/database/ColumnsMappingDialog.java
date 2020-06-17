@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingAttribute;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
@@ -86,19 +87,19 @@ public class ColumnsMappingDialog extends StatusDialog {
     {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
 
-        getShell().setText("Map columns of " + mapping.getTargetName());
+        getShell().setText(DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createLabelText(composite, "Source container", mapping.getSource().getDataSource().getContainer().getName(), SWT.BORDER | SWT.READ_ONLY);
-        Text sourceEntity = UIUtils.createLabelText(composite, "Source entity", DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
+        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_container, mapping.getSource().getDataSource().getContainer().getName(), SWT.BORDER | SWT.READ_ONLY);
+        Text sourceEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_entity, DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
         ((GridData)sourceEntity.getLayoutData()).widthHint = 600;
         ((GridData)sourceEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
-        UIUtils.createLabelText(composite, "Target container", (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()), SWT.BORDER | SWT.READ_ONLY);
-        Text targetEntity = UIUtils.createLabelText(composite, "Target entity", mapping.getTargetName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_container, (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()), SWT.BORDER | SWT.READ_ONLY);
+        Text targetEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_entity, mapping.getTargetName(), SWT.BORDER | SWT.READ_ONLY);
         ((GridData)targetEntity.getLayoutData()).widthHint = 600;
         ((GridData)targetEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
 
@@ -149,7 +150,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     }
                 }
             });
-            columnSource.getColumn().setText("Source Column");
+            columnSource.getColumn().setText(DTUIMessages.columns_mapping_dialog_column_source_text);
             columnSource.getColumn().setWidth(170);
         }
         {
@@ -161,7 +162,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     cell.setText(((DatabaseMappingAttribute) cell.getElement()).getSourceType());
                 }
             });
-            columnSourceType.getColumn().setText("Source Type");
+            columnSourceType.getColumn().setText(DTUIMessages.columns_mapping_dialog_column_source_type_text);
             columnSourceType.getColumn().setWidth(100);
         }
 
@@ -181,7 +182,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     cell.setFont(boldFont);
                 }
             });
-            columnTarget.getColumn().setText("Target Column");
+            columnTarget.getColumn().setText(DTUIMessages.columns_mapping_dialog_column_target_text);
             columnTarget.getColumn().setWidth(170);
             columnTarget.setEditingSupport(new EditingSupport(mappingViewer) {
                 @Override
@@ -271,7 +272,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     cell.setFont(boldFont);
                 }
             });
-            columnTargetType.getColumn().setText("Target Type");
+            columnTargetType.getColumn().setText(DTUIMessages.columns_mapping_dialog_column_target_type_text);
             columnTargetType.getColumn().setWidth(100);
             columnTargetType.setEditingSupport(new EditingSupport(mappingViewer) {
                 @Override
@@ -321,14 +322,14 @@ public class ColumnsMappingDialog extends StatusDialog {
                     String text = "";
                     switch (mapping.getMappingType()) {
                         case unspecified: text = "?"; break;
-                        case existing: text = "existing"; break;
-                        case create: text = "new"; break;
-                        case skip: text = "skip"; break;
+                        case existing: text = DTUIMessages.columns_mapping_dialog_cell_text_existing; break;
+                        case create: text = DTUIMessages.columns_mapping_dialog_cell_text_new; break;
+                        case skip: text = DTUIMessages.columns_mapping_dialog_cell_text_skip; break;
                     }
                     cell.setText(text);
                 }
             });
-            columnType.getColumn().setText("Mapping");
+            columnType.getColumn().setText(DTUIMessages.columns_mapping_dialog_column_type_text_mapping);
             columnType.getColumn().setWidth(60);
         }
 
