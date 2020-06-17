@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -102,6 +99,14 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                     List<DBEPersistAction> queries = new ArrayList<>();
                     generateObjectQueries(session, settings, queries, object);
 
+                    DBCExecutionContext context = session.getExecutionContext();
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    boolean isAutoCommitModeSwitchedOn = true;
+                    if(isRunInAutoCommit() && txnManager != null && !txnManager.isAutoCommit()){
+                        isAutoCommitModeSwitchedOn = false;
+                        txnManager.setAutoCommit(monitor, true);
+                    }
+
                     for (DBEPersistAction action : queries) {
                         if (monitor.isCanceled()) {
                             break;
@@ -158,6 +163,9 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                             }
                         } finally {
                             monitor.worked(1);
+                            if (!isAutoCommitModeSwitchedOn && txnManager != null) {
+                                txnManager.setAutoCommit(monitor, false);
+                            }
                         }
                     }
                 }
@@ -200,6 +208,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
 
     public boolean isRunInSeparateTransaction() {
+        return false;
+    }
+
+    public boolean isRunInAutoCommit() {
         return false;
     }
 
