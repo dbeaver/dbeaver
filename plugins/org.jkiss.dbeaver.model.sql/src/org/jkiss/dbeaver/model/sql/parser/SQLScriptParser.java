@@ -377,7 +377,8 @@ public class SQLScriptParser
         int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
 
         try {
-            int currentLine = document.getLineOfOffset(currentPos);
+            int originalPosLine = document.getLineOfOffset(currentPos);
+            int currentLine = originalPosLine;
             if (useBlankLines) {
                 if (TextUtils.isEmptyLine(document, currentLine)) {
                     if (currentLine == 0) {
@@ -436,7 +437,9 @@ public class SQLScriptParser
             }
 
             // Move currentPos at line begin
-            currentPos = lineOffset;
+            if (currentLine != originalPosLine) {
+                currentPos = lineOffset;
+            }
         } catch (BadLocationException e) {
             log.warn(e);
         }
