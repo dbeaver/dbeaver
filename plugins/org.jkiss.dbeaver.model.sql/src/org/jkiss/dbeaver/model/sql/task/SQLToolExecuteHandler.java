@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -102,62 +99,81 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                     List<DBEPersistAction> queries = new ArrayList<>();
                     generateObjectQueries(session, settings, queries, object);
 
-                    for (DBEPersistAction action : queries) {
-                        if (monitor.isCanceled()) {
-                            break;
+                    DBCExecutionContext context = session.getExecutionContext();
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    boolean isAutoCommitModeSwitchedOn = true;
+
+                    try {
+                        if(isRunInAutoCommit() && txnManager != null && !txnManager.isAutoCommit()){
+                            isAutoCommitModeSwitchedOn = false;
+                            txnManager.setAutoCommit(monitor, true);
                         }
-                        if (!CommonUtils.isEmpty(action.getTitle())) {
-                            monitor.subTask(action.getTitle());
-                        }
-                        try {
-                            if (action instanceof SQLDatabasePersistActionComment) {
-                                continue;
+
+                        for (DBEPersistAction action : queries) {
+                            if (monitor.isCanceled()) {
+                                break;
                             }
-                            String script = action.getScript();
-                            if (!CommonUtils.isEmpty(script)) {
-                                long startTime = System.currentTimeMillis();
-                                try (final DBCStatement statement = session.prepareStatement(
-                                    DBCStatementType.SCRIPT,
-                                    script,
-                                    false,
-                                    false,
-                                    false)) {
-                                    long execTime = System.currentTimeMillis() - startTime;
-                                    statement.executeStatement();
-                                    if (listener instanceof SQLToolRunListener){
-                                        if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
-                                            List<? extends SQLToolStatistics> executeStatistics =
-                                                ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
-                                                    object,
-                                                    settings,
-                                                    action,
-                                                    session,
-                                                    statement);
-                                            monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
-                                            if (!CommonUtils.isEmpty(executeStatistics)) {
-                                                for (SQLToolStatistics stat : executeStatistics) {
-                                                    stat.setExecutionTime(execTime);
+                            if (!CommonUtils.isEmpty(action.getTitle())) {
+                                monitor.subTask(action.getTitle());
+                            }
+                            try {
+                                if (action instanceof SQLDatabasePersistActionComment) {
+                                    continue;
+                                }
+                                String script = action.getScript();
+                                if (!CommonUtils.isEmpty(script)) {
+                                    long startTime = System.currentTimeMillis();
+                                    try (final DBCStatement statement = session.prepareStatement(
+                                        DBCStatementType.SCRIPT,
+                                        script,
+                                        false,
+                                        false,
+                                        false)) {
+                                        long execTime = System.currentTimeMillis() - startTime;
+                                        statement.executeStatement();
+                                        if (listener instanceof SQLToolRunListener){
+                                            if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
+                                                List<? extends SQLToolStatistics> executeStatistics =
+                                                    ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
+                                                        object,
+                                                        settings,
+                                                        action,
+                                                        session,
+                                                        statement);
+                                                monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
+                                                if (!CommonUtils.isEmpty(executeStatistics)) {
+                                                    for (SQLToolStatistics stat : executeStatistics) {
+                                                        stat.setExecutionTime(execTime);
+                                                    }
+                                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
                                                 }
-                                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                            } else {
+                                                SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
+                                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                             }
-                                        } else {
-                                            SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
-                                            ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                         }
                                     }
                                 }
+                            } catch (Exception e) {
+                                lastError = e;
+                                log.debug("Error executing query", e);
+                                outLog.println("Error executing query\n" + e.getMessage());
+                                if(listener instanceof SQLToolRunListener) {
+                                    SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
+                                    errorStat.setStatusMessage(e.getMessage());
+                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
+                                }
+                            } finally {
+                                monitor.worked(1);
                             }
-                        } catch (Exception e) {
-                            lastError = e;
-                            log.debug("Error executing query", e);
-                            outLog.println("Error executing query\n" + e.getMessage());
-                            if(listener instanceof SQLToolRunListener) {
-                                SQLToolStatisticsSimple errorStat = new SQLToolStatisticsSimple(object, true);
-                                errorStat.setStatusMessage(e.getMessage());
-                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(errorStat));
+                        }
+                    } finally {
+                        if (!isAutoCommitModeSwitchedOn) {
+                            try {
+                                txnManager.setAutoCommit(monitor, false);
+                            } catch (DBCException e) {
+                                log.debug("Cannot set auto-commit status", e);
                             }
-                        } finally {
-                            monitor.worked(1);
                         }
                     }
                 }
@@ -200,6 +216,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     public abstract void generateObjectQueries(DBCSession session, SETTINGS settings, List<DBEPersistAction> queries, OBJECT_TYPE object) throws DBCException;
 
     public boolean isRunInSeparateTransaction() {
+        return false;
+    }
+
+    public boolean isRunInAutoCommit() {
         return false;
     }
 
