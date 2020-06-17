@@ -752,6 +752,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             this.command = command;
             this.reflector = reflector;
         }
+
+        @Override
+        public String toString() {
+            return command.toString() + " [executed=" + executed + ";merged by: " + mergedBy + "]";
+        }
     }
 
     private static class CommandQueue extends AbstractCollection<DBECommand<DBPObject>> implements DBECommandQueue<DBPObject> {
