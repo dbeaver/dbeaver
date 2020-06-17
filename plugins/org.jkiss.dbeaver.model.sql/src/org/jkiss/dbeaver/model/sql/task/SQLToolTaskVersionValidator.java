@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.tasks.ui.sql;
+package org.jkiss.dbeaver.model.sql.task;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;

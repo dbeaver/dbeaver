@@ -5,7 +5,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.ui.sql.SQLToolTaskVersionValidator;
+import org.jkiss.dbeaver.model.sql.task.SQLToolTaskVersionValidator;
 
 import java.util.Map;
 
