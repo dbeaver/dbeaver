@@ -672,7 +672,8 @@ public class DBExecUtils {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
 
-                    if (tableColumn != null &&
+                    if (tableColumn != null && // Table column can be found from results metadata or from SQL query parser
+                        bindingMeta.getMetaAttribute().getEntityMetaData() != null && // Table name must present in results metadata
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
