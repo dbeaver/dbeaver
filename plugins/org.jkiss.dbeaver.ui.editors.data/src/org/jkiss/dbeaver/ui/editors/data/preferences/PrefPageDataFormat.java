@@ -368,6 +368,14 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        formatterProfile = null;
+        loadPreferences(getTargetPreferenceStore());
+        reloadSample();
+        super.performDefaults();
+    }
+
+    @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
         refreshProfileList();
