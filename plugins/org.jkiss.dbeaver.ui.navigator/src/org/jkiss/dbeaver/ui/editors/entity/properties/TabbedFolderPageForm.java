@@ -498,7 +498,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (renamer != null) {
                     try {
-                        renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value));
+                        renamer.renameObject(input.getCommandContext(), databaseObject, UIUtils.normalizePropertyValue(CommonUtils.toString(value)));
                     } catch (Throwable e) {
                         log.error("Error renaming object", e);
                     }
