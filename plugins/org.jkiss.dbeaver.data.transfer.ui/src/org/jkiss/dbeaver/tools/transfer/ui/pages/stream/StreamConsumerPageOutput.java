@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -99,7 +100,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            UIUtils.setContentProposalToolTip(fileNameText, "Output file name pattern",
+            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern,
                 StreamTransferConsumer.VARIABLE_DATASOURCE,
                 StreamTransferConsumer.VARIABLE_CATALOG,
                 StreamTransferConsumer.VARIABLE_SCHEMA,
@@ -180,7 +181,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                         updateControlsEnablement();
                     }
                 });
-                maximumFileSizeLabel = UIUtils.createControlLabel(outFilesSettings, "Maximum file size");
+                maximumFileSizeLabel = UIUtils.createControlLabel(outFilesSettings, DTUIMessages.stream_consumer_page_output_label_maximum_file_size);
                 maximumFileSizeText = new Text(outFilesSettings, SWT.BORDER);
                 maximumFileSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
                 maximumFileSizeText.addModifyListener(e ->
@@ -192,7 +193,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, "Results", 2, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
 
             showFolderCheckbox = UIUtils.createCheckbox(resultsSettings, DTMessages.data_transfer_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -203,7 +204,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             });
             showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 
-            execProcessCheckbox = UIUtils.createCheckbox(resultsSettings, "Execute process on finish", true);
+            execProcessCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_checkbox_execute_process, true);
             execProcessCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -218,7 +219,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 settings.setFinishProcessCommand(execProcessText.getText());
                 updatePageCompletion();
             });
-            UIUtils.setContentProposalToolTip(execProcessText, "Process command line",
+            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line,
                 StreamTransferConsumer.VARIABLE_FILE,
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
@@ -234,7 +235,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
-            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
+            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {

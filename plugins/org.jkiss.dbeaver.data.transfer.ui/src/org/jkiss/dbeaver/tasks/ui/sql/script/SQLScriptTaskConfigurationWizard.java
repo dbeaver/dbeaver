@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTaskConstants;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
@@ -40,7 +41,7 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     @Override
     protected String getDefaultWindowTitle() {
-        return "Script Execute";
+        return DTUIMessages.sql_script_task_configuration_wizard_default_window_title;
     }
 
     @Override
