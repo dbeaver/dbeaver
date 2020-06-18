@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -116,7 +117,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
             ToolBar buttonsToolbar = new ToolBar(filesGroup, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, "Add script", UIIcon.ROW_ADD, new SelectionAdapter() {
+            UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_add_script, UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
@@ -130,7 +131,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, "Remove script", UIIcon.ROW_DELETE, new SelectionAdapter() {
+            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_script, UIIcon.ROW_DELETE, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ISelection selection = scriptsViewer.getSelection();
@@ -145,7 +146,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 }
             });
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, "Move script up", UIIcon.ARROW_UP, new SelectionAdapter() {
+            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
@@ -157,7 +158,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, "Move script down", UIIcon.ARROW_DOWN, new SelectionAdapter() {
+            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = scriptTable.getSelectionIndex();
@@ -204,7 +205,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
             ToolBar buttonsToolbar = new ToolBar(connectionsGroup, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, "Add datasource", UIIcon.ROW_ADD, new SelectionAdapter() {
+            UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_add_data_source, UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     SQLScriptTaskDataSourceSelectorDialog dialog = new SQLScriptTaskDataSourceSelectorDialog(getShell(), projectNode);
@@ -219,7 +220,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, "Remove datasource", UIIcon.ROW_DELETE, new SelectionAdapter() {
+            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_data_source, UIIcon.ROW_DELETE, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ISelection selection = dataSourceViewer.getSelection();
@@ -235,7 +236,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 }
             });
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, "Move datasource up", UIIcon.ARROW_UP, new SelectionAdapter() {
+            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_up, UIIcon.ARROW_UP, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = dsTable.getSelectionIndex();
@@ -247,7 +248,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                 }
             });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, "Move datasource down", UIIcon.ARROW_DOWN, new SelectionAdapter() {
+            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = dsTable.getSelectionIndex();

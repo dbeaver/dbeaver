@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -111,7 +112,7 @@ class SQLScriptTaskDataSourceSelectorDialog extends BaseDialog {
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
         ViewerColumnController columnController = new ViewerColumnController("sqlTaskScriptViewer", viewer);
         columnController.setForceAutoSize(true);
-        columnController.addColumn(ModelMessages.model_navigator_Name, "Script", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(ModelMessages.model_navigator_Name, DTUIMessages.sql_script_task_data_source_selection_dialog_column_description_script, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return mainLabelProvider.getText(element);
@@ -129,7 +130,7 @@ class SQLScriptTaskDataSourceSelectorDialog extends BaseDialog {
             }
         });
 
-        columnController.addColumn(ModelMessages.model_navigator_Connection, "Script datasource", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(ModelMessages.model_navigator_Connection, DTUIMessages.sql_script_task_data_source_selection_dialog_column_description_script_data_source, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 if (element instanceof DBNResource) {
