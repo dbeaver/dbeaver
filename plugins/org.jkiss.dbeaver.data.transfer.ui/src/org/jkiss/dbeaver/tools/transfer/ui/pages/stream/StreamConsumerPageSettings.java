@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -58,8 +59,8 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     public StreamConsumerPageSettings() {
         super(DTMessages.data_transfer_wizard_settings_name);
-        setTitle("Format settings");
-        setDescription("File format settings");
+        setTitle(DTUIMessages.stream_consumer_page_settings_title);
+        setDescription(DTUIMessages.stream_consumer_page_settings_description);
         setPageComplete(false);
     }
 
