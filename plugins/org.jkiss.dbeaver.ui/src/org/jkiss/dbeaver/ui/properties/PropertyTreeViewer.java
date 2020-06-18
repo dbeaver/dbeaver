@@ -524,7 +524,8 @@ public class PropertyTreeViewer extends TreeViewer {
             };
             cellEditor.addListener(cellEditorListener);
             if (propertyValue != null) {
-                cellEditor.setValue(propertyValue);
+                Object updatePropertyValue = (propertyValue instanceof String) ? UIUtils.normalizePropertyValue(CommonUtils.toString(propertyValue)) : propertyValue;
+                cellEditor.setValue(updatePropertyValue);
             }
             curCellEditor = cellEditor;
             selectedProperty = prop.property;

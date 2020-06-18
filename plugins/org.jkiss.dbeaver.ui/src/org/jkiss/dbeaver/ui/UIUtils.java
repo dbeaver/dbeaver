@@ -2010,4 +2010,7 @@ public class UIUtils {
         return null;
     }
 
+    public static String normalizePropertyValue(String text) {
+        return text.trim();
+    }
 }

@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.ui.properties.PropertyEditorUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -341,7 +342,8 @@ public class ItemListControl extends NodeListControl
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             try {
                 if (property != null) {
-                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
+                    Object updateValue = (value instanceof String) ? UIUtils.normalizePropertyValue(CommonUtils.toString(value)) : value;
+                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, updateValue);
                     if (value instanceof Boolean) {
                         // Redraw control to let it repaint checkbox
                         getItemsViewer().getControl().redraw();
