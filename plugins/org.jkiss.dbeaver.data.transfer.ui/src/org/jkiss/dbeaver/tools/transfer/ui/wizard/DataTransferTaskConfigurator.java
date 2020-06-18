@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,6 +54,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -110,19 +112,19 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
             Group group = UIUtils.createControlGroup(
                 parent,
-                (DTConstants.TASK_EXPORT.equals(taskType.getId()) ? "Export tables" : "Import into"),
+                (DTConstants.TASK_EXPORT.equals(taskType.getId()) ? DTUIMessages.data_transfer_task_configurator_group_label_export_tables : DTUIMessages.data_transfer_task_configurator_group_label_import_into),
                 1,
                 GridData.FILL_BOTH,
                 0);
             objectsTable = new Table(group, SWT.BORDER | SWT.SINGLE);
             objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             objectsTable.setHeaderVisible(true);
-            UIUtils.createTableColumn(objectsTable, SWT.NONE, "Object");
-            UIUtils.createTableColumn(objectsTable, SWT.NONE, "Data Source");
+            UIUtils.createTableColumn(objectsTable, SWT.NONE, DTUIMessages.data_transfer_task_configurator_table_column_text_object);
+            UIUtils.createTableColumn(objectsTable, SWT.NONE, DTUIMessages.data_transfer_task_configurator_table_column_text_data_source);
             UIUtils.createTableContextMenu(objectsTable, null);
 
             Composite buttonsPanel = UIUtils.createComposite(group, isExport ? 3 : 2);
-            UIUtils.createDialogButton(buttonsPanel, "Add Table ...", new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_table, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     Class<?> tableClass = isExport ? DBSDataContainer.class : DBSDataManipulator.class;
@@ -136,7 +138,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     }
                     List<DBNNode> tables = ObjectBrowserDialog.selectObjects(
                         group.getShell(),
-                        isExport ? "Choose source table(s)" : "Choose target table(s)",
+                        isExport ? DTUIMessages.data_transfer_task_configurator_tables_title_choose_source : DTUIMessages.data_transfer_task_configurator_tables_title_choose_target,
                         rootNode,
                         selNode,
                         new Class[]{DBSObjectContainer.class, tableClass},
@@ -157,7 +159,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 }
             });
             if (isExport) {
-                UIUtils.createDialogButton(buttonsPanel, "Add Query ...", new SelectionAdapter() {
+                UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBPDataSource lastDataSource = getLastDataSource();
@@ -192,7 +194,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
                                 DataSourceContextProvider contextProvider = new DataSourceContextProvider(lastDataSource);
-                                String query = serviceSQL.openSQLEditor(contextProvider, "SQL Query", UIIcon.SQL_SCRIPT, "");
+                                String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
                                 if (query != null) {
 
                                     DataTransferPipe pipe = new DataTransferPipe(
@@ -208,11 +210,11 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                     }
                 });
             }
-            Button removeButton = UIUtils.createDialogButton(buttonsPanel, "Remove", new SelectionAdapter() {
+            Button removeButton = UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DataTransferPipe object = (DataTransferPipe) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
-                    if (UIUtils.confirmAction("Remove object", "Remove object " + getTableNode(object).getObjectName() + "?")) {
+                    if (UIUtils.confirmAction(DTUIMessages.data_transfer_task_configurator_confirm_action_title, NLS.bind(DTUIMessages.data_transfer_task_configurator_confirm_action_question, getTableNode(object).getObjectName()))) {
                         objectsTable.remove(objectsTable.getSelectionIndex());
                         updateSettings(propertyChangeListener);
                     }

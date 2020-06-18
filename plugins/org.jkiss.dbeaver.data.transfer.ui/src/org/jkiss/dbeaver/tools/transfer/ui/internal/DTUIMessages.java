@@ -94,6 +94,33 @@ public class DTUIMessages extends NLS {
 	public static String stream_consumer_page_output_checkbox_execute_process;
 	public static String stream_consumer_page_output_label_maximum_file_size;
 	public static String stream_consumer_page_output_label_show_finish_message;
+	public static String stream_consumer_page_output_tooltip_output_file_name_pattern;
+	public static String stream_consumer_page_output_label_results;
+	public static String stream_consumer_page_output_tooltip_process_command_line;
+
+	public static String stream_consumer_page_settings_title;
+	public static String stream_consumer_page_settings_description;
+	public static String stream_consumer_page_settings_item_text_none;
+
+	public static String data_transfer_task_configurator_group_label_export_tables;
+	public static String data_transfer_task_configurator_group_label_import_into;
+	public static String data_transfer_task_configurator_table_column_text_object;
+	public static String data_transfer_task_configurator_table_column_text_data_source;
+	public static String data_transfer_task_configurator_dialog_button_label_add_table;
+	public static String data_transfer_task_configurator_tables_title_choose_source;
+	public static String data_transfer_task_configurator_tables_title_choose_target;
+	public static String data_transfer_task_configurator_dialog_button_label_add_query;
+	public static String data_transfer_task_configurator_sql_query_title;
+	public static String data_transfer_task_configurator_dialog_button_label_remove;
+	public static String data_transfer_task_configurator_confirm_action_title;
+	public static String data_transfer_task_configurator_confirm_action_question;
+
+
+
+
+
+
+
 
 	static {
 		// initialize resource bundle

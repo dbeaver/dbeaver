@@ -100,7 +100,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
-            UIUtils.setContentProposalToolTip(fileNameText, "Output file name pattern",
+            UIUtils.setContentProposalToolTip(fileNameText, DTUIMessages.stream_consumer_page_output_tooltip_output_file_name_pattern,
                 StreamTransferConsumer.VARIABLE_DATASOURCE,
                 StreamTransferConsumer.VARIABLE_CATALOG,
                 StreamTransferConsumer.VARIABLE_SCHEMA,
@@ -193,7 +193,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, "Results", 2, GridData.FILL_HORIZONTAL, 0);
+            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
 
             showFolderCheckbox = UIUtils.createCheckbox(resultsSettings, DTMessages.data_transfer_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -219,7 +219,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 settings.setFinishProcessCommand(execProcessText.getText());
                 updatePageCompletion();
             });
-            UIUtils.setContentProposalToolTip(execProcessText, "Process command line",
+            UIUtils.setContentProposalToolTip(execProcessText, DTUIMessages.stream_consumer_page_output_tooltip_process_command_line,
                 StreamTransferConsumer.VARIABLE_FILE,
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
