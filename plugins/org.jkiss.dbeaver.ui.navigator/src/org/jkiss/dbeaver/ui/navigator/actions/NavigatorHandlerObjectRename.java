@@ -86,7 +86,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             return renameDatabaseObject(
                 workbenchWindow,
                 (DBNDatabaseNode) node,
-                UIUtils.normalizePropertyValue(newName));
+                CommonUtils.toString(UIUtils.normalizePropertyValue(newName)));
         }
         return false;
     }
