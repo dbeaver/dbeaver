@@ -448,7 +448,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="sqlServerTool" parent="sqlserver" name="Tools" description="SQLServer database tools" icon="icons/mssql_icon.png"/>
+        <category id="sqlserver" name="SQL Server" description="SQL Server database tasks" icon="icons/mssql_icon.png"/>
+        <category id="sqlServerTool" parent="sqlserver" name="Tools" description="SQL Server database tools" icon="icons/mssql_icon.png"/>
 
         <!-- SQL tools -->
         <task id="mssqlToolTableRebuild" name="%tasks.rebuild.table.node.name" description="%tasks.rebuild.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableRebuild">

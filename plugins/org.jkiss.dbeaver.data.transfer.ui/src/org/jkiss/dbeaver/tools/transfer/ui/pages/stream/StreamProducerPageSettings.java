@@ -131,14 +131,14 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
         if (pipe.getProducer() == null || pipe.getProducer().getObjectName() == null) {
             item.setImage(0, null);
-            item.setText(0, "<none>");
+            item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
             item.setText(0, pipe.getProducer().getObjectName());
         }
         if (pipe.getConsumer() == null || pipe.getConsumer().getDatabaseObject() == null) {
             item.setImage(1, null);
-            item.setText(1, "<none>");
+            item.setText(1, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
             item.setText(1, DBUtils.getObjectFullName(pipe.getConsumer().getDatabaseObject(), DBPEvaluationContext.DML));

@@ -436,10 +436,37 @@ public class SQLScriptParser
                 startPos = document.getLineOffset(firstLine);
             }
 
-            // Move currentPos at line begin
-            if (currentLine != originalPosLine) {
+            /*if (currentLine != originalPosLine) {
+                // Move currentPos before last delimiter
                 currentPos = lineOffset;
+            } else */
+            {
+                // Move currentPos at line begin
+                IRegion region = document.getLineInformation(currentLine);
+                if (region.getLength() > 0) {
+                    int offsetFromLineStart = currentPos - region.getOffset();
+                    String lineStr = document.get(region.getOffset(), offsetFromLineStart);
+                    for (String delim : statementDelimiters) {
+                        int delimIndex = lineStr.lastIndexOf(delim);
+                        if (delimIndex != -1) {
+                            // There is a dlimiter in current line
+                            // Move pos before it if there are no valuable chars between delimiter and cursor position
+                            boolean hasValuableChars = false;
+                            for (int i = region.getOffset() + delimIndex + delim.length(); i < currentPos; i++) {
+                                if (!Character.isWhitespace(document.getChar(i))) {
+                                    hasValuableChars = true;
+                                    break;
+                                }
+                            }
+                            if (!hasValuableChars) {
+                                currentPos = region.getOffset() + delimIndex - 1;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
+
         } catch (BadLocationException e) {
             log.warn(e);
         }
