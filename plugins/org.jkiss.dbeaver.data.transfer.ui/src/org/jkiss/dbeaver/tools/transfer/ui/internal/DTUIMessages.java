@@ -97,7 +97,6 @@ public class DTUIMessages extends NLS {
 	public static String stream_consumer_page_output_tooltip_output_file_name_pattern;
 	public static String stream_consumer_page_output_label_results;
 	public static String stream_consumer_page_output_tooltip_process_command_line;
-
 	public static String stream_consumer_page_settings_title;
 	public static String stream_consumer_page_settings_description;
 	public static String stream_consumer_page_settings_item_text_none;
@@ -115,13 +114,21 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_task_configurator_confirm_action_title;
 	public static String data_transfer_task_configurator_confirm_action_question;
 
+	public static String sql_script_task_configuration_wizard_default_window_title;
+	public static String sql_script_task_data_source_selection_dialog_column_description_script;
+	public static String sql_script_task_data_source_selection_dialog_column_description_script_data_source;
+	public static String sql_script_task_page_settings_tool_item_text_add_script;
+	public static String sql_script_task_page_settings_tool_item_text_remove_script;
+	public static String sql_script_task_page_settings_tool_item_text_move_script_up;
+	public static String sql_script_task_page_settings_tool_item_text_move_script_down;
+	public static String sql_script_task_page_settings_tool_item_text_add_data_source;
+	public static String sql_script_task_page_settings_tool_item_text_remove_data_source;
+	public static String sql_script_task_page_settings_tool_item_text_move_data_source_up;
+	public static String sql_script_task_page_settings_tool_item_text_move_data_source_down;
+	public static String sql_script_task_selector_dialog_column_description_script;
+	public static String sql_script_task_selector_dialog_column_description_script_data_source;
 
-
-
-
-
-
-
+	
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTUIMessages.class);
