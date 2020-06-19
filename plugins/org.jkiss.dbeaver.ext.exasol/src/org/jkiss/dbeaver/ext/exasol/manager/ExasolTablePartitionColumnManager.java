@@ -88,14 +88,14 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	
 	private String generateAction(ExasolTable table) throws DBException
 	{
-		if (table.getHasDistKey(new VoidProgressMonitor()) & table.getPartitions().size() == 0)
+		if (table.getAdditionalInfo(new VoidProgressMonitor()).getHasPartitionKey(new VoidProgressMonitor()) & table.getPartitions().size() == 0)
 		{
 			return "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS";
 		} 
 		if (table.getPartitions().size() > 0)
 		{
-			if (! table.getHasPartitionKey(new VoidProgressMonitor()))
-				table.setHasPartitionKey(true, true);
+			if (! table.getAdditionalInfo(new VoidProgressMonitor()).getHasPartitionKey(new VoidProgressMonitor()))
+					table.setHasPartitionKey(true, true);
 			return ExasolUtils.getPartitionDdl(table, new VoidProgressMonitor());
 		}
 			
