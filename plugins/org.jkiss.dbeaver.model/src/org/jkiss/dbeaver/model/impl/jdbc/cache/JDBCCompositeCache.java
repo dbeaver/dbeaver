@@ -333,7 +333,7 @@ public abstract class JDBCCompositeCache<
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
                             OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
-                            if (object == null) {
+                            if (object == null || !isValidObject(monitor, owner, object)) {
                                 // Can't fetch object
                                 continue;
                             }

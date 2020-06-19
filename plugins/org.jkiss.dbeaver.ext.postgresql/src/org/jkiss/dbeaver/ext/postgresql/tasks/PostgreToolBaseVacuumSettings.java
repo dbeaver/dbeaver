@@ -1,9 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
@@ -47,8 +44,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isAnalyzed = analyzed;
     }
 
-    //Works since PostgreSQL 9.6
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreVersionValidator9and6.class)
     public boolean isDisableSkipping() {
         return isDisableSkipping;
     }
@@ -57,8 +53,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isDisableSkipping = disableSkipping;
     }
 
-    //Works since PostgreSQL 12
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreVersionValidator12.class)
     public boolean isSkipLocked() {
         return isSkipLocked;
     }
@@ -67,8 +62,7 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isSkipLocked = skipLocked;
     }
 
-    //Works since PostgreSQL 12
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreVersionValidator12.class)
     public boolean isIndexCleaning() {
         return isIndexCleaning;
     }
@@ -77,7 +71,6 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         isIndexCleaning = indexCleaning;
     }
 
-    //Works since PostgreSQL 12
     @Property(viewable = true, editable = true, updatable = true, visibleIf = PostgreVersionValidator12.class)
     public boolean isTruncated() {
         return isTruncated;
@@ -109,19 +102,5 @@ public class PostgreToolBaseVacuumSettings extends SQLToolExecuteSettings<DBSObj
         config.put("skip_locked", isSkipLocked);
         config.put("index_cleanup", isIndexCleaning);
         config.put("truncate", isTruncated);
-    }
-
-    public static class PostgreVersionValidator12 implements IPropertyValueValidator<PostgreToolBaseVacuumSettings, Object> {
-
-        @Override
-        public boolean isValidValue(PostgreToolBaseVacuumSettings object, Object value) throws IllegalArgumentException {
-            if (!object.getObjectList().isEmpty()) {
-                DBPDataSource dataSource = object.getObjectList().get(0).getDataSource();
-                if (dataSource instanceof PostgreDataSource) {
-                    return ((PostgreDataSource) dataSource).isServerVersionAtLeast(12, 0);
-                }
-            }
-            return false;
-        }
     }
 }

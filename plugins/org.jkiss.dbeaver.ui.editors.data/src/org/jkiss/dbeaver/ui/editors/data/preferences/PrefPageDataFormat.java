@@ -368,6 +368,16 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
+    protected void performDefaults() {
+        DBPPreferenceStore targetPreferenceStore = getTargetPreferenceStore();
+        clearPreferences(targetPreferenceStore);
+        formatterProfile = null;
+        loadPreferences(targetPreferenceStore);
+        reloadSample();
+        super.performDefaults();
+    }
+
+    @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
         refreshProfileList();
@@ -402,7 +412,9 @@ public class PrefPageDataFormat extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        formatterProfile.reset();
+        if (formatterProfile != null) {
+            formatterProfile.reset();
+        }
         store.setToDefault(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
         store.setToDefault(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
         store.setToDefault(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);

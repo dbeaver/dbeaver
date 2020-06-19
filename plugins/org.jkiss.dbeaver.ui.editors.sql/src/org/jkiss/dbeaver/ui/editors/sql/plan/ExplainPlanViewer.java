@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -73,6 +72,7 @@ import java.lang.reflect.InvocationTargetException;
 public class ExplainPlanViewer extends Viewer implements IAdaptable
 {
     static final Log log = Log.getLog(ExplainPlanViewer.class);
+    private LoadingJob<DBCPlan> explainService;
 
     private static class PlanViewInfo {
         private SQLPlanViewDescriptor descriptor;
@@ -281,10 +281,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         if (planner == null) {
             DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
         } else {
-            LoadingJob<DBCPlan> service = LoadingJob.createService(
+            explainService = LoadingJob.createService(
                 new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
                 planPresentationContainer.createVisualizer());
-            service.schedule();
+            explainService.schedule();
         }
     }
 
@@ -336,6 +336,15 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             contributionManager.add(refreshPlanAction);
         }
 
+        @Override
+        protected boolean cancelProgress() {
+            if (explainService != null) {
+                explainService.cancel();
+                return true;
+            }
+            return false;
+        }
+
         PlanLoadVisualizer createVisualizer() {
             return new PlanLoadVisualizer();
         }
@@ -347,6 +356,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 if (plan != null) {
                     visualizePlan(plan);
                 }
+                explainService = null;
             }
         }
     }
