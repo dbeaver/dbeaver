@@ -263,7 +263,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     	Collection<ExasolTableColumn> distKey = table.getDistributionKey(new VoidProgressMonitor());
     	Collection<SQLDatabasePersistAction> commands = new ArrayList<SQLDatabasePersistAction>();
     	
-    	if (table.getHasDistKey(new VoidProgressMonitor()))
+    	if (table.getAdditionalInfo(new VoidProgressMonitor()).getHasDistKey(new VoidProgressMonitor()))
     	{
     		commands.add(generateDropDist(exasolColumn));
     	}
