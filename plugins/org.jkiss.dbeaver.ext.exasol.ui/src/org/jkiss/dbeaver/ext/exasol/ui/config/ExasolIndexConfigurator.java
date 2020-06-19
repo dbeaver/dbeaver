@@ -29,13 +29,13 @@ public class ExasolIndexConfigurator implements DBEObjectConfigurator<ExasolTabl
 				}
 				
 				index.setIndexType(editPage.getIndexType());
-				index.setName(index.getIndexType().getName() + " INDEX " + index.getSimpleColumnString());
 				int colIndex = 1;
 				for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
 					index.addColumn(
 								new ExasolTableIndexColumn(index, (ExasolTableColumn) tableColumn, colIndex++)
 							);
 				}
+				index.setName(index.getIndexType().getName() + " INDEX " + index.getSimpleColumnString());
 				return index;
 			});
 		}
