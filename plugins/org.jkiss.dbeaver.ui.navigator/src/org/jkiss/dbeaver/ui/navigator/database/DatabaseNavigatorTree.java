@@ -62,6 +62,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 {
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
+    static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
+
     private TreeViewer treeViewer;
     private DBNModel model;
     private TreeEditor treeEditor;
@@ -309,6 +311,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 treeViewer.collapseToLevel(event.getNode(), -1);
                                 break;
                             case REFRESH:
+//                                Widget item = treeViewer.testFindItem(event.getNode());
+//                                if (item != null) {
+//                                    item.setData(TREE_DATA_STAT_MAX_SIZE, null);
+//                                }
                                 treeViewer.refresh(getViewerObject(event.getNode()), true);
                                 break;
                             case LOCK:
