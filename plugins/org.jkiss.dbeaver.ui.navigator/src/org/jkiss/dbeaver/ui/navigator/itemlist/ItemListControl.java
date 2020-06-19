@@ -341,7 +341,7 @@ public class ItemListControl extends NodeListControl
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             try {
                 if (property != null) {
-                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
+                    getListPropertySource().setPropertyValue(null, getObjectValue(object), property, UIUtils.normalizePropertyValue(value));
                     if (value instanceof Boolean) {
                         // Redraw control to let it repaint checkbox
                         getItemsViewer().getControl().redraw();
