@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.FillLayout;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.task.SQLToolStatistics;
+import org.jkiss.dbeaver.tasks.ui.internal.TSQLUIMessages;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -66,14 +68,14 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
     private final List<SQLToolStatistics> toolStatistics = new ArrayList<>();
 
     SQLToolTaskWizardPageStatus(SQLToolTaskWizard wizard) {
-        super("Tool status");
-        setTitle("Execution status");
-        setDescription("Tool execution status");
+        super(TSQLUIMessages.sql_tool_task_wizard_page_status_name);
+        setTitle(TSQLUIMessages.sql_tool_task_wizard_page_status_title);
+        setDescription(TSQLUIMessages.sql_tool_task_wizard_page_status_description);
     }
 
     @Override
     public void activatePage() {
-        setTitle("Tool " + getWizard().getTaskType().getName() + "");
+        setTitle(NLS.bind(TSQLUIMessages.sql_tool_task_wizard_page_status_activate_page_title, getWizard().getTaskType().getName()));
         super.activatePage();
     }
 
@@ -111,7 +113,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
             }
         };
 
-        console = new MessageConsole("tool-log-console", null);
+        console = new MessageConsole(TSQLUIMessages.sql_tool_task_wizard_page_status_message_console_name_tool_log, null);
         LogConsoleViewer consoleViewer = new LogConsoleViewer(partDivider);
         console.setWaterMarks(1024 * 1024 * 3, 1024 * 1024 * 4);
 
@@ -146,7 +148,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
             toolStatistics.addAll(statistics);
         }
         if (statusUpdateJob == null) {
-            statusUpdateJob = new AbstractJob("Update tool status") {
+            statusUpdateJob = new AbstractJob(TSQLUIMessages.sql_tool_task_wizard_page_status_update_job_name_update_tool) {
                 {
                     setSystem(true);
                     setUser(false);
@@ -198,7 +200,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
 
     private class DummyLoadService extends AbstractLoadService<Collection<SQLToolStatistics>> {
         DummyLoadService() {
-            super("Load status");
+            super(TSQLUIMessages.sql_tool_task_wizard_page_status_dummy_load_service_name);
         }
 
         @Override
