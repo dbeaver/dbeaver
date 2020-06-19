@@ -189,7 +189,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="common" name="%task.name.common" description="%task.description.common" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
+        <category id="common" name="%task.category.name.common" description="%task.category.description.common" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
 
         <task id="dataExport" name="%task.category.task.name.export" description="%task.category.task.description.export" icon="icons/export.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
