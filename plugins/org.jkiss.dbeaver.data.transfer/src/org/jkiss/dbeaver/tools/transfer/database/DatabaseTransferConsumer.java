@@ -692,8 +692,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
-            if (containerMapping != null && containerMapping.getTarget() != null) {
-                DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
+            if (targetObject != null) {
+                DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
             }
         }
     }

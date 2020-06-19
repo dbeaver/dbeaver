@@ -34,4 +34,9 @@ public class PostgreToolBaseVacuum extends PostgreToolWithStatus<DBSObject, Post
         }
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    @Override
+    public boolean isRunInAutoCommit() {
+        return true;
+    }
 }

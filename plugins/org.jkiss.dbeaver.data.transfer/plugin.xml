@@ -189,16 +189,16 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="common" name="Common" description="Common database tasks" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
+        <category id="common" name="%task.category.name.common" description="%task.category.description.common" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
 
-        <task id="dataExport" name="Data export" description="Data export task" icon="icons/export.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
+        <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
-        <task id="dataImport" name="Data import" description="Data import task" icon="icons/import.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
+        <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common" handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
-        <task id="scriptExecute" name="SQL Script" description="Execute SQL script" icon="icons/task_script.png" type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
+        <task id="scriptExecute" name="%task.name.sql.script" description="%task.description.sql.script" icon="icons/task_script.png" type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
             <objectType name="org.eclipse.core.resources.IFile"/>
         </task>
     </extension>

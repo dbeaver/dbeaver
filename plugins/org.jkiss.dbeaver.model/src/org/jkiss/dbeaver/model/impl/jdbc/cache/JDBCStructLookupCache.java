@@ -112,8 +112,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 JDBCResultSet dbResult = dbStat.getResultSet();
                 if (dbResult != null) {
                     try {
-                        if (dbResult.next()) {
-                            return fetchObject(session, owner, dbResult);
+                        while (dbResult.next()) {
+                            OBJECT remoteObject = fetchObject(session, owner, dbResult);
+                            if (isValidObject(monitor, owner, remoteObject)) {
+                                return remoteObject;
+                            }
                         }
                     } finally {
                         dbResult.close();
