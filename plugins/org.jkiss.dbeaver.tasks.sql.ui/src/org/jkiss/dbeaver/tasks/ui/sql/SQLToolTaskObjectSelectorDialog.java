@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
+import org.jkiss.dbeaver.tasks.ui.internal.TSQLUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -40,7 +41,7 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
     private List<DBSObject> selectedObjects = new ArrayList<>();
 
     SQLToolTaskObjectSelectorDialog(Shell parentShell, DBNProject projectNode, TaskTypeDescriptor taskType) {
-        super(parentShell, "Select input objects", null);
+        super(parentShell, TSQLUIMessages.sql_tool_task_object_selector_dialog_title, null);
         this.projectNode = projectNode;
         this.taskType = taskType;
     }
