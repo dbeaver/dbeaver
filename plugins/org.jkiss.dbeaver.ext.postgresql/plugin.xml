@@ -29,7 +29,7 @@
         <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" defaultDatbase="dev" defaultUser="awsuser" customURL="true"/>
         <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png" customURL="true"/>
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png" customURL="true"/>
-<!--        <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" defaultDatbase="yugabyte" defaultUser="yugabyte" customURL="true"/>-->
+        <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" defaultDatbase="yugabyte" defaultUser="yugabyte" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root" customURL="true"/>
     </extension>
 
@@ -372,6 +372,7 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
 
+<!--
                 <driver
                         id="postgres-yugabytedb-jdbc"
                         label="YugabyteDB"
@@ -393,6 +394,7 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
+-->
 
                 <driver
                         id="postgres-cockroach-jdbc"
