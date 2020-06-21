@@ -42,7 +42,8 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
                 constraint,
                 new DBSEntityConstraintType[] {
                     DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY });
+                    DBSEntityConstraintType.UNIQUE_KEY,
+                    DBSEntityConstraintType.CHECK });
             if (!editPage.edit()) {
                 return null;
             }
