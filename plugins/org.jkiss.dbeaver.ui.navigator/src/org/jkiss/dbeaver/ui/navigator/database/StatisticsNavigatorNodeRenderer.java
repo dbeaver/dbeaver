@@ -137,7 +137,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
                     if (statsWasRead && maxObjectSize >= 0) {
                         long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
-                        if (statObjectSize == 0) {
+                        if (statObjectSize <= 0) {
                             // Empty or no size - nothing to show
                             return;
                         }

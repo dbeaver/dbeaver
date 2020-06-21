@@ -55,10 +55,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private OracleDataType tableType;
     private String iotType;
     private String iotName;
-    private Long tableSize;
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
+    private transient volatile Long tableSize;
 
     public class AdditionalInfo extends TableAdditionalInfo {
         private int pctFree;
