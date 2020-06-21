@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -33,7 +35,7 @@ import java.util.Map;
 /**
  * MySQL constraint manager
  */
-public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConstraint, MySQLTable> {
+public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConstraint, MySQLTableBase> {
 
     @Nullable
     @Override
@@ -74,4 +76,12 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
         }
     }
 
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(" (").append((command.getObject()).getClause()).append(")");
+        } else {
+            super.appendConstraintDefinition(decl, command);
+        }
+    }
 }

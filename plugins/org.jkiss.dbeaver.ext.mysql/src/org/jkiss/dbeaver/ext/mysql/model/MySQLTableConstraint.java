@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -33,16 +35,23 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
+public class MySQLTableConstraint extends MySQLTableConstraintBase {
     private List<MySQLTableConstraintColumn> columns;
+    private String clause;
 
-    public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public MySQLTableConstraint(MySQLTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted, JDBCResultSet resultSet)
+    {
+        super(table, name, remarks, constraintType, persisted, resultSet);
+        this.clause = JDBCUtils.safeGetString(resultSet, "CHECK_CLAUSE");
+    }
+
+    public MySQLTableConstraint(MySQLTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }
 
     // Copy constructor
-    protected MySQLTableConstraint(DBRProgressMonitor monitor, MySQLTable table, DBSEntityConstraint source) throws DBException {
+    protected MySQLTableConstraint(DBRProgressMonitor monitor, MySQLTableBase table, DBSEntityConstraint source) throws DBException {
         super(table, source, false);
         if (source instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
@@ -92,6 +101,15 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();
+    }
+
+    @Property(viewable = true, editable = true, order = 10)
+    public String getClause() {
+        return clause;
+    }
+
+    public void setClause(String clause) {
+        this.clause = clause;
     }
 
 }
