@@ -2010,4 +2010,10 @@ public class UIUtils {
         return null;
     }
 
+    public static Object normalizePropertyValue(Object text) {
+        if (text instanceof String) {
+            return CommonUtils.toString(text).trim();
+        }
+        return text;
+    }
 }

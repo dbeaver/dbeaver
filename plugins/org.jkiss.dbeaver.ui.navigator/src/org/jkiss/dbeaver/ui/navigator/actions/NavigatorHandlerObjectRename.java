@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -85,7 +86,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             return renameDatabaseObject(
                 workbenchWindow,
                 (DBNDatabaseNode) node,
-                newName);
+                CommonUtils.toString(UIUtils.normalizePropertyValue(newName)));
         }
         return false;
     }

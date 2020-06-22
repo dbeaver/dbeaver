@@ -128,14 +128,16 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 if (object instanceof DBPObjectStatistics) {
                     String sizeText;
                     int percentFull;
-                    boolean statsWasRead = ((DBPObjectStatistics) object).hasStatistics();
-                    long maxObjectSize = getMaxObjectSize((TreeItem) event.item);
-                    if (!statsWasRead && maxObjectSize >= 0) {
-                        statsWasRead = true;
+                    boolean statsWasRead = false;
+                    DBSObject parentObject = DBUtils.getPublicObject(object.getParentObject());
+                    if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
+                        statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
                     }
+
+                    long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
                     if (statsWasRead && maxObjectSize >= 0) {
                         long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
-                        if (statObjectSize == 0) {
+                        if (statObjectSize <= 0) {
                             // Empty or no size - nothing to show
                             return;
                         }
@@ -221,7 +223,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private long getMaxObjectSize(TreeItem item) {
         TreeItem parentItem = item.getParentItem();
-        Object maxSize = parentItem.getData("nav.stat.maxSize");
+        Object maxSize = parentItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
         if (maxSize instanceof Number) {
             return ((Number) maxSize).longValue();
         }
@@ -278,15 +280,19 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
                 long finalMaxStatSize = maxStatSize;
                 UIUtils.asyncExec(() -> {
-                    treeItem.setData("nav.stat.maxSize", finalMaxStatSize);
-                    treeItem.getParent().redraw();
+                    try {
+                        if (!treeItem.isDisposed()) {
+                            treeItem.setData("nav.stat.maxSize", finalMaxStatSize);
+                            treeItem.getParent().redraw();
+                        }
+                    } finally {
+                        synchronized (statReaders) {
+                            statReaders.remove(collector);
+                        }
+                    }
                 });
             } catch (DBException e) {
                 log.error(e);
-            } finally {
-                synchronized (statReaders) {
-                    statReaders.remove(collector);
-                }
             }
             return Status.OK_STATUS;
         }
