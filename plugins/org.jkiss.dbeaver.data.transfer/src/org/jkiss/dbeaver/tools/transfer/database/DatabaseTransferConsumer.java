@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -250,7 +251,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
                         switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                            "Error occurred during data load", e, true)) {
+                                DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
                             case STOP:
                                 // just stop execution
                                 throw new DBCException("Can't insert row", e);

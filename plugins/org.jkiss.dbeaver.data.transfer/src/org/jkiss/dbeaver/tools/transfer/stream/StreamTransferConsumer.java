@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -401,7 +403,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Run process", "Error running process [" + commandLine + "]", e);
+
+            DBWorkbench.getPlatformUI().showError(DTMessages.stream_transfer_consumer_title_run_process,
+                    NLS.bind(DTMessages.stream_transfer_consumer_message_error_running_process, commandLine), e);
         }
     }
 

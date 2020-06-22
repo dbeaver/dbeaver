@@ -320,7 +320,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 executor.executeTask();
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), "Can't init data transfer", e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), DTUIMessages.data_transfer_wizard_message_init_data_transfer, e);
             return false;
         }
 

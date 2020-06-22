@@ -144,7 +144,8 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Assign error", "Error reading container objects", e);
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_producer_page_input_objects_title_assign_error,
+                    DTUIMessages.database_producer_page_input_objects_message_error_reading_container_objects, e);
         } catch (InterruptedException e) {
             // ignore
         }
