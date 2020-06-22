@@ -180,7 +180,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                             }
                                         });
                                     } catch (InvocationTargetException ex) {
-                                        DBWorkbench.getPlatformUI().showError("Error opening datasource", "Error while opening datasource", ex);
+                                        DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
+                                                DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
                                         return;
                                     } catch (InterruptedException ex) {
                                         return;
