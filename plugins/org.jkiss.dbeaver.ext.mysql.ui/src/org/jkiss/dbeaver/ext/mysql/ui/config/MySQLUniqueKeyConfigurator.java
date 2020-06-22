@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -31,19 +31,18 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 /**
  * MySQL constraint configurator
  */
-public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLTableConstraint> {
+public class MySQLUniqueKeyConfigurator implements DBEObjectConfigurator<MySQLTableUniqueKey> {
 
 
     @Override
-    public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableConstraint constraint) {
+    public MySQLTableUniqueKey configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableUniqueKey constraint) {
         return UITask.run(() -> {
             EditConstraintPage editPage = new EditConstraintPage(
                 MySQLUIMessages.edit_constraint_manager_title,
                 constraint,
                 new DBSEntityConstraintType[] {
                     DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY,
-                    DBSEntityConstraintType.CHECK });
+                    DBSEntityConstraintType.UNIQUE_KEY });
             if (!editPage.edit()) {
                 return null;
             }

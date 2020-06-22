@@ -30,17 +30,17 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import java.util.Map;
 
 
-public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQLTableBase> implements MySQLSourceObject {
+public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQLTable> implements MySQLSourceObject {
 
-    public MySQLTableConstraintBase(MySQLTableBase table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
+    public MySQLTableConstraintBase(MySQLTable table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType, persisted);
     }
 
-    public MySQLTableConstraintBase(MySQLTableBase table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted, JDBCResultSet resultSet) {
+    public MySQLTableConstraintBase(MySQLTable table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted, JDBCResultSet resultSet) {
         super(table, name, description, constraintType, persisted);
     }
 
-    public MySQLTableConstraintBase(MySQLTableBase table, DBSEntityConstraint constraintSource, boolean persisted) {
+    public MySQLTableConstraintBase(MySQLTable table, DBSEntityConstraint constraintSource, boolean persisted) {
         super(table, constraintSource, persisted);
     }
 

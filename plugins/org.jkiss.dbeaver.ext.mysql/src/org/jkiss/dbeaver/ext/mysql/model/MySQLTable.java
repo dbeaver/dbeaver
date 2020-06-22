@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -152,8 +153,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
         // Copy constraints
         for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
-            MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
+            MySQLTableUniqueKey constr = new MySQLTableUniqueKey(monitor, this, srcConstr);
             this.getContainer().constraintCache.cacheObject(constr);
+        }
+
+        // Copy check constraints
+        for (DBSEntityConstraint srcCheckConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+            MySQLTableCheckConstraint checkConstr = new MySQLTableCheckConstraint(monitor, this, srcCheckConstr);
+            this.getContainer().checkConstraintCache.cacheObject(checkConstr);
         }
 
         // Copy FKs
@@ -226,16 +233,35 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     @Nullable
     @Override
     @Association
-    public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<MySQLTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
     }
 
-    public MySQLTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public MySQLTableUniqueKey getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
+    }
+
+    @Association
+    public Collection<MySQLTableCheckConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor)
+            throws DBException
+    {
+        if (MySQLUtils.isCheckConstraintSupported(getDataSource())) {
+            return getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
+        }
+        else return null;
+    }
+
+    public MySQLTableCheckConstraint getCheckConstraint(DBRProgressMonitor monitor, String constName)
+            throws DBException
+    {
+        if (MySQLUtils.isCheckConstraintSupported(getDataSource())) {
+            return getContainer().checkConstraintCache.getObject(monitor, getContainer(), this, constName);
+        }
+        else return null;
     }
 
     @Override
@@ -357,7 +383,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
-            Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
+            Map<String, MySQLTableUniqueKey> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -419,7 +445,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                     }
 
                     // Find PK
-                    MySQLTableConstraint pk = null;
+                    MySQLTableUniqueKey pk = null;
                     if (pkTable != null && pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
@@ -427,9 +453,9 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                         }
                     }
                     if (pk == null && pkTable != null) {
-                        Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+                        Collection<MySQLTableUniqueKey> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
-                            for (MySQLTableConstraint pkConstraint : constraints) {
+                            for (MySQLTableUniqueKey pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
@@ -443,7 +469,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                         String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                            pk = new MySQLTableUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                             pk.addColumn(new MySQLTableConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }

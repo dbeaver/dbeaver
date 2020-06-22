@@ -62,8 +62,11 @@
         <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCatalogConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLConstraintConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
+        <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLUniqueKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLCheckConstraintConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint"/>
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLForeignKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
