@@ -638,7 +638,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Constraint cache implementation
      */
-    static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
+    static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableUniqueKey, MySQLTableConstraintColumn> {
         ConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -668,14 +668,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Nullable
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
+        protected MySQLTableUniqueKey fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
-                return new MySQLTableConstraint(
+                return new MySQLTableUniqueKey(
                     parent, constraintName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
             } else {
-                return new MySQLTableConstraint(
+                return new MySQLTableUniqueKey(
                     parent, constraintName, null, DBSEntityConstraintType.UNIQUE_KEY, true);
             }
         }
@@ -683,8 +683,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @Nullable
         @Override
         protected MySQLTableConstraintColumn[] fetchObjectRow(
-            JDBCSession session,
-            MySQLTable parent, MySQLTableConstraint object, JDBCResultSet dbResult)
+                JDBCSession session,
+                MySQLTable parent, MySQLTableUniqueKey object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
@@ -702,7 +702,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableUniqueKey constraint, List<MySQLTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
@@ -712,7 +712,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
      * Check constraint cache implementation
      */
 
-    static class CheckConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
+    static class CheckConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableCheckConstraint, MySQLTableCheckConstraintColumn> {
         CheckConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -740,29 +740,27 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String checkConstraintName, JDBCResultSet resultSet) throws SQLException, DBException {
-            return new MySQLTableConstraint(parent, checkConstraintName, null, DBSEntityConstraintType.CHECK, true, resultSet);
+        protected MySQLTableCheckConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String checkConstraintName, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new MySQLTableCheckConstraint(parent, checkConstraintName, null, DBSEntityConstraintType.CHECK, true, resultSet);
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint checkConstraint, List<MySQLTableConstraintColumn> rows) {
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableCheckConstraint checkConstraint, List<MySQLTableCheckConstraintColumn> rows) {
             checkConstraint.setColumns(rows);
         }
 
         @Override
-        protected MySQLTableConstraintColumn[] fetchObjectRow(JDBCSession session, MySQLTable parent, MySQLTableConstraint object, JDBCResultSet dbResult) throws SQLException, DBException {
+        protected MySQLTableCheckConstraintColumn[] fetchObjectRow(JDBCSession session, MySQLTable parent, MySQLTableCheckConstraint object, JDBCResultSet dbResult) throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
             MySQLTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (column == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
                 return null;
             }
-            int ordinalPosition = 1;
-
-            return new MySQLTableConstraintColumn[] { new MySQLTableConstraintColumn(
+            return new MySQLTableCheckConstraintColumn[] { new MySQLTableCheckConstraintColumn(
                     object,
-                    column,
-                    ordinalPosition) };
+                    column)
+            };
         }
     }
 

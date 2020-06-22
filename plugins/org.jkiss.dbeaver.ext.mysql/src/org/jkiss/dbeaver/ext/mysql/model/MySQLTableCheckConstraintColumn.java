@@ -16,69 +16,50 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
-/**
- * GenericConstraintColumn
- */
-public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
-{
+public class MySQLTableCheckConstraintColumn extends AbstractTableConstraintColumn {
     private AbstractTableConstraint<MySQLTable> constraint;
     private MySQLTableColumn tableColumn;
-    private int ordinalPosition;
 
-    public MySQLTableConstraintColumn(AbstractTableConstraint<MySQLTable> constraint, MySQLTableColumn tableColumn, int ordinalPosition)
-    {
+    public MySQLTableCheckConstraintColumn(AbstractTableConstraint<MySQLTable> constraint, MySQLTableColumn tableColumn) {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
-        this.ordinalPosition = ordinalPosition;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
-    @NotNull
     @Override
-    public String getName()
-    {
-        return tableColumn.getName();
+    public DBSTableConstraint getParentObject() {
+        return constraint;
     }
 
-    @NotNull
     @Override
+    public DBPDataSource getDataSource() {
+        return constraint.getTable().getDataSource();
+    }
+
     @Property(id = "name", viewable = true, order = 1)
-    public MySQLTableColumn getAttribute()
-    {
+    @Override
+    public DBSTableColumn getAttribute() {
         return tableColumn;
     }
 
     @Override
-    @Property(viewable = false, order = 2)
-    public int getOrdinalPosition()
-    {
-        return ordinalPosition;
+    public int getOrdinalPosition() {
+        return -1;
     }
 
-    @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getName() {
+        return tableColumn.getName();
+    }
+
+    @Override
+    public String getDescription() {
         return tableColumn.getDescription();
     }
-
-    @Override
-    public AbstractTableConstraint<MySQLTable> getParentObject()
-    {
-        return constraint;
-    }
-
-    @NotNull
-    @Override
-    public MySQLDataSource getDataSource()
-    {
-        return constraint.getTable().getDataSource();
-    }
-
 }
