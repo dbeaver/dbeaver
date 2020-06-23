@@ -50,9 +50,9 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     private static final Log log = Log.getLog(PostgreTableReal.class);
 
     protected long rowCountEstimate;
-    protected volatile Long rowCount;
-    protected volatile Long diskSpace;
-    protected volatile long tableRelSize;
+    protected transient volatile Long rowCount;
+    protected transient volatile Long diskSpace;
+    protected transient volatile long tableRelSize;
     final TriggerCache triggerCache = new TriggerCache();
     final RuleCache ruleCache = new RuleCache();
 

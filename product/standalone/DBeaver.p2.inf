@@ -9,8 +9,8 @@ instructions.configure=\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/sshj/latest/,name:DBeaver SSHJ extension,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/debug/latest/,name:DBeaver Debug extension,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/debug/latest/,name:DBeaver Debug extension,enabled:true);\
-  addRepository(type:0,location:https${#58}//download.eclipse.org/releases/2020-03/,name:Eclipse 2020-03,enabled:true);\
-  addRepository(type:1,location:https${#58}//download.eclipse.org/releases/2020-03/,name:Eclipse 2020-03,enabled:true);\
+  addRepository(type:0,location:https${#58}//download.eclipse.org/releases/2020-06/,name:Eclipse 2020-06,enabled:true);\
+  addRepository(type:1,location:https${#58}//download.eclipse.org/releases/2020-06/,name:Eclipse 2020-06,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
   addRepository(type:0,location:https${#58}//www.genuitec.com/updates/devstyle/ci/,name:Darkest Dark Theme,enabled:true);\

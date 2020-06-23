@@ -58,10 +58,10 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
 
     private CheckConstraintCache checkConstraintCache = new CheckConstraintCache();
 
-    private volatile transient List<SQLServerTableForeignKey> references;
+    private transient volatile List<SQLServerTableForeignKey> references;
 
-    private long totalBytes = -1;
-    private long usedBytes = -1;
+    private transient volatile long totalBytes = -1;
+    private transient volatile long usedBytes = -1;
 
     public SQLServerTable(SQLServerSchema schema)
     {
