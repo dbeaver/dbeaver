@@ -673,7 +673,9 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null && // Table column can be found from results metadata or from SQL query parser
-                        bindingMeta.getMetaAttribute().getEntityMetaData() != null && // Table name must present in results metadata
+                        // If datasource supports table names in result metadata then table name must present in results metadata.
+                        // Otherwise it is an expression.
+                        (bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
