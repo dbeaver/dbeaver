@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tasks.ui.internal;
+package org.jkiss.dbeaver.tasks.ui.sql.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class TSQLUIMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TSQLUIMessages"; //$NON-NLS-1$
+public class TasksSQLUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.sql.internal.TSQLUIMessages"; //$NON-NLS-1$
 
     public static String sql_tool_task_object_selector_dialog_title;
     public static String sql_tool_task_wizard_page_settings_name;
@@ -45,9 +45,9 @@ public class TSQLUIMessages extends NLS {
 
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, TSQLUIMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, TasksSQLUIMessages.class);
     }
 
-    private TSQLUIMessages() {
+    private TasksSQLUIMessages() {
     }
 }
