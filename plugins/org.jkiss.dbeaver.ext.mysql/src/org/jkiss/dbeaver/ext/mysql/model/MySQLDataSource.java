@@ -692,4 +692,13 @@ public class MySQLDataSource extends JDBCDataSource {
         return null;
     }
 
+    public boolean supportsCheckConstraints() {
+        if (this.isMariaDB()) {
+            return this.isServerVersionAtLeast(10, 2);
+        }
+        else {
+            return this.isServerVersionAtLeast(8, 0);
+        }
+    }
+
 }

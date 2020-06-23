@@ -39,9 +39,15 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
                                     <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint" label="%tree.check.constraints.node.name" icon="#check_constraints" description="Table check constraints" visibleIf = "object.dataSource.supportsCheckConstraints()">
+                                    <items label="%tree.check.constraint.node.name" path="constraint" property="checkConstraints" icon="#constraint">
+                                        <items label="%tree.check.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
@@ -259,7 +265,8 @@
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLDatabaseManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%manager.catalog.name"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>

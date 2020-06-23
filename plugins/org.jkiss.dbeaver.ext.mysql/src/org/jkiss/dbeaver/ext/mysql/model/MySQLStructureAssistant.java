@@ -214,7 +214,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String constrName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
                     final boolean isFK = MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType);
-                    objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                    objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableUniqueKey.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);

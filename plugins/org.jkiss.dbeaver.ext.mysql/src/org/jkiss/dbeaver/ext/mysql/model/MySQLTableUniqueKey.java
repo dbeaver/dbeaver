@@ -20,55 +20,40 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GenericForeignKey
+ * GenericPrimaryKey
  */
-public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableUniqueKey>
-{
-    private List<MySQLTableForeignKeyColumn> columns;
+public class MySQLTableUniqueKey extends MySQLTableConstraintBase {
+    private List<MySQLTableConstraintColumn> columns;
 
-    public MySQLTableForeignKey(
-        MySQLTable table,
-        String name,
-        String remarks,
-        MySQLTableUniqueKey referencedKey,
-        DBSForeignKeyModifyRule deleteRule,
-        DBSForeignKeyModifyRule updateRule,
-        boolean persisted)
+    public MySQLTableUniqueKey(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
-        super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
+        super(table, name, remarks, constraintType, persisted);
     }
 
     // Copy constructor
-    public MySQLTableForeignKey(DBRProgressMonitor monitor, MySQLTable table, DBSEntityAssociation source) throws DBException {
-        super(
-            monitor,
-            table,
-            source,
-            false);
+    protected MySQLTableUniqueKey(DBRProgressMonitor monitor, MySQLTable table, DBSEntityConstraint source) throws DBException {
+        super(table, source, false);
         if (source instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
             if (columns != null) {
                 this.columns = new ArrayList<>(columns.size());
-                for (DBSEntityAttributeRef srcCol : columns) {
-                    if (srcCol instanceof DBSTableForeignKeyColumn) {
-                        DBSTableForeignKeyColumn fkCol = (DBSTableForeignKeyColumn) srcCol;
-                        this.columns.add(new MySQLTableForeignKeyColumn(
-                            this,
-                            table.getAttribute(monitor, fkCol.getName()),
-                            this.columns.size(),
-                            table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
+                for (DBSEntityAttributeRef col : columns) {
+                    if (col.getAttribute() != null) {
+                        MySQLTableColumn ownCol = table.getAttribute(monitor, col.getAttribute().getName());
+                        this.columns.add(new MySQLTableConstraintColumn(this, ownCol, col.getAttribute().getOrdinalPosition()));
                     }
                 }
             }
@@ -76,17 +61,22 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     }
 
     @Override
-    public List<MySQLTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(MySQLTableForeignKeyColumn column)
+    public void addColumn(MySQLTableConstraintColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<>();
         }
-        columns.add(column);
+        this.columns.add(column);
+    }
+
+    void setColumns(List<MySQLTableConstraintColumn> columns)
+    {
+        this.columns = columns;
     }
 
     @NotNull
@@ -105,4 +95,5 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     {
         return getTable().getDataSource();
     }
+
 }
