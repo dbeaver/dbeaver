@@ -184,7 +184,10 @@ class ResultSetPersister {
         if (!viewer.getModel().isSingleSource()) {
             return false;
         }
-        if (addedRows.isEmpty()) {
+        List<ResultSetRow> refreshRows = new ArrayList<>();
+        refreshRows.addAll(addedRows);
+        refreshRows.addAll(changedRows);
+        if (refreshRows.isEmpty()) {
             // Nothing to refresh
             return false;
         }
@@ -198,7 +201,8 @@ class ResultSetPersister {
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
-        RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, addedRows);
+
+        RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, refreshRows);
         job.schedule();
         return true;
     }
