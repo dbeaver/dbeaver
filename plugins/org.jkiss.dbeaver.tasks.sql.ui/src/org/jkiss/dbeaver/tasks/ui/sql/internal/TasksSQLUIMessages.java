@@ -41,7 +41,9 @@ public class TasksSQLUIMessages extends NLS {
     public static String sql_tool_task_wizard_page_status_message_console_name_tool_log;
     public static String sql_tool_task_wizard_page_status_update_job_name_update_tool;
     public static String sql_tool_task_wizard_page_status_dummy_load_service_name;
-
+    public static String sql_tool_task_wizard_page_settings_title_sql_preview_error;
+    public static String sql_tool_task_wizard_page_settings_message_sql_preview_panel;
+    public static String sql_tool_task_wizard_message_error_running_task;
 
     static {
         // initialize resource bundle
