@@ -204,7 +204,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                     true,
                     "");
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("SQL preview error", "Can't create SQL preview panel", e);
+                DBWorkbench.getPlatformUI().showError(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_title_sql_preview_error,
+                        TasksSQLUIMessages.sql_tool_task_wizard_page_settings_message_sql_preview_panel, e);
             }
         }
 
