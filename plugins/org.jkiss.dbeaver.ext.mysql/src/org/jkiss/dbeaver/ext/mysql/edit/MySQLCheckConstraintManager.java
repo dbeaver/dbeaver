@@ -33,16 +33,12 @@ import java.util.Map;
 public class MySQLCheckConstraintManager  extends SQLConstraintManager<MySQLTableCheckConstraint, MySQLTable> {
     @Override
     protected MySQLTableCheckConstraint createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        MySQLTable table = (MySQLTable) container;
-        if(MySQLUtils.isCheckConstraintSupported(table.getDataSource())) {
-            return new MySQLTableCheckConstraint(
-                    table,
-                    "NewConstraint",
-                    null,
-                    DBSEntityConstraintType.CHECK,
-                    false);
-        }
-        else return null;
+        return new MySQLTableCheckConstraint(
+                (MySQLTable) container,
+                "NewConstraint",
+                null,
+                DBSEntityConstraintType.CHECK,
+                false);
     }
 
     @Override

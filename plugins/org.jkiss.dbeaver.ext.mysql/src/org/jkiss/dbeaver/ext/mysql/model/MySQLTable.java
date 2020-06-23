@@ -249,19 +249,13 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     public Collection<MySQLTableCheckConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor)
             throws DBException
     {
-        if (MySQLUtils.isCheckConstraintSupported(getDataSource())) {
-            return getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
-        }
-        else return null;
+         return getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
     }
 
     public MySQLTableCheckConstraint getCheckConstraint(DBRProgressMonitor monitor, String constName)
             throws DBException
     {
-        if (MySQLUtils.isCheckConstraintSupported(getDataSource())) {
-            return getContainer().checkConstraintCache.getObject(monitor, getContainer(), this, constName);
-        }
-        else return null;
+        return getContainer().checkConstraintCache.getObject(monitor, getContainer(), this, constName);
     }
 
     @Override

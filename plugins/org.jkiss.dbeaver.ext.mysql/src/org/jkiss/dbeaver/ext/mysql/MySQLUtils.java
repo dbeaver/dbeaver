@@ -151,8 +151,4 @@ public class MySQLUtils {
     public static boolean isAlterUSerSupported(MySQLDataSource dataSource) {
         return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7);
     }
-
-    public static boolean isCheckConstraintSupported(MySQLDataSource dataSource) {
-        return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(8, 0);
-    }
 }
