@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tasks.ui.wizard;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -134,7 +135,7 @@ public class TaskConfigurationWizardDialog extends ActiveWizardDialog {
                         setWizard(nestedTaskWizard);
                 }
             } catch (Exception e) {
-                setErrorMessage("Configuration error: " + e.getMessage());
+                setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_dialog_configuration_error, e.getMessage()));
                 log.error("Can't create task " + taskEditPage.getSelectedTaskType().getName() + " configuration wizard", e);
                 return;
             }
