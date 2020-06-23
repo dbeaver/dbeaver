@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -275,7 +276,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             }
                         }
                     } catch (DBException e1) {
-                        DBWorkbench.getPlatformUI().showError("Error mapping table", "Error mapping target table", e1);
+                        DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_error_mapping_table,
+                                DTUIMessages.database_consumer_page_mapping_message_error_mapping_target_table, e1);
                     }
                 }
             });
@@ -411,7 +413,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     updatePageCompletion();
 
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Mapping error", "Error setting target table", e);
+                    DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                            DTUIMessages.database_consumer_page_mapping_message_error_setting_target_table, e);
                 }
             }
         });
@@ -590,7 +593,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 try {
                     setMappingTarget(container, container.getSource().getName());
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Mapping error", "Error auto mapping source table '" + container.getSource().getName() + "'", e);
+                    DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                    NLS.bind(DTUIMessages.database_consumer_page_mapping_message_error_auto_mapping_source_table, container.getSource().getName()),
+                    e);
                 }
             }
         }
@@ -644,7 +649,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.unspecified);
                     }
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Error mapping table", "Error mapping existing table", e);
+                    DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_error_mapping_table,
+                            DTUIMessages.database_consumer_page_mapping_message_error_mapping_existing_table, e);
                 }
                 mappingViewer.refresh();
                 updatePageCompletion();
@@ -665,7 +671,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 mappingViewer.refresh();
                 updatePageCompletion();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Mapping error", "Error mapping new table", e);
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                        DTUIMessages.database_consumer_page_mapping_message_error_mapping_new_table, e);
             }
         }
     }
@@ -713,7 +720,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 monitor.done();
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Target DDL", "Error generating target DDL", e);
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_target_DDL, DTUIMessages.database_consumer_page_mapping_message_error_generating_target_DDL, e);
             return;
         } catch (InterruptedException e) {
             return;
@@ -810,11 +817,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         if (settings.getContainerNode() == null) {
-            setErrorMessage("Set target container");
+            setErrorMessage(DTUIMessages.database_consumer_page_mapping_error_message_set_target_container);
             return false;
         }
         if (!settings.isCompleted(getWizard().getSettings().getDataPipes())) {
-            setErrorMessage("Set all tables mappings");
+            setErrorMessage(DTUIMessages.database_consumer_page_mapping_error_message_set_all_tables_mappings);
             return false;
         } else {
             setErrorMessage(null);

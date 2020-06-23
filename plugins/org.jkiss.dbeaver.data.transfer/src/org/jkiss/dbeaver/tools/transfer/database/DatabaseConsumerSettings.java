@@ -279,7 +279,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                         }
                     });
             } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Init connection", "Error connecting to datasource", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_consumer_settings_title_init_connection,
+                        DTMessages.database_consumer_settings_message_error_connecting, e.getTargetException());
             } catch (InterruptedException e) {
                 // ignore
             }

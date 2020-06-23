@@ -63,7 +63,7 @@ class TaskConfigurationWizardPageSettings extends ActiveWizardPage<TaskConfigura
             if (errorMessage != null) {
                 setErrorMessage(errorMessage);
             } else {
-                setErrorMessage("Fill task '" + curTaskType.getName() + "' parameters");
+                setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_page_settings_fill_parameters, curTaskType.getName()));
             }
             return false;
         }
