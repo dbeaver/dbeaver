@@ -372,7 +372,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
 
-<!--
                 <driver
                         id="postgres-yugabytedb-jdbc"
                         label="YugabyteDB"
@@ -394,7 +393,6 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
--->
 
                 <driver
                         id="postgres-cockroach-jdbc"
