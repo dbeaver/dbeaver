@@ -116,7 +116,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             try {
                 pipe.initPipe(settings, i, dataPipes.size());
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Error initializing transfer pipe", "Error initializing data transfer pipe", e);
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_page_final_title_error_initializing_transfer_pipe,
+                        DTUIMessages.data_transfer_page_final_message_error_initializing_data_transfer_pipe, e);
                 continue;
             }
 

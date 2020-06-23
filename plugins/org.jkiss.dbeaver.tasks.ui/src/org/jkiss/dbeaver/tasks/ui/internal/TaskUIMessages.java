@@ -110,8 +110,15 @@ public class TaskUIMessages extends NLS {
 	public static String task_handler_delete_confirm_question_delete_task;
 	public static String task_handler_delete_confirm_title_delete_tasks;
 	public static String task_handler_delete_confirm_question_delete_tasks;
-	
-	
+
+	public static String task_configuration_wizard_page_task_error_message_enter_task_name;
+	public static String task_configuration_wizard_page_task_already_exists;
+	public static String task_configuration_wizard_page_task_enter_type;
+	public static String task_configuration_wizard_page_settings_fill_parameters;
+	public static String task_configuration_wizard_dialog_configuration_error;
+
+
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, TaskUIMessages.class);
