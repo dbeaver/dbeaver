@@ -397,7 +397,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
             if (finalError != null) {
                 log.error(finalError);
-                DBWorkbench.getPlatformUI().showError("Load entity meta", "Can't load entity attributes", finalError);
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.stream_producer_page_preview_title_load_entity_meta,
+                        DTUIMessages.stream_producer_page_preview_message_entity_attributes, finalError);
             }
         });
 
@@ -450,7 +451,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(previewTable, false);
             if (finalError != null) {
-                DBWorkbench.getPlatformUI().showError("OReview data", "Can't load preview data", finalError);
+                DBWorkbench.getPlatformUI().showError(DTUIMessages.stream_producer_page_preview_title_preview_data,
+                        DTUIMessages.stream_producer_page_preview_message_preview_data, finalError);
             }
         });
     }
@@ -565,18 +567,18 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         final StreamProducerSettings settings = getProducerSettings();
         List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         if (dataPipes.isEmpty()) {
-            setErrorMessage("No entities specified");
+            setErrorMessage(DTUIMessages.stream_producer_page_preview_error_message_no_entities_specified);
             return false;
         }
         for (DataTransferPipe pipe : dataPipes) {
             DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
             if (!(databaseObject instanceof DBSEntity)) {
-                setErrorMessage("Wrong input object");
+                setErrorMessage(DTUIMessages.stream_producer_page_preview_error_message_wrong_input_object);
                 return false;
             }
             StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
             if (!entityMapping.isComplete()) {
-                setErrorMessage("Set mappings for all columns");
+                setErrorMessage(DTUIMessages.stream_producer_page_preview_error_message_set_mappings_for_all_columns);
                 return false;
             }
         }

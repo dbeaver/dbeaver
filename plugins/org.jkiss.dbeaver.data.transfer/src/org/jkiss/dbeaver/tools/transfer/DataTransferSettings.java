@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -157,7 +158,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 selectProducer(producerDesc);
                 consumerOptional = true;
             } else {
-                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data producer descriptor in registry");
+                DBWorkbench.getPlatformUI().showError(DTMessages.data_transfer_settings_title_find_producer, DTMessages.data_transfer_settings_message_find_data_producer);
             }
         } else if (!ArrayUtils.isEmpty(initConsumers)) {
             // Make pipes
@@ -172,7 +173,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 selectConsumer(consumerDesc, null, false);
                 consumerOptional = false;
             } else {
-                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data propducer descriptor in registry");
+                DBWorkbench.getPlatformUI().showError(DTMessages.data_transfer_settings_title_find_consumer, DTMessages.data_transfer_settings_message_find_data_consumer);
             }
             producerOptional = true;
         } else {
@@ -496,7 +497,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                         }
                     } catch (DBCException e) {
                         if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                            DBWorkbench.getPlatformUI().showError("Configuration error", "Error reading task configuration", e);
+                            DBWorkbench.getPlatformUI().showError(DTMessages.data_transfer_settings_title_configuration_error,
+                                    DTMessages.data_transfer_settings_message_error_reading_task_configuration, e);
                         }
                         taskLog.error(e);
                     }

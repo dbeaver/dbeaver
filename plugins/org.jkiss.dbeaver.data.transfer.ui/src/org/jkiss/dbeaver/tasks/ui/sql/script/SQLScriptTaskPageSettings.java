@@ -338,11 +338,11 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
     @Override
     protected boolean determinePageCompletion() {
         if (selectedScripts.isEmpty()) {
-            setErrorMessage("You must select script(s) to execute");
+            setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_script_execute);
             return false;
         }
         if (selectedDataSources.isEmpty()) {
-            setErrorMessage("You must select connection(s)");
+            setErrorMessage(DTUIMessages.sql_script_task_page_settings_error_message_you_must_select_connection);
             return false;
         }
         setErrorMessage(null);
