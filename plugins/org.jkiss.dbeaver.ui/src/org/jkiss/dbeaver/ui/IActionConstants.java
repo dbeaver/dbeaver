@@ -47,4 +47,6 @@ public interface IActionConstants {
 
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
     String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
+    
+    String CMD_SEARCH_GOOGLE = "org.jkiss.dbeaver.core.edit.search.google";
 }
