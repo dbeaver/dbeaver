@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -377,15 +376,16 @@ public class EditorUtils {
     public static void trackControlContext(IWorkbenchSite site, Control control, String contextId) {
         final IContextService contextService = site.getService(IContextService.class);
         if (contextService != null) {
-            control.addFocusListener(new FocusListener() {
+            FocusListener focusListener = new FocusListener() {
                 IContextActivation activation;
 
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (activation != null) {
-                        contextService.deactivateContext(activation);
-                        activation = null;
-                    }
+                    // No need to deactivate the same context
+//                    if (activation != null) {
+//                        contextService.deactivateContext(activation);
+//                        activation = null;
+//                    }
                     activation = contextService.activateContext(contextId);
                 }
 
@@ -396,10 +396,10 @@ public class EditorUtils {
                         activation = null;
                     }
                 }
-            });
+            };
+            control.addFocusListener(focusListener);
+            //control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
         }
-        control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
-
     }
 
 }
