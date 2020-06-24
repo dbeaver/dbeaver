@@ -137,6 +137,8 @@
         <command id="org.jkiss.dbeaver.ui.tools.menu" name="%command.org.jkiss.dbeaver.ui.tools.menu.name" description="%command.org.jkiss.dbeaver.ui.tools.menu.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.core.generate.uuid.name" description="%command.org.jkiss.dbeaver.core.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
+    
+    	<command id="org.jkiss.dbeaver.core.edit.search.google" name="%command.org.jkiss.dbeaver.core.edit.search.web.name" description="%command.org.jkiss.dbeaver.core.edit.search.web.description" categoryId="org.jkiss.dbeaver.core.util"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -791,6 +793,9 @@
             <command commandId="org.eclipse.ui.edit.rename" label="%command.org.eclipse.ui.edit.rename.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            
+            
+            
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
