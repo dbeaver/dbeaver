@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -91,4 +92,12 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                 	));
     }
 
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OracleTableConstraint> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(" (").append((command.getObject()).getSearchCondition()).append(")");
+        } else {
+            super.appendConstraintDefinition(decl, command);
+        }
+    }
 }
