@@ -434,8 +434,8 @@
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-                    <!--<file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>-->
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE" bundle="!drivers.redshift"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar"/>
+<!--                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE" bundle="!drivers.redshift"/>-->
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
                     <parameter name="serverType" value="redshift"/>
