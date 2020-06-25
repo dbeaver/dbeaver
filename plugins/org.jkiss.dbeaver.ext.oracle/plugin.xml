@@ -115,6 +115,12 @@
                             <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
                             </items>
                         </folder>
+                        <folder label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
                             </items>
