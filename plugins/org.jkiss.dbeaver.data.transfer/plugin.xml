@@ -184,6 +184,19 @@
                     <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean" defaultValue="true"/>
                 </propertyGroup>
             </processor>
+            <processor
+                    id="stream.source.code"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
+                    description="%dataTransfer.processor.source.code.description"
+                    icon="icons/formats/file.png"
+                    label="%dataTransfer.processor.source.code.name"
+                    contentType="text/plain">
+                <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">
+                    <property id="language" label="%dataTransfer.processor.source.code.property.language.name" type="string" description="%dataTransfer.processor.source.code.property.language.description" defaultValue="php version less 5.4" validValues="php version less 5.4,php version at least 5.4" required="true"/>
+                    <property id="formatDateISOPHP" label="%dataTransfer.processor.source.code.property.formatDateISO.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.source.code.property.extension.label" defaultValue="php"/>
+                </propertyGroup>
+            </processor>
         </node>
 
     </extension>
