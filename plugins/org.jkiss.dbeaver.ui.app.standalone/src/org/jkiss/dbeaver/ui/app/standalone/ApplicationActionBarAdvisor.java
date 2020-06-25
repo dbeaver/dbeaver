@@ -227,7 +227,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);
 
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
 
             fileMenu.add(openWorkspaceAction);
 
