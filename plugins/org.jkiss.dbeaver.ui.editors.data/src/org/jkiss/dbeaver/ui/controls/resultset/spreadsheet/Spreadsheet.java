@@ -32,10 +32,11 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
-import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -47,7 +48,9 @@ public class Spreadsheet extends LightGrid implements Listener {
     public enum DoubleClickBehavior {
         NONE,
         EDITOR,
-        INLINE_EDITOR
+        INLINE_EDITOR,
+        COPY_VALUE,
+        COPY_PASTE_VALUE
     }
 
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
@@ -295,6 +298,26 @@ public class Spreadsheet extends LightGrid implements Listener {
                             break;
                         case INLINE_EDITOR:
                             presentation.openValueEditor(true);
+                            break;
+                        case COPY_VALUE:
+                        case COPY_PASTE_VALUE:
+                            ResultSetCopySettings copySettings = new ResultSetCopySettings();
+                            copySettings.setFormat(DBDDisplayFormat.EDIT);
+                            String stringValue = presentation.copySelectionToString(copySettings);
+                            ResultSetUtils.copyToClipboard(stringValue);
+                            if (doubleClickBehavior == DoubleClickBehavior.COPY_PASTE_VALUE) {
+                                IResultSetValueReflector valueReflector = GeneralUtils.adapt(
+                                    presentation.getController().getContainer(),
+                                    IResultSetValueReflector.class);
+                                if (valueReflector != null) {
+                                    DBDAttributeBinding currentAttribute = presentation.getCurrentAttribute();
+                                    ResultSetRow currentRow = presentation.getController().getCurrentRow();
+                                    if (currentAttribute != null && currentRow != null) {
+                                        Object cellValue = presentation.getController().getModel().getCellValue(currentAttribute, currentRow);
+                                        valueReflector.insertCurrentCellValue(currentAttribute, cellValue, stringValue);
+                                    }
+                                }
+                            }
                             break;
                     }
                 }
