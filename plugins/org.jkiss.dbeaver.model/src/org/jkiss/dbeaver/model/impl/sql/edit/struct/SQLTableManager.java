@@ -67,13 +67,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
     
-    protected String beginCreateTableStatement(OBJECT_TYPE table, String tableName) {
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName) {
         return "CREATE " + getCreateTableType(table) + " " + tableName +
                 " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
                 ;
     }
     
-    protected boolean hasAttrDeclarations() {
+    protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
 
@@ -91,7 +91,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append(beginCreateTableStatement(table,tableName));
+        createQuery.append(beginCreateTableStatement(monitor,table,tableName));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
         for (NestedObjectCommand nestedCommand : orderedCommands) {
@@ -120,7 +120,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                     }
                     createQuery.append(lineSeparator); //$NON-NLS-1$
                 }
-                if (!hasNestedDeclarations && !hasAttrDeclarations()) {
+                if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
                     createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
                 } else {
                  createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
@@ -134,9 +134,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 }
             }
         }
-
-        createQuery.append(lineSeparator); //$NON-NLS-1$
-        if (hasAttrDeclarations() || hasNestedDeclarations) createQuery.append(")"); //$NON-NLS-1$
+        if (hasAttrDeclarations(table) || hasNestedDeclarations){
+            createQuery.append(lineSeparator); //$NON-NLS-1$
+            createQuery.append(")"); //$NON-NLS-1$
+        }
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
