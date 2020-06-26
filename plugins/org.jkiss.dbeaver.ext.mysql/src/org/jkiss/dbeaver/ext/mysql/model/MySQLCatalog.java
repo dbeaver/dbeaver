@@ -712,7 +712,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
      * Check constraint cache implementation
      */
 
-    static class CheckConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableCheckConstraint, MySQLTableCheckConstraintColumn> {
+    static class CheckConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableCheckConstraint, MySQLTableConstraintColumn> {
         CheckConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -745,22 +745,13 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableCheckConstraint checkConstraint, List<MySQLTableCheckConstraintColumn> rows) {
-            checkConstraint.setColumns(rows);
+        protected MySQLTableConstraintColumn[] fetchObjectRow(JDBCSession session, MySQLTable mySQLTable, MySQLTableCheckConstraint forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new MySQLTableConstraintColumn[0];
         }
 
         @Override
-        protected MySQLTableCheckConstraintColumn[] fetchObjectRow(JDBCSession session, MySQLTable parent, MySQLTableCheckConstraint object, JDBCResultSet dbResult) throws SQLException, DBException {
-            String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
-            MySQLTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
-            if (column == null) {
-                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
-                return null;
-            }
-            return new MySQLTableCheckConstraintColumn[] { new MySQLTableCheckConstraintColumn(
-                    object,
-                    column)
-            };
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableCheckConstraint object, List<MySQLTableConstraintColumn> children) {
+
         }
     }
 
