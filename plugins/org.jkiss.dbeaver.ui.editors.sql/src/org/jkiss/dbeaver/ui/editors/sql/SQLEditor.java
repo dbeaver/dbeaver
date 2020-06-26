@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -2741,7 +2742,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetValueReflector, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -3138,6 +3139,22 @@ public class SQLEditor extends SQLEditorBase implements
         public void setTabName(String tabName) {
             this.tabName = tabName;
             resultsTab.setText(tabName);
+        }
+
+        @Override
+        public void insertCurrentCellValue(DBDAttributeBinding attributeBinding, Object cellValue, String stringValue) {
+            StyledText textWidget = getTextViewer() == null ? null : getTextViewer().getTextWidget();
+            if (textWidget != null) {
+                String sqlValue;
+                if (getDataSource() != null) {
+                    sqlValue = SQLUtils.convertValueToSQL(getDataSource(), attributeBinding, cellValue);
+                } else {
+                    sqlValue = stringValue;
+                }
+                textWidget.insert(sqlValue);
+                textWidget.setCaretOffset(textWidget.getCaretOffset() + sqlValue.length());
+                textWidget.setFocus();
+            }
         }
     }
 
