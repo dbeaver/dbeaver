@@ -60,6 +60,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     private boolean hasPartitions;
     private String partitionKey;
+    private String partitionRange;
 
     public PostgreTable(PostgreTableContainer container)
     {
@@ -289,6 +290,27 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
             }
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
+    }
+
+    @Nullable
+    public String getPartitionRange(DBRProgressMonitor monitor) throws DBException {
+        if (partitionRange == null && getDataSource().getServerType().supportsInheritance()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table partition range")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "select pg_get_expr(c.relpartbound, c.oid, true) from pg_class c where relname = ?;"
+                )) {
+                    dbStat.setString(1, getName());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if(dbResult.next()) {
+                            partitionRange = JDBCUtils.safeGetString(dbResult, "pg_get_expr");
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
+                }
+            }
+        }
+        return partitionRange;
     }
 
     public boolean hasSubClasses() {
