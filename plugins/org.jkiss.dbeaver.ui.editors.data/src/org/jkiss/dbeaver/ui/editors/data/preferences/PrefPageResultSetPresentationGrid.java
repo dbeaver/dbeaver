@@ -100,7 +100,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
             gridDoubleClickBehavior.add("Copy selected cell", Spreadsheet.DoubleClickBehavior.COPY_VALUE.ordinal());
-            gridDoubleClickBehavior.add("Insert selected cell", Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
+            gridDoubleClickBehavior.add("Paste cell value into editor", Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
             gridRowBatchSize = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
             gridRowBatchSize.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size_tip);
         }
