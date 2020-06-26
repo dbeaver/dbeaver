@@ -299,13 +299,15 @@ public class Spreadsheet extends LightGrid implements Listener {
                         case INLINE_EDITOR:
                             presentation.openValueEditor(true);
                             break;
-                        case COPY_VALUE:
-                        case COPY_PASTE_VALUE:
+                        case COPY_VALUE: {
                             ResultSetCopySettings copySettings = new ResultSetCopySettings();
                             copySettings.setFormat(DBDDisplayFormat.EDIT);
                             String stringValue = presentation.copySelectionToString(copySettings);
                             ResultSetUtils.copyToClipboard(stringValue);
-                            if (doubleClickBehavior == DoubleClickBehavior.COPY_PASTE_VALUE) {
+                            break;
+                        }
+
+                        case COPY_PASTE_VALUE: {
                                 IResultSetValueReflector valueReflector = GeneralUtils.adapt(
                                     presentation.getController().getContainer(),
                                     IResultSetValueReflector.class);
@@ -314,11 +316,15 @@ public class Spreadsheet extends LightGrid implements Listener {
                                     ResultSetRow currentRow = presentation.getController().getCurrentRow();
                                     if (currentAttribute != null && currentRow != null) {
                                         Object cellValue = presentation.getController().getModel().getCellValue(currentAttribute, currentRow);
-                                        valueReflector.insertCurrentCellValue(currentAttribute, cellValue, stringValue);
+                                        ResultSetCopySettings copySettings = new ResultSetCopySettings();
+                                        valueReflector.insertCurrentCellValue(currentAttribute, cellValue, presentation.copySelectionToString(copySettings));
                                     }
+                                } else {
+                                    // No value reflector - open inline editor then
+                                    presentation.openValueEditor(true);
                                 }
-                            }
                             break;
+                        }
                     }
                 }
                 break;
