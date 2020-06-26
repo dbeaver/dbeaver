@@ -47,8 +47,6 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint" label="%tree.check.constraints.node.name" icon="#check_constraints" description="Table check constraints" visibleIf = "object.dataSource.supportsCheckConstraints()">
                                     <items label="%tree.check.constraint.node.name" path="constraint" property="checkConstraints" icon="#constraint">
-                                        <items label="%tree.check.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
-                                        </items>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">

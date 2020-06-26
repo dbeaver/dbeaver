@@ -17,17 +17,23 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
+import java.util.List;
 import java.util.Map;
 
 public class MySQLCheckConstraintManager  extends SQLConstraintManager<MySQLTableCheckConstraint, MySQLTable> {
@@ -53,5 +59,16 @@ public class MySQLCheckConstraintManager  extends SQLConstraintManager<MySQLTabl
         } else {
             super.appendConstraintDefinition(decl, command);
         }
+    }
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        final MySQLTableCheckConstraint constraint = command.getObject();
+        actions.add(
+                new SQLDatabasePersistAction(
+                        ModelMessages.model_jdbc_drop_constraint,
+                        "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                                " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint)
+                ));
     }
 }
