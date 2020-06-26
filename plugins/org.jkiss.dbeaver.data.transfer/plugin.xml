@@ -188,7 +188,7 @@
                     id="stream.source.code"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
                     description="%dataTransfer.processor.source.code.description"
-                    icon="icons/formats/file.png"
+                    icon="icons/formats/code.png"
                     label="%dataTransfer.processor.source.code.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">
