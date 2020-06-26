@@ -67,7 +67,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
     
-    protected String beginCreateTableStatement(OBJECT_TYPE table, String tableName) {
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName) {
         return "CREATE " + getCreateTableType(table) + " " + tableName +
                 " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
                 ;
@@ -91,7 +91,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append(beginCreateTableStatement(table,tableName));
+        createQuery.append(beginCreateTableStatement(monitor,table,tableName));//,DBCExecutionContext executionContext
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
         for (NestedObjectCommand nestedCommand : orderedCommands) {

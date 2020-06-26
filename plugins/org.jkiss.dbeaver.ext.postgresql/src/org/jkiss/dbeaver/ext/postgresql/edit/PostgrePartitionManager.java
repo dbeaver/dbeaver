@@ -72,7 +72,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }   
     
     @Override
-    protected String beginCreateTableStatement(PostgreTableBase table, String tableName) {
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName) {
         return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " +
                 getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$
     }
