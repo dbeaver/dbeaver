@@ -474,15 +474,15 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                         }
                     }
                 }
-                for (OracleTableBase table : tableCache.getCachedObjects()) {
-                    if (table instanceof OracleTable && !((OracleTable) table).hasStatistics()) {
-                        ((OracleTable) table).setTableSize(0L);
-                    }
-                }
             }
         } catch (SQLException e) {
             throw new DBCException("Error reading table statistics", e);
         } finally {
+            for (OracleTableBase table : tableCache.getCachedObjects()) {
+                if (table instanceof OracleTable && !((OracleTable) table).hasStatistics()) {
+                    ((OracleTable) table).setTableSize(0L);
+                }
+            }
             hasStatistics = true;
         }
     }
