@@ -463,7 +463,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                     "WHERE S.SEGMENT_TYPE='TABLE'"  + (hasDBA ? " AND s.OWNER = ?" : "") + "\n" +
                     "GROUP BY SEGMENT_NAME"))
             {
-                dbStat.setString(1, getName());
+                if (hasDBA) {
+                    dbStat.setString(1, getName());
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String tableName = dbResult.getString(1);
