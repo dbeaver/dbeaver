@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 
@@ -101,7 +102,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 		return type;
 	}
 
-	@Property(viewable = true, editable=false, order = 20)
+	@Property(viewable = true, editable=false, order = 20, formatter = ByteNumberFormat.class)
 	public long getSize() {
 		return size;
 	}
@@ -156,11 +157,13 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	}
 	
 	public String getSimpleColumnString( ) {
-		return "(" + CommonUtils.joinStrings(",",(String[]) this.columns.toArray()) + ")";
+		String[] colNames = this.columns.stream().map(c -> c.getName()).toArray(String[]::new);
+		return "(" + CommonUtils.joinStrings(",",colNames ) + ")";
 	}
 	
 	public String getColumnString() {
-		return "(" + CommonUtils.joinStrings(",", (String[]) this.columns.stream().map(c -> DBUtils.getQuotedIdentifier(c)).toArray()) + ")";
+		String[] colNames = this.columns.stream().map(c -> DBUtils.getQuotedIdentifier(c)).toArray(String[]::new);
+		return "(" + CommonUtils.joinStrings(",", colNames ) + ")";
 		
 	}
 	
