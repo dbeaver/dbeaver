@@ -361,7 +361,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
-        this.spreadsheet.setCursor(cell, false, true);
+        UIUtils.asyncExec(() -> {
+            this.spreadsheet.setCursor(cell, false, true);
+        });
         //this.spreadsheet.showColumn(this.curAttribute);
     }
 
