@@ -460,7 +460,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT SEGMENT_NAME,SUM(bytes) TABLE_SIZE\n" +
                     "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
-                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.OWNER = ?\n" +
+                    "WHERE S.SEGMENT_TYPE='TABLE'"  + (hasDBA ? " AND s.OWNER = ?" : "") + "\n" +
                     "GROUP BY SEGMENT_NAME"))
             {
                 dbStat.setString(1, getName());
