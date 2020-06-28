@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.data.gis
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.utils
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Export-Package: org.jkiss.dbeaver.ext.exasol,
