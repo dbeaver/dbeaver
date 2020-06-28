@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
                                           Map<String, Object> options) throws DBException {
 		ExasolTable table = command.getObject().getTable();
 		try {
-			actionList.add(new SQLDatabasePersistAction(generateAction(table)));
+			actionList.add(new SQLDatabasePersistAction(generateAction(monitor, table)));
 		} catch (DBException e) {
 			LOG.error("Failed to create Partition Action", e);
 		}
@@ -65,7 +64,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
                                           Map<String, Object> options) {
 		ExasolTable table = command.getObject().getTable();
 		try {
-			actions.add(new SQLDatabasePersistAction(generateAction(table)));
+			actions.add(new SQLDatabasePersistAction(generateAction(monitor, table)));
 		} catch (DBException e) {
 			LOG.error("Failed to create Partition Action", e);
 		}
@@ -80,23 +79,23 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 		cache.removeObject(col, false);
 		ExasolTable table = command.getObject().getTable();
 		try {
-			actions.add(new SQLDatabasePersistAction(generateAction(table)));
+			actions.add(new SQLDatabasePersistAction(generateAction(monitor, table)));
 		} catch (DBException e) {
 			LOG.error("Failed to create Partition Action", e);
 		}
 	}
 	
-	private String generateAction(ExasolTable table) throws DBException
+	private String generateAction(DBRProgressMonitor monitor, ExasolTable table) throws DBException
 	{
-		if (table.getAdditionalInfo(new VoidProgressMonitor()).getHasPartitionKey(new VoidProgressMonitor()) & table.getPartitions().size() == 0)
+		if (table.getAdditionalInfo(monitor).getHasPartitionKey(monitor) & table.getPartitions().size() == 0)
 		{
 			return "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS";
 		} 
 		if (table.getPartitions().size() > 0)
 		{
-			if (! table.getAdditionalInfo(new VoidProgressMonitor()).getHasPartitionKey(new VoidProgressMonitor()))
+			if (! table.getAdditionalInfo(monitor).getHasPartitionKey(monitor))
 					table.setHasPartitionKey(true, true);
-			return ExasolUtils.getPartitionDdl(table, new VoidProgressMonitor());
+			return ExasolUtils.getPartitionDdl(table, monitor);
 		}
 			
 		return null;
