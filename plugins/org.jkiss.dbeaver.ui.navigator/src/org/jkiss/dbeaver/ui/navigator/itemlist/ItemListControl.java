@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
@@ -62,6 +63,8 @@ import java.util.List;
  */
 public class ItemListControl extends NodeListControl
 {
+    private static final Log log = Log.getLog(ItemListControl.class);
+
     private ISearchExecutor searcher;
     private Color searchHighlightColor;
     //private Color disabledCellColor;
@@ -259,8 +262,12 @@ public class ItemListControl extends NodeListControl
                 if (parentNode instanceof DBNDatabaseNode) {
                     DBSObject parentObject = DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject());
                     if (parentObject instanceof DBPObjectStatisticsCollector) {
-                        if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
-                            ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                        try {
+                            if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+                                ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                            }
+                        } catch (Exception e) {
+                            log.error("Error reading statistics of '" + parentObject.getName() + "'", e);
                         }
                     }
                 }
