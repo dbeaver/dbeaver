@@ -140,7 +140,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
 
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
-
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
 
