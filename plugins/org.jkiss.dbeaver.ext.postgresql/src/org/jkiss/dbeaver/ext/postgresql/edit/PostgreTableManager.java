@@ -76,13 +76,17 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName) {
         String statement = "CREATE " + getCreateTableType(table) + " ";
         if (table.isPartition() && table instanceof PostgreTable) {
+            PostgreTable postgreTable = (PostgreTable) table;
             try {
-                PostgreTable postgreTable = (PostgreTable) table;
-                return statement + DBUtils.getQuotedIdentifier(table) + " PARTITION OF "
-                        + DBUtils.getQuotedIdentifier(postgreTable.getSuperTables(monitor).get(0))
-                        + " " + postgreTable.getPartitionRange(monitor);
+                List<PostgreTableBase> superTables = postgreTable.getSuperTables(monitor);
+                if (superTables.size() != 1) {
+                    throw new IllegalStateException("There can only be one parent");
+                }
+                String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                String range = postgreTable.getPartitionRange(monitor);
+                return statement + tableName + " PARTITION OF " + parent + " " + range;
             } catch (DBException e) {
-                e.printStackTrace();
+                log.error("Partition range error", e);
             }
         }
         return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();
