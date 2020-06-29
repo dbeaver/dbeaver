@@ -74,18 +74,18 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName) {
-        String statement = "CREATE " + getCreateTableType(table) + " " + tableName;
+        String statement = "CREATE " + getCreateTableType(table) + " ";
         if (table.isPartition() && table instanceof PostgreTable) {
             try {
                 PostgreTable postgreTable = (PostgreTable) table;
-                return statement + " PARTITION OF "
-                        + postgreTable.getSuperTables(monitor).get(0).getFullyQualifiedName(DBPEvaluationContext.DDL)
+                return statement + DBUtils.getQuotedIdentifier(table) + " PARTITION OF "
+                        + DBUtils.getQuotedIdentifier(postgreTable.getSuperTables(monitor).get(0))
                         + " " + postgreTable.getPartitionRange(monitor);
             } catch (DBException e) {
                 e.printStackTrace();
             }
         }
-        return statement + " (" + GeneralUtils.getDefaultLineSeparator();
+        return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();
     }
 
     @Override
