@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.cloudspanner.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="google_cloudspanner"
+                label="%spanner.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.cloudspanner.ui.views.CloudSpannerConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.cloudspanner/icons/spanner_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.cloudspanner.ui.views.CloudSpannerConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.cloudspanner/icons/spanner_icon.png"
+                id="org.jkiss.dbeaver.ext.cloudspanner.dataSourceEditorView"
+                dataSource="google_cloudspanner"
+                label="%spanner.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>
