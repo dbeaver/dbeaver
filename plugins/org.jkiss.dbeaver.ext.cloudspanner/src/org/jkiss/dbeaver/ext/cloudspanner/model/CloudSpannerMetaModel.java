@@ -18,14 +18,10 @@ package org.jkiss.dbeaver.ext.cloudspanner.model;
 
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 
-import java.util.regex.Pattern;
-
 /**
  * Spanner meta model
  */
 public class CloudSpannerMetaModel extends GenericMetaModel {
-
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at \\[([0-9]+)\\:([0-9]+)\\]");
 
     public CloudSpannerMetaModel() {
     }
