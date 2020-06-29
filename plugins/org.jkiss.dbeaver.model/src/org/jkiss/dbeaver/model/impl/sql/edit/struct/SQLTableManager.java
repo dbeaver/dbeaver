@@ -134,10 +134,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 }
             }
         }
-        if (hasAttrDeclarations(table) || hasNestedDeclarations){
-            createQuery.append(lineSeparator); //$NON-NLS-1$
+        if (hasAttrDeclarations(table) || hasNestedDeclarations) {
+            createQuery.append(lineSeparator);
             createQuery.append(")"); //$NON-NLS-1$
         }
+
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
