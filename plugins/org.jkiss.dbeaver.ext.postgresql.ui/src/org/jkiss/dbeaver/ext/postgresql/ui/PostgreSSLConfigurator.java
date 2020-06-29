@@ -130,9 +130,9 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
-        configuration.setProperty(PostgreConstants.PROP_SSL_ROOT_CERT, rootCertText.getText());
-        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
-        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
+        configuration.setProperty(PostgreConstants.PROP_SSL_ROOT_CERT, rootCertText.getText().trim());
+        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText().trim());
+        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText().trim());
         configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
         configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
     }
