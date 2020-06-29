@@ -230,6 +230,8 @@
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.clickhouse@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.cloudspanner.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.cloudspanner@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.i@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.zos@default:default"/>
