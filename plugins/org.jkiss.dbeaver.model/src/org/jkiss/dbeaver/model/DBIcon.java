@@ -138,6 +138,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_ERRORS = new DBIcon("over_folder", "over/errors_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.png"); //$NON-NLS-1$ //$NON-NLS-2$

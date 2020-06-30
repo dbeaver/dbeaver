@@ -29,6 +29,7 @@ public class DBSObjectState
     public static final DBSObjectState INVALID = new DBSObjectState("Invalid", DBIcon.OVER_ERROR);
     public static final DBSObjectState ACTIVE = new DBSObjectState("Active", DBIcon.OVER_SUCCESS);
     public static final DBSObjectState UNKNOWN = new DBSObjectState("Unknown", DBIcon.OVER_UNKNOWN);
+    public static final DBSObjectState ERRORS = new DBSObjectState("Error", DBIcon.OVER_ERRORS);
 
     private final String title;
     private final DBPImage overlayImage;

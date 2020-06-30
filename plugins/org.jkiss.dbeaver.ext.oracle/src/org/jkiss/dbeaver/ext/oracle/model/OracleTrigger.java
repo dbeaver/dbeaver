@@ -189,7 +189,14 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
     @Override
     public DBSObjectState getObjectState()
     {
-        return status != OracleObjectStatus.ERROR ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+        if(status == OracleObjectStatus.ERROR) {
+            return DBSObjectState.ERRORS;
+        } else if(status == OracleObjectStatus.ENABLED) {
+            return DBSObjectState.NORMAL;
+        }
+        else {
+            return DBSObjectState.INVALID;
+        }
     }
 
     @Override
