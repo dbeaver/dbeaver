@@ -506,7 +506,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             } else {
                 Class<?> dataType = prop.getDataType();
                 if (value instanceof String) {
-                    value = GeneralUtils.convertString((String) value, dataType);
+                    value = GeneralUtils.convertString((String) UIUtils.normalizePropertyValue(value), dataType);
                 }
                 Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
                 curPropertySource.setPropertyValue(null, prop.getId(), value);
