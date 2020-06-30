@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
+import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableIndexCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTablePartitionColumnCache;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -42,7 +43,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -330,9 +331,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
     }
-
-    public synchronized DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException {
-        return getContainer().getAssociationCache().getObject(monitor, getContainer(), this, ukName);
+    
+    public synchronized DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName) throws DBException {
+        return getContainer().getAssociationCache().getObject(monitor, getContainer(), this, fkName);
     }
     
     
@@ -396,8 +397,8 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	return tablePartitionColumnCache.getCachedObject(name);
 	}
     
-    public Collection<ExasolTablePartitionColumn> getPartitions() throws DBException {
-    	return tablePartitionColumnCache.getAllObjects(new VoidProgressMonitor(), this);
+    public Collection<ExasolTablePartitionColumn> getPartitions(DBRProgressMonitor monitor) throws DBException {
+    	return tablePartitionColumnCache.getAllObjects(monitor, this);
     }
     
     public ExasolTablePartitionColumnCache getPartitionCache()
@@ -405,9 +406,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	return tablePartitionColumnCache;
     }
     
-    public Collection<ExasolTableColumn> getAvailableColumns() throws DBException
+    public Collection<ExasolTableColumn> getAvailableColumns(DBRProgressMonitor monitor) throws DBException
     {
-    	return tablePartitionColumnCache.getAvailableTableColumns(this);
+    	return tablePartitionColumnCache.getAvailableTableColumns(this, monitor);
     }
     
    public void setHasPartitionKey(Boolean hasPartitionKey) {
@@ -429,6 +430,19 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private ExasolTableIndexCache getIndexCache()
     {
     	return getSchema().getIndexCache();
+    }
+    
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    	ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
+    	Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
+    	for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {
+			if (exasolTableForeignKey.getReferencedTable() == this) {
+				refForeignKeys.add(exasolTableForeignKey);
+			}
+				
+		}
+    	return refForeignKeys;
     }
 	
 	
