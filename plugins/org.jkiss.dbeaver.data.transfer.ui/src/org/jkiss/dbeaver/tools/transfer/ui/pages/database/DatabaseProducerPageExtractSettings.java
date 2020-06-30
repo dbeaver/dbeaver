@@ -107,7 +107,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 });
 
                 segmentSizeLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_segment_size);
-                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
+                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
                 segmentSizeText.addModifyListener(e -> {
                     try {
@@ -116,7 +116,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                         // just skip it
                     }
                 });
-                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
+                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
             }
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
@@ -211,11 +211,11 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
         if (rowsExtractType != null) {
             int selectionIndex = rowsExtractType.getSelectionIndex();
             if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
-                segmentSizeLabel.setVisible(true);
-                segmentSizeText.setVisible(true);
+                segmentSizeLabel.setEnabled(true);
+                segmentSizeText.setEnabled(true);
             } else {
-                segmentSizeLabel.setVisible(false);
-                segmentSizeText.setVisible(false);
+                segmentSizeLabel.setEnabled(false);
+                segmentSizeText.setEnabled(false);
             }
         }
         return true;
