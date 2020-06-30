@@ -54,14 +54,14 @@ public class PostgrePartitionManager extends PostgreTableManager {
             superTables = partition.getSuperTables(new VoidProgressMonitor());
         } catch (DBException e) {
             log.error("Unable to get parent",e);
-            return "";
+            return "";//$NON-NLS-1$
         }
         
         if (superTables == null && partition.getPartitionOf() != null) {
-            return partition.getPartitionOf().getSchema().getName() + "." + partition.getPartitionOf().getName();            
+            return partition.getPartitionOf().getSchema().getName() + "." + partition.getPartitionOf().getName();//$NON-NLS-1$
         } else if (superTables == null || superTables.size() > 1) {
             log.error("Unable to get parent");
-            return "";
+            return "";//$NON-NLS-1$
         } 
         
         //       final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
@@ -73,8 +73,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
     
     @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName) {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " +
-                getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
