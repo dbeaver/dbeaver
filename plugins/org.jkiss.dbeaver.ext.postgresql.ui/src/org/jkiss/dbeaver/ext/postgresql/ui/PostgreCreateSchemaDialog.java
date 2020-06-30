@@ -70,7 +70,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
+                name = nameText.getText().trim();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             }
         });
