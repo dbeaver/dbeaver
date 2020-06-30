@@ -98,8 +98,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     @Override
     public boolean contains(String name)
     {
-        return (properties.containsKey(name) || defaultProperties
-            .containsKey(name));
+        return properties.containsKey(name);
     }
 
     @Override
