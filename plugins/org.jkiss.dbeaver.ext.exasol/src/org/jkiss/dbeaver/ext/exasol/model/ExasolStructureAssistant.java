@@ -21,44 +21,45 @@ package org.jkiss.dbeaver.ext.exasol.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolObjectType;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 
-public class ExasolStructureAssistant implements DBSStructureAssistant<ExasolExecutionContext> {
+public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecutionContext> {
 
 
     private static final Log LOG = Log.getLog(ExasolStructureAssistant.class);
 
 
-    private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA};
-    private static final DBSObjectType[] HYPER_LINKS_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.COLUMN, ExasolObjectType.VIEW, ExasolObjectType.SCHEMA};
-    private static final DBSObjectType[] AUTOC_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA};
+    private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
+    private static final DBSObjectType[] HYPER_LINKS_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.COLUMN, ExasolObjectType.VIEW, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
+    private static final DBSObjectType[] AUTOC_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT};
 
 
 
-
-    private static final String SQL_TABLES_ALL = "/*snapshot execution*/ SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE IN (%s)";
-    private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%%%s%%' AND TABLE_TYPE IN (%s)";
-    //private static final String SQL_COLS_ALL = "SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE COLUMN_NAME LIKE '%s'";
-    private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM = '%s' and COLUMN_NAME LIKE '%%%s%%'";
+    private String sqlConstraintsAll = "/*snapshot execution*/ SELECT CONSTRAINT_SCHEMA,CONSTRAINT_TABLE, CONSTRAINT_TYPE, CONSTRAINT_NAME FROM SYS.";
+    private String sqlConstraintsSchema;
+    private String sqlProceduresAll = "/*snapshot execution*/ SELECT SCRIPT_SCHEMA, SCRIPT_NAME FROM SYS.";
+    private String sqlProcedureSchema;
+    private static final String SQL_TABLES_ALL = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE = '%s'";
+    private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%s%' AND TABLE_TYPE = '%s'";
+    private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME as column_table,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM like '%s' and COLUMN_NAME LIKE '%s%%'";
 
 
     private ExasolDataSource dataSource;
@@ -69,6 +70,11 @@ public class ExasolStructureAssistant implements DBSStructureAssistant<ExasolExe
     // -----------------
     public ExasolStructureAssistant(ExasolDataSource dataSource) {
         this.dataSource = dataSource;
+        this.sqlConstraintsAll = sqlConstraintsAll + dataSource.getTablePrefix(ExasolSysTablePrefix.ALL) + "_CONSTRAINTS WHERE CONSTRAINT_TYPE <> 'NOT NULL' "
+        		+ " AND CONSTRAINT_NAME like '%s' AND CONSTRAINT_TYPE = '%s'";
+        this.sqlConstraintsSchema = sqlConstraintsAll + " AND CONSTRAINT_SCHEMA = '%s'";
+        this.sqlProceduresAll = sqlProceduresAll + dataSource.getTablePrefix(ExasolSysTablePrefix.ALL) + "_SCRIPTS WHERE SCRIPT_NAME like '%s'";
+        this.sqlProcedureSchema = sqlProceduresAll + " AND SCRIPT_SCHEMA = '%s'";
     }
 
 
@@ -98,256 +104,257 @@ public class ExasolStructureAssistant implements DBSStructureAssistant<ExasolExe
     }
 
 
+    
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(
-        @NotNull DBRProgressMonitor monitor, @NotNull ExasolExecutionContext executionContext, DBSObject parentObject,
-        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch,
-        int maxResults) throws DBException {
-        LOG.debug(objectNameMask);
-
-
-        List<ExasolObjectType> exasolObjectTypes = new ArrayList<>(objectTypes.length);
-        for (DBSObjectType dbsObjectType : objectTypes) {
-            exasolObjectTypes.add((ExasolObjectType) dbsObjectType);
-        }
+    protected void findObjectsByMask(ExasolExecutionContext executionContext, JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    {
+        LOG.debug("Search Mask:" + objectNameMask + " Object Type:" + objectType.getTypeName());
 
         ExasolSchema schema = parentObject instanceof ExasolSchema ? (ExasolSchema) parentObject : null;
-        if (schema == null) {
+        if (schema == null && !globalSearch) {
             schema = executionContext.getContextDefaults().getDefaultSchema();
         }
-
-        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
-            return searchAllObjects(session, schema, objectNameMask, exasolObjectTypes, caseSensitive, maxResults);
-        } catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+        
+        if (objectType == ExasolObjectType.TABLE) {
+            findTableObjectByName(session, schema, objectNameMask, maxResults, references, "TABLE");
+        } else if (objectType == ExasolObjectType.VIEW) {
+            findTableObjectByName(session, schema, objectNameMask, maxResults, references, "VIEW");
+        } else if (objectType == ExasolObjectType.FOREIGNKEY) {
+            findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "FOREIGN KEY");
+        } else if (objectType == ExasolObjectType.PRIMARYKEY) {
+            findConstraintsByMask(session, schema, objectNameMask, maxResults, references, "PRIMARY KEY");
+        } else if (objectType == ExasolObjectType.SCRIPT) {
+            findProceduresByMask(session, schema, objectNameMask, maxResults, references);
+        } else if (objectType == ExasolObjectType.COLUMN) {
+            findTableColumnsByMask(session, schema, objectNameMask, maxResults, references);
         }
-
-
-    }
-    // -----------------
-    // Helpers
-    // -----------------
-
-
-    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final ExasolSchema schema, String objectNameMask,
-                                                      List<ExasolObjectType> exasolObjectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException {
-
-
-        List<DBSObjectReference> objects = new ArrayList<>();
-
-
-        String searchObjectNameMask = objectNameMask;
-        if (!caseSensitive) {
-            searchObjectNameMask = searchObjectNameMask.toUpperCase();
-        }
-
-
-        int nbResults = 0;
-
-
-        // Tables, Views
-        if ((exasolObjectTypes.contains(ExasolObjectType.TABLE)) || (exasolObjectTypes.contains(ExasolObjectType.VIEW))) {
-
-
-            searchTables(session, schema, searchObjectNameMask, exasolObjectTypes, maxResults, objects, nbResults);
-
-
-            if (nbResults >= maxResults) {
-                return objects;
-            }
-        }
-
-
-        // Columns
-        if (exasolObjectTypes.contains(ExasolObjectType.COLUMN)) {
-            searchColumns(session, schema, searchObjectNameMask, exasolObjectTypes, maxResults, objects, nbResults);
-        }
-
-
-        return objects;
-    }
-
-
-    // --------------
-    // Helper Classes
-    // --------------
-
-
-    private void searchTables(JDBCSession session, ExasolSchema schema, String searchObjectNameMask,
-                              List<ExasolObjectType> exasolObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
-        DBException {
-        String sql;
-        if (schema != null) {
-            sql = String.format(SQL_TABLES_SCHEMA, ExasolUtils.quoteString(schema.getName()),ExasolUtils.quoteString(searchObjectNameMask), buildTableTypes(exasolObjectTypes)) ;
-        } else {
-            sql = String.format(SQL_TABLES_ALL, ExasolUtils.quoteString(searchObjectNameMask), buildTableTypes(exasolObjectTypes));
-        }
-
-        try (JDBCStatement dbStat = session.createStatement()) {
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-
-
-            String schemaName;
-            String objectName;
-            ExasolSchema exasolSchema;
-            ExasolObjectType objectType;
-
-
-            try (JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
-                while (dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
-
-
-                    if (nbResults++ >= maxResults) {
-                        break;
-                    }
-
-
-                    schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_SCHEM");
-                    objectName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-
-
-                    exasolSchema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
-                    if (exasolSchema == null) {
-                        LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
-                        continue;
-                    }
-
-
-                    objectType = ExasolObjectType.TABLE;
-                    objects.add(new ExasolObjectReference(objectName, exasolSchema, objectType));
-                }
-            }
-        }
-    }
-
-
-    private void searchColumns(JDBCSession session, ExasolSchema schema, String searchObjectNameMask, List<ExasolObjectType> objectTypes,
-                               int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException, DBException {
-        String sql;
-        if (schema != null) {
-            sql = String.format(SQL_COLS_SCHEMA, ExasolUtils.quoteString(schema.getName()), ExasolUtils.quoteString(searchObjectNameMask));
-        } else {
-            // sql = String.format(SQL_COLS_ALL, ExasolUtils.quoteString(searchObjectNameMask));
-        	// search for columns is to slow in exasol
-        	return;
-        }
-
-
-        try (JDBCStatement dbStat = session.createStatement()) {
-
-
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-
-
-            String tableSchemaName;
-            String tableOrViewName;
-            String columnName;
-            ExasolSchema exasolSchema;
-            ExasolTable exasolTable;
-
-
-            try (JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
-                while (dbResult.next()) {
-                    if (session.getProgressMonitor().isCanceled()) {
-                        break;
-                    }
-
-
-                    if (nbResults++ >= maxResults) {
-                        return;
-                    }
-
-
-                    tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_SCHEM");
-                    tableOrViewName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-                    columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-
-
-                    exasolSchema = dataSource.getSchema(session.getProgressMonitor(), tableSchemaName);
-                    if (exasolSchema == null) {
-                        LOG.debug("Schema '" + tableSchemaName + "' not found. Probably was filtered");
-                        continue;
-                    }
-                    // Try with table, then view
-                    exasolTable = exasolSchema.getTable(session.getProgressMonitor(), tableOrViewName);
-                    if (exasolTable != null) {
-                        objects.add(new ExasolObjectReference(columnName, exasolTable, ExasolObjectType.COLUMN));
-                    }
-
-
-                }
-            }
-        }
-    }
-
-
-    private class ExasolObjectReference extends AbstractObjectReference {
-
-
-        private ExasolObjectReference(String objectName, ExasolSchema exasolSchema, ExasolObjectType objectType) {
-            super(objectName, exasolSchema, null, ExasolSchema.class, objectType);
-        }
-
-
-        private ExasolObjectReference(String objectName, ExasolTable exasolTable, ExasolObjectType objectType) {
-            super(objectName, exasolTable, null, ExasolTable.class, objectType);
-        }
-
-
-
-
-        @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-
-
-            ExasolObjectType exasolObjectType = (ExasolObjectType) getObjectType();
-
-
-            if (getContainer() instanceof ExasolSchema) {
-                ExasolSchema exasolSchema = (ExasolSchema) getContainer();
-
-
-                DBSObject object = exasolObjectType.findObject(monitor, exasolSchema, getName());
-                if (object == null) {
-                    throw new DBException(exasolObjectType + " '" + getName() + "' not found in schema '" + exasolSchema.getName() + "'");
-                }
-                return object;
-            }
-            if (getContainer() instanceof ExasolTable) {
-                ExasolTable exasolTable = (ExasolTable) getContainer();
-
-
-                DBSObject object = exasolObjectType.findObject(monitor, exasolTable, getName());
-                if (object == null) {
-                    throw new DBException(exasolObjectType + " '" + getName() + "' not found in table '" + exasolTable.getName() + "'");
-                }
-                return object;
-            }
-            return null;
-        }
-
 
     }
 
+	private void findTableColumnsByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
+			List<DBSObjectReference> references) throws SQLException, DBException {
+    	DBRProgressMonitor monitor = session.getProgressMonitor();
+    	
+    	//don't use parameter marks because of performance
+    	try (JDBCStatement dbstat = session.createStatement())
+    	{
+    		try (JDBCResultSet dbResult = dbstat.executeQuery(
+    					String.format(SQL_COLS_SCHEMA, (schema == null ? "%" : ExasolUtils.quoteString(schema.getName())),ExasolUtils.quoteString(objectNameMask))
+    				)
+    			)
+    		{
+    			int num = maxResults;
+    			while (dbResult.next() && num-- > 0)
+    			{
+    				if (monitor.isCanceled()) {
+    					break;
+    				}
+    				final String schemaName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEM");
+    				final String tableName  = JDBCUtils.safeGetString(dbResult, "COLUMN_TABLE");
+    				final String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+    				references.add(new AbstractObjectReference(columnName, dataSource.getSchema(monitor, schemaName), null, ExasolTableBase.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+						
+						@Override
+						public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+							ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+							if (tableSchema == null)
+							{
+								throw new DBException("Table schema '" + schemaName + "' not found");
+							}
+							ExasolTable table = tableSchema.getTableCache().getObject(monitor, tableSchema, tableName);
+							if (table == null) {
+								ExasolView view = tableSchema.getViewCache().getObject(monitor, tableSchema, tableName);
+								if (view == null)
+									throw new DBException("nor Table or view with name '" + tableName + "'  found in schema '" + schemaName + "'");
+								return view;
+							}
+							return table;
+						}
+					});
+    			}
+    		}
+    	}
+		
+	}
 
-    private String buildTableTypes(List<ExasolObjectType> objectTypes) {
-        List<String> types = new ArrayList<>();
-        for (ExasolObjectType objectType : objectTypes) {
-            if (objectType.equals(ExasolObjectType.TABLE)) {
-                types.add("'" + ExasolObjectType.TABLE.name() + "'");
-            }
-            if (objectType.equals(ExasolObjectType.VIEW)) {
-                types.add("'" + ExasolObjectType.VIEW.name() + "'");
-            }
+
+	private void findProceduresByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
+			List<DBSObjectReference> references) throws SQLException, DBException {
+    	DBRProgressMonitor monitor = session.getProgressMonitor();
+    	//don't use parameter marks because of performance
+    	String sql = "";
+    	if (schema == null)
+    	{
+    		sql = String.format(sqlProceduresAll, ExasolUtils.quoteString(objectNameMask));
+    	} else {
+    		sql = String.format(sqlProcedureSchema, ExasolUtils.quoteString(schema.getName()), ExasolUtils.quoteString(objectNameMask));
+    	}
+    	try (JDBCStatement dbstat = session.createStatement())
+    	{
+    		try (JDBCResultSet dbResult = dbstat.executeQuery(sql))
+    		{
+    			int num = maxResults;
+    			while (dbResult.next() && num-- > 0)
+    			{
+    				if (monitor.isCanceled()) {
+    					break;
+    				}
+    				final String schemaName = JDBCUtils.safeGetString(dbResult, "SCRIPT_SCHEMA");
+    				final String scriptName       = JDBCUtils.safeGetString(dbResult, "SCRIPT_NAME");
+    				
+    				references.add(new AbstractObjectReference(scriptName, dataSource.getSchema(monitor, schemaName), null, ExasolScript.class, RelationalObjectType.TYPE_PROCEDURE) {
+						
+						@Override
+						public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+							ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+							if (tableSchema == null)
+							{
+								throw new DBException("Table schema '" + schemaName + "' not found");
+							}
+							
+							ExasolScript script = tableSchema.scriptCache.getObject(monitor, tableSchema, scriptName);
+							
+							if (script == null) {
+								throw new DBException("Script '" + script + "'  not found in schema '" + schemaName + "'");
+							}
+							return script;
+						}
+					});
+    			}
+    		}
+    	}
+	}
 
 
-        }
-        return CommonUtils.joinStrings(",", types);
-    }
+	private void findConstraintsByMask(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
+			List<DBSObjectReference> references, String constType) throws SQLException, DBException {
+    	DBRProgressMonitor monitor = session.getProgressMonitor();
+    	//don't use parameter marks because of performance
+    	String sql = "";
+    	if (schema == null)
+    	{
+    		sql = String.format(sqlConstraintsAll, ExasolUtils.quoteString(objectNameMask), constType);
+    	} else {
+    		sql = String.format(sqlConstraintsSchema, ExasolUtils.quoteString(schema.getName()), constType, ExasolUtils.quoteString(objectNameMask));
+    	}
+    	try (JDBCStatement dbstat = session.createStatement())
+    	{
+    		try (JDBCResultSet dbResult = dbstat.executeQuery(sql))
+    		{
+    			int num = maxResults;
+    			while (dbResult.next() && num-- > 0)
+    			{
+    				if (monitor.isCanceled()) {
+    					break;
+    				}
+    				final String schemaName = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_SCHEMA");
+    				final String tableName  = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TABLE");
+    				final String constName       = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME");
+    				final Class<?> classType;
+    				
+    				if (constType.equals("PRIMARY KEY"))
+    				{
+    					classType = ExasolTableUniqueKey.class;
+    				} else if (constType.equals("FOREIGN KEY"))
+    				{
+    					classType = ExasolTableForeignKey.class;
+    				} else {
+    					throw new DBException("Unkown constraint type" + constType);
+    				}
+    				
+    				references.add(new AbstractObjectReference(constName, dataSource.getSchema(monitor, schemaName), null, classType, RelationalObjectType.TYPE_CONSTRAINT) {
+						
+						@Override
+						public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+							ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+							if (tableSchema == null)
+							{
+								throw new DBException("Table schema '" + schemaName + "' not found");
+							}
+							ExasolTable table = tableSchema.getTable(monitor, tableName);
+							
+							if (table == null)
+							{
+								throw new DBException("Table '" + tableName + "' not found in schema  '" + schemaName + "' not found");
+							}
+							if (classType.equals(ExasolTableForeignKey.class)) {
+								ExasolTableForeignKey foreignKey = (ExasolTableForeignKey) table.getAssociation(monitor, constName);
+								if (foreignKey == null)
+									throw new DBException("Foreign Key  '" + constName + "' for Table '" + tableName + "' not found in schema '" + schemaName + "'");
+								return foreignKey;
+							} else  {
+								ExasolTableUniqueKey primaryKey = table.getConstraint(monitor, constName);
+								if (primaryKey == null) 
+									throw new DBException("Primary Key '" + constName + "' for Table '" + tableName + "' not found in schema '" + schemaName + "'");
+								return primaryKey;
+							}
+						}
+					});
+    			}
+    		}
+    	}				
+
+	}
+
+    private void findTableObjectByName(JDBCSession session, ExasolSchema schema, String objectNameMask, int maxResults,
+			List<DBSObjectReference> references, String type) throws SQLException, DBException {
+    	DBRProgressMonitor monitor = session.getProgressMonitor();
+    	//don't use parameter marks because of performance
+    	
+    	String sql = "";
+    	if (schema == null)
+    	{
+    		sql = String.format(SQL_TABLES_ALL, ExasolUtils.quoteString(objectNameMask), type);
+    	} else {
+    		sql = String.format(SQL_TABLES_SCHEMA, ExasolUtils.quoteString(schema.getName()), ExasolUtils.quoteString(objectNameMask), type);
+    	}
+    	try (JDBCStatement dbstat = session.createStatement())
+    	{
+    		try (JDBCResultSet dbResult = dbstat.executeQuery(sql))
+    		{
+    			int num = maxResults;
+    			while (dbResult.next() && num-- > 0)
+    			{
+    				if (monitor.isCanceled()) {
+    					break;
+    				}
+    				final String schemaName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEM");
+    				final String tableName  = JDBCUtils.safeGetString(dbResult, "COLUMN_TABLE");
+    				references.add(new AbstractObjectReference(tableName, dataSource.getSchema(monitor, schemaName), null, ExasolTableBase.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+						
+						@Override
+						public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+							ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+							if (tableSchema == null)
+							{
+								throw new DBException("Table schema '" + schemaName + "' not found");
+							}
+							if (type == "VIEW") {
+								ExasolView view = tableSchema.getViewCache().getObject(monitor, tableSchema, tableName);
+								if (view == null)
+									throw new DBException("View '" + tableName + "' not found in schema '" + schemaName + "'");
+								return view;
+							} else if (type == "TABLE") {
+								ExasolTable table = tableSchema.getTableCache().getObject(monitor, tableSchema, tableName);
+								if (table == null) 
+									throw new DBException("Table '" + tableName + "' not found in schema '" + schemaName + "'");
+								return table;
+							} else {
+								throw new DBException("Object type " + type + " unknown");
+							}
+						}
+					});
+    			}
+    		}
+    	}				
+	}
+ 
+
+	@Override
+	protected JDBCDataSource getDataSource() {
+		return this.dataSource;
+	}
 
 
 }
