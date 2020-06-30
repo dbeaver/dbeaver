@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
 			throws DBException {
 		if (tablePartitionColumns.isEmpty() && ! super.fullCache)
 		{
-	    	for( ExasolTableColumn col: owner.getAttributes(new VoidProgressMonitor()))
+	    	for( ExasolTableColumn col: owner.getAttributes(monitor))
 			{
 				if (col.getPartitionKeyOrdinalPosition() != null)
 				{
@@ -70,7 +69,7 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
 			throws DBException {
 		if (!super.isFullyCached())
 		{
-			getAllObjects(new VoidProgressMonitor(), owner);
+			getAllObjects(monitor, owner);
 		}
 		if (tablePartitionColumns.stream()
 				.filter(o -> o.getTableColumn().getName().equals(name)).findFirst().isPresent())
@@ -88,10 +87,10 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
     			.collect(Collectors.toCollection(ArrayList::new));
     }
 
-	public Collection<ExasolTableColumn> getAvailableTableColumns(ExasolTable owner) throws DBException {
+	public Collection<ExasolTableColumn> getAvailableTableColumns(ExasolTable owner, DBRProgressMonitor monitor) throws DBException {
 		List<ExasolTableColumn> cols = new ArrayList<ExasolTableColumn>();
 		
-		cols = owner.getAttributes(new VoidProgressMonitor()).stream()
+		cols = owner.getAttributes(monitor).stream()
 				.filter(c -> ! tablePartitionColumns.stream()
 						.filter(pc -> pc.getTableColumn() != null && pc.getName().equals(c.getName()))
 						.findFirst().isPresent()
