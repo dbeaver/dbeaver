@@ -67,10 +67,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
     
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName) {
-        return "CREATE " + getCreateTableType(table) + " " + tableName +
-                " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
-                ;
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName) throws DBException {
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
     
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
@@ -118,7 +116,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                     } else {
                            createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
-                    createQuery.append(lineSeparator); //$NON-NLS-1$
+                    createQuery.append(lineSeparator);
                 }
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
                     createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
@@ -144,7 +142,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     protected String getCreateTableType(OBJECT_TYPE table) {
-        return DBUtils.isView(table) ? "VIEW" : "TABLE";
+        return DBUtils.isView(table) ? "VIEW" : "TABLE";//$NON-NLS-1$ //$NON-NLS-2$
     }
 
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
