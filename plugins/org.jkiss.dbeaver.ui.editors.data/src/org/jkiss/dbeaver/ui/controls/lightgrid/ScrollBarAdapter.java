@@ -32,16 +32,18 @@ class ScrollBarAdapter implements IGridScrollBar
      * Delegates to this scrollbar.
      */
     private ScrollBar scrollBar;
+    private boolean vertical;
 
     /**
      * Contructs this adapter by delegating to the given scroll bar.
      * 
      * @param scrollBar delegate
      */
-    public ScrollBarAdapter(ScrollBar scrollBar)
+    public ScrollBarAdapter(ScrollBar scrollBar, boolean vertical)
     {
         super();
         this.scrollBar = scrollBar;
+        this.vertical = vertical;
     }
 
     @Override
@@ -146,7 +148,6 @@ class ScrollBarAdapter implements IGridScrollBar
     @Override
     public void handleMouseWheel(Event e)
     {
-        //do nothing        
     }
 
     @Override
