@@ -92,6 +92,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
 
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_extract_type);
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
+                rowsExtractType.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
                 rowsExtractType.setItems(
                     DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query,
                     DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments);
@@ -107,7 +108,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 });
 
                 segmentSizeLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_segment_size);
-                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
                 segmentSizeText.addModifyListener(e -> {
                     try {
@@ -116,7 +117,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                         // just skip it
                     }
                 });
-                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
             }
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
