@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -329,7 +328,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     @Override
     @Association
     public Collection<ExasolTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
+    	return getSchema().getAssociationCache().getObjects(monitor, getSchema(), this);
     }
     
     public synchronized DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName) throws DBException {
@@ -433,7 +432,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     }
     
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<ExasolTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
     	ExasolTableForeignKeyCache associationCache = getSchema().getAssociationCache();
     	Collection<ExasolTableForeignKey> refForeignKeys = new ArrayList<ExasolTableForeignKey>();
     	for (ExasolTableForeignKey exasolTableForeignKey : associationCache.getObjects(monitor, getSchema(), null)) {
