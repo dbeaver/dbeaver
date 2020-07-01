@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -135,16 +137,19 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     @Override
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active database")) {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema and database")) {
+            String currentDatabase = null;
             try {
-                currentUser = SQLServerUtils.getCurrentUser(session);
+                try (JDBCStatement dbStat = session.createStatement()) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT db_name(), schema_name(), original_login()")) {
+                        dbResult.next();
+                        currentDatabase = dbResult.getString(1);
+                        activeSchemaName = dbResult.getString(2);
+                        currentUser = dbResult.getString(3);
+                    }
+                }
             } catch (Throwable e) {
                 log.debug("Error getting current user: " + e.getMessage());
-            }
-            try {
-                activeSchemaName = SQLServerUtils.getCurrentSchema(session);
-            } catch (Throwable e) {
-                log.debug("Error getting current schema: " + e.getMessage());
             }
             if (CommonUtils.isEmpty(activeSchemaName)) {
                 activeSchemaName = SQLServerConstants.DEFAULT_SCHEMA_NAME;
@@ -161,13 +166,10 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 */
             }
 
-            String currentDatabase = SQLServerUtils.getCurrentDatabase(session);
-            if (!CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
+            if (!CommonUtils.isEmpty(currentDatabase) && !CommonUtils.equalObjects(currentDatabase, activeDatabaseName)) {
                 activeDatabaseName = currentDatabase;
                 return true;
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
         }
 
         return false;
