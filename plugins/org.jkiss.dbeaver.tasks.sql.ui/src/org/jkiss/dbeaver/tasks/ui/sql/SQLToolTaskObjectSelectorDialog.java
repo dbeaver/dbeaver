@@ -18,17 +18,23 @@ package org.jkiss.dbeaver.tasks.ui.sql;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +45,7 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
     private TaskTypeDescriptor taskType;
     private DatabaseNavigatorTree dataSourceTree;
     private List<DBSObject> selectedObjects = new ArrayList<>();
+    private static boolean showConnected;
 
     SQLToolTaskObjectSelectorDialog(Shell parentShell, DBNProject projectNode, TaskTypeDescriptor taskType) {
         super(parentShell, TasksSQLUIMessages.sql_tool_task_object_selector_dialog_title, null);
@@ -66,23 +73,32 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
                 }
                 if (element instanceof DBNLocalFolder) {
                     for (DBNDataSource ds : ((DBNLocalFolder) element).getNestedDataSources()) {
-                        if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver())) {
+                        if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver()) &&
+                            (!showConnected || ds.getDataSourceContainer().isConnected())) {
                             return true;
                         }
                     }
                     return false;
                 }
                 if (element instanceof DBNDataSource) {
+                    if (showConnected && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
+                        return false;
+                    }
                     return taskType.isDriverApplicable(((DBNDataSource) element).getDataSourceContainer().getDriver());
                 }
                 if (element instanceof DBNDatabaseItem) {
-                    return (DBSObjectContainer.class.isAssignableFrom(((DBNDatabaseItem) element).getObject().getClass()) ||
-                        taskType.appliesTo(((DBNDatabaseItem) element).getObject()));
+                    DBSObject object = ((DBNDatabaseItem) element).getObject();
+                    return (DBSObjectContainer.class.isAssignableFrom(object.getClass()) ||
+                        (taskType.matchesEntityElements() && DBSEntity.class.isAssignableFrom(object.getClass())) ||
+                        taskType.appliesTo(object));
                 } else if (element instanceof DBNDatabaseFolder) {
                     Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) element).getChildrenClass();
-                    return childrenClass != null && (DBSObjectContainer.class.isAssignableFrom(childrenClass) || taskType.matchesType(childrenClass));
+                    return childrenClass != null &&
+                        (DBSObjectContainer.class.isAssignableFrom(childrenClass) ||
+                            (taskType.matchesEntityElements() && DBSEntity.class.isAssignableFrom(childrenClass)) ||
+                            taskType.matchesType(childrenClass));
                 }
-                return false;
+                return element instanceof TreeNodeSpecial;
             }
         };
 
@@ -98,6 +114,17 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
         dataSourceTree.setLayoutData(gd);
         dataSourceTree.getViewer().addSelectionChangedListener(event -> {
             updateSelectedObjects();
+        });
+
+        final Button showConnectedCheck = new Button(dialogArea, SWT.CHECK);
+        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+        showConnectedCheck.setSelection(showConnected);
+        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showConnected = showConnectedCheck.getSelection();
+                dataSourceTree.getViewer().refresh();
+            }
         });
 
         return dialogArea;
