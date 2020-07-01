@@ -115,6 +115,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -2725,7 +2726,12 @@ public class SQLEditor extends SQLEditorBase implements
                 resultsProvider.query = statement;
                 resultsProvider.lastGoodQuery = statement;
                 String tabName = null;
-                String toolTip = CommonUtils.truncateString(statement.getText(), 1000);
+                String queryText = CommonUtils.truncateString(statement.getText(), 1000);
+                DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+                String toolTip =
+                    "Connection: " + (dataSourceContainer == null ? "N/A" : dataSourceContainer.getName()) + GeneralUtils.getDefaultLineSeparator() +
+                    "Time: " + new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()) + GeneralUtils.getDefaultLineSeparator() +
+                    "Query: " + queryText;
                 // Special statements (not real statements) have their name in data
                 if (isStatsResult) {
                     tabName = "Statistics";
@@ -2832,7 +2838,9 @@ public class SQLEditor extends SQLEditorBase implements
                 if (!CommonUtils.isEmpty(resultSetName)) {
                     tabItem.setText(resultSetName);
                 }
-                tabItem.setToolTipText(toolTip);
+                if (toolTip != null) {
+                    tabItem.setToolTipText(toolTip);
+                }
             }
         }
 
