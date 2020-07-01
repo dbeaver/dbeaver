@@ -87,11 +87,11 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 	
 	private String generateAction(DBRProgressMonitor monitor, ExasolTable table) throws DBException
 	{
-		if (table.getAdditionalInfo(monitor).getHasPartitionKey(monitor) & table.getPartitions().size() == 0)
+		if (table.getAdditionalInfo(monitor).getHasPartitionKey(monitor) & table.getPartitions(monitor).size() == 0)
 		{
 			return "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS";
 		} 
-		if (table.getPartitions().size() > 0)
+		if (table.getPartitions(monitor).size() > 0)
 		{
 			if (! table.getAdditionalInfo(monitor).getHasPartitionKey(monitor))
 					table.setHasPartitionKey(true, true);

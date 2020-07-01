@@ -59,7 +59,7 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
 
     public ExasolTableBase(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(schema, true);
-        setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
+        setName(JDBCUtils.safeGetString(dbResult, "COLUMN_TABLE"));
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
         this.objectType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
         this.objectId =JDBCUtils.safeGetBigDecimal(dbResult, "OBJECT_ID");
