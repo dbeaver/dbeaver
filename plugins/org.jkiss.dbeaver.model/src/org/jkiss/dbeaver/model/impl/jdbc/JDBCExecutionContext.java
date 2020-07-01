@@ -172,7 +172,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
             if (this.connection != null) {
-                this.dataSource.closeConnection(connection, purpose);
+                if (!this.dataSource.closeConnection(connection, purpose, true)) {
+                    log.debug("Connection close timeout");
+                }
             }
             this.connection = null;
         }
