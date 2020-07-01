@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.task.DBTTaskCategory;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
@@ -44,6 +45,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     private final IConfigurationElement config;
     private final ObjectType handlerImplType;
     private final DBPPropertyDescriptor[] properties;
+    private Boolean matchesEntityElements;
 
     TaskTypeDescriptor(TaskCategoryDescriptor category, IConfigurationElement config) {
         super(config);
@@ -131,6 +133,22 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     @Override
     public boolean isObjectApplicable(Object object) {
         return object instanceof DBPObject && appliesTo((DBPObject) object);
+    }
+
+    public synchronized boolean matchesEntityElements() {
+        if (matchesEntityElements != null) {
+            return matchesEntityElements;
+        }
+        for (ObjectType ot : getObjectTypes()) {
+            if (DBSEntityElement.class.isAssignableFrom(ot.getObjectClass())) {
+                matchesEntityElements = true;
+                break;
+            }
+        }
+        if (matchesEntityElements == null) {
+            matchesEntityElements = false;
+        }
+        return matchesEntityElements;
     }
 
     @Override
