@@ -57,9 +57,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     private String sqlConstraintsSchema;
     private String sqlProceduresAll = "/*snapshot execution*/ SELECT SCRIPT_SCHEMA, SCRIPT_NAME FROM SYS.";
     private String sqlProcedureSchema;
-    private static final String SQL_TABLES_ALL = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME = '%s' AND TABLE_TYPE = '%s'";
-    private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%s%' AND TABLE_TYPE = '%s'";
-    private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME as column_table,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM like '%s' and COLUMN_NAME LIKE '%s%%'";
+    private static final String SQL_TABLES_ALL = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_NAME like '%s' AND TABLE_TYPE = '%s'";
+    private static final String SQL_TABLES_SCHEMA = "/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' AND TABLE_NAME LIKE '%s' AND TABLE_TYPE = '%s'";
+    private static final String SQL_COLS_SCHEMA = "/*snapshot execution*/ SELECT TABLE_SCHEM,TABLE_NAME as column_table,COLUMN_NAME from \"$ODBCJDBC\".ALL_COLUMNS WHERE TABLE_SCHEM like '%s' and COLUMN_NAME LIKE '%s'";
 
 
     private ExasolDataSource dataSource;
