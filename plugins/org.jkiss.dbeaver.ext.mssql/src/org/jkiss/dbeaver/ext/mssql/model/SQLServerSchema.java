@@ -285,6 +285,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return hasTableStatistics;
     }
 
+    void resetTableStatistics() {
+        this.hasTableStatistics = false;
+    }
+
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasTableStatistics && !forceRefresh) {
