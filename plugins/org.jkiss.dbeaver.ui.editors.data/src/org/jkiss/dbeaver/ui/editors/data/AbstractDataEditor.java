@@ -186,7 +186,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     {
         createResultSetView();
         if (resultSetView != null && !resultSetView.getActivePresentation().getControl().isDisposed()) {
-            resultSetView.getActivePresentation().getControl().setFocus();
+            resultSetView.getControl().setFocus();
         }
 
         refreshActions();

@@ -104,9 +104,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
 //            }
 
-        EditorUtils.trackControlContext(valueController.getValueSite(), inlineControl, RESULTS_EDIT_CONTEXT_ID);
 
         if (isInline) {
+            EditorUtils.trackControlContext(valueController.getValueSite(), inlineControl, RESULTS_EDIT_CONTEXT_ID);
+
             //inlineControl.setFont(valueController.getEditPlaceholder().getFont());
             //inlineControl.setFocus();
 
