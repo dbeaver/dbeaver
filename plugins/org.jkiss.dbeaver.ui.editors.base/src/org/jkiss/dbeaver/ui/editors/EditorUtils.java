@@ -376,29 +376,35 @@ public class EditorUtils {
     public static void trackControlContext(IWorkbenchSite site, Control control, String contextId) {
         final IContextService contextService = site.getService(IContextService.class);
         if (contextService != null) {
+            final IContextActivation[] activation = new IContextActivation[1];
             FocusListener focusListener = new FocusListener() {
-                IContextActivation activation;
 
                 @Override
                 public void focusGained(FocusEvent e) {
                     // No need to deactivate the same context
-//                    if (activation != null) {
-//                        contextService.deactivateContext(activation);
-//                        activation = null;
-//                    }
-                    activation = contextService.activateContext(contextId);
+                    if (activation[0] != null) {
+                        contextService.deactivateContext(activation[0]);
+                        activation[0] = null;
+                    }
+                    activation[0] = contextService.activateContext(contextId);
+                    //new Exception().printStackTrace();
                 }
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                    if (activation != null) {
-                        contextService.deactivateContext(activation);
-                        activation = null;
+                    if (activation[0] != null) {
+                        contextService.deactivateContext(activation[0]);
+                        activation[0] = null;
                     }
                 }
             };
             control.addFocusListener(focusListener);
-            //control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
+            control.addDisposeListener(e -> {
+                if (activation[0] != null) {
+                    contextService.deactivateContext(activation[0]);
+                    activation[0] = null;
+                }
+            });
         }
     }
 
