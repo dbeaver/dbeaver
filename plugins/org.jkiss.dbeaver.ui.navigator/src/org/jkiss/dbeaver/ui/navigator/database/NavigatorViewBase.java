@@ -55,19 +55,17 @@ import java.util.Map;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider, DBPPreferenceListener {
 
-    private DBNModel model;
     private DatabaseNavigatorTree tree;
     private transient Object lastSelection;
 
     protected NavigatorViewBase()
     {
         super();
-        model = DBWorkbench.getPlatform().getNavigatorModel();
     }
 
     public DBNModel getModel()
     {
-        return model;
+        return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
     protected DatabaseNavigatorTree getNavigatorTree()
@@ -246,7 +244,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
 
-        model = null;
         super.dispose();
     }
 
