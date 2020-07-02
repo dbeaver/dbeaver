@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,7 +37,7 @@ import java.io.Reader;
 import java.util.Date;
 import java.util.Map;
 
-public class DataExporterSourceCode extends StreamExporterAbstract {
+public class DataExporterSourceCode extends StreamExporterAbstract implements IDocumentDataExporter {
 
     private static final String PROP_FORMAT_DATE_ISO = "formatDateISOPHP";
     private static final String PROP_LANGUAGE = "language";
