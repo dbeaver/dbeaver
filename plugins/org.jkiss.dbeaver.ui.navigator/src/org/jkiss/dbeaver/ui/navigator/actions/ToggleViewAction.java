@@ -98,7 +98,11 @@ public class ToggleViewAction extends Action implements IPartListener
             if (view == null) {
                 activePage.showView(viewId);
             } else {
-                activePage.hideView(view);
+                if (!activePage.isPartVisible(view)) {
+                    activePage.bringToTop(view);
+                } else {
+                    activePage.hideView(view);
+                }
             }
         } catch (PartInitException ex) {
             DBWorkbench.getPlatformUI().showError(viewId, "Can't open view " + viewId, ex);
