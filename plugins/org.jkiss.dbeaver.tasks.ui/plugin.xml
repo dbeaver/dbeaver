@@ -13,7 +13,9 @@
             class="org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView"
             allowMultiple="false"
             icon="icons/task_list.png"
-            name="%view.tasks.title"/>
+            name="%view.tasks.title">
+            <description>%view.tasks.description</description>
+        </view>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">

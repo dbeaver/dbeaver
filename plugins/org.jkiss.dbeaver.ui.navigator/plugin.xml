@@ -39,28 +39,36 @@
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
-            name="%view.database.navigator.title"/>
+            name="%view.database.navigator.title">
+            <description>%view.database.navigator.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.databaseBrowser"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView"
             allowMultiple="true"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"
-            name="%view.database.browser.title"/>
+            name="%view.database.browser.title">
+            <description>%view.database.browser.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.projectNavigator"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/projects.png"
-            name="%view.project.navigator.title"/>
+            name="%view.project.navigator.title">
+            <description>%view.project.navigator.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.projectExplorer"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
-            name="%view.project.explorer.title"/>
+            name="%view.project.explorer.title">
+            <description>%view.project.explorer.description</description>
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
