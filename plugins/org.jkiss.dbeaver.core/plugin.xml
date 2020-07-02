@@ -83,7 +83,9 @@
                 class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
                 allowMultiple="false"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.png"
-                name="%view.query.manager.title"/>
+                name="%view.query.manager.title">
+            <description>%view.query.manager.description</description>
+        </view>
         <view
                 id="org.jkiss.dbeaver.core.shellProcess"
                 category="org.jkiss.dbeaver.core.category"
@@ -91,7 +93,9 @@
                 allowMultiple="true"
                 restorable="false"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/shell.png"
-                name="%view.shell.process.title"/>
+                name="%view.shell.process.title">
+            <description>%view.shell.process.description</description>
+        </view>
 <!--
         <view
                 id="org.jkiss.dbeaver.core.databaseOutput"

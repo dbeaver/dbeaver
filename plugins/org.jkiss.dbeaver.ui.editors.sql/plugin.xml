@@ -18,25 +18,6 @@
         </handler>
     </extension>
 
-    <extension point="org.eclipse.ui.views">
-        <!--
-                <view
-                        id="org.jkiss.dbeaver.core.sqlResults"
-                        category="org.jkiss.dbeaver.core.category"
-                        class="org.jkiss.dbeaver.ui.editors.sql.SQLResultsView"
-                        allowMultiple="true"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_data_grid.png"
-                        name="%view.sql.results.title"/>
-                <view
-                        id="org.jkiss.dbeaver.core.databaseOutput"
-                        category="org.jkiss.dbeaver.core.category"
-                        class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
-                        allowMultiple="false"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"
-                        name="%view.database.output.title"/>
-        -->
-    </extension>
-
     <extension point="org.jkiss.dbeaver.sqlCommand">
         <command id="include" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
     </extension>
