@@ -118,7 +118,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException { // add left join
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
         // Initially cache only base types (everything but composite and arrays)
         String sql =
             "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
@@ -127,7 +127,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "\nLEFT OUTER JOIN pg_description d ON t.oid=d.objoid" +
             "\nWHERE typnamespace=? " +
             "\nORDER by t.oid";
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
