@@ -196,6 +196,23 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        if (tableType != null && isView(tableType)) {
+            return new FireBirdView(
+                container,
+                tableName,
+                tableType,
+                dbResult);
+        }
+
+        return new FireBirdTable(
+            container,
+            tableName,
+            tableType,
+            dbResult);
+    }
+
+    @Override
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$RELATION_NAME");
         int relType = JDBCUtils.safeGetInt(dbResult, "RDB$RELATION_TYPE");
