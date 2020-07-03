@@ -192,7 +192,17 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
-        return session.prepareStatement("SELECT * FROM RDB$RELATIONS ORDER BY RDB$RELATION_NAME");
+        String sql = "SELECT * FROM RDB$RELATIONS";
+        if (object == null && objectName == null) {
+            sql += "\nORDER BY RDB$RELATION_NAME";
+        } else {
+            sql += "\nWHERE RDB$RELATION_NAME=?";
+        }
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        if (object != null || objectName != null) {
+            dbStat.setString(1, (object != null ? object.getName() : objectName));
+        }
+        return dbStat;
     }
 
     @Override
