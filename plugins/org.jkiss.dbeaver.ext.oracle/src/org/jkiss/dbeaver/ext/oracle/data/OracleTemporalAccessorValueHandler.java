@@ -66,6 +66,8 @@ public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValu
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE:
                 return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
+            case Types.TIMESTAMP:
+                return DBDDataFormatter.TYPE_NAME_DATE;
             default:
                 return super.getFormatterId(column);
         }

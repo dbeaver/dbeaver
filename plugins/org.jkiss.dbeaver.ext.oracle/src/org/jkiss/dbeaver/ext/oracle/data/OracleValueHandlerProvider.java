@@ -62,6 +62,10 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 return OracleBFILEValueHandler.INSTANCE;
         }
 
+        if ("DATE".equals(typeName)) {
+            return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+        }
+
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
