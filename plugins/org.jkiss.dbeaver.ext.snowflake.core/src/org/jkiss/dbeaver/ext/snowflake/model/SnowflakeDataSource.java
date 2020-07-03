@@ -36,7 +36,7 @@ public class SnowflakeDataSource extends GenericDataSource {
     public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new SnowflakeSQLDialect());
     }
 
     @Override
