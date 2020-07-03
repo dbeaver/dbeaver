@@ -325,7 +325,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             try {
                 allTypes.addAll(object.getTable().getSchema().getDataTypes(new VoidProgressMonitor()));
             } catch (DBException e) {
-                log.debug("Error gtting schema data types", e);
+                log.debug("Error getting schema data types", e);
             }
             return allTypes.toArray();
         }
