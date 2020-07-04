@@ -5,8 +5,8 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.standalone;singleton:=true
 Bundle-Activator: org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 7.1.1.qualifier
-Bundle-Release-Date: 20200622
+Bundle-Version: 7.1.2.qualifier
+Bundle-Release-Date: 20200706
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
@@ -31,6 +31,5 @@ Require-Bundle: org.eclipse.osgi,
  org.w3c.css.sac,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.tasks.ui
+ org.jkiss.dbeaver.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.standalone

@@ -208,7 +208,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
             connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
         }
         if (authCertFile != null) {
-            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH, authCertFile.getText());
+            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH, authCertFile.getText().trim());
         }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());

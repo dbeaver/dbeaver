@@ -1259,7 +1259,9 @@ public class ResultSetViewer extends Viewer
             }
             viewerSash.setMaximizedControl(null);
             updatePanelActions();
-            updatePanelsContent(false);
+            if (showDefaults) {
+                updatePanelsContent(false);
+            }
             activePresentation.updateValueView();
 
             // Set focus to panel
@@ -1652,13 +1654,13 @@ public class ResultSetViewer extends Viewer
                 protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
                         @Override
-                        public String evaluate(DBRProgressMonitor monitor) {
+                        public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                             try {
                                 long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
                             } catch (DBException e) {
                                 log.error(e);
-                                return e.getMessage();
+                                throw new InvocationTargetException(e);
                             }
                         }
                     };

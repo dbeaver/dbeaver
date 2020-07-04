@@ -1123,24 +1123,13 @@ public class UIUtils {
             focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
         }
         if (focusService != null) {
-            focusService.addFocusTracker(control, controlID);
-        } else {
-            log.debug("Focus service not found in " + serviceLocator);
-        }
-    }
+            IFocusService finalFocusService = focusService;
+            finalFocusService.addFocusTracker(control, controlID);
 
-    public static void removeFocusTracker(IServiceLocator serviceLocator, Control control)
-    {
-        if (PlatformUI.getWorkbench().isClosing()) {
-            // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
-            return;
-        }
-        IFocusService focusService = serviceLocator.getService(IFocusService.class);
-        if (focusService == null) {
-            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
-        }
-        if (focusService != null) {
-            focusService.removeFocusTracker(control);
+            control.addDisposeListener(e -> {
+                // Unregister from focus service
+                finalFocusService.removeFocusTracker(control);
+            });
         } else {
             log.debug("Focus service not found in " + serviceLocator);
         }
@@ -1148,10 +1137,6 @@ public class UIUtils {
 
     public static void addDefaultEditActionsSupport(final IServiceLocator site, final Control control) {
         UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, control);
-        control.addDisposeListener(e -> {
-            // Unregister from focus service
-            UIUtils.removeFocusTracker(site, control);
-        });
     }
 
 

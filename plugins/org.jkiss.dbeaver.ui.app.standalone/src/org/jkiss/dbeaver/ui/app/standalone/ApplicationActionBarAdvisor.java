@@ -39,14 +39,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
+import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -227,7 +226,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);
 
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
 
             fileMenu.add(openWorkspaceAction);
 
@@ -278,7 +280,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
             windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
-            windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
+            //windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
+            windowMenu.add(new GroupMarker("primary.views"));
             {
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());

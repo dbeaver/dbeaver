@@ -390,10 +390,10 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
-                connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
+                connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText().trim());
                 break;
             case CUSTOM:
-                connectionInfo.setUrl(connectionUrlText.getText());
+                connectionInfo.setUrl(connectionUrlText.getText().trim());
                 break;
         }
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());

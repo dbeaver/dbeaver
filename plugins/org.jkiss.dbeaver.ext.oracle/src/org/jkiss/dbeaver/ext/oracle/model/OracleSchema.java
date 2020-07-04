@@ -460,10 +460,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT SEGMENT_NAME,SUM(bytes) TABLE_SIZE\n" +
                     "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
-                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.OWNER = ?\n" +
+                    "WHERE S.SEGMENT_TYPE='TABLE'"  + (hasDBA ? " AND s.OWNER = ?" : "") + "\n" +
                     "GROUP BY SEGMENT_NAME"))
             {
-                dbStat.setString(1, getName());
+                if (hasDBA) {
+                    dbStat.setString(1, getName());
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String tableName = dbResult.getString(1);
@@ -474,15 +476,15 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                         }
                     }
                 }
-                for (OracleTableBase table : tableCache.getCachedObjects()) {
-                    if (table instanceof OracleTable && !((OracleTable) table).hasStatistics()) {
-                        ((OracleTable) table).setTableSize(0L);
-                    }
-                }
             }
         } catch (SQLException e) {
             throw new DBCException("Error reading table statistics", e);
         } finally {
+            for (OracleTableBase table : tableCache.getCachedObjects()) {
+                if (table instanceof OracleTable && !((OracleTable) table).hasStatistics()) {
+                    ((OracleTable) table).setTableSize(0L);
+                }
+            }
             hasStatistics = true;
         }
     }

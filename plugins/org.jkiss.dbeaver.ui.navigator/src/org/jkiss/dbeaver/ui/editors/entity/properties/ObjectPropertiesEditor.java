@@ -98,6 +98,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private Composite propsPlaceholder;
     @Nullable
     private TabbedFolderPageForm propertiesPanel;
+    private Composite mainComposite;
 
     public ObjectPropertiesEditor()
     {
@@ -123,22 +124,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
         pageControl.setShowDivider(true);
 
-        Composite container = new Composite(pageControl, SWT.NONE);
+        mainComposite = new Composite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
         gl.marginHeight = 0;
         gl.marginWidth = 0;
-        container.setLayout(gl);
+        mainComposite.setLayout(gl);
 
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+        mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         pageControl.createProgressPanel();
 
         curFolderId = getEditorInput().getDefaultFolderId();
-
-        // Create actual editor in async mode. We need to know editor size to make proper layout and avoid blinking
-        UIUtils.asyncExec(() -> createPropertyBrowser(container));
     }
 
     private void createPropertyBrowser(Composite container)
@@ -330,6 +328,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (activated) {
             return;
         }
+        // Create actual editor in async mode. We need to know editor size to make proper layout and avoid blinking
+        UIUtils.asyncExec(() -> createPropertyBrowser(mainComposite));
+
         activated = true;
     }
 

@@ -73,15 +73,30 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected String beginCreateTableStatement(PostgreTableBase table, String tableName) {
-        return "CREATE " +
-            getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator();
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName) throws DBException{
+        String statement = "CREATE " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+        if (table.isPartition() && table instanceof PostgreTable) {
+            PostgreTable postgreTable = (PostgreTable)table;
+            List<PostgreTableBase> superTables = postgreTable.getSuperTables(monitor);
+            if (superTables.size() != 1) {
+                throw new DBException("There can only be one parent");
+            }
+            String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
+            String range = postgreTable.getPartitionRange(monitor);
+            return statement + tableName + " PARTITION OF " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();//$NON-NLS-1$
+    }
+
+    @Override
+    protected boolean hasAttrDeclarations(PostgreTableBase table) {
+        return !table.isPartition();
     }
 
     @Override
     protected String getCreateTableType(PostgreTableBase table) {
         if (table instanceof PostgreTableForeign) {
-            return "FOREIGN TABLE";
+            return "FOREIGN TABLE";//$NON-NLS-1$
         } else {
             return table.getPersistence().getTableTypeClause();
         }
@@ -130,16 +145,16 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
-        final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
+        final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";//$NON-NLS-1$ //$NON-NLS-2$
 
-        if (command.hasProperty("partitionKey")) {
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));
+        if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));//$NON-NLS-1$
         }
-        if (command.hasProperty("hasOids")) {
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
+        if (command.hasProperty("hasOids")) {//$NON-NLS-1$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));//$NON-NLS-1$ //$NON-NLS-2$
         }
-        if (command.hasProperty("tablespace")) {
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));
+        if (command.hasProperty("tablespace")) {//$NON-NLS-1$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));//$NON-NLS-1$
         }
     }
 
@@ -180,9 +195,9 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-2$
-                    " " + tableName +  //$NON-NLS-2$
-                    (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")
+                "DROP " + (table instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    " " + tableName +  //$NON-NLS-1$
+                    (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")//$NON-NLS-1$ //$NON-NLS-2$
             )
         );
     }

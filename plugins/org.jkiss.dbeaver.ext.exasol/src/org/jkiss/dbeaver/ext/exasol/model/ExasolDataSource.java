@@ -338,12 +338,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     	if (addMetaProps == null)
     		addMetaProps = new Properties();
     	
-    	if (JDBCExecutionContext.TYPE_METADATA.equals(purpose)) {
-    		addMetaProps.clear();
-    		addMetaProps.put("snapshottransactions", "1");
-    	} else {
-    		addMetaProps.clear();
-    	}
+		addMetaProps.clear();
     	
     	return props;
     	

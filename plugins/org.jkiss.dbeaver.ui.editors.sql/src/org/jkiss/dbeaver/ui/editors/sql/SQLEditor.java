@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -114,6 +115,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -2724,7 +2726,12 @@ public class SQLEditor extends SQLEditorBase implements
                 resultsProvider.query = statement;
                 resultsProvider.lastGoodQuery = statement;
                 String tabName = null;
-                String toolTip = CommonUtils.truncateString(statement.getText(), 1000);
+                String queryText = CommonUtils.truncateString(statement.getText(), 1000);
+                DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+                String toolTip =
+                    "Connection: " + (dataSourceContainer == null ? "N/A" : dataSourceContainer.getName()) + GeneralUtils.getDefaultLineSeparator() +
+                    "Time: " + new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()) + GeneralUtils.getDefaultLineSeparator() +
+                    "Query: " + queryText;
                 // Special statements (not real statements) have their name in data
                 if (isStatsResult) {
                     tabName = "Statistics";
@@ -2741,7 +2748,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetValueReflector, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -2831,7 +2838,9 @@ public class SQLEditor extends SQLEditorBase implements
                 if (!CommonUtils.isEmpty(resultSetName)) {
                     tabItem.setText(resultSetName);
                 }
-                tabItem.setToolTipText(toolTip);
+                if (toolTip != null) {
+                    tabItem.setToolTipText(toolTip);
+                }
             }
         }
 
@@ -3138,6 +3147,22 @@ public class SQLEditor extends SQLEditorBase implements
         public void setTabName(String tabName) {
             this.tabName = tabName;
             resultsTab.setText(tabName);
+        }
+
+        @Override
+        public void insertCurrentCellValue(DBDAttributeBinding attributeBinding, Object cellValue, String stringValue) {
+            StyledText textWidget = getTextViewer() == null ? null : getTextViewer().getTextWidget();
+            if (textWidget != null) {
+                String sqlValue;
+                if (getDataSource() != null) {
+                    sqlValue = SQLUtils.convertValueToSQL(getDataSource(), attributeBinding, cellValue);
+                } else {
+                    sqlValue = stringValue;
+                }
+                textWidget.insert(sqlValue);
+                textWidget.setCaretOffset(textWidget.getCaretOffset() + sqlValue.length());
+                textWidget.setFocus();
+            }
         }
     }
 

@@ -157,7 +157,7 @@ abstract class ActiveStatusMessage extends Composite {
         @Override
         public void completeLoading(String message) {
             completed = true;
-            if (!CommonUtils.equalObjects(getMessage(), message)) {
+            if (!CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
                 setMessage(message);
                 getParent().layout(true, true);
             }

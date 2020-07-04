@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -98,7 +98,11 @@ public class ToggleViewAction extends Action implements IPartListener
             if (view == null) {
                 activePage.showView(viewId);
             } else {
-                activePage.hideView(view);
+                if (!activePage.isPartVisible(view)) {
+                    activePage.bringToTop(view);
+                } else {
+                    activePage.hideView(view);
+                }
             }
         } catch (PartInitException ex) {
             DBWorkbench.getPlatformUI().showError(viewId, "Can't open view " + viewId, ex);

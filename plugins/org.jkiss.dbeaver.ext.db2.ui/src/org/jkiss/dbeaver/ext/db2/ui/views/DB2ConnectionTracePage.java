@@ -187,7 +187,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
 
         {
             providerProperties.put(DB2Constants.PROP_TRACE_ENABLED, String.valueOf(enableTraceCheck.getSelection()));
-            providerProperties.put(DB2Constants.PROP_TRACE_FOLDER, folderText.getText());
+            providerProperties.put(DB2Constants.PROP_TRACE_FOLDER, folderText.getText().trim());
             providerProperties.put(DB2Constants.PROP_TRACE_FILE, fileNameText.getText());
             providerProperties.put(DB2Constants.PROP_TRACE_APPEND, String.valueOf(traceAppendCheck.getSelection()));
             int traceLevel = 0;

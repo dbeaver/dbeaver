@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
+import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
@@ -49,7 +50,7 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject
+public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject
 {
     private static final Log log = Log.getLog(PostgreTrigger.class);
 
