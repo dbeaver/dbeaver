@@ -21,6 +21,16 @@ import org.eclipse.osgi.util.NLS;
 public class UIChartsMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages"; //$NON-NLS-1$
 
+    public static String base_chart_composite_action_zoom_in;
+    public static String base_chart_composite_action_zoom_out;
+    public static String base_chart_composite_action_zoom_reset;
+    public static String base_chart_composite_action_copy_to_clipboard;
+    public static String base_chart_composite_action_save_as;
+    public static String base_chart_composite_error_title_save_image;
+    public static String base_chart_composite_error_message_error_saving_chart_image;
+    public static String base_chart_composite_action_print;
+    public static String base_chart_composite_action_settings;
+    public static String base_chart_composite_action_colors;
 
     static {
         // initialize resource bundle
