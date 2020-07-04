@@ -285,7 +285,9 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         @Override
         public boolean equals(Object obj) {
             return obj == this ||
-                (obj instanceof DataSourceEditorInput && ((DataSourceEditorInput) obj).editor == editor);
+                (obj instanceof DataSourceEditorInput &&
+                    ((DataSourceEditorInput) obj).dataSource == dataSource &&
+                    ((DataSourceEditorInput) obj).editor == editor);
         }
 
     }

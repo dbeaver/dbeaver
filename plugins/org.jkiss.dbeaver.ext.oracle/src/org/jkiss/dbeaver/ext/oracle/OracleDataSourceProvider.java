@@ -67,6 +67,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
+        String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
         if (connectionType == OracleConstants.ConnectionType.TNS) {
             // TNS name specified
             // Try to get description from TNSNAMES
@@ -84,7 +85,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             }
 
             final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, checkTnsAdmin);
-            final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
+            final String tnsDescription = tnsNames.get(databaseName);
             if (!CommonUtils.isEmpty(tnsDescription)) {
                 url.append(tnsDescription);
             } else {
@@ -94,7 +95,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
                 if (tnsNamesFile != null && tnsNamesFile.exists()) {
                     System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsNamesFile.getAbsolutePath());
                 }
-                url.append(connectionInfo.getDatabaseName());
+                url.append(databaseName);
             }
         } else {
             // Basic connection info specified
@@ -114,8 +115,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             } else {
                 url.append("/"); //$NON-NLS-1$
             }
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                url.append(connectionInfo.getDatabaseName());
+            if (!CommonUtils.isEmpty(databaseName)) {
+                url.append(databaseName);
             }
         }
         return url.toString();

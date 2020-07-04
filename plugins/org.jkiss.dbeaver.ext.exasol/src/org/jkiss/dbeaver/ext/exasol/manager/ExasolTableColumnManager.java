@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -137,7 +136,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
         if (command.getProperties().containsKey("distKey"))
         {
         	try {
-				actionList.addAll(modifyDistKey(exasolColumn));
+				actionList.addAll(modifyDistKey(monitor, exasolColumn));
 			} catch (DBException e) {
 				log.error("Failed to modify distkey settings",e);
 			}
@@ -218,7 +217,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
         
         if (exasolColumn.isDistKey())
 			try {
-				modifyDistKey(exasolColumn);
+				modifyDistKey(monitor, exasolColumn);
 			} catch (DBException e) {
 				log.error("Failed to generate distribution key",e);
 			}
@@ -257,13 +256,13 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     	
     	
     }
-    private Collection<SQLDatabasePersistAction> modifyDistKey(ExasolTableColumn exasolColumn) throws DBException
+    private Collection<SQLDatabasePersistAction> modifyDistKey(DBRProgressMonitor monitor, ExasolTableColumn exasolColumn) throws DBException
     {
     	ExasolTable table = (ExasolTable) exasolColumn.getParentObject();
-    	Collection<ExasolTableColumn> distKey = table.getDistributionKey(new VoidProgressMonitor());
+    	Collection<ExasolTableColumn> distKey = table.getDistributionKey(monitor);
     	Collection<SQLDatabasePersistAction> commands = new ArrayList<SQLDatabasePersistAction>();
     	
-    	if (table.getHasDistKey(new VoidProgressMonitor()))
+    	if (table.getAdditionalInfo(monitor).getHasDistKey(monitor))
     	{
     		commands.add(generateDropDist(exasolColumn));
     	}

@@ -19,15 +19,21 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class NavigatorHandlerToggleView extends AbstractHandler implements IElementUpdater {
@@ -36,24 +42,55 @@ public class NavigatorHandlerToggleView extends AbstractHandler implements IElem
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final String viewId = event.getParameter("viewId");
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+
         final IViewPart view = UIUtils.findView(workbenchWindow, viewId);
-        if (view != null) {
+        if (view != null && workbenchWindow.getActivePage().isPartVisible(view)) {
             workbenchWindow.getActivePage().hideView(view);
         } else {
             try {
-                workbenchWindow.getActivePage().showView(viewId);
+                if (view != null) {
+                    workbenchWindow.getActivePage().bringToTop(view);
+                } else {
+                    workbenchWindow.getActivePage().showView(viewId);
+                }
             } catch (PartInitException e) {
                 DBWorkbench.getPlatformUI().showError("Toggle view", "Cannot open view " + viewId, e);
             }
         }
+
+        ActionUtils.fireCommandRefresh("org.jkiss.dbeaver.core.view.toggle");
+
         return null;
     }
-
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
         final String viewId = (String) parameters.get("viewId");
-        final IViewPart view = UIUtils.getActiveWorkbenchWindow().getActivePage().findView(viewId);
-        element.setChecked(view != null);
+
+        IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(viewId);
+        if (viewDescriptor != null) {
+            element.setText(viewDescriptor.getLabel());
+            element.setIcon(viewDescriptor.getImageDescriptor());
+            if (!CommonUtils.isEmpty(viewDescriptor.getDescription())) {
+                element.setTooltip(viewDescriptor.getDescription());
+            }
+
+            final IViewPart view = UIUtils.getActiveWorkbenchWindow().getActivePage().findView(viewId);
+            element.setChecked(view != null);
+        }
     }
+
+    public static class ViewValues implements IParameterValues {
+
+        @Override
+        public Map<String, String> getParameterValues() {
+            final Map<String, String> values = new HashMap<>();
+            for (IViewDescriptor view : PlatformUI.getWorkbench().getViewRegistry().getViews()) {
+                values.put(view.getLabel(), view.getId());
+            }
+            return values;
+        }
+
+    }
+
 }

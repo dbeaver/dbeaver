@@ -417,14 +417,14 @@ public abstract class LightGrid extends Canvas {
 
         if (getVerticalBar() != null) {
             getVerticalBar().setVisible(false);
-            vScroll = new ScrollBarAdapter(getVerticalBar());
+            vScroll = new ScrollBarAdapter(getVerticalBar(), true);
         } else {
             vScroll = new NullScrollBar();
         }
 
         if (getHorizontalBar() != null) {
             getHorizontalBar().setVisible(false);
-            hScroll = new ScrollBarAdapter(getHorizontalBar());
+            hScroll = new ScrollBarAdapter(getHorizontalBar(), false);
         } else {
             hScroll = new NullScrollBar();
         }
@@ -2932,16 +2932,18 @@ public abstract class LightGrid extends Canvas {
             if (getVerticalBar() == null)
                 e.doit = false;
         } else {
-            onMouseHorizontalWheel(e);
+            if (hScroll.getVisible()) {
+                hScroll.handleMouseWheel(e);
+                if (getHorizontalBar() == null)
+                    e.doit = false;
+            }
         }
     }
 
-    private void onMouseHorizontalWheel(Event e)
-    {
+    private void onMouseHorizontalWheel(Event e) {
         if (hScroll.getVisible()) {
-            hScroll.handleMouseWheel(e);
-            if (getHorizontalBar() == null)
-                e.doit = false;
+            scrollHorizontally(e.count);
+            e.doit = false;
         }
     }
 

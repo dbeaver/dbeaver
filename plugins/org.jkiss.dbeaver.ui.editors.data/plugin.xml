@@ -855,7 +855,7 @@
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.focused"
-                parentId="org.jkiss.dbeaver.ui.editors.sql"
+                parentId="org.jkiss.dbeaver.ui.context.resultset"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name focused"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context

@@ -110,7 +110,6 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
         if (getControl() != null) {
             ERDEditorAdapter.unmapControl(getControl());
-            UIUtils.removeFocusTracker(editor.getSite(), getControl());
         }
         super.handleDispose(e);
     }

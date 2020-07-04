@@ -138,7 +138,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                             if (typeName != null) {
                                 // Prepend "Create new" as it is a single node
                                 typeName = NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName);
-                                objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+                                if (!(node instanceof DBNDatabaseFolder)) {
+                                    objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+                                }
                             }
                             break;
                         }

@@ -62,8 +62,8 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     protected ExasolFunction createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                   Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         ExasolFunction newScript =  new ExasolFunction((ExasolSchema) container);
-        newScript.setName("new_script");
-        newScript.setObjectDefinitionText("FUNCTION new_script ()RETURNS INTEGER");
+        newScript.setName("function_name");
+        newScript.setObjectDefinitionText("FUNCTION function_name() RETURNS INTEGER");
         return newScript;
     }
     
@@ -90,7 +90,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
-                new SQLDatabasePersistAction("Create Script", "DROP SCRIPT " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                new SQLDatabasePersistAction("Create Script", "DROP FUNCTION " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
     
     @Override

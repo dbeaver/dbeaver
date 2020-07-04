@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -148,8 +149,9 @@ public abstract class AbstractJob extends Job
     }
 
     private void runBlockCanceler() {
-        final List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
-        if (CommonUtils.isEmpty(activeBlocks)) {
+        final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
+            CommonUtils.safeList(progressMonitor.getActiveBlocks()));
+        if (activeBlocks.isEmpty()) {
             // Nothing to cancel
             return;
         }
@@ -207,11 +209,11 @@ public abstract class AbstractJob extends Job
         private final DBRBlockingObject block;
 
         public JobCanceler(DBRBlockingObject block) {
-            super("Cancel block " + block);
+            super("Cancel block " + block); //$NON-N LS-1$
             this.block = block;
             setSystem(true);
             setUser(false);
-        }  //$NON-N LS-1$
+        }
 
         @Override
         protected IStatus run(IProgressMonitor monitor)
@@ -220,10 +222,10 @@ public abstract class AbstractJob extends Job
                 try {
                     BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
                 } catch (DBException e) {
-                    log.debug("Block cancel error", e);
+                    log.debug("Block cancel error", e); //$NON-N LS-1$
                     return GeneralUtils.makeExceptionStatus(e);
                 } catch (Throwable e) {
-                    log.debug("Block cancel internal error", e);
+                    log.debug("Block cancel internal error", e); //$NON-N LS-1$
                     return Status.CANCEL_STATUS;
                 }
                 blockCanceled = true;

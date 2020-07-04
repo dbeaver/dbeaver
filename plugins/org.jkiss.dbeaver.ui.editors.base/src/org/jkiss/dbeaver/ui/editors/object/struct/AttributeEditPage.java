@@ -66,7 +66,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
         final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_attribute_edit_page_label_text_name, attribute.getName()); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
             if (attribute instanceof DBPNamedObject2) {
-                ((DBPNamedObject2) attribute).setName(DBObjectNameCaseTransformer.transformName(attribute.getDataSource(), nameText.getText()));
+                ((DBPNamedObject2) attribute).setName(DBObjectNameCaseTransformer.transformName(attribute.getDataSource(), nameText.getText().trim()));
             }
         });
 

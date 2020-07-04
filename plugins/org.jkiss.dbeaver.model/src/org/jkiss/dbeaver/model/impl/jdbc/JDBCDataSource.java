@@ -268,21 +268,29 @@ public abstract class JDBCDataSource
         return url;
     }
 
-    protected void closeConnection(final Connection connection, String purpose)
+    /**
+     * Closes JDBC connection.
+     * Do actual close in separate thread.
+     * After ModelPreferences.CONNECTION_CLOSE_TIMEOUT delay returns false.
+     * @return true on successful connection close
+     */
+    public boolean closeConnection(final Connection connection, String purpose, boolean doRollback)
     {
         if (connection != null) {
             // Close datasource (in async task)
-            RuntimeUtils.runTask(monitor -> {
-                try {
-                    // If we in transaction - rollback it.
-                    // Any valuable transaction changes should be committed by UI
-                    // so here we do it just in case to avoid error messages on close with open transaction
-                    if (!connection.isClosed() && !connection.getAutoCommit()) {
-                        connection.rollback();
+            return RuntimeUtils.runTask(monitor -> {
+                if (doRollback) {
+                    try {
+                        // If we in transaction - rollback it.
+                        // Any valuable transaction changes should be committed by UI
+                        // so here we do it just in case to avoid error messages on close with open transaction
+                        if (!connection.isClosed() && !connection.getAutoCommit()) {
+                            connection.rollback();
+                        }
+                    } catch (Throwable e) {
+                        // Do not write warning because connection maybe broken before the moment of close
+                        log.debug("Error closing active transaction", e);
                     }
-                } catch (Throwable e) {
-                    // Do not write warning because connection maybe broken before the moment of close
-                    log.debug("Error closing active transaction", e);
                 }
                 try {
                     connection.close();
@@ -292,6 +300,9 @@ public abstract class JDBCDataSource
                 }
             }, "Close JDBC connection (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+        } else {
+            log.debug("Null connection parameter");
+            return true;
         }
     }
 

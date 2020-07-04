@@ -162,9 +162,9 @@ public class ExasolUtils {
     
     public static String getPartitionDdl(ExasolTable table, DBRProgressMonitor monitor) throws DBException {
     	
-    	if (table.getPartitions().size() == 0)
+    	if (table.getPartitions(monitor).size() == 0)
     		return "";
-    	Collection<String> cols = table.getPartitions().stream()
+    	Collection<String> cols = table.getPartitions(monitor).stream()
     			.sorted(Comparator.comparing(ExasolTablePartitionColumn::getOrdinalPosition))
     			.map(pc -> DBUtils.getQuotedIdentifier(pc))
     			.collect(Collectors.toCollection(ArrayList::new));

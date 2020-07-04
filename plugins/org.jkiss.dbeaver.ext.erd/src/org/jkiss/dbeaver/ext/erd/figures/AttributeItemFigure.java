@@ -53,6 +53,7 @@ public class AttributeItemFigure extends Figure
         ERDEntityAttribute attribute = part.getAttribute();
 
         ToolbarLayout layout = new ToolbarLayout(true);
+        layout.setSpacing(3);
 
         setLayoutManager(layout);
 

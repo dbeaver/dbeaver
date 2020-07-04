@@ -43,7 +43,11 @@ public enum ExasolObjectType implements DBSObjectType {
         }
 
     }),
-    VIEW(DBIcon.TREE_VIEW, ExasolView.class, new ObjectFinder());
+    VIEW(DBIcon.TREE_VIEW, ExasolView.class, null),
+    SCRIPT(DBIcon.TREE_PROCEDURE, ExasolScript.class, null), 
+    FOREIGNKEY(DBIcon.TREE_FOREIGN_KEY, ExasolTableForeignKey.class, null),
+    PRIMARYKEY(DBIcon.TREE_UNIQUE_KEY, ExasolTableUniqueKey.class, null)
+    ;
 
 
     private final DBPImage image;

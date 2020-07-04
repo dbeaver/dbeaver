@@ -210,10 +210,10 @@ public class SQLServerTable extends SQLServerTableBase implements DBPObjectStati
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.refreshObject(monitor);
         references = null;
         totalBytes = -1;
         usedBytes = -1;
+        getSchema().resetTableStatistics();
 
         getContainer().getIndexCache().clearObjectCache(this);
         getContainer().getUniqueConstraintCache().clearObjectCache(this);

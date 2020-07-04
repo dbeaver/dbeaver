@@ -73,7 +73,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
             @Override
             public boolean select(Object element) {
-                return element instanceof DBNLocalFolder || element instanceof DBNResource;
+                return element instanceof DBNLocalFolder || element instanceof DBNResource || element instanceof TreeNodeSpecial;
             }
         };
 

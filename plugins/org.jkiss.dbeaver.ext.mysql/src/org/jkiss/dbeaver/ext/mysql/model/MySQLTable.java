@@ -157,12 +157,6 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
             this.getContainer().constraintCache.cacheObject(constr);
         }
 
-        // Copy check constraints
-        for (DBSEntityConstraint srcCheckConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
-            MySQLTableCheckConstraint checkConstr = new MySQLTableCheckConstraint(monitor, this, srcCheckConstr);
-            this.getContainer().checkConstraintCache.cacheObject(checkConstr);
-        }
-
         // Copy FKs
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
         for (DBSEntityAssociation srcFK : CommonUtils.safeCollection(source.getAssociations(monitor))) {
@@ -566,6 +560,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().constraintCache.clearObjectCache(this);
+        getContainer().checkConstraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
         this.referenceCache = null;

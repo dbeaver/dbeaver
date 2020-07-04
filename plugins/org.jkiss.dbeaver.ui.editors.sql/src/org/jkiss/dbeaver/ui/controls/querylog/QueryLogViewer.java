@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -408,8 +407,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             UIUtils.addFocusTracker(site, QUERY_LOG_CONTROL_ID, logTable);
 
             logTable.addDisposeListener(e -> {
-                // Unregister from focus service
-                UIUtils.removeFocusTracker(QueryLogViewer.this.site, logTable);
                 dispose();
             });
         }
