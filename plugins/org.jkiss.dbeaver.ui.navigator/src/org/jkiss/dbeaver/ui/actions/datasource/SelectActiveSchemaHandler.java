@@ -222,7 +222,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         protected void fillContributionItems(List<IContributionItem> menuItems) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             if (workbenchWindow.getActivePage() == null ||
-                SelectActiveDataSourceHandler.getDataSourceContainerProvider(workbenchWindow.getActivePage().getActivePart()) == null)
+                SelectActiveDataSourceHandler.getDataSourceContainerProvider(workbenchWindow.getActivePage().getActiveEditor()) == null)
             {
                 return;
             }
