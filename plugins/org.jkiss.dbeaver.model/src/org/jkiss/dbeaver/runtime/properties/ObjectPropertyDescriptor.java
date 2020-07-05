@@ -234,6 +234,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isEditPossible()) features.add("editPossible");
         if (this.isLinkPossible()) features.add("linkPossible");
         if (this.isViewable()) features.add("viewable");
+        if (this.isPassword()) features.add("password");
         return features.toArray(new String[0]);
     }
 
@@ -266,6 +267,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return this.isLinkPossible();
             case "viewable":
                 return this.isViewable();
+            case "password":
+                return this.isPassword();
         }
         return false;
     }
@@ -494,7 +497,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
             // List
             try {
-                return propInfo.listProvider().newInstance().getPossibleValues(object);
+                return propInfo.listProvider().getConstructor().newInstance().getPossibleValues(object);
             } catch (Exception e) {
                 log.error(e);
             }

@@ -123,7 +123,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
 
     @Override
     public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource) {
-        PropertyCollector propertyCollector = new PropertyCollector(dataSource, false);
+        DBAAuthCredentials credentials = createCredentials();
+        PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
         propertyCollector.collectProperties();
         return propertyCollector;
     }

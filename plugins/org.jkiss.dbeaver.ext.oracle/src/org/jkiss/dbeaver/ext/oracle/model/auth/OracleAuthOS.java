@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.StandardConstants;
 
@@ -32,18 +31,18 @@ import java.util.Properties;
 /**
  * Oracle OS auth model.
  */
-public class OracleAuthOS extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class OracleAuthOS extends AuthModelDatabaseNative<OracleAuthOSCredentials> {
 
     public static final String ID = "oracle_os";
 
     @Override
-    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelDatabaseNativeCredentials credentials) {
+    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull OracleAuthOSCredentials credentials) {
         credentials.setUserName(null);
         credentials.setUserPassword(null);
     }
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, OracleAuthOSCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
         super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
