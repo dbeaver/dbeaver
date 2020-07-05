@@ -37,7 +37,7 @@ public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPro
 
 
     @Override
-    public Object getId()
+    public String getId()
     {
         return name();
     }

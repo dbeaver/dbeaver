@@ -131,7 +131,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             loadObjectDefinition(entityMapping);
         }
 
-        Map<Object, Object> processorProperties = settings.getProcessorProperties();
+        Map<String, Object> processorProperties = settings.getProcessorProperties();
         StreamDataImporterSite site = new StreamDataImporterSite(settings, (DBSEntity) databaseObject, processorProperties);
         IStreamDataImporter importer = (IStreamDataImporter) processor;
         importer.init(site);

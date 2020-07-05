@@ -30,7 +30,7 @@ public class StreamTransferUtils {
 
     private static final char DEF_DELIMITER = ',';
 
-    public static String getDelimiterString(Map<Object, Object> properties, String propName) {
+    public static String getDelimiterString(Map<String, Object> properties, String propName) {
         String delimString = String.valueOf(properties.get(propName));
         if (delimString == null || delimString.isEmpty()) {
             delimString = String.valueOf(DEF_DELIMITER);

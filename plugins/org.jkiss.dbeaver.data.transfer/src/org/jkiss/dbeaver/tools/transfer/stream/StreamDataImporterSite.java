@@ -24,9 +24,9 @@ public class StreamDataImporterSite implements IStreamDataImporterSite {
 
     private StreamProducerSettings settings;
     private DBSEntity sourceObject;
-    private Map<Object, Object> processorProperties;
+    private Map<String, Object> processorProperties;
 
-    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<Object, Object> processorProperties) {
+    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<String, Object> processorProperties) {
         this.settings = settings;
         this.sourceObject = sourceObject;
         this.processorProperties = processorProperties;
@@ -43,7 +43,7 @@ public class StreamDataImporterSite implements IStreamDataImporterSite {
     }
 
     @Override
-    public Map<Object, Object> getProcessorProperties() {
+    public Map<String, Object> getProcessorProperties() {
         return processorProperties;
     }
 

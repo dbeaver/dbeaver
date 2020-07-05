@@ -112,11 +112,11 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public Map<Object, Object> getFormatterProperties(String typeId)
+    public Map<String, Object> getFormatterProperties(String typeId)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
-        Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
-        Map<Object, Object> formatterProps = new HashMap<>();
+        Map<String, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
+        Map<String, Object> formatterProps = new HashMap<>();
         for (DBPPropertyDescriptor prop : formatter.getProperties()) {
             Object defaultValue = defaultProperties.get(prop.getId());
             Object propValue = PrefUtils.getPreferenceValue(
@@ -130,7 +130,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     }
 
     @Override
-    public void setFormatterProperties(String typeId, Map<Object, Object> formatterProps)
+    public void setFormatterProperties(String typeId, Map<String, Object> formatterProps)
     {
         DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         for (DBPPropertyDescriptor prop : formatter.getProperties()) {
@@ -194,9 +194,9 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         }
         DBDDataFormatter formatter = descriptor.createFormatter();
 
-        Map<Object, Object> defProps = descriptor.getSample().getDefaultProperties(locale);
-        Map<Object, Object> props = getFormatterProperties(typeId);
-        Map<Object, Object> formatterProps = new HashMap<>();
+        Map<String, Object> defProps = descriptor.getSample().getDefaultProperties(locale);
+        Map<String, Object> props = getFormatterProperties(typeId);
+        Map<String, Object> formatterProps = new HashMap<>();
         if (defProps != null && !defProps.isEmpty()) {
             formatterProps.putAll(defProps);
         }
@@ -210,8 +210,8 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     public static void initDefaultPreferences(DBPPreferenceStore store, Locale locale)
     {
         for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
-            Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
-            Map<Object, Object> formatterProps = new HashMap<>();
+            Map<String, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
+            //Map<String, Object> formatterProps = new HashMap<>();
             for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object defaultValue = defaultProperties.get(prop.getId());
                 if (defaultValue != null) {

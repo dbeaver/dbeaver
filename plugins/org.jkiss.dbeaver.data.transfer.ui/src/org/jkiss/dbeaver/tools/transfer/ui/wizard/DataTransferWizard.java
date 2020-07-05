@@ -510,14 +510,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
             Map<String, Object> procSettings = new LinkedHashMap<>();
 
-            Map<Object, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
+            Map<String, Object> props = settings.getProcessorPropsHistory().get(procDescriptor);
             if (!CommonUtils.isEmpty(props)) {
                 StringBuilder propNames = new StringBuilder();
-                for (Map.Entry<Object, Object> prop : props.entrySet()) {
+                for (Map.Entry<String, Object> prop : props.entrySet()) {
                     propNames.append(prop.getKey()).append(',');
                 }
                 procSettings.put("@propNames", propNames.toString());
-                for (Map.Entry<Object, Object> prop : props.entrySet()) {
+                for (Map.Entry<String, Object> prop : props.entrySet()) {
                     procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                 }
             }

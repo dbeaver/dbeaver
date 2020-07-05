@@ -28,7 +28,7 @@ public interface DBPPropertyDescriptor {
      * Returns the id for this property. This object is used internally to distinguish one property descriptor from another.
      */
     @NotNull
-    Object getId();
+    String getId();
 
     /**
      * Returns the name of the category to which this property belongs. Properties
@@ -61,13 +61,6 @@ public interface DBPPropertyDescriptor {
     Class<?> getDataType();
 
     boolean isRequired();
-
-    /**
-     * Remote property.
-     * Means that model will has to perform server roundtrip to obtain value of this property.
-     * @return true for remote
-     */
-    boolean isRemote();
 
     @Nullable
     Object getDefaultValue();

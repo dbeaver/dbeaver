@@ -308,7 +308,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
     }
 
     private Map<String, EntityMapping> entityMapping = new HashMap<>();
-    private Map<Object, Object> processorProperties;
+    private Map<String, Object> processorProperties;
     private int maxRows;
 
     public StreamProducerSettings() {
@@ -324,11 +324,11 @@ public class StreamProducerSettings implements IDataTransferSettings {
         return mapping;
     }
 
-    public Map<Object, Object> getProcessorProperties() {
+    public Map<String, Object> getProcessorProperties() {
         return processorProperties;
     }
 
-    public void setProcessorProperties(Map<Object, Object> processorProperties) {
+    public void setProcessorProperties(Map<String, Object> processorProperties) {
         this.processorProperties = processorProperties;
     }
 
@@ -359,7 +359,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
     }
 
     public void updateMappingsFromStream(DataTransferSettings dataTransferSettings) throws DBException {
-        final Map<Object, Object> processorProperties = dataTransferSettings.getProcessorProperties();
+        final Map<String, Object> processorProperties = dataTransferSettings.getProcessorProperties();
         for (DataTransferPipe pipe : dataTransferSettings.getDataPipes()) {
             StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
             if (producer != null && pipe.getConsumer() != null) {

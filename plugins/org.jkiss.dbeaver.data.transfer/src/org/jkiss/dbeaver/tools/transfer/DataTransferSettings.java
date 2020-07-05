@@ -55,7 +55,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private final Map<DataTransferNodeDescriptor, IDataTransferSettings> nodeSettings = new HashMap<>();
 
     private DataTransferProcessorDescriptor processor;
-    private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
+    private Map<DataTransferProcessorDescriptor, Map<String, Object>> processorPropsHistory = new HashMap<>();
     private boolean producerProcessor;
 
     private IDataTransferProducer[] initProducers;
@@ -267,7 +267,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
                 DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
-                    Map<Object, Object> props = new HashMap<>();
+                    Map<String, Object> props = new HashMap<>();
                     DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
                     if (nodeProcessor != null) {
                         for (String prop : CommonUtils.splitString(propNamesId, ',')) {
@@ -332,11 +332,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         return settings;
     }
 
-    public Map<DataTransferProcessorDescriptor, Map<Object, Object>> getProcessorPropsHistory() {
+    public Map<DataTransferProcessorDescriptor, Map<String, Object>> getProcessorPropsHistory() {
         return processorPropsHistory;
     }
 
-    public Map<Object, Object> getProcessorProperties() {
+    public Map<String, Object> getProcessorProperties() {
         if (processor == null) {
             log.debug("No processor selected - no properties");
             return null;
@@ -344,7 +344,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         return processorPropsHistory.get(processor);
     }
 
-    public void setProcessorProperties(Map<Object, Object> properties) {
+    public void setProcessorProperties(Map<String, Object> properties) {
         if (processor == null) {
             throw new IllegalStateException("No processor selected");
         }

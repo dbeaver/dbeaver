@@ -81,7 +81,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        Map<Object, Object> properties = site.getProperties();
+        Map<String, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
         this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
         if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
@@ -255,7 +255,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             PrintWriter out = getWriter();
             if (useQuotes) out.write(quoteChar);
             // Copy reader
-            char buffer[] = new char[2000];
+            char[] buffer = new char[2000];
             for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {

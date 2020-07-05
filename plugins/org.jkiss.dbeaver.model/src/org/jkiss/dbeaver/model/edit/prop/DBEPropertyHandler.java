@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBEPropertyHandler<OBJECT_TYPE extends DBPObject> {
 
-    Object getId();
+    String getId();
 
     DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object);
 }

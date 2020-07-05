@@ -98,7 +98,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private long lobCount;
     private File outputFile;
     private StreamExportSite exportSite;
-    private Map<Object, Object> processorProperties;
+    private Map<String, Object> processorProperties;
     private StringWriter outputBuffer;
     private boolean initialized = false;
     private TransferParameters parameters;
@@ -347,7 +347,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<Object, Object> processorProperties) {
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<String, Object> processorProperties) {
         this.dataContainer = (DBSDataContainer) sourceObject;
         this.parameters = parameters;
         this.processor = processor;
@@ -591,7 +591,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public Map<Object, Object> getProperties() {
+        public Map<String, Object> getProperties() {
             return processorProperties;
         }
 

@@ -29,6 +29,6 @@ public interface IStreamDataImporterSite {
 
     DBSEntity getSourceObject();
 
-    Map<Object,Object> getProcessorProperties();
+    Map<String, Object> getProcessorProperties();
 
 }

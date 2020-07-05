@@ -144,7 +144,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     settings.setOutputEncodingBOM(false);
                     settings.setOpenFolderOnFinish(false);
 
-                    Map<Object, Object> properties = new HashMap<>();
+                    Map<String, Object> properties = new HashMap<>();
                     for (DBPPropertyDescriptor prop : processor.getProperties()) {
                         properties.put(prop.getId(), prop.getDefaultValue());
                     }

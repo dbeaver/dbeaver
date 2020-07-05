@@ -801,8 +801,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
-        driver.setDriverParameters(CommonUtils.makeStringMap(driverPropertySource.getPropertiesWithDefaults()));
-        driver.setConnectionProperties(CommonUtils.makeStringMap(connectionPropertySource.getPropertyValues()));
+        driver.setDriverParameters(driverPropertySource.getPropertiesWithDefaults());
+        driver.setConnectionProperties(connectionPropertySource.getPropertyValues());
 
         // Store client homes
         if (clientHomesPanel != null) {

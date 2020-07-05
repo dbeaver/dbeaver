@@ -221,7 +221,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
         private void saveOptions() {
             if (propertySource != null && curFormat != null) {
                 IDialogSettings formatSettings = UIUtils.getSettingsSection(getDialogBoundsSettings(), curFormat.getId());
-                for (Map.Entry<Object, Object> entry : propertySource.getPropertiesWithDefaults().entrySet()) {
+                for (Map.Entry<String, Object> entry : propertySource.getPropertiesWithDefaults().entrySet()) {
                     options.put(CommonUtils.toString(entry.getKey()), entry.getValue());
                     formatSettings.put(CommonUtils.toString(entry.getKey()), CommonUtils.toString(entry.getValue()));
                 }

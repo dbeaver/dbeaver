@@ -586,23 +586,21 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         return true;
     }
 
-    private static class PreviewConsumer implements IDataTransferConsumer {
+    private static class PreviewConsumer implements IDataTransferConsumer<IDataTransferSettings, IDataTransferProcessor> {
 
         private List<Object[]> rows = new ArrayList<>();
-        private StreamProducerSettings settings;
         private DBSEntity sampleObject;
         private final StreamProducerSettings.EntityMapping entityMapping;
         private DBCResultSetMetaData meta;
         private final List<StreamProducerSettings.AttributeMapping> attributes;
 
-        public PreviewConsumer(StreamProducerSettings settings, DBSEntity sampleObject) {
-            this.settings = settings;
+        PreviewConsumer(StreamProducerSettings settings, DBSEntity sampleObject) {
             this.sampleObject = sampleObject;
-            this.entityMapping = this.settings.getEntityMapping(sampleObject);
+            this.entityMapping = settings.getEntityMapping(sampleObject);
             this.attributes = entityMapping.getValuableAttributeMappings();
         }
 
-        public StreamProducerSettings.EntityMapping getEntityMapping() {
+        StreamProducerSettings.EntityMapping getEntityMapping() {
             return entityMapping;
         }
 
@@ -611,7 +609,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         @Override
-        public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map processorProperties) {
+        public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<String, Object> processorProperties) {
 
         }
 

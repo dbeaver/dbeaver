@@ -56,7 +56,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
 
-        Map<Object, Object> properties = site.getProperties();
+        Map<String, Object> properties = site.getProperties();
         outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
     }
 

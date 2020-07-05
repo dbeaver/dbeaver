@@ -334,38 +334,33 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     }
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
         return attributes.get(id.toString());
     }
 
     @Override
-    public boolean isPropertySet(Object id) {
+    public boolean isPropertySet(String id) {
         return false;//attributes.containsKey(id.toString());
     }
 
     @Override
-    public boolean isPropertyResettable(Object id) {
+    public boolean isPropertyResettable(String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
 
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value) {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
 
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-        return false;
     }
 
 }

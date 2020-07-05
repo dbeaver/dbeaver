@@ -46,7 +46,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         }
     }
 
-    void initTransfer(DBSObject sourceObject, SETTINGS settings, TransferParameters parameters, PROCESSOR processor, Map<Object, Object> processorProperties);
+    void initTransfer(DBSObject sourceObject, SETTINGS settings, TransferParameters parameters, PROCESSOR processor, Map<String, Object> processorProperties);
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 
