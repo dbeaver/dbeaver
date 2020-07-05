@@ -243,8 +243,8 @@ class TransformerSettingsDialog extends BaseDialog {
         if (transformer == null) {
             settings.setTransformOptions(new LinkedHashMap<>());
         } else {
-            final Map<Object, Object> properties = propertySource.getPropertiesWithDefaults();
-            for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+            final Map<String, Object> properties = propertySource.getPropertiesWithDefaults();
+            for (Map.Entry<String, Object> prop : properties.entrySet()) {
                 if (prop.getValue() != null) {
                     settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
                 }

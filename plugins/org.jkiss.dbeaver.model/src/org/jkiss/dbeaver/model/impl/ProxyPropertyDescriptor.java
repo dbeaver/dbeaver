@@ -34,7 +34,7 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
 
     @NotNull
     @Override
-    public Object getId()
+    public String getId()
     {
         return this.original.getId();
     }
@@ -59,11 +59,6 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     @Override
     public boolean isRequired() {
         return original.isRequired();
-    }
-
-    @Override
-    public boolean isRemote() {
-        return original.isRemote();
     }
 
     @Override

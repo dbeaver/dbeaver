@@ -37,10 +37,10 @@ public class PropertySourceMap implements DBPPropertySource {
 
     private Map<?, ?> items;
 
-    public PropertySourceMap(Map<?, ?> map)
+    public PropertySourceMap(Map<String, ?> map)
     {
         items = new LinkedHashMap<>(map);
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
             props.add(new ItemPropertyDescriptor(entry.getKey(), entry.getValue()));
         }
     }
@@ -57,41 +57,36 @@ public class PropertySourceMap implements DBPPropertySource {
     }
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         return items.get(id);
     }
 
     @Override
-    public boolean isPropertySet(Object id)
+    public boolean isPropertySet(String id)
     {
         return false;
     }
 
     @Override
-    public boolean isPropertyResettable(Object id) {
+    public boolean isPropertyResettable(String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
 
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
     {
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-        return false;
     }
 
     @Override
@@ -100,10 +95,10 @@ public class PropertySourceMap implements DBPPropertySource {
     }
 
     private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
-        private Object name;
+        private String name;
         private Object value;
 
-        public ItemPropertyDescriptor(Object name, Object value) {
+        public ItemPropertyDescriptor(String name, Object value) {
             this.name = name;
             this.value = value;
         }
@@ -129,11 +124,6 @@ public class PropertySourceMap implements DBPPropertySource {
         }
 
         @Override
-        public boolean isRemote() {
-            return false;
-        }
-
-        @Override
         public Object getDefaultValue() {
             return null;
         }
@@ -151,7 +141,7 @@ public class PropertySourceMap implements DBPPropertySource {
 
         @NotNull
         @Override
-        public Object getId() {
+        public String getId() {
             return name;
         }
     }

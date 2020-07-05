@@ -64,7 +64,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     @Override
     public List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream) throws DBException {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
-        Map<Object, Object> processorProperties = getSite().getProcessorProperties();
+        Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
@@ -94,11 +94,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         return columnsInfo;
     }
 
-    private HeaderPosition getHeaderPosition(Map<Object, Object> processorProperties) {
+    private HeaderPosition getHeaderPosition(Map<String, Object> processorProperties) {
         return CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(processorProperties.get(PROP_HEADER)), HeaderPosition.top);
     }
 
-    private CSVReader openCSVReader(Reader reader, Map<Object, Object> processorProperties) {
+    private CSVReader openCSVReader(Reader reader, Map<String, Object> processorProperties) {
         String delimiter = StreamTransferUtils.getDelimiterString(processorProperties, PROP_DELIMITER);
         String quoteChar = CommonUtils.toString(processorProperties.get(PROP_QUOTE_CHAR));
         if (CommonUtils.isEmpty(quoteChar)) {
@@ -111,7 +111,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
     }
 
-    private InputStreamReader openStreamReader(InputStream inputStream, Map<Object, Object> processorProperties) throws UnsupportedEncodingException {
+    private InputStreamReader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties) throws UnsupportedEncodingException {
         String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         return new InputStreamReader(inputStream, encoding);
     }
@@ -120,7 +120,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     public void runImport(DBRProgressMonitor monitor, InputStream inputStream, IDataTransferConsumer consumer) throws DBException {
         IStreamDataImporterSite site = getSite();
         StreamProducerSettings.EntityMapping entityMapping = site.getSettings().getEntityMapping(site.getSourceObject());
-        Map<Object, Object> properties = site.getProcessorProperties();
+        Map<String, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));

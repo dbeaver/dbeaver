@@ -244,7 +244,7 @@ public class DataSourceDescriptor
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
     }
 
@@ -1159,7 +1159,7 @@ public class DataSourceDescriptor
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
                     for (DBCExecutionContext context : instance.getAllContexts()) {
                         conIndex++;
-                        coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
+                        coll.addProperty("Connections", String.valueOf(conIndex), String.valueOf(conIndex), new ContextInfo(context));
                     }
                 }
             }

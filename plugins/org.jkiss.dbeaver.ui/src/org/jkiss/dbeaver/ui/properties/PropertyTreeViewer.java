@@ -312,7 +312,7 @@ public class PropertyTreeViewer extends TreeViewer {
                             }
                         }
                     } else if (Map.class.isAssignableFrom(propType)) {
-                        Map<?,?> propertyValue = (Map<?, ?>) propertySource.getPropertyValue(monitor, prop.getId());
+                        Map<String,?> propertyValue = (Map<String, ?>) propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             PropertySourceMap psc = new PropertySourceMap(propertyValue);
                             for (DBPPropertyDescriptor pd : psc.getProperties()) {
@@ -494,7 +494,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (!CommonUtils.equalObjects(oldValue, value)) {
                         if (selectedColumn == 0) {
                             String newName = CommonUtils.toString(value);
-                            Object oldPropId = prop.property.getId();
+                            String oldPropId = prop.property.getId();
                             Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
                             ((DBPNamedObject2)prop.property).setName(newName);
                             if (oldPropValue != null) {

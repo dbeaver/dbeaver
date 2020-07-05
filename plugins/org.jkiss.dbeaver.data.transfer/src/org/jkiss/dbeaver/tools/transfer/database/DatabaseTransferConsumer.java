@@ -382,7 +382,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<Object, Object> processorProperties) {
+    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<String, Object> processorProperties) {
         this.sourceObject = (DBSDataContainer) sourceObject;
         this.settings = settings;
     }

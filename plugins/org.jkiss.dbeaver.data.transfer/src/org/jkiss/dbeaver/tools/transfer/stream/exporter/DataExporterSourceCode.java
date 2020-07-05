@@ -71,7 +71,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        Map<Object, Object> properties = site.getProperties();
+        Map<String, Object> properties = site.getProperties();
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         language = ProgramLanguages.fromValue(CommonUtils.toString(properties.get(PROP_LANGUAGE)));
     }
