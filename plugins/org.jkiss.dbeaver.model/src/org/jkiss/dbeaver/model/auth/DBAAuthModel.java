@@ -29,13 +29,17 @@ import java.util.Properties;
 /**
  * Auth model.
  */
-public interface DBAAuthModel {
+public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
+
+    /**
+     * Initialize credentials from datasource configuration
+     */
+    void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) throws DBException;
 
     /**
      * Called before connection opening. May modify any connection configuration properties
      *
-     *
-     * @param dataSource
+     * @param dataSource  data source
      * @param configuration connection configuration. Can be modified, changes will affect only current connection initiation.
      * @param connProperties auth model specific options.
      * @throws DBException on error

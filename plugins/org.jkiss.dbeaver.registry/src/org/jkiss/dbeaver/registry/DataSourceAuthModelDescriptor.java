@@ -19,14 +19,15 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.List;
  * Auth model descriptor
  */
 public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor implements DBPAuthModelDescriptor {
-    private static final Log log = Log.getLog(DataSourceAuthModelDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceAuth"; //$NON-NLS-1$
 
@@ -44,12 +44,12 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String name;
     private final String description;
     private DBPImage icon;
-    private final DBPPropertyDescriptor[] authProperties;
+    private ObjectType credentialsType;
     private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
 
-    public DataSourceAuthModelDescriptor(IConfigurationElement config) {
+    DataSourceAuthModelDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
@@ -60,13 +60,11 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         if (this.icon == null) {
             this.icon = DBIcon.TREE_PACKAGE;
         }
+        this.credentialsType = new ObjectType(config, "credentialsClass");
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             this.replaces.add(dsConfig.getAttribute("model"));
         }
-
-        this.authProperties = PropertyDescriptor.extractPropertyGroups(config);
-
     }
 
     @Override
@@ -115,8 +113,19 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     }
 
     @Override
-    public DBPPropertyDescriptor[] getAuthProperties() {
-        return authProperties;
+    public DBAAuthCredentials createCredentials() {
+        try {
+            return credentialsType.createInstance(DBAAuthCredentials.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid credentials type " + credentialsType.getImplName(), e);
+        }
+    }
+
+    @Override
+    public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource) {
+        PropertyCollector propertyCollector = new PropertyCollector(dataSource, false);
+        propertyCollector.collectProperties();
+        return propertyCollector;
     }
 
     boolean appliesTo(DBPDriver driver) {
