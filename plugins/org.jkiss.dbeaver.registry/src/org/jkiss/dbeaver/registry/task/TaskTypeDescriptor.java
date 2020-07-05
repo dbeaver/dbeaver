@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.registry.DataSourceBindingDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -55,11 +54,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
 
         this.handlerImplType = new ObjectType(config, "handler");
 
-        List<DBPPropertyDescriptor> props = new ArrayList<>();
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            props.addAll(PropertyDescriptor.extractProperties(prop));
-        }
-        this.properties = props.toArray(new DBPPropertyDescriptor[0]);
+        this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
 
     @NotNull

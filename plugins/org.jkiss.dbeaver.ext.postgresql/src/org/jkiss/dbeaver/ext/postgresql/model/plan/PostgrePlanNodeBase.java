@@ -315,7 +315,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[attributes.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {

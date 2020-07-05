@@ -172,7 +172,7 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
 	DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
 	int index = 0;
 	for (Map.Entry<String, String> attr : nodeProps.entrySet()) {

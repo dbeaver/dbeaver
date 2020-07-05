@@ -25,9 +25,6 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * DataFormatterDescriptor
  */
@@ -40,7 +37,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     private String id;
     private String name;
     private String description;
-    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private DBPPropertyDescriptor[] properties;
     private DBDDataFormatterSample sample;
     private ObjectType formatterType;
 
@@ -52,11 +49,8 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         this.formatterType = new ObjectType(config.getAttribute("class"));
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.properties = PropertyDescriptor.extractPropertyGroups(config);
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
-        for (IConfigurationElement prop : propElements) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
-        }
         Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
         try {
             sample = (DBDDataFormatterSample)objectClass.getDeclaredConstructor().newInstance();
@@ -85,7 +79,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return sample;
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
+    public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 

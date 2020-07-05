@@ -119,7 +119,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         if (propertySource != null) {
             final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
             properties.clear();
-            for (Map.Entry<Object, Object> entry : propertySource.getProperties().entrySet()) {
+            for (Map.Entry<Object, Object> entry : propertySource.getPropertyValues().entrySet()) {
                 String propName = CommonUtils.toString(entry.getKey());
                 if (!propName.isEmpty()) {
                     properties.put(propName, CommonUtils.toString(entry.getValue()));

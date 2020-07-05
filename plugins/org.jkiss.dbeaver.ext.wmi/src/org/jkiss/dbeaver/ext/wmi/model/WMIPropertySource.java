@@ -57,7 +57,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2()
+    public DBPPropertyDescriptor[] getProperties()
     {
         try {
             WMIQualifiedObject qualifiedObject = getQualifiedObject();

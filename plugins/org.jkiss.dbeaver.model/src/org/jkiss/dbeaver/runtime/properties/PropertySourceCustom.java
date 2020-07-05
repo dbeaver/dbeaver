@@ -88,7 +88,7 @@ public class PropertySourceCustom implements DBPPropertySource {
         this.defaultValues.putAll(defaultValues);
     }
 
-    public Map<Object, Object> getProperties() {
+    public Map<Object, Object> getPropertyValues() {
         Map<Object, Object> allValues = new HashMap<>(originalValues);
         allValues.putAll(propValues);
         return allValues;
@@ -149,7 +149,7 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 

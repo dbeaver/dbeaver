@@ -266,7 +266,7 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         Map<String, TreeNode> categories = new LinkedHashMap<>();
         TreeNode lastCategory = null;
-        final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getPropertyDescriptors2());
+        final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getProperties());
         for (DBPPropertyDescriptor prop : props) {
             if (prop instanceof ObjectPropertyDescriptor) {
                 Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
@@ -307,7 +307,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 collection = (Collection<?>) propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
-                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
+                            for (DBPPropertyDescriptor pd : psc.getProperties()) {
                                 new TreeNode(propNode, psc, pd);
                             }
                         }
@@ -315,7 +315,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         Map<?,?> propertyValue = (Map<?, ?>) propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             PropertySourceMap psc = new PropertySourceMap(propertyValue);
-                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
+                            for (DBPPropertyDescriptor pd : psc.getProperties()) {
                                 new TreeNode(propNode, psc, pd);
                             }
                         }

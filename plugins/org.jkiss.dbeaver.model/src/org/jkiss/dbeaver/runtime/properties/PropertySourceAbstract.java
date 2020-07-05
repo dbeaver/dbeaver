@@ -106,10 +106,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return props.isEmpty();
     }
 
-    public DBPPropertyDescriptor[] getProperties() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
-    }
-
     public DBPPropertyDescriptor getProperty(String id) {
         for (DBPPropertyDescriptor prop : props) {
             if (prop.getId().equals(id)) {
@@ -136,7 +132,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 /*
@@ -325,7 +321,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
             if (editableValue instanceof DBPPropertySource) {
                 DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
-                DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
+                DBPPropertyDescriptor[] ownProperties = ownPropSource.getProperties();
                 if (!ArrayUtils.isEmpty(ownProperties)) {
                     for (DBPPropertyDescriptor prop : ownProperties) {
                         props.add(prop);

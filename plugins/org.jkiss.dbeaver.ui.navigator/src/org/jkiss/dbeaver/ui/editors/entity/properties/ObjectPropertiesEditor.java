@@ -742,7 +742,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             collector.collectProperties();
 
             boolean hasExpensive = false;
-            for (DBPPropertyDescriptor prop : collector.getPropertyDescriptors2()) {
+            for (DBPPropertyDescriptor prop : collector.getProperties()) {
                 if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isExpensive()) {
                     hasExpensive = true;
                     break;

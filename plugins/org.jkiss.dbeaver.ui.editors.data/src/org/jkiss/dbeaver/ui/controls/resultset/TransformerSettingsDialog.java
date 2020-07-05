@@ -332,7 +332,7 @@ class TransformerSettingsDialog extends BaseDialog {
     public void create() {
         super.create();
 
-        if (propertySource != null && propertySource.getPropertyDescriptors2().length == 0 && !selector) {
+        if (propertySource != null && propertySource.getProperties().length == 0 && !selector) {
             // No properties
             UIUtils.asyncExec(this::okPressed);
         }

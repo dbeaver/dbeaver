@@ -49,7 +49,7 @@ public final class DBInfoUtils {
         PropertyCollector collector = new PropertyCollector(targetObject, false);
         collector.collectProperties();
 
-        for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+        for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
             Object propValue = collector.getPropertyValue(null, descriptor.getId());
             if (propValue == null) {
                 continue;
