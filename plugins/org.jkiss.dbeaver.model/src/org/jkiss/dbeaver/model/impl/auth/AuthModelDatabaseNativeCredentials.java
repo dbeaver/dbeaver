@@ -28,7 +28,7 @@ public class AuthModelDatabaseNativeCredentials implements DBAAuthCredentials {
     private String userName;
     private String userPassword;
 
-    @Property
+    @Property(order = 1)
     public String getUserName() {
         return userName;
     }
@@ -37,7 +37,7 @@ public class AuthModelDatabaseNativeCredentials implements DBAAuthCredentials {
         this.userName = userName;
     }
 
-    @Property(password = true)
+    @Property(order = 2, password = true)
     public String getUserPassword() {
         return userPassword;
     }
