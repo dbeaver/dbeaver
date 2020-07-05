@@ -171,6 +171,7 @@ public class RegistryConstants {
     public static final String ATTR_UPDATE_DATE = "update-date"; //$NON-NLS-1$
     public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
+    public static final String ATTR_TEMPLATE = "template"; //$NON-NLS-1$
 
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
     public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$

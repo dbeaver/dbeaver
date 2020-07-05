@@ -85,6 +85,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isProvided();
 
+    boolean isTemplate();
+
     boolean isTemporary();
 
     // We do not implement DBPHiddenObject because it is not really hidden.

@@ -141,6 +141,7 @@ public class DataSourceDescriptor
     private volatile boolean connecting = false;
     private boolean temporary;
     private boolean hidden;
+    private boolean template;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
@@ -577,6 +578,15 @@ public class DataSourceDescriptor
     @Override
     public boolean isProvided() {
         return !origin.isDefault();
+    }
+
+    @Override
+    public boolean isTemplate() {
+        return template;
+    }
+
+    public void setTemplate(boolean template) {
+        this.template = template;
     }
 
     @Override
