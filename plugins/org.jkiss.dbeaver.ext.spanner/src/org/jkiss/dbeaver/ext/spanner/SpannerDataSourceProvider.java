@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.spanner;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.spanner.model.SpannerDataSource;
 import org.jkiss.dbeaver.ext.spanner.model.SpannerMetaModel;
@@ -30,9 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class SpannerDataSourceProvider extends GenericDataSourceProvider {
-
-    private static final Log log = Log.getLog(SpannerDataSourceProvider.class);
-    public static final String COMMUNITY_DRIVER_ID = "spanner_jdbc_community";
+    public static final String COMMUNITY_DRIVER_ID = "spanner_jdbc";
     public static final String OFFICIAL_DRIVER_ID = "spanner_jdbc_official";
 
     public SpannerDataSourceProvider()
@@ -56,7 +53,6 @@ public class SpannerDataSourceProvider extends GenericDataSourceProvider {
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-    	log.warn("connection using driver " + driver.getId());
         if ( COMMUNITY_DRIVER_ID.equals(driver.getId())) {
             return "jdbc:cloudspanner://localhost;";
         } else {
