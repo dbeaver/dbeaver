@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.charts.internal;
+package org.jkiss.dbeaver.ext.snowflake.model;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
-public class UIChartsMessages extends NLS {
-    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages"; //$NON-NLS-1$
+import java.util.Arrays;
 
+public class SnowflakeSQLDialect extends GenericSQLDialect {
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, UIChartsMessages.class);
+    public SnowflakeSQLDialect() {
+        super("Snowflake");
     }
 
-    private UIChartsMessages() {
+    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(dataSource, metaData);
+        addSQLKeywords(
+                Arrays.asList(
+                        "QUALIFY"
+                ));
     }
 }
