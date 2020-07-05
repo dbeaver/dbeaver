@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String name;
     private final String description;
     private DBPImage icon;
+    private final DBPPropertyDescriptor[] authProperties;
     private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
@@ -62,20 +65,27 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             this.replaces.add(dsConfig.getAttribute("model"));
         }
 
+        this.authProperties = PropertyDescriptor.extractPropertyGroups(config);
+
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public DBPImage getIcon() {
         return icon;
     }
@@ -102,6 +112,11 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             }
         }
         return instance;
+    }
+
+    @Override
+    public DBPPropertyDescriptor[] getAuthProperties() {
+        return authProperties;
     }
 
     boolean appliesTo(DBPDriver driver) {

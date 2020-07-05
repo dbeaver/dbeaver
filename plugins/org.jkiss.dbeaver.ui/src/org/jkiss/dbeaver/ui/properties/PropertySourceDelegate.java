@@ -44,7 +44,7 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        DBPPropertyDescriptor[] src = source.getPropertyDescriptors2();
+        DBPPropertyDescriptor[] src = source.getProperties();
         if (src == null) {
             return null;
         }

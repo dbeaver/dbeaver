@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
  * Data source provider descriptor
@@ -36,5 +37,7 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     boolean isApplicableTo(DBPDriver driver);
 
     DBAAuthModel getInstance();
+
+    DBPPropertyDescriptor[] getAuthProperties();
 
 }

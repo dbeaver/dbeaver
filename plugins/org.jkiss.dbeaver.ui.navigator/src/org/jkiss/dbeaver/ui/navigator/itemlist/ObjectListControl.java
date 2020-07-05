@@ -927,7 +927,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private class DefaultListPropertySource extends PropertySourceAbstract {
 
-        public DefaultListPropertySource() {
+        DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
         }
 
@@ -942,9 +942,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-            Set<DBPPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        public DBPPropertyDescriptor[] getProperties() {
+            return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
     }

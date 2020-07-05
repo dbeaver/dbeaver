@@ -349,7 +349,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (formatterDescriptor == null) {
             return;
         }
-        Map<Object, Object> props = propertySource.getProperties();
+        Map<Object, Object> props = propertySource.getPropertyValues();
         profileProperties.put(formatterDescriptor.getId(), props);
         reloadSample();
     }

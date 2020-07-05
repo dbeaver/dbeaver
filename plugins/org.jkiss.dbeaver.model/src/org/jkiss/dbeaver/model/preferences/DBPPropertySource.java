@@ -26,7 +26,7 @@ public interface DBPPropertySource {
 
     Object getEditableValue();
 
-    DBPPropertyDescriptor[] getPropertyDescriptors2();
+    DBPPropertyDescriptor[] getProperties();
 
     Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id);
 

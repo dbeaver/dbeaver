@@ -802,7 +802,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setModified(true);
 
         driver.setDriverParameters(CommonUtils.makeStringMap(driverPropertySource.getPropertiesWithDefaults()));
-        driver.setConnectionProperties(CommonUtils.makeStringMap(connectionPropertySource.getProperties()));
+        driver.setConnectionProperties(CommonUtils.makeStringMap(connectionPropertySource.getPropertyValues()));
 
         // Store client homes
         if (clientHomesPanel != null) {

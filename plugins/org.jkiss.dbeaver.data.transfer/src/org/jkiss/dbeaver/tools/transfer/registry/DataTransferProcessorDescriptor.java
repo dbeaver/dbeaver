@@ -73,11 +73,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
         }
 
-        List<DBPPropertyDescriptor> props = new ArrayList<>();
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            props.addAll(PropertyDescriptor.extractProperties(prop));
-        }
-        this.properties = props.toArray(new DBPPropertyDescriptor[0]);
+        this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
 
     public String getId() {

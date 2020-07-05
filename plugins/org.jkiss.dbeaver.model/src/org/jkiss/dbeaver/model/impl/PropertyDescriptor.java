@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;
@@ -88,6 +89,15 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private Object defaultValue;
     private Object[] validValues;
     private boolean editable;
+
+    public static DBPPropertyDescriptor[] extractPropertyGroups(IConfigurationElement config)
+    {
+        List<DBPPropertyDescriptor> props = new ArrayList<>();
+        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
+            props.addAll(PropertyDescriptor.extractProperties(prop));
+        }
+        return props.toArray(new DBPPropertyDescriptor[0]);
+    }
 
     public static List<DBPPropertyDescriptor> extractProperties(IConfigurationElement config)
     {

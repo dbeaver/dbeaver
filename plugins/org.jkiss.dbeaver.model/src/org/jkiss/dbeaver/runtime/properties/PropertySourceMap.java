@@ -52,7 +52,7 @@ public class PropertySourceMap implements DBPPropertySource {
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[props.size()]);
     }
 
