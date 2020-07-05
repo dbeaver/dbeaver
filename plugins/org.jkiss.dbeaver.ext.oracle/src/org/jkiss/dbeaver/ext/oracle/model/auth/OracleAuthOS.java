@@ -35,10 +35,19 @@ public class OracleAuthOS extends AuthModelDatabaseNative<OracleAuthOSCredential
 
     public static final String ID = "oracle_os";
 
+    @NotNull
     @Override
-    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull OracleAuthOSCredentials credentials) {
+    public OracleAuthOSCredentials createCredentials() {
+        return new OracleAuthOSCredentials();
+    }
+
+    @NotNull
+    @Override
+    public OracleAuthOSCredentials loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        OracleAuthOSCredentials credentials = super.loadCredentials(dataSource, configuration);
         credentials.setUserName(null);
         credentials.setUserPassword(null);
+        return credentials;
     }
 
     @Override

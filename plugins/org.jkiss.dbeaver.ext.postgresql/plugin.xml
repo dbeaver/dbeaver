@@ -572,8 +572,7 @@
             id="postgres_pgpass"
             label="PgPass"
             description="PostgreSQL PGPASS password"
-            class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass"
-            credentialsClass="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPassCredentials">
+            class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass">
             <datasource id="postgresql"/>
         </authModel>
     </extension>

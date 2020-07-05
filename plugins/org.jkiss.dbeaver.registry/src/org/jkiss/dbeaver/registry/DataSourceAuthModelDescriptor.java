@@ -44,7 +44,6 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String name;
     private final String description;
     private DBPImage icon;
-    private ObjectType credentialsType;
     private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
@@ -60,13 +59,13 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         if (this.icon == null) {
             this.icon = DBIcon.TREE_PACKAGE;
         }
-        this.credentialsType = new ObjectType(config, "credentialsClass");
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             this.replaces.add(dsConfig.getAttribute("model"));
         }
     }
 
+    @NotNull
     @Override
     public String getId() {
         return id;
@@ -88,6 +87,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         return icon;
     }
 
+    @NotNull
     @Override
     public String getImplClassName() {
         return implType.getImplName();
@@ -112,18 +112,13 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         return instance;
     }
 
-    @Override
-    public DBAAuthCredentials createCredentials() {
-        try {
-            return credentialsType.createInstance(DBAAuthCredentials.class);
-        } catch (Exception e) {
-            throw new IllegalStateException("Invalid credentials type " + credentialsType.getImplName(), e);
-        }
-    }
-
+    @NotNull
     @Override
     public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource) {
-        DBAAuthCredentials credentials = createCredentials();
+        DBAAuthModel instance = getInstance();
+        DBAAuthCredentials credentials = dataSource == null ?
+            instance.createCredentials() :
+            instance.loadCredentials(dataSource, dataSource.getConnectionConfiguration());
         PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
         propertyCollector.collectProperties();
         return propertyCollector;
