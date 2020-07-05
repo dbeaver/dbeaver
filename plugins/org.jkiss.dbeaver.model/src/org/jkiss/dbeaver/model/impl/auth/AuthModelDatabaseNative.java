@@ -42,8 +42,15 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
 
     public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
 
+    @NotNull
+    public CREDENTIALS createCredentials() {
+        return (CREDENTIALS) new AuthModelDatabaseNativeCredentials();
+    }
+
+    @NotNull
     @Override
-    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelDatabaseNativeCredentials credentials) {
+    public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        CREDENTIALS credentials = createCredentials();
         DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
         if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
             credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
@@ -56,6 +63,13 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         if (credentials.getUserPassword() == null && allowsEmptyPassword) {
             credentials.setUserPassword("");
         }
+        return credentials;
+    }
+
+    @Override
+    public void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) {
+        configuration.setUserName(credentials.getUserName());
+        configuration.setUserPassword(credentials.getUserPassword());
     }
 
     @Override

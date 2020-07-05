@@ -39,15 +39,23 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
 
     public static final String PGPASSFILE_ENV_VARIABLE = "PGPASSFILE";
 
+    @NotNull
     @Override
-    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelPgPassCredentials credentials) {
-        super.initCredentials(dataSource, configuration, credentials);
+    public AuthModelPgPassCredentials createCredentials() {
+        return new AuthModelPgPassCredentials();
+    }
+
+    @NotNull
+    @Override
+    public AuthModelPgPassCredentials loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        AuthModelPgPassCredentials credentials = super.loadCredentials(dataSource, configuration);
         try {
             loadPasswordFromPgPass(credentials, configuration);
             credentials.setParseError(null);
         } catch (DBException e) {
             credentials.setParseError(e);
         }
+        return credentials;
     }
 
     @Override

@@ -59,8 +59,7 @@
             id="native"
             label="Database Native"
             description="Database native authentication"
-            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative"
-            credentialsClass="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials">
+            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative">
 
             <propertyGroup label="Database user">
                 <property id="user" label="User" type="string"/>
