@@ -134,6 +134,17 @@ public class PropertySourceCollection implements DBPPropertySource {
             return false;
         }
 
+        @Nullable
+        @Override
+        public String[] getFeatures() {
+            return null;
+        }
+
+        @Override
+        public boolean hasFeature(@NotNull String feature) {
+            return false;
+        }
+
         @NotNull
         @Override
         public String getDisplayName() {

@@ -68,4 +68,9 @@ public interface DBPPropertyDescriptor {
     // TODO: remove "object" parameter
     boolean isEditable(Object object);
 
+    @Nullable
+    String[] getFeatures();
+
+    boolean hasFeature(@NotNull String feature);
+
 }

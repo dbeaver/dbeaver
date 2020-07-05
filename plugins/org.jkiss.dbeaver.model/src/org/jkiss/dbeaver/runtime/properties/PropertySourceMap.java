@@ -98,7 +98,7 @@ public class PropertySourceMap implements DBPPropertySource {
         private String name;
         private Object value;
 
-        public ItemPropertyDescriptor(String name, Object value) {
+        ItemPropertyDescriptor(String name, Object value) {
             this.name = name;
             this.value = value;
         }
@@ -130,6 +130,17 @@ public class PropertySourceMap implements DBPPropertySource {
 
         @Override
         public boolean isEditable(Object object) {
+            return false;
+        }
+
+        @Nullable
+        @Override
+        public String[] getFeatures() {
+            return null;
+        }
+
+        @Override
+        public boolean hasFeature(@NotNull String feature) {
             return false;
         }
 
