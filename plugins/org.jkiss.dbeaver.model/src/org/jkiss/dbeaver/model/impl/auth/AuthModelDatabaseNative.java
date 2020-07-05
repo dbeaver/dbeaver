@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -35,17 +36,18 @@ import java.util.Properties;
  *
  * No-op model. Leaves all configuration as is.
  */
-public class AuthModelDatabaseNative implements DBAAuthModel<AuthModelDatabaseNativeCredentials> {
+public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNativeCredentials> implements DBAAuthModel<CREDENTIALS> {
 
     public static final String ID = "native";
 
     public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
 
     @Override
-    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelDatabaseNativeCredentials credentials) throws DBException {
-        if (dataSource instanceof DBAUserCredentialsProvider) {
-            credentials.setUserName(((DBAUserCredentialsProvider) dataSource).getConnectionUserName(configuration));
-            credentials.setUserPassword(((DBAUserCredentialsProvider) dataSource).getConnectionUserPassword(configuration));
+    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelDatabaseNativeCredentials credentials) {
+        DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
+        if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
+            credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
+            credentials.setUserPassword(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));
         } else {
             credentials.setUserName(configuration.getUserName());
             credentials.setUserPassword(configuration.getUserPassword());
@@ -57,25 +59,14 @@ public class AuthModelDatabaseNative implements DBAAuthModel<AuthModelDatabaseNa
     }
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
-        String userName;
-        String userPassword;
-        if (dataSource instanceof DBAUserCredentialsProvider) {
-            userName = ((DBAUserCredentialsProvider) dataSource).getConnectionUserName(configuration);
-            userPassword = ((DBAUserCredentialsProvider) dataSource).getConnectionUserPassword(configuration);
-        } else {
-            userName = configuration.getUserName();
-            userPassword = configuration.getUserPassword();
-        }
-        boolean allowsEmptyPassword = dataSource.getContainer().getDriver().isAllowsEmptyPassword();
-        if (userPassword == null && allowsEmptyPassword) {
-            userPassword = "";
-        }
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+        String userName = credentials.getUserName();
+        String userPassword = credentials.getUserPassword();
 
         if (!CommonUtils.isEmpty(userName)) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
         }
-        if (!CommonUtils.isEmpty(userPassword) || (allowsEmptyPassword && !CommonUtils.isEmpty(userName))) {
+        if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
         }
     }

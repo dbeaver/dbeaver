@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -39,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
+public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBAUserCredentialsProvider, DBPNativeClientLocationManager {
 
     public OracleDataSourceProvider()
     {
@@ -183,5 +185,26 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         }
         return null;
     }
+
+    @Override
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+        String userName = connectionInfo.getUserName();
+        String authModelId = connectionInfo.getAuthModelId();
+        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
+            return userName;
+        }
+        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
+        if (!CommonUtils.isEmpty(userName) && userName.contains(" AS ")) {
+            return userName;
+        }
+        final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        return role == null ? userName : userName + " AS " + role;
+    }
+
+    @Override
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return connectionInfo.getUserPassword();
+    }
+
 
 }
