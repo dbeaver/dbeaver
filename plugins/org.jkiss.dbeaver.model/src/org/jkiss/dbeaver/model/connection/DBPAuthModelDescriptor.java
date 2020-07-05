@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
  * Data source provider descriptor
@@ -38,6 +40,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     DBAAuthModel getInstance();
 
-    DBPPropertyDescriptor[] getAuthProperties();
+    DBAAuthCredentials createCredentials();
+
+    DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource);
 
 }

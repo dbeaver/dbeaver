@@ -35,11 +35,26 @@ import java.util.Properties;
  *
  * No-op model. Leaves all configuration as is.
  */
-public class AuthModelDatabaseNative implements DBAAuthModel {
+public class AuthModelDatabaseNative implements DBAAuthModel<AuthModelDatabaseNativeCredentials> {
 
     public static final String ID = "native";
 
     public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
+
+    @Override
+    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelDatabaseNativeCredentials credentials) throws DBException {
+        if (dataSource instanceof DBAUserCredentialsProvider) {
+            credentials.setUserName(((DBAUserCredentialsProvider) dataSource).getConnectionUserName(configuration));
+            credentials.setUserPassword(((DBAUserCredentialsProvider) dataSource).getConnectionUserPassword(configuration));
+        } else {
+            credentials.setUserName(configuration.getUserName());
+            credentials.setUserPassword(configuration.getUserPassword());
+        }
+        boolean allowsEmptyPassword = dataSource.getDriver().isAllowsEmptyPassword();
+        if (credentials.getUserPassword() == null && allowsEmptyPassword) {
+            credentials.setUserPassword("");
+        }
+    }
 
     @Override
     public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
