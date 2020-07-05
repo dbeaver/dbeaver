@@ -46,4 +46,9 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="snowflake" parent="generic" class="org.jkiss.dbeaver.ext.snowflake.model.SnowflakeSQLDialect" label="Snowflake" description="Snowflake SQL dialect." icon="icons/snowflake_icon.png">
+        </dialect>
+    </extension>
+
 </plugin>
