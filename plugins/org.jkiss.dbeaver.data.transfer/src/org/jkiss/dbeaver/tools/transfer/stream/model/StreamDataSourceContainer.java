@@ -116,6 +116,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isTemplate() {
+        return false;
+    }
+
+    @Override
     public boolean isTemporary() {
         return true;
     }

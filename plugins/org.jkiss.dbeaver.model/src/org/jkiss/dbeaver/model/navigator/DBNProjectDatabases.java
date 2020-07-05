@@ -46,11 +46,15 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         super(parentNode);
         this.dataSourceRegistry = getModel().isGlobal() ?
             dataSourceRegistry :
-            dataSourceRegistry.createCopy(parentNode.getProject(), false);
+            dataSourceRegistry.createCopy(parentNode.getProject(), ds -> !ds.isTemplate());
         this.dataSourceRegistry.addDataSourceListener(this);
 
         List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
         for (DBPDataSourceContainer ds : projectDataSources) {
+            if (ds.isTemplate()) {
+                // Skip templates
+                continue;
+            }
             addDataSource(ds, false, false);
         }
     }
