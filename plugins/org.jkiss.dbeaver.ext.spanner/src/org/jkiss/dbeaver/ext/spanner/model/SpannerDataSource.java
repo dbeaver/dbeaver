@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class SpannerDataSource extends GenericDataSource {
-    private static final Log log = Log.getLog(SpannerDataSource.class);
 
     public SpannerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SpannerMetaModel metaModel)
         throws DBException
@@ -41,11 +39,9 @@ public class SpannerDataSource extends GenericDataSource {
 
     @Override
 	protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
-    	log.warn("creating connection url for " + connectionInfo.toString());
 		String url = super.getConnectionURL(connectionInfo);
 		if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
 			// Official driver.
-	    	log.warn(String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName()));
 			return String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName());
 		}
 		return url;
