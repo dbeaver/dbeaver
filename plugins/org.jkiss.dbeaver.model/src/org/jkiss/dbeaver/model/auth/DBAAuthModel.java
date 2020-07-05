@@ -34,17 +34,18 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
     /**
      * Initialize credentials from datasource configuration
      */
-    void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) throws DBException;
+    void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials);
 
     /**
      * Called before connection opening. May modify any connection configuration properties
      *
      * @param dataSource  data source
-     * @param configuration connection configuration. Can be modified, changes will affect only current connection initiation.
+     * @param credentials auth credentials
+     * @param configuration
      * @param connProperties auth model specific options.
      * @throws DBException on error
      */
-    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
+    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
 
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 

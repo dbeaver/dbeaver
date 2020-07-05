@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -30,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBAUserCredentialsProvider {
 
     private static Map<String,String> connectionsProps;
 
@@ -126,6 +127,27 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
             throws DBException
     {
         return new SQLServerDataSource(monitor, container);
+    }
+
+    //////////////////////////////////////////////////////////
+    // Windows authentication
+
+    @Override
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
+            return "";
+        } else {
+            return connectionInfo.getUserName();
+        }
+    }
+
+    @Override
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
+            return "";
+        } else {
+            return connectionInfo.getUserPassword();
+        }
     }
 
 }

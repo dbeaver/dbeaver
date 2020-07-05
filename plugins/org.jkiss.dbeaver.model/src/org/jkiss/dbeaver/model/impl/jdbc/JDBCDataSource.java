@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
@@ -163,7 +166,11 @@ public abstract class JDBCDataSource
             final Driver driverInstanceFinal = driverInstance;
 
             try {
-                authModel.initAuthentication(monitor, this, connectionInfo, connectProps);
+                DBPAuthModelDescriptor authModelDescriptor = connectionInfo.getAuthModelDescriptor();
+                DBAAuthCredentials credentials = authModelDescriptor == null ? new AuthModelDatabaseNativeCredentials() : authModelDescriptor.createCredentials();
+
+                authModel.initCredentials(getContainer(), connectionInfo, credentials);
+                authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
                 throw new DBCException("Authentication error", e);
             }

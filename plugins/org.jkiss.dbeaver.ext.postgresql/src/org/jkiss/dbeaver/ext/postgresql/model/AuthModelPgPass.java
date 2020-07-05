@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -32,23 +33,32 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.util.Properties;
 
-public class AuthModelPgPass extends AuthModelDatabaseNative {
+public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCredentials> {
 
     private static final Log log = Log.getLog(AuthModelPgPass.class);
+
     public static final String PGPASSFILE_ENV_VARIABLE = "PGPASSFILE";
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        loadPasswordFromPgPass(configuration, connProperties);
-        super.initAuthentication(monitor, dataSource, configuration, connProperties);
+    public void initCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull AuthModelPgPassCredentials credentials) {
+        super.initCredentials(dataSource, configuration, credentials);
+        try {
+            loadPasswordFromPgPass(credentials, configuration);
+            credentials.setParseError(null);
+        } catch (DBException e) {
+            credentials.setParseError(e);
+        }
     }
 
     @Override
-    public void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) {
-
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelPgPassCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+        if (credentials.getParseError() != null) {
+            throw new DBCException("Couldn't get password from PGPASS file", credentials.getParseError());
+        }
+        super.initAuthentication(monitor, dataSource, credentials, configuration, connectProps);
     }
 
-    private void loadPasswordFromPgPass(DBPConnectionConfiguration configuration, Properties connProperties) throws DBException {
+    private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPConnectionConfiguration configuration) throws DBException {
         String pgPassPath = System.getenv(PGPASSFILE_ENV_VARIABLE);
         if (CommonUtils.isEmpty(pgPassPath)) {
             if (RuntimeUtils.isPlatformWindows()) {
@@ -92,7 +102,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative {
                     if (!user.equals("*")) {
                         configuration.setUserName(user);
                     }
-                    configuration.setUserPassword(password);
+                    credentials.setUserPassword(password);
                     return;
                 }
             }

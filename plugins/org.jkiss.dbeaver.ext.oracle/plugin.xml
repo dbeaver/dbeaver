@@ -355,7 +355,8 @@
                 id="oracle_native"
                 label="Database Native"
                 description="Oracle native authentication (name/password)"
-                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative">
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative"
+                credentialsClass="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials">
             <replace model="native"/>
             <datasource id="oracle"/>
         </authModel>
@@ -363,7 +364,8 @@
                 id="oracle_os"
                 label="OS Authentication"
                 description="OS authentication allows Oracle to pass control of user authentication to the operating system."
-                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS"
+                credentialsClass="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials">
             <datasource id="oracle"/>
         </authModel>
     </extension>

@@ -27,13 +27,11 @@ import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -64,7 +62,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBAUserCredentialsProvider, DBPObjectStatisticsCollector, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -278,26 +276,6 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
 
     public OracleSchema getDefaultSchema() {
         return (OracleSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
-    }
-
-    @Override
-    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        String userName = connectionInfo.getUserName();
-        String authModelId = connectionInfo.getAuthModelId();
-        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
-            return userName;
-        }
-        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
-        if (!CommonUtils.isEmpty(userName) && userName.contains(" AS ")) {
-            return userName;
-        }
-        final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        return role == null ? userName : userName + " AS " + role;
-    }
-
-    @Override
-    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
-        return connectionInfo.getUserPassword();
     }
 
     @Override
