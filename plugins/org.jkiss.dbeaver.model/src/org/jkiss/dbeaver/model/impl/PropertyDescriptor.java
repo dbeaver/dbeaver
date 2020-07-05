@@ -258,7 +258,20 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     public String[] getFeatures() {
-        return features;
+        String[] allFeatures = features;
+        if (isRequired()) {
+            if (allFeatures == null) {
+                allFeatures = new String[] { "required" };
+            } else {
+                allFeatures = ArrayUtils.add(String.class, allFeatures, "required");
+            }
+        }
+        return allFeatures;
+    }
+
+    @Override
+    public boolean hasFeature(@NotNull String feature) {
+        return features != null && ArrayUtils.contains(features, feature);
     }
 
     @Override
