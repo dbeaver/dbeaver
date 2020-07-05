@@ -24,7 +24,6 @@
         <module>org.jkiss.dbeaver.ext.athena</module>
         <module>org.jkiss.dbeaver.ext.bigquery</module>
         <module>org.jkiss.dbeaver.ext.clickhouse</module>
-        <module>org.jkiss.dbeaver.ext.cloudspanner</module>
         <module>org.jkiss.dbeaver.ext.db2</module>
         <module>org.jkiss.dbeaver.ext.db2.zos</module>
         <module>org.jkiss.dbeaver.ext.db2.i</module>
@@ -80,7 +79,6 @@
 
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
-                <module>org.jkiss.dbeaver.ext.cloudspanner.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
 
