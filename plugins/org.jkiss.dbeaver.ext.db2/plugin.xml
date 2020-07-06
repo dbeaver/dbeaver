@@ -433,5 +433,16 @@
         <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="DB2 LUW" description="IBM DB2 LUW SQL dialect." icon="icons/db2_icon.png">
         </dialect>
     </extension>
-    
+
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="db2" name="DB2" description="DB2 database tasks" icon="icons/db2_icon.png"/>
+        <category id="db2Tool" parent="db2" name="Tools" description="DB2 database tools" icon="icons/db2_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="db2ToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ToolTableTruncate">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
+    </extension>
+
 </plugin>
