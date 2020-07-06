@@ -17,20 +17,16 @@
 package org.jkiss.dbeaver.ext.db2.tasks;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 import java.util.List;
 
 public class DB2ToolTableTruncate extends DB2ToolWithStatus<DB2TableBase, DB2ToolTableTruncateSettings>{
-    private static final Log log = Log.getLog(DB2ToolTableTruncate.class);
 
     @NotNull
     @Override

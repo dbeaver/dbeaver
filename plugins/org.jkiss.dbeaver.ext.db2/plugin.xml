@@ -443,6 +443,10 @@
             <datasource id="db2"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
         </task>
+        <task id="db2ToolTableReorgCheck" name="%tasks.reorgcheck.node.name" description="%tasks.reorgcheck.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgCheckTableTool">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
     </extension>
 
 </plugin>
