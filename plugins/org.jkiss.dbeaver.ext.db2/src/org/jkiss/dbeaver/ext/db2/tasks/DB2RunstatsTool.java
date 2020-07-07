@@ -27,30 +27,11 @@ public class DB2RunstatsTool extends DB2ToolWithStatus<DB2TableBase, DB2Runstats
         sql += object.getFullyQualifiedName(DBPEvaluationContext.DDL);
         sql += getLineSeparator();
         sql += settings.getColumnStat();
-        sql += getLineSeparator();
         sql += settings.getIndexStat();
 
         if (settings.isTableSampling()) {
-            sql += String.format("TABLESAMPLE SYSTEM(%d)", settings.getSamplePercent());
+            sql += String.format(" TABLESAMPLE SYSTEM(%d)", settings.getSamplePercent());
         }
-//        String tableAccess = settings.getTableAccess();
-//        String cleanupOption = settings.getCleanupOption();
-//
-//        if (tableAccess.equals()) {
-//            sb.append(" ALLOW NO ACCESS");
-//        }
-//        if (tableAccess.equals()) {
-//            sb.append(" ALLOW READ ACCESS");
-//        }
-//        if (tableAccess.equals()) {
-//            sb.append(" ALLOW WRITE ACCESS");
-//        }
-//        if (cleanupOption.equals()) {
-//            sb.append(" CLEANUP ALL");
-//        }
-//        if (cleanupOption.equals()) {
-//            sb.append(" CLEANUP PAGES");
-//        }
         sql += "')";
         queries.add(new SQLDatabasePersistAction(sql));
     }
