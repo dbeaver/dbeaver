@@ -34,7 +34,7 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
     @Property(viewable = true, editable = true, updatable = true, order = 1, listProvider = CheckStorageOptionListProvider.class)
     public String getStorageOption() {
         if (storageOption == null) {
-            return storageOptions[0];
+            storageOption = storageOptions[0];
         }
         return storageOption;
     }
@@ -46,7 +46,7 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
     @Property(viewable = true, editable = true, updatable = true, order = 2, listProvider = CheckTriggersOptionListProvider.class)
     public String getTriggerOption() {
         if (triggerOption == null) {
-            return triggerOptions[0];
+            triggerOption= triggerOptions[0];
         }
         return triggerOption;
     }
@@ -68,64 +68,6 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
         config.put("storage_option", storageOption);
         config.put("trigger_option", triggerOption);
     }
-//    private boolean isStorageDropping;
-//    private boolean isStorageReusing;
-//    private boolean isTriggersDeleting;
-//    private boolean isTriggersRestricting;
-//
-//    @Property(viewable = true, editable = true, updatable = true)
-//    public boolean isStorageDropping() {
-//        return isStorageDropping;
-//    }
-//
-//    public void setStorageDropping(boolean storageDropping) {
-//        isStorageDropping = storageDropping;
-//    }
-//
-//    @Property(viewable = true, editable = true, updatable = true)
-//    public boolean isStorageReusing() {
-//        return isStorageReusing;
-//    }
-//
-//    public void setStorageReusing(boolean storageReusing) {
-//        isStorageReusing = storageReusing;
-//    }
-//
-//    @Property(viewable = true, editable = true, updatable = true)
-//    public boolean isTriggersDeleting() {
-//        return isTriggersDeleting;
-//    }
-//
-//    public void setTriggersDeleting(boolean triggersDeleting) {
-//        isTriggersDeleting = triggersDeleting;
-//    }
-//
-//    @Property(viewable = true, editable = true, updatable = true)
-//    public boolean isTriggersRestricting() {
-//        return isTriggersRestricting;
-//    }
-//
-//    public void setTriggersRestricting(boolean triggersRestricting) {
-//        isTriggersRestricting = triggersRestricting;
-//    }
-//
-//    @Override
-//    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
-//        super.loadConfiguration(runnableContext, config);
-//        isStorageDropping = JSONUtils.getBoolean(config, "storage_dropping");
-//        isStorageReusing = JSONUtils.getBoolean(config, "storage_reusing");
-//        isTriggersDeleting = JSONUtils.getBoolean(config, "triggers_deleting");
-//        isTriggersRestricting = JSONUtils.getBoolean(config, "triggers_restricting");
-//    }
-//
-//    @Override
-//    public void saveConfiguration(Map<String, Object> config) {
-//        super.saveConfiguration(config);
-//        config.put("storage_dropping", isStorageDropping);
-//        config.put("storage_reusing", isStorageReusing);
-//        config.put("triggers_deleting", isTriggersDeleting);
-//        config.put("triggers_restricting", isTriggersRestricting);
-//    }
 
     public static class CheckStorageOptionListProvider implements IPropertyValueListProvider<DB2ToolTableTruncateSettings> {
 
@@ -150,10 +92,6 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
         @Override
         public Object[] getPossibleValues(DB2ToolTableTruncateSettings object) {
             return triggerOptions;
-//                    new String[] {
-//                    "IGNORE DELETE TRIGGERS",
-//                    "RESTRICT WHEN DELETE TRIGGERS"
-//            };
         }
     }
 }

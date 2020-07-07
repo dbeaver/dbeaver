@@ -28,22 +28,20 @@ import java.util.List;
 
 import static org.jkiss.utils.CommonUtils.getLineSeparator;
 
-public class DB2ToolTableTruncate extends DB2ToolWithStatus<DB2TableBase, DB2ToolTableTruncateSettings>{
+public class DB2ReorgIndexTool extends DB2ToolWithStatus<DB2TableBase, DB2ReorgIndexToolSettings>{
 
     @NotNull
     @Override
-    public DB2ToolTableTruncateSettings createToolSettings() {
-        return new DB2ToolTableTruncateSettings();
+    public DB2ReorgIndexToolSettings createToolSettings() {
+        return new DB2ReorgIndexToolSettings();
     }
 
     @Override
-    public void generateObjectQueries(DBCSession session, DB2ToolTableTruncateSettings settings, List<DBEPersistAction> queries, DB2TableBase object) throws DBCException {
-        String sql = "TRUNCATE TABLE";
-        sql += " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-        sql += " " + settings.getStorageOption();
-        sql += " " + settings.getTriggerOption();
-        sql += getLineSeparator() + "CONTINUE IDENTITY IMMEDIATE";
+    public void generateObjectQueries(DBCSession session, DB2ReorgIndexToolSettings settings, List<DBEPersistAction> queries, DB2TableBase object) throws DBCException {
+        String sql = "CALL SYSPROC.ADMIN_CMD(" + getLineSeparator() +
+                "'REORG INDEXES ALL FOR TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                settings.getTableAccess() + settings.getCleanupOption() +
+                "')";
         queries.add(new SQLDatabasePersistAction(sql));
     }
-
 }
