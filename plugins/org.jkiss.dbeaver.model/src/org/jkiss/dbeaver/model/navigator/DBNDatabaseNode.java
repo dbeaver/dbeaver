@@ -495,7 +495,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 !DBSDataType.class.isAssignableFrom(nodeChildClass) &&
                 !DBSSequence.class.isAssignableFrom(nodeChildClass) &&
                 !DBSPackage.class.isAssignableFrom(nodeChildClass)) ||
-            DBSEntityElement.class.isAssignableFrom(nodeChildClass);
+            DBSEntityAttribute.class.isAssignableFrom(nodeChildClass);
     }
 
     /**
