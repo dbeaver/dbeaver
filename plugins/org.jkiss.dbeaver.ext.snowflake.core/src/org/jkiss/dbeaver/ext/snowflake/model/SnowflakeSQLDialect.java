@@ -32,7 +32,8 @@ public class SnowflakeSQLDialect extends GenericSQLDialect {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeywords(
                 Arrays.asList(
-                        "QUALIFY"
+                        "QUALIFY",
+                        "ILIKE"
                 ));
     }
 }
