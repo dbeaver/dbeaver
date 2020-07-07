@@ -45,7 +45,7 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
             }
         }
 
-        configuration.setUserName(userName);
+        credentials.setUserName(userName);
         super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
