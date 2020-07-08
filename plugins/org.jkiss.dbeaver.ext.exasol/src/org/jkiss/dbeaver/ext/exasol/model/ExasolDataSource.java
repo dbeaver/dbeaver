@@ -940,6 +940,23 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
         }
         return super.createQueryTransformer(type);
     }
+    
+    @Override
+    public ErrorType discoverErrorType(Throwable error) {
+    	// exasol has no sqlstates 
+    	String errorMessage = error.getMessage();
+    	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") )
+    	{
+    		return ErrorType.CONNECTION_LOST;
+    	} else if (errorMessage.contains("Feature not supported")) {
+			return ErrorType.FEATURE_UNSUPPORTED;
+		} else if (errorMessage.contains("GlobalTransactionRollback")) {
+			return ErrorType.TRANSACTION_ABORTED;
+		} else if (errorMessage.contains("insufficient privileges")) {
+			return ErrorType.PERMISSION_DENIED;
+		}
+    	return super.discoverErrorType(error);
+    }
 
 
 }
