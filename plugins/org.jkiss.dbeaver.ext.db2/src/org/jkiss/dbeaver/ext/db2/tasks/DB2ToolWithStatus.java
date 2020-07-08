@@ -47,7 +47,7 @@ public abstract class DB2ToolWithStatus <OBJECT_TYPE extends DBSObject, SETTINGS
                 warning = warning.getNextWarning();
             }
             if (warnNum == 0) {
-                statusList.add(new ToolStatus(object, "Done"));
+                statusList.add(new ToolStatus(object, "Done")); //$NON-NLS-1$
             }
         } catch (SQLException e) {
             // ignore

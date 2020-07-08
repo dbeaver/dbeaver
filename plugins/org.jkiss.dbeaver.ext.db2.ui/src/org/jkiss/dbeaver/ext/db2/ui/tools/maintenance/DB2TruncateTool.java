@@ -42,14 +42,5 @@ public class DB2TruncateTool implements IUserInterfaceTool {
                 DB2SQLTasks.TASK_TABLE_TRUNCATE,
                 new StructuredSelection(objects.toArray()));
     }
-//        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
-//        if (!tables.isEmpty()) {
-//            DB2TruncateDialog dialog = new DB2TruncateDialog(activePart.getSite(), tables);
-//            dialog.open();
-//
-//            // Shell shell = dialog.getShell();
-//            // shell.setSize(shell.computeSize(800, 800));
-//            // shell.layout();
-//        }
-//    }
+
 }

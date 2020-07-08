@@ -46,13 +46,4 @@ public class DB2RunstatsTool implements IUserInterfaceTool {
                 new StructuredSelection(objects.toArray()));
     }
 
-//    @Override
-//    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-//    {
-//        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
-//        if (!tables.isEmpty()) {
-//            DB2RunstatsDialog dialog = new DB2RunstatsDialog(activePart.getSite(), tables);
-//            dialog.open();
-//        }
-//    }
 }

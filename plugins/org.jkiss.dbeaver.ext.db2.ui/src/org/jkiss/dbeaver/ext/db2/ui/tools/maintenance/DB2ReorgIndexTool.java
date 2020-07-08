@@ -43,13 +43,4 @@ public class DB2ReorgIndexTool implements IUserInterfaceTool {
                 new StructuredSelection(objects.toArray()));
     }
 
-//    @Override
-//    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-//    {
-//        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
-//        if (!tables.isEmpty()) {
-//            DB2ReorgIndexDialog dialog = new DB2ReorgIndexDialog(activePart.getSite(), tables);
-//            dialog.open();
-//        }
-//    }
 }

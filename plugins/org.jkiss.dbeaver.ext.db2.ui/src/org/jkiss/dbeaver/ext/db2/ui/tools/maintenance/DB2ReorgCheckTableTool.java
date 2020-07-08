@@ -42,13 +42,5 @@ public class DB2ReorgCheckTableTool implements IUserInterfaceTool {
                 DB2SQLTasks.TASK_TABLE_REORG_CHECK,
                 new StructuredSelection(objects.toArray()));
     }
-//    @Override
-//    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-//    {
-//        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
-//        if (!tables.isEmpty()) {
-//            DB2ReorgCheckTableDialog dialog = new DB2ReorgCheckTableDialog(activePart.getSite(), tables);
-//            dialog.open();
-//        }
-//    }
+
 }
