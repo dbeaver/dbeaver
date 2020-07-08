@@ -23,6 +23,21 @@ import org.eclipse.osgi.util.NLS;
 public class DB2Messages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.db2.DB2Resources"; //$NON-NLS-1$
 
+    public static String dialog_explain_no_tables;
+    public static String dialog_explain_no_tables_found_ex;
+
+    public static String no_ddl_for_system_tables;
+    public static String no_ddl_for_nicknames;
+    public static String no_ddl_for_nonsql_routines;
+    public static String no_ddl_for_spaces_in_name;
+
+    public static String dialog_table_tools_runstats_cols_all;
+    public static String dialog_table_tools_runstats_cols_all_and_distribution;
+    public static String dialog_table_tools_runstats_cols_no;
+    public static String dialog_table_tools_runstats_indexes_detailed;
+    public static String dialog_table_tools_runstats_indexes_all;
+    public static String dialog_table_tools_runstats_indexes_no;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DB2Messages.class);
@@ -32,13 +47,4 @@ public class DB2Messages extends NLS {
     {
         // Pure Utility Class
     }
-
-    public static String dialog_explain_no_tables;
-    public static String dialog_explain_no_tables_found_ex;
-
-    public static String no_ddl_for_system_tables;
-    public static String no_ddl_for_nicknames;
-    public static String no_ddl_for_nonsql_routines;
-    public static String no_ddl_for_spaces_in_name;
-
 }

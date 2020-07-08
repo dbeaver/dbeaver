@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import java.util.Map;
 
 public class DB2ReorgIndexToolSettings extends SQLToolExecuteSettings<DB2TableBase> {
-    private final static String[] tableAccesses = new String[] {"", " ALLOW NO ACCESS", " ALLOW READ ACCESS", " ALLOW WRITE ACCESS"};
-    private final static String[] cleanupOptions = new String[] {"", " CLEANUP ALL", " CLEANUP PAGES"};
+    private final static String[] tableAccesses = new String[] {"", " ALLOW NO ACCESS", " ALLOW READ ACCESS", " ALLOW WRITE ACCESS"}; //$NON-NLS-1$
+    private final static String[] cleanupOptions = new String[] {"", " CLEANUP ALL", " CLEANUP PAGES"}; //$NON-NLS-1$
     private String tableAccess;
     private String cleanupOption;
 
@@ -58,15 +58,15 @@ public class DB2ReorgIndexToolSettings extends SQLToolExecuteSettings<DB2TableBa
     @Override
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         super.loadConfiguration(runnableContext, config);
-        tableAccess = JSONUtils.getString(config, "table_access");
-        cleanupOption = JSONUtils.getString(config, "option");
+        tableAccess = JSONUtils.getString(config, "table_access"); //$NON-NLS-1$
+        cleanupOption = JSONUtils.getString(config, "option"); //$NON-NLS-1$
     }
 
     @Override
     public void saveConfiguration(Map<String, Object> config) {
         super.saveConfiguration(config);
-        config.put("table_access", tableAccess);
-        config.put("option", cleanupOption);
+        config.put("table_access", tableAccess); //$NON-NLS-1$
+        config.put("option", cleanupOption); //$NON-NLS-1$
     }
     
     public static class CheckStorageOptionListProvider implements IPropertyValueListProvider<DB2ReorgIndexToolSettings> {

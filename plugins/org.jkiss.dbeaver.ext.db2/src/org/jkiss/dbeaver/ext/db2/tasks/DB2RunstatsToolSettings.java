@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.db2.tasks;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
@@ -11,10 +27,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
+import static org.jkiss.dbeaver.ext.db2.tasks.DB2RunstatsOptions.*;
+
 public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase> {
 
-    private final static String[] columnStats = new String[] {"ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS", "ON ALL COLUMNS", ""};
-    private final static String[] indexStats = new String[] {"AND SAMPLED DETAILED INDEXES ALL", "AND INDEXES ALL", ""};
+    private final static String[] columnStats = new String[] {COLS_ALL.getDesc(), COLS_ALL_AND_DISTRIBUTION.getDesc(), COLS_NO.getDesc()};
+    private final static String[] indexStats = new String[] {INDEXES_DETAILED.getDesc(), INDEXES_ALL.getDesc(), INDEXES_NO.getDesc()};
     private String columnStat;
     private String indexStat;
     private boolean isTableSampling;
@@ -23,7 +41,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
     @Property(viewable = true, editable = true, updatable = true, order = 1, listProvider = DB2RunstatsToolSettings.CheckStorageOptionListProvider.class)
     public String getColumnStat() {
         if (columnStat == null) {
-            columnStat = columnStats[0];
+            columnStat = DB2RunstatsOptions.getOption(columnStats[0]).getDesc();
         }
         return columnStat;
     }
@@ -35,7 +53,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
     @Property(viewable = true, editable = true, updatable = true, order = 2, listProvider = DB2RunstatsToolSettings.CheckTriggersOptionListProvider.class)
     public String getIndexStat() {
         if (indexStat == null) {
-            indexStat = indexStats[0];
+            indexStat = DB2RunstatsOptions.getOption(indexStats[0]).getDesc();
         }
         return indexStat;
     }
@@ -53,7 +71,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         isTableSampling = tableSampling;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 4, valueValidator = DB2RunstatsToolSettings.DB2StatisticPercentLimiter.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 4)
     public int getSamplePercent() {
         return samplePercent;
     }
@@ -65,19 +83,19 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
     @Override
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         super.loadConfiguration(runnableContext, config);
-        columnStat = JSONUtils.getString(config, "column_stat");
-        indexStat = JSONUtils.getString(config, "index_stat");
-        isTableSampling = JSONUtils.getBoolean(config, "is_table_sampling");
-        samplePercent = JSONUtils.getInteger(config, "sample_percent");
+        columnStat = JSONUtils.getString(config, "column_stat"); //$NON-NLS-1$
+        indexStat = JSONUtils.getString(config, "index_stat"); //$NON-NLS-1$
+        isTableSampling = JSONUtils.getBoolean(config, "is_table_sampling"); //$NON-NLS-1$
+        samplePercent = JSONUtils.getInteger(config, "sample_percent"); //$NON-NLS-1$
     }
 
     @Override
     public void saveConfiguration(Map<String, Object> config) {
         super.saveConfiguration(config);
-        config.put("column_stat", columnStat);
-        config.put("index_stat", indexStat);
-        config.put("is_table_sampling", isTableSampling);
-        config.put("sample_percent", samplePercent);
+        config.put("column_stat", columnStat); //$NON-NLS-1$
+        config.put("index_stat", indexStat); //$NON-NLS-1$
+        config.put("is_table_sampling", isTableSampling); //$NON-NLS-1$
+        config.put("sample_percent", samplePercent); //$NON-NLS-1$
     }
 
     public static class CheckStorageOptionListProvider implements IPropertyValueListProvider<DB2RunstatsToolSettings> {
@@ -106,10 +124,10 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         }
     }
 
-    private class DB2StatisticPercentLimiter implements IPropertyValueValidator<DBSObject, Integer> {
+    public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2TableBase, Integer> {
 
         @Override
-        public boolean isValidValue(DBSObject object, Integer value) throws IllegalArgumentException {
+        public boolean isValidValue(DB2TableBase object, Integer value) throws IllegalArgumentException {
             return 1 <= value && value <= 100;
         }
     }

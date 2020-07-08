@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ext.db2.tasks;
 
 public class DB2SQLTasks {
 
-    public static final String TASK_TABLE_TRUNCATE = "db2ToolTableTruncate";
-    public static final String TASK_TABLE_REORG_CHECK = "db2ToolTableReorgCheck";
-    public static final String TASK_TABLE_REORG_INDEX = "db2ToolTableReorgIndex";
-    public static final String TASK_TABLE_RUNSTATS = "db2ToolTableRunstats";
+    public static final String TASK_TABLE_TRUNCATE = "db2ToolTableTruncate"; //$NON-NLS-1$
+    public static final String TASK_TABLE_REORG_CHECK = "db2ToolTableReorgCheck"; //$NON-NLS-1$
+    public static final String TASK_TABLE_REORG_INDEX = "db2ToolTableReorgIndex"; //$NON-NLS-1$
+    public static final String TASK_TABLE_RUNSTATS = "db2ToolTableRunstats"; //$NON-NLS-1$
 
 }

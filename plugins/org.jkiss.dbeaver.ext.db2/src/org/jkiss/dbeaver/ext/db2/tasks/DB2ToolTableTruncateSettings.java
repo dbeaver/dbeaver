@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import java.util.Map;
 
 public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2TableBase> {
-    private final static String[] storageOptions = new String[] {"DROP STORAGE", "REUSE STORAGE"};
-    private final static String[] triggerOptions = new String[] {"IGNORE DELETE TRIGGERS", "RESTRICT WHEN DELETE TRIGGERS"};
+    private final static String[] storageOptions = new String[] {"DROP STORAGE", "REUSE STORAGE"}; //$NON-NLS-1$
+    private final static String[] triggerOptions = new String[] {"IGNORE DELETE TRIGGERS", "RESTRICT WHEN DELETE TRIGGERS"}; //$NON-NLS-1$
     private String storageOption;
     private String triggerOption;
 
@@ -58,15 +58,15 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
     @Override
     public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
         super.loadConfiguration(runnableContext, config);
-        storageOption = JSONUtils.getString(config, "storage_option");
-        triggerOption = JSONUtils.getString(config, "trigger_option");
+        storageOption = JSONUtils.getString(config, "storage_option"); //$NON-NLS-1$
+        triggerOption = JSONUtils.getString(config, "trigger_option"); //$NON-NLS-1$
     }
 
     @Override
     public void saveConfiguration(Map<String, Object> config) {
         super.saveConfiguration(config);
-        config.put("storage_option", storageOption);
-        config.put("trigger_option", triggerOption);
+        config.put("storage_option", storageOption); //$NON-NLS-1$
+        config.put("trigger_option", triggerOption); //$NON-NLS-1$
     }
 
     public static class CheckStorageOptionListProvider implements IPropertyValueListProvider<DB2ToolTableTruncateSettings> {
