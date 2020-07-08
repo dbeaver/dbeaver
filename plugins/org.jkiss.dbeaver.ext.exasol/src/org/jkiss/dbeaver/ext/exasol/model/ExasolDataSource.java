@@ -945,7 +945,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     public ErrorType discoverErrorType(Throwable error) {
     	// exasol has no sqlstates 
     	String errorMessage = error.getMessage();
-    	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") )
+    	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
     	{
     		return ErrorType.CONNECTION_LOST;
     	} else if (errorMessage.contains("Feature not supported")) {
