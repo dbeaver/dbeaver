@@ -127,7 +127,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
 
         @Override
         public boolean isValidValue(DB2RunstatsToolSettings object, Object value) throws IllegalArgumentException {
-            int i = 0;
+            int i = -1;
             if (value instanceof String) {
                 i = Integer.parseInt((String) value);
             }
