@@ -36,10 +36,10 @@ public enum DB2RunstatsOptions {
         this.ddlString = ddl;
     }
 
-    public static DB2RunstatsOptions getOption(String desc){
-        if (desc != null) {
+    public static DB2RunstatsOptions getOption(String description){
+        if (description != null) {
             for (DB2RunstatsOptions option : DB2RunstatsOptions.values()) {
-                if (desc.equals(option.desc)){
+                if (option.desc.equals(description)){
                     return option;
                 }
             }
