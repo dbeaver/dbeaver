@@ -70,7 +70,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         isTableSampling = tableSampling;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 4) // , valueValidator = DB2StatisticPercentLimiter.class
+    @Property(viewable = true, editable = true, updatable = true, order = 4, valueValidator = DB2StatisticPercentLimiter.class)
     public int getSamplePercent() {
         return samplePercent;
     }
@@ -123,11 +123,15 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         }
     }
 
-    public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2RunstatsToolSettings, Integer> {
+    public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2RunstatsToolSettings, Object> {
 
         @Override
-        public boolean isValidValue(DB2RunstatsToolSettings object, Integer value) throws IllegalArgumentException {
-            return 0 <= value && value <= 100; //change to 1
+        public boolean isValidValue(DB2RunstatsToolSettings object, Object value) throws IllegalArgumentException {
+            int i = 0;
+            if (value instanceof String) {
+                i = Integer.parseInt((String) value);
+            }
+            return 0 <= i && i <= 100;
         }
     }
 
