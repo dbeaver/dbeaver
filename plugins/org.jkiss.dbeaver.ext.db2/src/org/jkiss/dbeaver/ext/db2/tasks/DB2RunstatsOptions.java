@@ -21,13 +21,13 @@ import org.jkiss.dbeaver.ext.db2.DB2Messages;
 
 public enum DB2RunstatsOptions {
 
-    COLS_ALL_AND_DISTRIBUTION(DB2Messages.dialog_table_tools_runstats_cols_all_and_distribution,"ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS"), //$NON-NLS-1$
-    COLS_ALL(DB2Messages.dialog_table_tools_runstats_cols_all, "ON ALL COLUMNS"), //$NON-NLS-1$
-    COLS_NO(DB2Messages.dialog_table_tools_runstats_cols_no, ""), //$NON-NLS-1$
+    colsAllAndDistribution(DB2Messages.dialog_table_tools_runstats_cols_all_and_distribution,"ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS"), //$NON-NLS-1$
+    colsAll(DB2Messages.dialog_table_tools_runstats_cols_all, "ON ALL COLUMNS"), //$NON-NLS-1$
+    colsNo(DB2Messages.dialog_table_tools_runstats_cols_no, ""), //$NON-NLS-1$
 
-    INDEXES_DETAILED(DB2Messages.dialog_table_tools_runstats_indexes_detailed, "AND SAMPLED DETAILED INDEXES ALL"), //$NON-NLS-1$
-    INDEXES_ALL(DB2Messages.dialog_table_tools_runstats_indexes_all, "AND INDEXES ALL"), //$NON-NLS-1$
-    INDEXES_NO(DB2Messages.dialog_table_tools_runstats_indexes_no, "");  //$NON-NLS-1$
+    indexesDetailed(DB2Messages.dialog_table_tools_runstats_indexes_detailed, "AND SAMPLED DETAILED INDEXES ALL"), //$NON-NLS-1$
+    indexesAll(DB2Messages.dialog_table_tools_runstats_indexes_all, "AND INDEXES ALL"), //$NON-NLS-1$
+    indexesNo(DB2Messages.dialog_table_tools_runstats_indexes_no, "");  //$NON-NLS-1$
 
     private final String desc, ddlString;
 
@@ -38,23 +38,10 @@ public enum DB2RunstatsOptions {
 
     public static DB2RunstatsOptions getOption(String desc){
         if (desc != null) {
-            if (desc.equals(COLS_ALL_AND_DISTRIBUTION.desc)){
-                return COLS_ALL_AND_DISTRIBUTION;
-            }
-            if (desc.equals(COLS_ALL.desc)){
-                return COLS_ALL;
-            }
-            if (desc.equals(COLS_NO.desc)){
-                return COLS_NO;
-            }
-            if (desc.equals(INDEXES_DETAILED.desc)){
-                return INDEXES_DETAILED;
-            }
-            if (desc.equals(INDEXES_ALL.desc)){
-                return INDEXES_ALL;
-            }
-            if (desc.equals(INDEXES_NO.desc)){
-                return INDEXES_NO;
+            for (DB2RunstatsOptions option : DB2RunstatsOptions.values()) {
+                if (desc.equals(option.desc)){
+                    return option;
+                }
             }
         }
         return null;

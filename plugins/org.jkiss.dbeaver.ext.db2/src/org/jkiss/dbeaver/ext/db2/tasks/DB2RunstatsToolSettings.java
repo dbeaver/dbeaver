@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
@@ -31,8 +30,8 @@ import static org.jkiss.dbeaver.ext.db2.tasks.DB2RunstatsOptions.*;
 
 public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase> {
 
-    private final static String[] columnStats = new String[] {COLS_ALL.getDesc(), COLS_ALL_AND_DISTRIBUTION.getDesc(), COLS_NO.getDesc()};
-    private final static String[] indexStats = new String[] {INDEXES_DETAILED.getDesc(), INDEXES_ALL.getDesc(), INDEXES_NO.getDesc()};
+    private final static String[] columnStats = new String[] {colsAll.getDesc(), colsAllAndDistribution.getDesc(), colsNo.getDesc()};
+    private final static String[] indexStats = new String[] {indexesDetailed.getDesc(), indexesAll.getDesc(), indexesNo.getDesc()};
     private String columnStat;
     private String indexStat;
     private boolean isTableSampling;
@@ -71,7 +70,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         isTableSampling = tableSampling;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 4)
+    @Property(viewable = true, editable = true, updatable = true, order = 4) // , valueValidator = DB2StatisticPercentLimiter.class
     public int getSamplePercent() {
         return samplePercent;
     }
@@ -124,11 +123,11 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
         }
     }
 
-    public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2TableBase, Integer> {
+    public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2RunstatsToolSettings, Integer> {
 
         @Override
-        public boolean isValidValue(DB2TableBase object, Integer value) throws IllegalArgumentException {
-            return 1 <= value && value <= 100;
+        public boolean isValidValue(DB2RunstatsToolSettings object, Integer value) throws IllegalArgumentException {
+            return 0 <= value && value <= 100; //change to 1
         }
     }
 
