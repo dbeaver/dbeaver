@@ -49,11 +49,12 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
         config.put("sample_percent", samplePercent);
     }
 
-    private class OracleStatisticPercentLimiter implements IPropertyValueValidator<DBSObject, Integer> {
+    public static class OracleStatisticPercentLimiter implements IPropertyValueValidator<OracleToolTableGatherStatisticsSettings, Object> {
 
         @Override
-        public boolean isValidValue(DBSObject object, Integer value) throws IllegalArgumentException {
-            return 1 <= value && value <= 100;
+        public boolean isValidValue(OracleToolTableGatherStatisticsSettings object, Object value) throws IllegalArgumentException {
+            int valueInt = Integer.valueOf(value.toString());
+            return 1 <= valueInt && valueInt <= 100;
         }
     }
 }
