@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ui.editors.session,
- org.jkiss.dbeaver.ui.editors.base
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.navigator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
