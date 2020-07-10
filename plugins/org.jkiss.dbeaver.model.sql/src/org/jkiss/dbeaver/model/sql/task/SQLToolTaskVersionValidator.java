@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.model.sql.task;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
-import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 
