@@ -25,16 +25,18 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
 import java.util.Map;
 
+import static org.jkiss.dbeaver.ext.db2.tasks.DB2TableTruncateOptions.*;
+
 public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2TableBase> {
-    private final static String[] storageOptions = new String[] {"DROP STORAGE", "REUSE STORAGE"}; //$NON-NLS-1$
-    private final static String[] triggerOptions = new String[] {"IGNORE DELETE TRIGGERS", "RESTRICT WHEN DELETE TRIGGERS"}; //$NON-NLS-1$
+    private final static String[] storageOptions = new String[] {dropStorage.getDesc(), reuseStorage.getDesc()};
+    private final static String[] triggerOptions = new String[] {ignoreDeleteTriggers.getDesc(), restrictWhenDeleteTriggers.getDesc()};
     private String storageOption;
     private String triggerOption;
 
     @Property(viewable = true, editable = true, updatable = true, order = 1, listProvider = CheckStorageOptionListProvider.class)
     public String getStorageOption() {
         if (storageOption == null) {
-            storageOption = storageOptions[0];
+            storageOption = DB2TableTruncateOptions.getOption(storageOptions[0]).getDesc();
         }
         return storageOption;
     }
@@ -46,7 +48,7 @@ public class DB2ToolTableTruncateSettings extends SQLToolExecuteSettings<DB2Tabl
     @Property(viewable = true, editable = true, updatable = true, order = 2, listProvider = CheckTriggersOptionListProvider.class)
     public String getTriggerOption() {
         if (triggerOption == null) {
-            triggerOption= triggerOptions[0];
+            triggerOption = DB2TableTruncateOptions.getOption(triggerOptions[0]).getDesc();
         }
         return triggerOption;
     }

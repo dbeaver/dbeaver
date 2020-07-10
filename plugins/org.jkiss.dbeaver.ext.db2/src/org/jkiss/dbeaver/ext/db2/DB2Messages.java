@@ -38,6 +38,11 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_runstats_indexes_all;
     public static String dialog_table_tools_runstats_indexes_no;
 
+    public static String dialog_table_tools_truncate_drop_storage;
+    public static String dialog_table_tools_truncate_reuse_storage;
+    public static String dialog_table_tools_truncate_ignore_delete_triggers;
+    public static String dialog_table_tools_truncate_restrict_when_delete_triggers;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DB2Messages.class);
