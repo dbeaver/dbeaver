@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ui;
 
 /**
- * IColumnTextProvider
+ * IColumnValueProvider
  */
-public interface IColumnTextProvider<ELEMENT>
+public interface IColumnValueProvider<ELEMENT, VALUE_TYPE>
 {
-    String getText(ELEMENT element);
+    VALUE_TYPE getValue(ELEMENT element);
 }
