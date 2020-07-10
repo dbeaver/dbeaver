@@ -42,12 +42,7 @@ public class OracleToolsTableGatherStatistics extends SQLToolExecuteHandler<DBSO
                     " OWNNAME => '" + DBUtils.getQuotedIdentifier(table.getSchema()) + "',\n" +
                     " TABNAME => '" + DBUtils.getQuotedIdentifier(table) + "',\n" +
                     " estimate_percent => ";
-            if(0 != percent){
-                sql += percent;
-            }
-            else{
-                sql += 1;
-            }
+            sql += percent;
             sql += " \n );\n END;";
             queries.add(new SQLDatabasePersistAction(sql));
         }

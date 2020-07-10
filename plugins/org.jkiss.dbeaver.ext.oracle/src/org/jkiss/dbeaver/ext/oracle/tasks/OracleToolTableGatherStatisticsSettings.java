@@ -31,6 +31,9 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
 
     @Property(viewable = true, editable = true, updatable = true, valueValidator = OracleStatisticPercentLimiter.class)
     public int getSamplePercent() {
+        if (samplePercent == 0) {
+            return 1;
+        }
         return samplePercent;
     }
 
