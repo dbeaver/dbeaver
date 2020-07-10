@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver MySQL UI Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mysql.ui;singleton:=true
-Bundle-Version: 1.0.28.qualifier
-Bundle-Release-Date: 20200706
+Bundle-Version: 1.0.29.qualifier
+Bundle-Release-Date: 20200720
 Bundle-Activator: org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

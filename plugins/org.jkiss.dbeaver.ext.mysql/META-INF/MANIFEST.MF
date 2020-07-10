@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver MySQL Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mysql;singleton:=true
-Bundle-Version: 2.1.121.qualifier
-Bundle-Release-Date: 20200706
+Bundle-Version: 2.1.122.qualifier
+Bundle-Release-Date: 20200720
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
