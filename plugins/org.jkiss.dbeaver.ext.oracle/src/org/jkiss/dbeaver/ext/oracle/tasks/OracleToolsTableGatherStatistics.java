@@ -1,8 +1,6 @@
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,12 +42,7 @@ public class OracleToolsTableGatherStatistics extends SQLToolExecuteHandler<DBSO
                     " OWNNAME => '" + DBUtils.getQuotedIdentifier(table.getSchema()) + "',\n" +
                     " TABNAME => '" + DBUtils.getQuotedIdentifier(table) + "',\n" +
                     " estimate_percent => ";
-            if(1 <= percent && percent <= 100){
-                sql += percent;
-            }
-            else{
-                sql += 1;
-            }
+            sql += percent;
             sql += " \n );\n END;";
             queries.add(new SQLDatabasePersistAction(sql));
         }
