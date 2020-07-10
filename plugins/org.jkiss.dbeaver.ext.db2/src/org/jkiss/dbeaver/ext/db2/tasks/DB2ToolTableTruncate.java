@@ -40,8 +40,8 @@ public class DB2ToolTableTruncate extends DB2ToolWithStatus<DB2TableBase, DB2Too
     public void generateObjectQueries(DBCSession session, DB2ToolTableTruncateSettings settings, List<DBEPersistAction> queries, DB2TableBase object) throws DBCException {
         String sql = "TRUNCATE TABLE"; //$NON-NLS-1$
         sql += " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL); //$NON-NLS-1$
-        sql += " " + settings.getStorageOption(); //$NON-NLS-1$
-        sql += " " + settings.getTriggerOption(); //$NON-NLS-1$
+        sql += " " + DB2TableTruncateOptions.getOption(settings.getStorageOption()).getDdlString(); //$NON-NLS-1$
+        sql += " " + DB2TableTruncateOptions.getOption(settings.getTriggerOption()).getDdlString(); //$NON-NLS-1$
         sql += getLineSeparator() + "CONTINUE IDENTITY IMMEDIATE"; //$NON-NLS-1$
         queries.add(new SQLDatabasePersistAction(sql));
     }
