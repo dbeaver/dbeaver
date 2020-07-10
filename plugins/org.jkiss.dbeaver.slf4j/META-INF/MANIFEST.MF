@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SLF4J binder
 Bundle-SymbolicName: org.jkiss.dbeaver.slf4j;singleton:=true
-Bundle-Version: 2.0.6.qualifier
-Bundle-Release-Date: 20200706
+Bundle-Version: 2.0.7.qualifier
+Bundle-Release-Date: 20200720
 Require-Bundle: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
