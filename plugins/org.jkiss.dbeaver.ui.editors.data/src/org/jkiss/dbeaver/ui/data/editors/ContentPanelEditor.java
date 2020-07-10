@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.*;
+import org.eclipse.osgi.framework.util.FilePath;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -35,8 +37,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.data.StringContent;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -56,7 +60,15 @@ import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
+import java.awt.Desktop;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.*;
 

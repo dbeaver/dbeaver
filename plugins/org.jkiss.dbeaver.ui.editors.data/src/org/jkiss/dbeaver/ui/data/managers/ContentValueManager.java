@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -49,11 +50,17 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 
+import java.awt.Desktop;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLConnection;
 
 /**
  * JDBC Content value handler.
@@ -79,6 +86,27 @@ public class ContentValueManager extends BaseValueManager {
                     }
                 });
             }
+            // Logo can be changed
+            manager.add(new Action("Open in external editor", DBeaverIcons.getImageDescriptor(UIIcon.DOTS_BUTTON)) {
+            	@Override
+            	public void run() {
+        			try {
+        				DBDContent castContent = (DBDContent)controller.getValue();
+						File tmpFile = File.createTempFile("dbtmp", ".octet-stream");
+						FileOutputStream fos = new FileOutputStream(tmpFile);
+						if (castContent.getRawValue() == null)
+							return;
+						fos.write((byte[])castContent.getRawValue());
+						fos.close();
+						// use OS to open the file
+						Desktop.getDesktop().open(tmpFile);
+						// delete the file when the user closes the DBeaver application
+						tmpFile.deleteOnExit();
+					} catch (IOException e) {
+						DBWorkbench.getPlatformUI().showError("Open content", "Error while trying to open the value", e);
+					}
+            	}
+            });
             manager.add(new Action(ResultSetMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
                 @Override
                 public void run() {
