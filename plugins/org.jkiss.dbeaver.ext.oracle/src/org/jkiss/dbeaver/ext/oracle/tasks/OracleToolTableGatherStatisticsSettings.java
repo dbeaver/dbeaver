@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
 
         @Override
         public boolean isValidValue(OracleToolTableGatherStatisticsSettings object, Object value) throws IllegalArgumentException {
-            int valueInt = Integer.valueOf(value.toString());
+            int valueInt = CommonUtils.toInt(value);
             return 1 <= valueInt && valueInt <= 100;
         }
     }
