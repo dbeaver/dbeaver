@@ -247,7 +247,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     @Nullable
-    public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
+    public synchronized List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
