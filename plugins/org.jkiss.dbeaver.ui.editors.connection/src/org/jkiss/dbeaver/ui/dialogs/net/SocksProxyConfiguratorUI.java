@@ -48,7 +48,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
         composite.setLayout(new GridLayout(1, true));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createSocksGroup(parent);
+        createSocksGroup(composite);
     }
 
     protected void createSocksGroup(Composite parent) {
