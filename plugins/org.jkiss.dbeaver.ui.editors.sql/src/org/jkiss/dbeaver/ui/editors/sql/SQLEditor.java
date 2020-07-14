@@ -1916,7 +1916,7 @@ public class SQLEditor extends SQLEditorBase implements
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
                 QueryProcessor queryProcessor;
-                if (i == 0 && (extraTabsClosed || !curQueryProcessor.getFirstResults().hasData())) {
+                if (i == 0 && curQueryProcessor.getRunningJobs() <= 0 && (extraTabsClosed || !curQueryProcessor.getFirstResults().hasData())) {
                     queryProcessor = curQueryProcessor;
                 } else {
                     queryProcessor = createQueryProcessor(queries.size() == 1, false);
@@ -2520,6 +2520,10 @@ public class SQLEditor extends SQLEditorBase implements
                 queryProcessors.add(this);
             }
             createResultsProvider(0, makeDefault);
+        }
+
+        int getRunningJobs() {
+            return curJobRunning.get();
         }
 
         private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
