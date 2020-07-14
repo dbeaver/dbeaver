@@ -99,6 +99,16 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     {
         if (!queue.isEmpty() && !MySQLUtils.isAlterUSerSupported(queue.getObject().getDataSource())) {
             // Add privileges flush to the tail
+            for(DBECommand<MySQLUser> user : queue) {
+                if (user instanceof MySQLCommandChangeUser) {
+                    Map<Object, Object> properties = ((MySQLCommandChangeUser) user).getProperties();
+                    if (properties.size() == 2) {
+                        if (properties.containsKey(UserPropertyHandler.PASSWORD_CONFIRM.name()) && properties.containsKey(UserPropertyHandler.PASSWORD.name())) {
+                            return;
+                        }
+                    }
+                }
+            }
             queue.add(
                 new DBECommandAbstract<MySQLUser>(
                     queue.getObject(),

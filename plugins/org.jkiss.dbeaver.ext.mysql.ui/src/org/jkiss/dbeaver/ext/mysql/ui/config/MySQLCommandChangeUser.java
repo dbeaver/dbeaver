@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Grant/Revoke privilege command
@@ -102,9 +103,24 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     private boolean generateUpdateScript(StringBuilder script) {
+        final Set<Map.Entry<Object, Object>> entries = getProperties().entrySet();
+        if (entries.size() == 2) {
+            int setPasswordOk = 0;
+            for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
+                String keyName = entry.getKey().toString();
+                if (keyName.equals(UserPropertyHandler.PASSWORD_CONFIRM.name()) || keyName.equals(UserPropertyHandler.PASSWORD.name())) {
+                    setPasswordOk++;
+                }
+            }
+            if (setPasswordOk == 2) {
+                script.append("SET PASSWORD FOR '").append(getObject().getUserName()).append("'@'").append(getObject().getHost()).append("'=PASSWORD(")
+                .append(SQLUtils.quoteString(getObject(), CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append(")");
+                return true;
+            }
+        }
         script.append("UPDATE mysql.user SET "); //$NON-NLS-1$
         boolean hasSet = false;
-        for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
+        for (Map.Entry<Object, Object> entry : entries) {
             if (entry.getKey() == UserPropertyHandler.PASSWORD_CONFIRM) {
                 continue;
             }
