@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -90,6 +91,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     private String name;
     private final List<ERDEntity> entities = new ArrayList<>();
     private final Map<DBPDataSourceContainer, DataSourceInfo> dataSourceMap = new LinkedHashMap<>();
+    private final Map<DBSObject, Integer> schemeMap = new LinkedHashMap<>();
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
@@ -172,6 +174,12 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             DBPDataSourceContainer dataSource = object.getDataSource().getContainer();
             DataSourceInfo dsInfo = dataSourceMap.computeIfAbsent(dataSource, dsc -> new DataSourceInfo(dataSourceMap.size()));
             dsInfo.entities.add(entity);
+
+            if (entity.getObject() instanceof JDBCTable) {
+                JDBCTable table = (JDBCTable) entity.getObject();
+                DBSObject scheme = table.getContainer();
+                schemeMap.putIfAbsent(scheme, schemeMap.size());
+            }
         }
 
         if (reflect) {
@@ -393,6 +401,11 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     public int getDataSourceIndex(DBPDataSourceContainer dataSource) {
         DataSourceInfo dsInfo = dataSourceMap.get(dataSource);
         return dsInfo == null ? 0 : dsInfo.index;
+    }
+
+    public int getSchemeIndex(DBSObject dataSource) {
+        Integer index = schemeMap.get(dataSource);
+        return index == null ? 0 : index;
     }
 
     public void clear() {
