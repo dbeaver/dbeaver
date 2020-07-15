@@ -298,7 +298,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                 superTables = Collections.emptyList();
             }
         }
-        isSuperTablesInitialized = true;
+        isSuperTablesInitialized = true; //that means we don't need to try to initialise superTables anymore
     }
 
     @Nullable
