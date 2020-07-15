@@ -62,6 +62,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     private String partitionKey;
     private String partitionRange;
 
+    private boolean isSuperTablesInitialized = false;
+
     public PostgreTable(PostgreTableContainer container)
     {
         super(container);
@@ -247,7 +249,14 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     @Nullable
-    public synchronized List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
+        if (!isSuperTablesInitialized) {
+            initSuperTables(monitor);
+        }
+        return superTables == null || superTables.isEmpty() ? null : superTables;
+    }
+
+    private synchronized void initSuperTables(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -289,7 +298,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                 superTables = Collections.emptyList();
             }
         }
-        return superTables == null || superTables.isEmpty() ? null : superTables;
+        isSuperTablesInitialized = true;
     }
 
     @Nullable
