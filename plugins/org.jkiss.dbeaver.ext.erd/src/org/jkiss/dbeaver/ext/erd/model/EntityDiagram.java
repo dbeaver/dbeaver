@@ -33,10 +33,14 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -175,9 +179,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             DataSourceInfo dsInfo = dataSourceMap.computeIfAbsent(dataSource, dsc -> new DataSourceInfo(dataSourceMap.size()));
             dsInfo.entities.add(entity);
 
-            if (entity.getObject() instanceof JDBCTable) {
-                JDBCTable table = (JDBCTable) entity.getObject();
-                DBSObject scheme = table.getContainer();
+            DBSObject scheme = DBUtils.getParentOfType(DBSSchema.class, entity.getObject());
+            if (scheme != null){
                 schemeMap.putIfAbsent(scheme, schemeMap.size());
             }
         }

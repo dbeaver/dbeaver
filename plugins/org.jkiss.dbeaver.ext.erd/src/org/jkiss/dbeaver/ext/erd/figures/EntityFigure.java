@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -164,10 +165,8 @@ public class EntityFigure extends Figure {
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
-            DBSEntity entity = part.getEntity().getObject();
-            if (entity instanceof JDBCTable) {
-                JDBCTable table = (JDBCTable) entity;
-                DBSObject scheme = table.getContainer();
+            DBSObject scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
+            if (scheme != null){
                 setBackgroundColor(UIColors.getColor(part.getDiagram().getSchemeIndex(scheme)));
             } else {
                 setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
