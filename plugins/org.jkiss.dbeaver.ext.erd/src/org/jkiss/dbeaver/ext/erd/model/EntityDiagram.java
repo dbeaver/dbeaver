@@ -403,8 +403,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         return dsInfo == null ? 0 : dsInfo.index;
     }
 
-    public int getSchemeIndex(DBSObject dataSource) {
-        Integer index = schemeMap.get(dataSource);
+    public int getSchemeIndex(DBSObject scheme) {
+        Integer index = schemeMap.get(scheme);
         return index == null ? 0 : index;
     }
 
