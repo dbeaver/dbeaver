@@ -173,7 +173,7 @@ public class EntityFigure extends Figure {
                     if (schemeIndex == 0){
                         setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
                     } else {
-                        setBackgroundColor(UIColors.getColor(schemeIndex - 1));
+                        setBackgroundColor(UIColors.getColorForTable(schemeIndex - 1));
                     }
                 }
             } else {
