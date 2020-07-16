@@ -92,7 +92,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
             List<Throwable> warnings = settings.getWarnings();
             if (!warnings.isEmpty()) {
                 Throwable throwable = warnings.get(0);
-                throw new DBCException(throwable.getMessage());
+                throw new DBCException("Tool execution error: " + throwable.getMessage(), throwable);
             }
             for (OBJECT_TYPE object : objectList) {
                 monitor.subTask("Process [" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "]");
