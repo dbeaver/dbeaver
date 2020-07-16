@@ -36,12 +36,30 @@ public class UIColors {
         new RGB(249, 214, 205)
     };
 
+    public static final RGB[] EXTRA_COLORS_FOR_TABLES = new RGB[] {
+        new RGB(50, 200, 50),
+        new RGB(50, 200, 200),
+        new RGB(200, 80, 80),
+        new RGB(200, 50, 200),
+        new RGB(200, 170, 50),
+        new RGB(200, 200, 200),
+        new RGB(0, 50, 200)
+    };
+
     public static Color getColor(int index) {
         RGB[] extraDsColors = UIColors.EXTRA_DS_COLORS;
         if (index >= extraDsColors.length) {
             index = index % extraDsColors.length;
         }
         return UIUtils.getSharedColor(extraDsColors[index]);
+    }
+
+    public static Color getColorForTable(int index) {
+        RGB[] extraColorsForTables = UIColors.EXTRA_COLORS_FOR_TABLES;
+        if (index >= extraColorsForTables.length) {
+            index = index % extraColorsForTables.length;
+        }
+        return UIUtils.getSharedColor(extraColorsForTables[index]);
     }
 
 }
