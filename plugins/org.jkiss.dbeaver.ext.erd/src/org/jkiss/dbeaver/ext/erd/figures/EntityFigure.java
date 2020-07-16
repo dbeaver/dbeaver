@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Figure used to represent a table in the schema
@@ -143,11 +145,16 @@ public class EntityFigure extends Figure {
     }
 
     protected Color getBorderColor() {
-        int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
-        if (dsIndex == 0) {
+        DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
+        if (scheme != null) {
+            int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
+            if (dsIndex == 0){
+                return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
+            }
+            return UIColors.getColor(dsIndex - 1);
+        } else {
             return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
         }
-        return UIColors.getColor(dsIndex - 1);
     }
 
     public EntityPart getPart() {
@@ -163,9 +170,17 @@ public class EntityFigure extends Figure {
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
-            DBSObject scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
+            DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
             if (scheme != null){
-                setBackgroundColor(UIColors.getColor(part.getDiagram().getSchemeIndex(scheme)));
+                DBPDataSourceContainer container = DBUtils.getParentOfType(DBPDataSourceContainer.class, part.getEntity().getObject());
+                if (container != null) {
+                    int schemeIndex = part.getDiagram().getSchemeIndex(container, scheme);
+                    if (schemeIndex == 0){
+                        setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+                    } else {
+                        setBackgroundColor(UIColors.getColor(schemeIndex - 1));
+                    }
+                }
             } else {
                 setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
             }

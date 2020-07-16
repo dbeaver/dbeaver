@@ -92,7 +92,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     private String name;
     private final List<ERDEntity> entities = new ArrayList<>();
     private final Map<DBPDataSourceContainer, DataSourceInfo> dataSourceMap = new LinkedHashMap<>();
-    private final Map<DBSObject, Integer> schemeMap = new LinkedHashMap<>();
+    private final Map<DBPDataSourceContainer, Map<DBSSchema, Integer>> dataSourceSchemeMap = new LinkedHashMap<>();
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
@@ -176,11 +176,14 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             DataSourceInfo dsInfo = dataSourceMap.computeIfAbsent(dataSource, dsc -> new DataSourceInfo(dataSourceMap.size()));
             dsInfo.entities.add(entity);
 
-            DBSObject scheme = DBUtils.getParentOfType(DBSSchema.class, entity.getObject());
-            if (scheme != null){
+            DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, entity.getObject());
+            if (scheme != null) {
+                dataSourceSchemeMap.putIfAbsent(dataSource, new LinkedHashMap<>());
+                Map<DBSSchema, Integer> schemeMap = dataSourceSchemeMap.get(dataSource);
                 schemeMap.putIfAbsent(scheme, schemeMap.size());
+                }
             }
-        }
+
 
         if (reflect) {
             firePropertyChange(CHILD, null, entity);
@@ -403,9 +406,14 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         return dsInfo == null ? 0 : dsInfo.index;
     }
 
-    public int getSchemeIndex(DBSObject scheme) {
-        Integer index = schemeMap.get(scheme);
-        return index == null ? 0 : index;
+    public int getSchemeIndex(DBPDataSourceContainer dataSource, DBSSchema scheme) {
+        Map<DBSSchema, Integer> schemeMap = dataSourceSchemeMap.get(dataSource);
+        Integer index;
+        if (schemeMap != null) {
+            index = schemeMap.get(scheme);
+            return index == null ? 0 : index;
+        }
+        return 0;
     }
 
     public void clear() {
