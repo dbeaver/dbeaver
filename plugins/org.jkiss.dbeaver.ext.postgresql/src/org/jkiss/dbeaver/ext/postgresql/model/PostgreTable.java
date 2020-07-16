@@ -62,6 +62,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     private String partitionKey;
     private String partitionRange;
 
+    private boolean isSuperTablesInitialized = false;
+
     public PostgreTable(PostgreTableContainer container)
     {
         super(container);
@@ -248,6 +250,14 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
+        if (!isSuperTablesInitialized) {
+            initSuperTables(monitor);
+        }
+        return superTables == null || superTables.isEmpty() ? null : superTables;
+    }
+
+    private void initSuperTables(DBRProgressMonitor monitor) throws DBException {
+        isSuperTablesInitialized = true; //that means we don't need to try to initialise superTables anymore
         if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -289,7 +299,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                 superTables = Collections.emptyList();
             }
         }
-        return superTables == null || superTables.isEmpty() ? null : superTables;
     }
 
     @Nullable
@@ -297,12 +306,12 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         if (partitionRange == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table partition range")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from \"pg_catalog\".pg_class c where relname = ? and relnamespace = ?;")) {//$NON-NLS-1$
+                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from \"pg_catalog\".pg_class c where relname = ? and relnamespace = ?;")) { //$NON-NLS-1$
                     dbStat.setString(1, getName());
                     dbStat.setLong(2, getSchema().oid);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         dbResult.next();
-                        partitionRange = JDBCUtils.safeGetString(dbResult, "partition_range");
+                        partitionRange = JDBCUtils.safeGetString(dbResult, "partition_range"); //$NON-NLS-1$
                     }
                 } catch (SQLException e) {
                     throw new DBCException(e, session.getExecutionContext());
@@ -331,8 +340,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
-                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");//$NON-NLS-1$
-                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid");//$NON-NLS-1$
+                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace"); //$NON-NLS-1$
+                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid"); //$NON-NLS-1$
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
