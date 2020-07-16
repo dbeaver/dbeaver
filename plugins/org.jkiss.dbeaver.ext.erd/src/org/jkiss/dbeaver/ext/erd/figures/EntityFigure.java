@@ -145,16 +145,11 @@ public class EntityFigure extends Figure {
     }
 
     protected Color getBorderColor() {
-        DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
-        if (scheme != null) {
-            int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
-            if (dsIndex == 0){
-                return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
-            }
-            return UIColors.getColor(dsIndex - 1);
-        } else {
+        int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
+        if (dsIndex == 0) {
             return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
         }
+        return UIColors.getColor(dsIndex - 1);
     }
 
     public EntityPart getPart() {
