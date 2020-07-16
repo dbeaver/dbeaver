@@ -89,14 +89,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         listener.taskStarted(settings);
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
-            if(objectList.isEmpty()){
-                List<Throwable> warnings = settings.getWarnings();
-                if (!warnings.isEmpty()) {
-                    Throwable throwable = warnings.get(0);
-                    if (throwable instanceof DBException) {
-                        throw (DBException) throwable;
-                    }
-                }
+            List<Throwable> warnings = settings.getWarnings();
+            if (!warnings.isEmpty()) {
+                Throwable throwable = warnings.get(0);
+                throw new DBCException(throwable.getMessage());
             }
             for (OBJECT_TYPE object : objectList) {
                 monitor.subTask("Process [" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "]");
