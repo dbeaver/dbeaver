@@ -41,6 +41,7 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DB
     private static final Log log = Log.getLog(SQLToolExecuteSettings.class);
 
     private List<OBJECT_TYPE> objectList = new ArrayList<>();
+    private final List<Throwable> warnings = new ArrayList<>();
 
     protected SQLToolExecuteSettings() {
     }
@@ -51,6 +52,10 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DB
 
     public void setObjectList(List<OBJECT_TYPE> objectList) {
         this.objectList = objectList;
+    }
+
+    public List<Throwable> getWarnings() {
+        return warnings;
     }
 
     @Override
@@ -77,6 +82,7 @@ public class SQLToolExecuteSettings<OBJECT_TYPE extends DBSObject> implements DB
                         }
                     } catch (DBException e) {
                         log.error("Can't find object '" + objectId + "' in project '" + project.getName() + "'");
+                        warnings.add(e);
                     }
                 }
                 objectList.addAll(objList);
