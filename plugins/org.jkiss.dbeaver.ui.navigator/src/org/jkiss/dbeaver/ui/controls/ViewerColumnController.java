@@ -100,9 +100,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             @Nullable
             @Override
             public Object getCellValue(Object element, int columnIndex) {
-                ColumnInfo columnInfo = getVisibleColumns().get(columnIndex);
-                if (columnInfo.labelProvider instanceof ColumnBooleanLabelProvider) {
-                    return ((ColumnBooleanLabelProvider) columnInfo.labelProvider).getValueProvider().getValue(element);
+                List<ColumnInfo> visibleColumns = getVisibleColumns();
+                if (!visibleColumns.isEmpty()) {
+                    ColumnInfo columnInfo = getVisibleColumns().get(columnIndex);
+                    if (columnInfo.labelProvider instanceof ColumnBooleanLabelProvider) {
+                        return ((ColumnBooleanLabelProvider) columnInfo.labelProvider).getValueProvider().getValue(element);
+                    }
                 }
                 return null;
             }
