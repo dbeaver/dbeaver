@@ -37,13 +37,13 @@ public class UIColors {
     };
 
     public static final RGB[] EXTRA_COLORS_FOR_TABLES = new RGB[] {
-        new RGB(50, 200, 50),
-        new RGB(50, 200, 200),
-        new RGB(200, 80, 80),
-        new RGB(200, 50, 200),
-        new RGB(200, 170, 50),
-        new RGB(200, 200, 200),
-        new RGB(0, 50, 200)
+        new RGB(204, 192, 184),
+        new RGB(228, 255, 181),
+        new RGB(255, 255, 255),
+        new RGB(219, 229, 241),
+        new RGB(248, 214, 205),
+        new RGB(251, 216, 166),
+        new RGB(225, 221, 252)
     };
 
     public static Color getColor(int index) {
