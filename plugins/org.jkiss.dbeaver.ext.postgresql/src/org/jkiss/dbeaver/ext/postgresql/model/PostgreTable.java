@@ -285,11 +285,11 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                                 true));
                     }
                 }
+                return inheritanceList;
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
             }
         }
-        return inheritanceList;
     }
 
     @Nullable
