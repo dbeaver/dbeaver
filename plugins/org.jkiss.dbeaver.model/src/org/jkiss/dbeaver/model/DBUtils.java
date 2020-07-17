@@ -637,7 +637,7 @@ public final class DBUtils {
             DBSObject object = sc.getChild(monitor, objectName);
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
-                return null;
+                throw new DBException("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
             }
             return object;
         } else if (finalEntity != null) {
