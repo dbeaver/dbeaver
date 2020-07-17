@@ -48,6 +48,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     private Button contentsShowViews;
     private Button contentsShowPartitions;
+    private Button changeBorderColors;
+    private Button changeHeaderColors;
 
     private Combo modeCombo;
     private Spinner spinnerMarginTop;
@@ -70,7 +72,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         createContentsGroup(store, composite);
-
+        createColorPrefGroup(store, composite);
         createVisibilityGroup(store, composite);
         createStyleGroup(store, composite);
 
@@ -86,6 +88,13 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
         contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
+    }
+
+    private void createColorPrefGroup(IPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_color_pref, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
+        changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_change_border_colors, store.getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+        changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_change_header_colors, store.getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
     }
 
     private void createVisibilityGroup(IPreferenceStore store, Composite composite)
@@ -170,6 +179,9 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
+        store.setValue(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
+        store.setValue(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
+
 
         store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
