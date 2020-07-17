@@ -40,6 +40,8 @@ public class ERDConstants {
 
     public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
     public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
+    public static final String PREF_DIAGRAM_CHANGE_BORDER_COLORS = "erd.diagram.change.borders.colors";
+    public static final String PREF_DIAGRAM_CHANGE_HEADER_COLORS = "erd.diagram.change.header.colors";
     public static final String PREF_GRID_ENABLED = "erd.grid.enabled";
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";

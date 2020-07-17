@@ -16,6 +16,8 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
       DBPPreferenceStore store = new BundlePreferenceStore(ERDActivator.getDefault().getBundle());
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_DIAGRAM_SHOW_VIEWS, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS, false);
+      PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, true);
+      PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, true);
 
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_PAGE_MODE, ERDConstants.PRINT_MODE_DEFAULT);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_TOP, ERDConstants.PRINT_MARGIN_DEFAULT);
