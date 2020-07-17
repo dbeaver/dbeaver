@@ -62,8 +62,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     private String partitionKey;
     private String partitionRange;
 
-    private boolean isSuperTablesInitialized = false;
-
     public PostgreTable(PostgreTableContainer container)
     {
         super(container);
@@ -250,55 +248,48 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
-        if (!isSuperTablesInitialized) {
-            initSuperTables(monitor);
+        if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
+            superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
     }
 
-    private void initSuperTables(DBRProgressMonitor monitor) throws DBException {
-        isSuperTablesInitialized = true; //that means we don't need to try to initialise superTables anymore
-        if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT i.*,c.relnamespace " +
-                    "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
-                    "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
-                    "ORDER BY i.inhseqno")) {
-                    dbStat.setLong(1, getObjectId());
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
-                            final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
-                            PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
-                            if (schema == null) {
-                                log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
-                                continue;
-                            }
-                            PostgreTableBase parentTable = schema.getTable(monitor, parentTableId);
-                            if (parentTable == null) {
-                                log.warn("Can't find parent table '" + parentTableId + "' in '" + schema.getName() + "'");
-                                continue;
-                            }
-                            if (superTables == null) {
-                                superTables = new ArrayList<>();
-                            }
-                            superTables.add(
-                                new PostgreTableInheritance(
-                                    this,
-                                    parentTable,
-                                    JDBCUtils.safeGetInt(dbResult, "inhseqno"),
-                                    true));
+    private List<PostgreTableInheritance> initSuperTables(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableInheritance> inheritanceList = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT i.*,c.relnamespace " +
+                "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
+                "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
+                "ORDER BY i.inhseqno")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                        final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
+                        PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
+                        if (schema == null) {
+                            log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
+                            continue;
                         }
+                        PostgreTableBase parentTable = schema.getTable(monitor, parentTableId);
+                        if (parentTable == null) {
+                            log.warn("Can't find parent table '" + parentTableId + "' in '" + schema.getName() + "'");
+                            continue;
+                        }
+                        inheritanceList.add(
+                            new PostgreTableInheritance(
+                                this,
+                                parentTable,
+                                JDBCUtils.safeGetInt(dbResult, "inhseqno"),
+                                true));
                     }
-                } catch (SQLException e) {
-                    throw new DBCException(e, session.getExecutionContext());
                 }
-            }
-            if (superTables == null) {
-                superTables = Collections.emptyList();
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
         }
+        return inheritanceList;
     }
 
     @Nullable
