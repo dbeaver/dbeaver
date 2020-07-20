@@ -56,10 +56,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Sorry, this is a bit over-complicated handler. Historical reasons.
@@ -153,7 +150,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         } else {
             element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, getObjectTypeName(element)));
         }
-        if (objectIcon != null) {
+        if (objectIcon != null && !Objects.equals(getObjectTypeName(element), "Column")) {
             element.setIcon(DBeaverIcons.getImageDescriptor(new DBIcon(objectIcon.toString())));
         } else {
             DBPImage image = getObjectTypeIcon(element);
