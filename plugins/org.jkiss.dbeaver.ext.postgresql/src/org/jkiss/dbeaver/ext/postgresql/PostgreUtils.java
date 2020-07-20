@@ -523,7 +523,32 @@ public class PostgreUtils {
             return new String[0];
         }
         try {
-            return new CSVReader(new StringReader(string)).readNext();
+            if (!string.startsWith("{")) {
+                return new CSVReader(new StringReader(string)).readNext();
+            } else {
+                int mustacheCharacterCount = 0;
+                for (int i = 0; i < string.length(); i++) {
+                    if (string.charAt(i) == '{') {
+                        mustacheCharacterCount++;
+                    } else {
+                        break;
+                    }
+                }
+
+                StringBuilder splitter = new StringBuilder();
+                StringBuilder appender = new StringBuilder();
+                for (int i = 0; i < mustacheCharacterCount; i++) {
+                    splitter.append("}");
+                    appender.append("}");
+                }
+                splitter.append(",");
+
+                String[] ret = string.split(splitter.toString());
+                for (int i = 0; i < ret.length - 1; i++) {
+                    ret[i] = ret[i] + appender;
+                }
+                return ret;
+            }
         } catch (IOException e) {
             throw new DBCException("Error parsing PGObject", e);
         }
