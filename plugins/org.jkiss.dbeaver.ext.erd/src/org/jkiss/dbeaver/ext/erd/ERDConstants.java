@@ -59,6 +59,22 @@ public class ERDConstants {
     public static final String COLOR_ERD_NOTE_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.notes.background";
     public static final String COLOR_ERD_NOTE_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.notes.foreground";
 
+    public static final String COLOR_ERD_BORDERS_COLOR_1 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.1"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_2 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.2"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_3 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.3"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_4 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.4"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_5 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.5"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.6"; //$NON-NLS-1$
+    public static final String COLOR_ERD_BORDERS_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.borders.color.7"; //$NON-NLS-1$
+
+    public static final String COLOR_ERD_HEADER_COLOR_1 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.1"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_2 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.2"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_3 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.3"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_4 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.4"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_5 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.5"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"; //$NON-NLS-1$
+    public static final String COLOR_ERD_HEADER_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"; //$NON-NLS-1$
+
     public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDActivator.PLUGIN_ID + "/icons/";
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
