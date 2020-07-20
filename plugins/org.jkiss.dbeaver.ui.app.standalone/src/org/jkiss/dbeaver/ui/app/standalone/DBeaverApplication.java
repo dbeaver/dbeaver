@@ -16,6 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
@@ -55,10 +63,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
-
-import java.io.*;
-import java.net.URL;
-import java.util.Properties;
 
 /**
  * This class controls all aspects of the application's execution
