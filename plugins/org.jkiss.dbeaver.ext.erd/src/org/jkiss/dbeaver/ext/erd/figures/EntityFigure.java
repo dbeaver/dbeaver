@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.ERDColors;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
@@ -32,7 +33,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -148,7 +148,7 @@ public class EntityFigure extends Figure {
         if (dsIndex == 0 || !changeBorderColors) {
             return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
         }
-        return UIColors.getColor(dsIndex - 1);
+        return ERDColors.getBorderColor(dsIndex - 1);
     }
 
     public EntityPart getPart() {
@@ -182,7 +182,7 @@ public class EntityFigure extends Figure {
                 if (schemeIndex == 0) {
                     setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
                 } else {
-                    setBackgroundColor(UIColors.getColorForTable(schemeIndex - 1));
+                    setBackgroundColor(ERDColors.getHeaderColor(schemeIndex - 1));
                 }
             } else {
                 setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));

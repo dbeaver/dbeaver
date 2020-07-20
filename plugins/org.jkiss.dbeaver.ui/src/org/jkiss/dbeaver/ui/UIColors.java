@@ -25,7 +25,6 @@ import org.eclipse.swt.graphics.RGB;
  */
 public class UIColors {
 
-
     public static final RGB[] EXTRA_DS_COLORS = new RGB[] {
         new RGB(119, 206, 130),
         new RGB(206, 63, 34),
@@ -36,30 +35,12 @@ public class UIColors {
         new RGB(249, 214, 205)
     };
 
-    public static final RGB[] EXTRA_COLORS_FOR_TABLES = new RGB[] {
-        new RGB(204, 192, 184),
-        new RGB(228, 255, 181),
-        new RGB(255, 255, 255),
-        new RGB(219, 229, 241),
-        new RGB(248, 214, 205),
-        new RGB(251, 216, 166),
-        new RGB(225, 221, 252)
-    };
-
     public static Color getColor(int index) {
         RGB[] extraDsColors = UIColors.EXTRA_DS_COLORS;
         if (index >= extraDsColors.length) {
             index = index % extraDsColors.length;
         }
         return UIUtils.getSharedColor(extraDsColors[index]);
-    }
-
-    public static Color getColorForTable(int index) {
-        RGB[] extraColorsForTables = UIColors.EXTRA_COLORS_FOR_TABLES;
-        if (index >= extraColorsForTables.length) {
-            index = index % extraColorsForTables.length;
-        }
-        return UIUtils.getSharedColor(extraColorsForTables[index]);
     }
 
 }
