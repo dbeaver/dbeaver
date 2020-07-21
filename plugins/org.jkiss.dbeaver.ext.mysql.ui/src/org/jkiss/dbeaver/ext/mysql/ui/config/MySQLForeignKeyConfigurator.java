@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -49,7 +49,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                 return null;
             }
 
-            foreignKey.setReferencedKey((MySQLTableUniqueKey) editPage.getUniqueConstraint());
+            foreignKey.setReferencedKey((MySQLTableConstraint) editPage.getUniqueConstraint());
             foreignKey.setDeleteRule(editPage.getOnDeleteRule());
             foreignKey.setUpdateRule(editPage.getOnUpdateRule());
             int colIndex = 1;

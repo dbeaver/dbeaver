@@ -51,8 +51,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
-        MySQLTableUniqueKey.class,
-        MySQLTableCheckConstraint.class,
+        MySQLTableConstraint.class,
         MySQLTableForeignKey.class,
         MySQLTableIndex.class,
     };
@@ -163,9 +162,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, MySQLTableBase object, Class<? extends DBSObject> childType) throws DBException {
         if (childType == MySQLTableColumn.class) {
             return object.getAttributes(monitor);
-        } else if (childType == MySQLTableUniqueKey.class) {
-            return object.getConstraints(monitor);
-        } else if (childType == MySQLTableCheckConstraint.class) {
+        } else if (childType == MySQLTableConstraint.class) {
             return object.getConstraints(monitor);
         } else if (childType == MySQLTableForeignKey.class) {
             return object.getAssociations(monitor);
