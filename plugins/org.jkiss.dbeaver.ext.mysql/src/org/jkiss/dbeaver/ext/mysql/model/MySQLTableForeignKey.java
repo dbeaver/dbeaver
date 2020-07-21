@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableUniqueKey>
+public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableConstraint>
 {
     private List<MySQLTableForeignKeyColumn> columns;
 
@@ -42,7 +42,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         MySQLTable table,
         String name,
         String remarks,
-        MySQLTableUniqueKey referencedKey,
+        MySQLTableConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)
