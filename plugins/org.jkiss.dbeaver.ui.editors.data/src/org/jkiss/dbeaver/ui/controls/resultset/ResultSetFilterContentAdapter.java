@@ -31,8 +31,10 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
             for (int i = selection.x - 1; i >= 0; i--) {
                 String prefix = curValue.substring(i, selection.x);
                 if (contentsUC.startsWith(prefix)) {
-                    text.setSelection(i, selection.x);
-                    break;
+                    if (i == 0 || curValue.substring(i - 1, selection.x).startsWith(" ")) {
+                        text.setSelection(i, selection.x);
+                        break;
+                    }
                 }
                 char ch = Character.toUpperCase(curValue.charAt(i));
                 if (!Character.isLetterOrDigit(ch) && contentsUC.indexOf(ch) == -1) {
