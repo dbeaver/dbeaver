@@ -21,6 +21,8 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.ERDColors;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
@@ -29,8 +31,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -142,10 +144,11 @@ public class EntityFigure extends Figure {
 
     protected Color getBorderColor() {
         int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
-        if (dsIndex == 0) {
+        boolean changeBorderColors = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS);
+        if (dsIndex == 0 || !changeBorderColors) {
             return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
         }
-        return UIColors.getColor(dsIndex - 1);
+        return ERDColors.getBorderColor(dsIndex - 1);
     }
 
     public EntityPart getPart() {
@@ -161,9 +164,32 @@ public class EntityFigure extends Figure {
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
-            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+            boolean changeHeaderColors = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS);
+            if (changeHeaderColors) {
+                changeHeaderColor(colorRegistry);
+            } else {
+                setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+            }
         }
     }
+
+    private void changeHeaderColor(ColorRegistry colorRegistry) {
+        DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
+        if (scheme != null) {
+            DBPDataSourceContainer container = DBUtils.getParentOfType(DBPDataSourceContainer.class, part.getEntity().getObject());
+            if (container != null) {
+                int schemeIndex = part.getDiagram().getSchemeIndex(container, scheme);
+                if (schemeIndex == 0) {
+                    setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+                } else {
+                    setBackgroundColor(ERDColors.getHeaderColor(schemeIndex - 1));
+                }
+            } else {
+                setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+            }
+        }
+    }
+
 
     public void updateTitleForegroundColor() {
         Color bgColor = getBackgroundColor();

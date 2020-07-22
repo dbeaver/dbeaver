@@ -196,20 +196,6 @@
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.background.description</description>
         </colorDefinition>
         <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.entity.regular.background"
-                value="COLOR_INFO_BACKGROUND">
-            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.entity.primary.background"
-                value="255,128,64">
-            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.description</description>
-        </colorDefinition>
-        <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.association.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.entity.association.background"
@@ -223,14 +209,6 @@
                 value="COLOR_INFO_FOREGROUND">
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.name.foreground.description</description>
         </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
-                value="0, 143, 207">
-            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
-        </colorDefinition>
-
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
@@ -260,6 +238,121 @@
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.background.description</description>
         </colorDefinition>
 
+        <!-- Colors for table borders -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.borders.label" id="org.jkiss.dbeaver.ui.presentation.erd.borders" parentId="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.borders.description</description>
+        </themeElementCategory>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
+                value="0, 143, 207">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.1.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.1"
+                value="119, 206, 130">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.2.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.2"
+                value="206, 63, 34">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.3.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.3"
+                value="242, 132, 35">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.4.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.4"
+                value="124, 38, 19">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.5.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.5"
+                value="157, 214, 245">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.6.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.6"
+                value="173, 140, 127">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.7.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.7"
+                value="249, 214, 205">
+        </colorDefinition>
+
+        <!-- Colors for table headers -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.headers.label" id="org.jkiss.dbeaver.ui.presentation.erd.headers" parentId="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.headers.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.erd.diagram.entity.regular.background"
+                value="COLOR_INFO_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.erd.diagram.entity.primary.background"
+                value="255,128,64">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.1.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.1"
+                value="204, 192, 184">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.2.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.2"
+                value="228, 255, 181">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.3.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.3"
+                value="255, 255, 255">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.4.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.4"
+                value="219, 229, 241">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.5.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.5"
+                value="248, 214, 205">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.6.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"
+                value="251, 216, 166">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.7.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"
+                value="225, 221, 252">
+        </colorDefinition>
 
     </extension>
 
