@@ -129,25 +129,6 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
                     viewFullText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
                 }
                 return viewFullText;
-//                StringBuilder commentDDL = new StringBuilder();
-//                String viewComment = SQLUtils.quoteString(this, getComment(monitor));
-//                if (!CommonUtils.isEmpty(viewComment)) {
-//                    commentDDL.append("\n\n" + "COMMENT ON TABLE ")
-//                            .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
-//                            .append(" IS ")
-//                            .append(viewComment).append(";");
-//                }
-//                List<DBEPersistAction> actions = new ArrayList<>();
-//                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
-//                    if (!CommonUtils.isEmpty(column.getComment(monitor))) {
-//                        OracleTableColumnManager.addColumnCommentAction(actions, column);
-//                    }
-//                }
-//                if (!actions.isEmpty()) {
-//                    commentDDL.append("\n").append(SQLUtils.generateScript(
-//                            getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
-//                }
-//                return viewText + commentDDL;
             }
         }
         return viewText;
