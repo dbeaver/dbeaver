@@ -173,4 +173,9 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
             this);
     }
 */
+
+    @Override
+    public String toString() {
+        return getFullyQualifiedName(DBPEvaluationContext.UI);
+    }
 }
