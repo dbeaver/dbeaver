@@ -45,7 +45,6 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * MySQLTable
@@ -154,7 +153,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         // Copy constraints
         for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
             MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
-            this.getContainer().constraintCache.cacheObject(constr);
+            this.getContainer().uniqueKeyCache.cacheObject(constr);
         }
 
         // Copy FKs
@@ -230,23 +229,21 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTableConstraint> constraintObjects = getContainer().constraintCache.getObjects(monitor, getContainer(), this);
-        List<MySQLTableConstraint> newList = new ArrayList<>();
+        List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
-            Stream.of(constraintObjects, checkConstraintObjects).forEach(newList::addAll);
-            return newList;
+            constraintObjects.addAll(checkConstraintObjects);
+            return constraintObjects;
         }
         else {
-            Stream.of(constraintObjects).forEach(newList::addAll);
-            return newList;
+            return constraintObjects;
         }
     }
 
-    public MySQLTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public MySQLTableConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
+        return getContainer().uniqueKeyCache.getObject(monitor, getContainer(), this, ukName);
     }
 
     @Association
@@ -569,7 +566,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        getContainer().constraintCache.clearObjectCache(this);
+        getContainer().uniqueKeyCache.clearObjectCache(this);
         getContainer().checkConstraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);

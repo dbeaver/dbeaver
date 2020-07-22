@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class MySQLTableConstraint extends MySQLTableConstraintBase {
     private List<MySQLTableConstraintColumn> columns;
-    private String clause;
+    private String checkClause;
 
     public MySQLTableConstraint(MySQLTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
@@ -48,7 +48,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
 
     public MySQLTableConstraint(MySQLTable table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted, JDBCResultSet resultSet) {
         super(table, name, description, constraintType, persisted, resultSet);
-        this.clause = JDBCUtils.safeGetString(resultSet, MySQLConstants.COL_CHECK_CLAUSE);
+        this.checkClause = JDBCUtils.safeGetString(resultSet, MySQLConstants.COL_CHECK_CLAUSE);
     }
 
     // Copy constructor
@@ -74,13 +74,13 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
         return columns;
     }
 
-    public void setClause(String clause) {
-        this.clause = clause;
+    public void setCheckClause(String clause) {
+        this.checkClause = clause;
     }
 
-    @Property(viewable = true, editable = true, order = 2, visibleIf = MySQLCheckConstraintsValueValidator.class)
-    public String getClause() {
-        return clause;
+    @Property(viewable = true, editable = true, order = 4, visibleIf = MySQLCheckConstraintsValueValidator.class)
+    public String getCheckClause() {
+        return checkClause;
     }
 
     public void addColumn(MySQLTableConstraintColumn column)

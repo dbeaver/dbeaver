@@ -234,7 +234,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                                 constraint = table.getCheckConstraint(monitor, constrName);
                             }
                             else {
-                                constraint = table.getConstraint(monitor, constrName);
+                                constraint = table.getUniqueKey(monitor, constrName);
                             }
                             if (constraint == null) {
                                 throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");

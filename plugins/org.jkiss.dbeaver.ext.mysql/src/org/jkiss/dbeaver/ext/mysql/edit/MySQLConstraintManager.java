@@ -46,7 +46,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
         if (object.getConstraintType() == DBSEntityConstraintType.CHECK) {
             return object.getTable().getContainer().getCheckConstraintCache();
         } else {
-            return object.getTable().getContainer().getConstraintCache();
+            return object.getTable().getContainer().getUniqueKeyCache();
         }
     }
 
@@ -90,7 +90,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     @Override
     protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append(" (").append((command.getObject()).getClause()).append(")");
+            decl.append(" (").append((command.getObject()).getCheckClause()).append(")");
         } else {
             super.appendConstraintDefinition(decl, command);
         }
