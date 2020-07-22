@@ -50,7 +50,7 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
         config.put("sample_percent", samplePercent);
     }
 
-    private class OracleStatisticPercentLimiter implements IPropertyValueValidator<OracleToolTableGatherStatisticsSettings, Object> {
+    public static class OracleStatisticPercentLimiter implements IPropertyValueValidator<OracleToolTableGatherStatisticsSettings, Object> {
 
         @Override
         public boolean isValidValue(OracleToolTableGatherStatisticsSettings object, Object value) throws IllegalArgumentException {
