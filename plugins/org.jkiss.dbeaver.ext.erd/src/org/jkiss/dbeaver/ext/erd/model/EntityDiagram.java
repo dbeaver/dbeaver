@@ -33,9 +33,11 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -90,6 +92,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     private String name;
     private final List<ERDEntity> entities = new ArrayList<>();
     private final Map<DBPDataSourceContainer, DataSourceInfo> dataSourceMap = new LinkedHashMap<>();
+    private final Map<DBPDataSourceContainer, Map<DBSSchema, Integer>> dataSourceSchemeMap = new LinkedHashMap<>();
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
@@ -172,7 +175,15 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
             DBPDataSourceContainer dataSource = object.getDataSource().getContainer();
             DataSourceInfo dsInfo = dataSourceMap.computeIfAbsent(dataSource, dsc -> new DataSourceInfo(dataSourceMap.size()));
             dsInfo.entities.add(entity);
-        }
+
+            DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, entity.getObject());
+            if (scheme != null) {
+                dataSourceSchemeMap.putIfAbsent(dataSource, new LinkedHashMap<>());
+                Map<DBSSchema, Integer> schemeMap = dataSourceSchemeMap.get(dataSource);
+                schemeMap.putIfAbsent(scheme, schemeMap.size());
+                }
+            }
+
 
         if (reflect) {
             firePropertyChange(CHILD, null, entity);
@@ -393,6 +404,16 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     public int getDataSourceIndex(DBPDataSourceContainer dataSource) {
         DataSourceInfo dsInfo = dataSourceMap.get(dataSource);
         return dsInfo == null ? 0 : dsInfo.index;
+    }
+
+    public int getSchemeIndex(DBPDataSourceContainer dataSource, DBSSchema scheme) {
+        Map<DBSSchema, Integer> schemeMap = dataSourceSchemeMap.get(dataSource);
+        Integer index;
+        if (schemeMap != null) {
+            index = schemeMap.get(scheme);
+            return index == null ? 0 : index;
+        }
+        return 0;
     }
 
     public void clear() {
