@@ -17,8 +17,9 @@
 
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraintColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -31,31 +32,47 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 /**
  * MySQL constraint configurator
  */
-public class MySQLUniqueKeyConfigurator implements DBEObjectConfigurator<MySQLTableUniqueKey> {
+public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLTableConstraint> {
 
 
     @Override
-    public MySQLTableUniqueKey configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableUniqueKey constraint) {
+    public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableConstraint constraint) {
+        MySQLDataSource dataSource = constraint.getDataSource();
         return UITask.run(() -> {
-            EditConstraintPage editPage = new EditConstraintPage(
-                MySQLUIMessages.edit_constraint_manager_title,
-                constraint,
-                new DBSEntityConstraintType[] {
-                    DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY });
+            EditConstraintPage editPage;
+            if (dataSource.supportsCheckConstraints()) {
+                editPage = new EditConstraintPage(
+                        MySQLUIMessages.edit_constraint_manager_title,
+                        constraint,
+                        new DBSEntityConstraintType[]{
+                                DBSEntityConstraintType.PRIMARY_KEY,
+                                DBSEntityConstraintType.UNIQUE_KEY,
+                                DBSEntityConstraintType.CHECK});
+            } else {
+                editPage = new EditConstraintPage(
+                        MySQLUIMessages.edit_constraint_manager_title,
+                        constraint,
+                        new DBSEntityConstraintType[]{
+                                DBSEntityConstraintType.PRIMARY_KEY,
+                                DBSEntityConstraintType.UNIQUE_KEY});
+            }
             if (!editPage.edit()) {
                 return null;
             }
 
             constraint.setName(editPage.getConstraintName());
             constraint.setConstraintType(editPage.getConstraintType());
+            if (editPage.getConstraintType() == DBSEntityConstraintType.CHECK && dataSource.supportsCheckConstraints()) {
+                constraint.setCheckClause(editPage.getConstraintExpression());
+            } else {
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                 constraint.addColumn(
-                    new MySQLTableConstraintColumn(
-                        constraint,
-                        (MySQLTableColumn) tableColumn,
-                        colIndex++));
+                        new MySQLTableConstraintColumn(
+                                constraint,
+                                (MySQLTableColumn) tableColumn,
+                                colIndex++));
+                }
             }
             return constraint;
         });
