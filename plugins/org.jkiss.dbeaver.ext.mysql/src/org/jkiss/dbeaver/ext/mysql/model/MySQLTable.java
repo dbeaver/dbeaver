@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -153,8 +152,8 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
         // Copy constraints
         for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
-            MySQLTableUniqueKey constr = new MySQLTableUniqueKey(monitor, this, srcConstr);
-            this.getContainer().constraintCache.cacheObject(constr);
+            MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
+            this.getContainer().uniqueKeyCache.cacheObject(constr);
         }
 
         // Copy FKs
@@ -227,26 +226,34 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     @Nullable
     @Override
     @Association
-    public Collection<MySQLTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
+        List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
+        if (getDataSource().supportsCheckConstraints()) {
+            List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
+            constraintObjects.addAll(checkConstraintObjects);
+            return constraintObjects;
+        }
+        else {
+            return constraintObjects;
+        }
     }
 
-    public MySQLTableUniqueKey getConstraint(DBRProgressMonitor monitor, String ukName)
+    public MySQLTableConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
+        return getContainer().uniqueKeyCache.getObject(monitor, getContainer(), this, ukName);
     }
 
     @Association
-    public Collection<MySQLTableCheckConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<MySQLTableConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor)
             throws DBException
     {
          return getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
     }
 
-    public MySQLTableCheckConstraint getCheckConstraint(DBRProgressMonitor monitor, String constName)
+    public MySQLTableConstraint getCheckConstraint(DBRProgressMonitor monitor, String constName)
             throws DBException
     {
         return getContainer().checkConstraintCache.getObject(monitor, getContainer(), this, constName);
@@ -371,7 +378,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
-            Map<String, MySQLTableUniqueKey> pkMap = new HashMap<>();
+            Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -433,7 +440,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                     }
 
                     // Find PK
-                    MySQLTableUniqueKey pk = null;
+                    MySQLTableConstraint pk = null;
                     if (pkTable != null && pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
@@ -441,9 +448,9 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                         }
                     }
                     if (pk == null && pkTable != null) {
-                        Collection<MySQLTableUniqueKey> constraints = pkTable.getConstraints(monitor);
+                        Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
-                            for (MySQLTableUniqueKey pkConstraint : constraints) {
+                            for (MySQLTableConstraint pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
@@ -457,7 +464,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                         String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLTableUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                            pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
                             pk.addColumn(new MySQLTableConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }
@@ -559,7 +566,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        getContainer().constraintCache.clearObjectCache(this);
+        getContainer().uniqueKeyCache.clearObjectCache(this);
         getContainer().checkConstraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
