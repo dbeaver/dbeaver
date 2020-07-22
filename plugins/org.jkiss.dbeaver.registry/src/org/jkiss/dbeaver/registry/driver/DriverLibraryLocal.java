@@ -172,6 +172,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
             switch (type) {
                 case lib: return DBIcon.LIBRARY;
                 case jar: return DBIcon.JAR;
+                case license: return DBIcon.TYPE_TEXT;
                 default: return DBIcon.TYPE_UNKNOWN;
             }
         }
