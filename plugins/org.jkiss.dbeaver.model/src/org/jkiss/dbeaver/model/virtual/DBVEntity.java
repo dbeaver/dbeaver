@@ -400,7 +400,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 "VIRTUAL_PK"));
         }
         for (DBVEntityConstraint constraint : entityConstraints) {
-            if (constraint.getConstraintType().isUnique()) {
+            if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getAttributes())) {
                 return constraint;
             }
         }
