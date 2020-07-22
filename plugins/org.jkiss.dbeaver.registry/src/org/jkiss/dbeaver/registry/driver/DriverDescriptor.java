@@ -68,18 +68,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static class DriverFileInfo {
         private final String id;
         private final String version;
+        private final DBPDriverLibrary.FileType type;
         private final File file;
 
-        DriverFileInfo(String id, String version, File file) {
+        DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, File file) {
             this.id = id;
             this.version = version;
             this.file = file;
+            this.type = type;
         }
 
         DriverFileInfo(DBPDriverLibrary library) {
             this.id = library.getId();
             this.version = library.getVersion();
             this.file = library.getLocalFile();
+            this.type = library.getType();
         }
 
         public File getFile() {
@@ -92,6 +95,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         public String getVersion() {
             return version;
+        }
+
+        public DBPDriverLibrary.FileType getType() {
+            return type;
         }
 
         @Override
