@@ -128,10 +128,14 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
         Boolean isCompact = (Boolean) options.get("script.format.compact");
         if (isCompact != null) {
             if (!isCompact) {
-                String comment = "\n\n" + "COMMENT ON TABLE " + getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                        " IS " + SQLUtils.quoteString(this, getComment(monitor)) + ";";
-                StringBuilder columnComments = new StringBuilder();
-
+                StringBuilder commentDDL = new StringBuilder();
+                String viewComment = SQLUtils.quoteString(this, getComment(monitor));
+                if (!CommonUtils.isEmpty(viewComment)) {
+                    commentDDL.append("\n\n" + "COMMENT ON TABLE ")
+                            .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
+                            .append(" IS ")
+                            .append(viewComment).append(";");
+                }
                 List<DBEPersistAction> actions = new ArrayList<>();
                 for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
                     if (!CommonUtils.isEmpty(column.getComment(monitor))) {
@@ -139,21 +143,10 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
                     }
                 }
                 if (!actions.isEmpty()) {
-                    columnComments.append("\n").append(SQLUtils.generateScript(
+                    commentDDL.append("\n").append(SQLUtils.generateScript(
                             getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
                 }
-//                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
-//                    String columnComment = column.getComment(monitor);
-//                    if (!CommonUtils.isEmpty(columnComment)) {
-////                        COMMENT ON COLUMN "TEST_VIEW"."V_ID1" IS 'comment on a view column';
-//                        columnComments.append("\n")
-//                                .append("COMMENT ON COLUMN ")
-//                                .append(getName())
-//                                .append(" IS ")
-//                                .append(SQLUtils.quoteString(column, columnComment));
-//                    }
-//                }
-                return viewText + comment + columnComments;
+                return viewText + commentDDL;
             }
         }
         return viewText;
