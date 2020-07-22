@@ -63,7 +63,7 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
             constraint.setName(editPage.getConstraintName());
             constraint.setConstraintType(editPage.getConstraintType());
             if (editPage.getConstraintType() == DBSEntityConstraintType.CHECK && dataSource.supportsCheckConstraints()) {
-                constraint.setClause(editPage.getConstraintExpression());
+                constraint.setCheckClause(editPage.getConstraintExpression());
             } else {
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {

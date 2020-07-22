@@ -60,7 +60,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     final ProceduresCache proceduresCache = new ProceduresCache();
     final PackageCache packageCache = new PackageCache();
     final TriggerCache triggerCache = new TriggerCache();
-    final ConstraintCache constraintCache = new ConstraintCache(tableCache);
+    final UniqueKeyCache uniqueKeyCache = new UniqueKeyCache(tableCache);
     final CheckConstraintCache checkConstraintCache = new CheckConstraintCache(tableCache);
     final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
@@ -264,9 +264,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return triggerCache;
     }
 
-    public ConstraintCache getConstraintCache()
+    public UniqueKeyCache getUniqueKeyCache()
     {
-        return constraintCache;
+        return uniqueKeyCache;
     }
 
     public CheckConstraintCache getCheckConstraintCache()
@@ -383,7 +383,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table constraints");
-            constraintCache.getAllObjects(monitor, this);
+            uniqueKeyCache.getAllObjects(monitor, this);
             checkConstraintCache.getAllObjects(monitor, this);
         }
     }
@@ -425,7 +425,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         hasStatistics = false;
         tableCache.clearCache();
         indexCache.clearCache();
-        constraintCache.clearCache();
+        uniqueKeyCache.clearCache();
         checkConstraintCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
@@ -638,8 +638,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Constraint cache implementation
      */
-    static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
-        ConstraintCache(TableCache tableCache)
+    static class UniqueKeyCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
+        UniqueKeyCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
