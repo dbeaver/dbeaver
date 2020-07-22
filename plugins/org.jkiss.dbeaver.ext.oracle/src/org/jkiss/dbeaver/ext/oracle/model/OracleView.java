@@ -81,6 +81,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private String viewText;
+    private String viewFullText;
 
     public OracleView(OracleSchema schema, String name)
     {
@@ -128,25 +129,29 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
         Boolean isCompact = (Boolean) options.get("script.format.compact");
         if (isCompact != null) {
             if (!isCompact) {
-                StringBuilder commentDDL = new StringBuilder();
-                String viewComment = SQLUtils.quoteString(this, getComment(monitor));
-                if (!CommonUtils.isEmpty(viewComment)) {
-                    commentDDL.append("\n\n" + "COMMENT ON TABLE ")
-                            .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
-                            .append(" IS ")
-                            .append(viewComment).append(";");
+                if (viewFullText == null){
+                    viewFullText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
                 }
-                List<DBEPersistAction> actions = new ArrayList<>();
-                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
-                    if (!CommonUtils.isEmpty(column.getComment(monitor))) {
-                        OracleTableColumnManager.addColumnCommentAction(actions, column);
-                    }
-                }
-                if (!actions.isEmpty()) {
-                    commentDDL.append("\n").append(SQLUtils.generateScript(
-                            getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
-                }
-                return viewText + commentDDL;
+                return viewFullText;
+//                StringBuilder commentDDL = new StringBuilder();
+//                String viewComment = SQLUtils.quoteString(this, getComment(monitor));
+//                if (!CommonUtils.isEmpty(viewComment)) {
+//                    commentDDL.append("\n\n" + "COMMENT ON TABLE ")
+//                            .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
+//                            .append(" IS ")
+//                            .append(viewComment).append(";");
+//                }
+//                List<DBEPersistAction> actions = new ArrayList<>();
+//                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+//                    if (!CommonUtils.isEmpty(column.getComment(monitor))) {
+//                        OracleTableColumnManager.addColumnCommentAction(actions, column);
+//                    }
+//                }
+//                if (!actions.isEmpty()) {
+//                    commentDDL.append("\n").append(SQLUtils.generateScript(
+//                            getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+//                }
+//                return viewText + commentDDL;
             }
         }
         return viewText;

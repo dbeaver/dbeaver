@@ -104,7 +104,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         }
     }
 
-    public static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
+    static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment column",
             "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
