@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,11 +34,14 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -116,9 +120,40 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     {
         if (viewText == null) {
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
+                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
+            }
+        }
+        Boolean isCompact = (Boolean) options.get("script.format.compact");
+        if (isCompact != null) {
+            if (!isCompact) {
+                String comment = "\n\n" + "COMMENT ON TABLE " + getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                        " IS " + SQLUtils.quoteString(this, getComment(monitor)) + ";";
+                StringBuilder columnComments = new StringBuilder();
+
+                List<DBEPersistAction> actions = new ArrayList<>();
+                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+                    if (!CommonUtils.isEmpty(column.getComment(monitor))) {
+                        OracleTableColumnManager.addColumnCommentAction(actions, column);
+                    }
+                }
+                if (!actions.isEmpty()) {
+                    columnComments.append("\n").append(SQLUtils.generateScript(
+                            getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+                }
+//                for (OracleTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+//                    String columnComment = column.getComment(monitor);
+//                    if (!CommonUtils.isEmpty(columnComment)) {
+////                        COMMENT ON COLUMN "TEST_VIEW"."V_ID1" IS 'comment on a view column';
+//                        columnComments.append("\n")
+//                                .append("COMMENT ON COLUMN ")
+//                                .append(getName())
+//                                .append(" IS ")
+//                                .append(SQLUtils.quoteString(column, columnComment));
+//                    }
+//                }
+                return viewText + comment + columnComments;
             }
         }
         return viewText;
