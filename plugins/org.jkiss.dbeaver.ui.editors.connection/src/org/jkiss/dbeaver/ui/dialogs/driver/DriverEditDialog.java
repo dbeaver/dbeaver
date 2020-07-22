@@ -393,7 +393,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
                         cell.setText(element.toString());
-                        cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        if (element instanceof DriverDescriptor.DriverFileInfo) {
+                            if (((DriverDescriptor.DriverFileInfo)element).getType() == DBPDriverLibrary.FileType.license) {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
+                            } else {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                            }
+                        } else {
+                            cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        }
                     }
                 }
 

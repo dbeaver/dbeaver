@@ -292,6 +292,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                 DriverDescriptor.DriverFileInfo info = new DriverDescriptor.DriverFileInfo(
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
+                                        curLibrary.getType(),
                                         new File(path));
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
