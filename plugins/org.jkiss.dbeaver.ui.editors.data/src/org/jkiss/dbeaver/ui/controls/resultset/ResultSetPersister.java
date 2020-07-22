@@ -938,8 +938,10 @@ class ResultSetPersister {
                 return;
             }
             for (int i = 0; i < curAttributes.length; i++) {
-                if (!DBExecUtils.equalAttributes(curAttributes[i].getMetaAttribute(), attributes.get(i))) {
-                    log.debug("Attribute '" + curAttributes[i].getMetaAttribute() + "' doesn't match '" + attributes.get(i).getName() + "'");
+                DBCAttributeMetaData metaAttribute = curAttributes[i].getMetaAttribute();
+                if (metaAttribute == null ||
+                    !CommonUtils.equalObjects(metaAttribute.getName(), attributes.get(i).getName())) {
+                    log.debug("Attribute '" + metaAttribute + "' doesn't match '" + attributes.get(i).getName() + "'");
                     return;
                 }
             }
