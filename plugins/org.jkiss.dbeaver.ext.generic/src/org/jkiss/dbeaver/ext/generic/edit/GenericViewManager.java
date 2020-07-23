@@ -101,9 +101,13 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP VIEW " +
+                "DROP " + getDropViewType(command.getObject()) + " " +
                 command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
+    }
+
+    protected String getDropViewType(GenericTableBase object) {
+        return "VIEW";
     }
 
     private void createOrReplaceViewQuery(List<DBEPersistAction> actions, DBECommandComposite<GenericTableBase, PropertyHandler> command)
