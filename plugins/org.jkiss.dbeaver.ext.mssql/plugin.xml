@@ -440,6 +440,8 @@
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
