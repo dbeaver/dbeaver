@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.lang.reflect.InvocationTargetException;
 
-class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<Object> {
+abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<Object>, IQueryExecuteController {
+
+    private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
     private DBDDataFilter dataFilter;
     private Composite progressControl;
@@ -64,9 +66,12 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         this.refresh = refresh;
     }
 
-    public Throwable getError()
-    {
+    public Throwable getError() {
         return error;
+    }
+
+    void setError(Throwable error) {
+        this.error = error;
     }
 
     DBCStatistics getStatistics()
@@ -146,8 +151,6 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         return getExecutionController();
     }
 
-    private static final int PROGRESS_VISUALIZE_PERIOD = 100;
-
     private class PumpVisualizer extends UIJob {
 
         private ProgressLoaderVisualizer<Object> visualizer;
@@ -160,6 +163,25 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
+            ResultSetJobDataRead loadService = (ResultSetJobDataRead) visualizer.getLoadService();
+            if (loadService != null && loadService.isCanceled()) {
+                long cancelTimestamp = loadService.getCancelTimestamp();
+                long cancelTimeout = -1;//controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
+                if (cancelTimeout > 0 && System.currentTimeMillis() - cancelTimestamp > cancelTimeout) {
+                    // Job was canceled but didn't end.
+
+                    // Let's ask user about cancel force
+
+                    // So let's just ignore it (remove from queue and stop visualizing)
+
+                    controller.removeDataPump(loadService);
+                    loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
+
+                    visualizer.completeLoading(null);
+                    visualizer.visualizeLoading();
+                    return Status.OK_STATUS;
+                }
+            }
             if (!controller.getDataReceiver().isDataReceivePaused()) {
                 visualizer.visualizeLoading();
             } else {

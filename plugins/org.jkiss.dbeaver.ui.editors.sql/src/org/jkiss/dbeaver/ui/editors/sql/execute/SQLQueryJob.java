@@ -104,6 +104,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean skipConfirmation;
     private int fetchSize;
     private long fetchFlags;
+    private SQLQueryResult curResult;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -149,6 +150,10 @@ public class SQLQueryJob extends DataSourceJob
 
     public DBCStatement getCurrentStatement() {
         return curStatement;
+    }
+
+    public SQLQueryResult getCurrentQueryResult() {
+        return curResult;
     }
 
     private boolean hasLimits()
@@ -381,7 +386,7 @@ public class SQLQueryJob extends DataSourceJob
             sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
         }
 
-        final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
+        curResult = new SQLQueryResult(sqlQuery);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
@@ -445,12 +450,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                // Notify query end
-                try {
-                    listener.onEndQuery(session, curResult, statistics);
-                } catch (Exception e) {
-                    log.error(e);
-                }
+                notifyQueryExecutionEnd(curResult);
             }
 
             scriptContext.clearStatementContext();
@@ -464,6 +464,15 @@ public class SQLQueryJob extends DataSourceJob
         // Success
         lastGoodQuery = originalQuery;
         return true;
+    }
+
+    public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
+        // Notify query end
+        try {
+            listener.onEndQuery(null, curResult, statistics);
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 
     private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
