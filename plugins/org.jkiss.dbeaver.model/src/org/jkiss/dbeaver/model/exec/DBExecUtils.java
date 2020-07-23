@@ -672,10 +672,16 @@ public class DBExecUtils {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
 
-                    if (tableColumn != null && // Table column can be found from results metadata or from SQL query parser
+                    if (tableColumn != null &&
+                        // Table column can be found from results metadata or from SQL query parser
                         // If datasource supports table names in result metadata then table name must present in results metadata.
                         // Otherwise it is an expression.
-                        (bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
+
+                        // It is a real table columns if:
+                        //  - We use some explicit entity (e.g. table data editor)
+                        //  - Table metadata was specified for column
+                        //  - Database doesn't support column name collisions (default)
+                        (entity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
