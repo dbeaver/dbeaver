@@ -91,9 +91,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         previewSplitter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
-
+        Group objectsPanel;
         {
-            Group objectsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_objects, 2, GridData.FILL_BOTH, 0);
+            objectsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_objects, 2, GridData.FILL_BOTH, 0);
             objectsViewer = new TableViewer(objectsPanel, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             objectsViewer.setContentProvider(new ListContentProvider());
             objectsViewer.setLabelProvider(new ColumnLabelProvider() {
@@ -223,6 +223,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         getWizard().createTaskSaveButtons(controlsPanel, true, 1);
 
         loadSettings();
+
+        if (taskOptionsViewer.getTree().getItemCount() == 0) {
+            settingsPanel.setMaximizedControl(objectsPanel);
+        }
 
         setControl(composite);
     }
