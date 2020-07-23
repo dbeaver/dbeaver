@@ -2505,7 +2505,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryProcessor implements SQLResultsConsumer {
+    public class QueryProcessor implements SQLResultsConsumer, ISmartTransactionManager {
 
         private volatile SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
@@ -2749,6 +2749,16 @@ public class SQLEditor extends SQLEditorBase implements
             }
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
+        }
+
+        @Override
+        public boolean isSmartAutoCommit() {
+            return SQLEditor.this.isSmartAutoCommit();
+        }
+
+        @Override
+        public void setSmartAutoCommit(boolean smartAutoCommit) {
+            SQLEditor.this.setSmartAutoCommit(smartAutoCommit);
         }
     }
 
@@ -3226,9 +3236,6 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onStartQuery(DBCSession session, final SQLQuery query) {
             try {
-                if (isSmartAutoCommit()) {
-                    DBExecUtils.checkSmartAutoCommit(session, query.getText());
-                }
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
                     UIUtils.asyncExec(() -> {
