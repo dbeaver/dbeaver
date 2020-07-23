@@ -61,13 +61,14 @@ public class ClickhouseMetaModel extends GenericMetaModel
     @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
-            return super.createTableImpl(container, tableName, tableType, dbResult);
+            return new ClickhouseView(container, tableName, tableType, dbResult);
+        } else {
+            return new ClickhouseTable(
+                container,
+                tableName,
+                tableType,
+                dbResult);
         }
-        return new ClickhouseTable(
-            container,
-            tableName,
-            tableType,
-            dbResult);
     }
 
     @Override

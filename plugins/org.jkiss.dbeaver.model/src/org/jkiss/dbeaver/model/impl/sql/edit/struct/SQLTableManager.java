@@ -145,6 +145,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return DBUtils.isView(table) ? "VIEW" : "TABLE";//$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    protected String getDropTableType(OBJECT_TYPE table) {
+        return getCreateTableType(table);
+    }
+
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
         return false;
     }
@@ -157,7 +161,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + getCreateTableType(object) +  //$NON-NLS-2$
+                "DROP " + getDropTableType(object) +  //$NON-NLS-2$
                 " " + tableName + //$NON-NLS-2$
                 (!DBUtils.isView(object) && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "") //$NON-NLS-2$
             )
