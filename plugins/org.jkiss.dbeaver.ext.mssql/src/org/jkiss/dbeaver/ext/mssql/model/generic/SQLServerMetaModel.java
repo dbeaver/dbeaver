@@ -266,7 +266,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     while (dbResult.nextRow()) {
                         sql.append(dbResult.getString(1));
                     }
-                    return sql.toString();
+                    String ddl = sql.toString();
+                    ddl = ddl.replaceAll("(?i)CREATE VIEW", "CREATE OR REPLACE VIEW");
+                    return ddl;
                 }
             }
         } catch (SQLException e) {
