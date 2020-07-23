@@ -100,7 +100,10 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NotNullModifier};
+        return new ColumnModifier[]{
+            DataTypeModifier,
+            DefaultModifier,
+            column.getDataSource().getMetaModel().isColumnNotNullByDefault() ? NullNotNullModifier : NotNullModifier};
     }
 
     @Override

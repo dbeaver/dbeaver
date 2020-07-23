@@ -699,4 +699,7 @@ public class GenericMetaModel {
         return false;
     }
 
+    public boolean isColumnNotNullByDefault() {
+        return false;
+    }
 }
