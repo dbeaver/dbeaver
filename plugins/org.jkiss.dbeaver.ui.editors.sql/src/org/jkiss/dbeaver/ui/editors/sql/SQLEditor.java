@@ -1927,7 +1927,8 @@ public class SQLEditor extends SQLEditorBase implements
                     false,
                     true,
                     export,
-                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
+                    getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR),
+                    queryListener);
             }
         } else {
             if (!export) {
@@ -2762,7 +2763,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetValueReflector, IResultSetListener, SQLQueryContainer, ISmartTransactionManager {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetValueReflector, IResultSetListener, SQLQueryContainer, ISmartTransactionManager, IQueryExecuteController {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -3178,6 +3179,21 @@ public class SQLEditor extends SQLEditorBase implements
                 textWidget.setFocus();
             }
         }
+
+        @Override
+        public void forceDataReadCancel(Throwable error) {
+            for (QueryProcessor processor : queryProcessors) {
+                SQLQueryJob job = processor.curJob;
+                if (job != null) {
+                    SQLQueryResult currentQueryResult = job.getCurrentQueryResult();
+                    if (currentQueryResult == null) {
+                        currentQueryResult = new SQLQueryResult(new SQLQuery(null, ""));
+                    }
+                    currentQueryResult.setError(error);
+                    job.notifyQueryExecutionEnd(currentQueryResult);
+                }
+            }
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
@@ -3290,7 +3306,9 @@ public class SQLEditor extends SQLEditorBase implements
                     refreshActions();
                 });
             } finally {
-                if (extListener != null) extListener.onEndQuery(session, result, statistics);
+                if (extListener != null) {
+                    extListener.onEndQuery(session, result, statistics);
+                }
             }
         }
 
