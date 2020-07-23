@@ -521,13 +521,11 @@ public class PostgreSchema implements
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT \n" + 
                     " e.oid,\n" + 
-                    " a.rolname oname,\n" + 
-                    " cfg.tbls,\n" + 
+                    " cfg.tbls,\n" +
                     " e.* \n" + 
                     "FROM \n" + 
                     " pg_catalog.pg_extension e \n" + 
-                    " join pg_authid a on a.oid = e.extowner\n" + 
-                    " join pg_namespace n on n.oid =e.extnamespace\n" + 
+                    " join pg_namespace n on n.oid =e.extnamespace\n" +
                     " left join  (\n" + 
                     "         select\n" + 
                     "            ARRAY_AGG(ns.nspname || '.' ||  cls.relname) tbls, oid_ext\n" + 

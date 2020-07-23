@@ -961,13 +961,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return session.prepareStatement(
                   "SELECT \n" +
                   " e.oid,\n" +
-                  " a.rolname oname,\n" +
                   " cfg.tbls,\n" +
                   "  n.nspname as schema_name,\n" +
                   " e.* \n" +
                   "FROM \n" +
                   " pg_catalog.pg_extension e \n" +
-                  " join pg_authid a on a.oid = e.extowner\n" +
                   " join pg_namespace n on n.oid =e.extnamespace\n" +
                   " left join  (\n" +
                   "         select\n" +
