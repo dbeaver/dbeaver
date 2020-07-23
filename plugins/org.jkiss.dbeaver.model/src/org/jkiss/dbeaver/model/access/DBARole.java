@@ -17,10 +17,8 @@
 
 package org.jkiss.dbeaver.model.access;
 
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
 /**
  * Role
  */
-public interface DBARole extends DBSObject {
+public interface DBARole extends DBAObject {
 }

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -36,7 +37,7 @@ import java.util.Map;
 /**
  * PostgreExtension
  */
-public class PostgreExtension implements PostgreObject, PostgreScriptObject {
+public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBPSystemInfoObject {
 
     private static final Log log = Log.getLog(PostgreExtension.class);
     
