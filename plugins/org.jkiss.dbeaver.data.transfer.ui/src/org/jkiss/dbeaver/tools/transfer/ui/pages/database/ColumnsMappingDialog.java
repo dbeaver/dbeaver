@@ -243,6 +243,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                                     if (name.equalsIgnoreCase(attr.getName())) {
                                         attrMapping.setTarget(attr);
                                         attrMapping.setMappingType(DatabaseMappingType.existing);
+                                        attrMapping.setTargetName(name);
                                         return;
                                     }
                                 }
