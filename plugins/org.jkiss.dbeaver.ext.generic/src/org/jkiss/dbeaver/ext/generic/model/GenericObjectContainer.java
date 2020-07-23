@@ -153,7 +153,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
                 // First - try to read all indexes. Some drivers can do this
                 // If index list is empty then try to read by tables
-                List<GenericTableIndex> newIndexCache = indexCache.getObjects(monitor, this, null);
+                List<GenericTableIndex> newIndexCache;
+                try {
+                    newIndexCache = indexCache.getObjects(monitor, this, null);
+                } catch (DBException e) {
+                    log.debug("Error reading global indexes. Get indexes from tables", e);
+                    newIndexCache = new ArrayList<>();
+                }
 
                 if (readFromTables && newIndexCache.isEmpty()) {
                     newIndexCache = new ArrayList<>();
