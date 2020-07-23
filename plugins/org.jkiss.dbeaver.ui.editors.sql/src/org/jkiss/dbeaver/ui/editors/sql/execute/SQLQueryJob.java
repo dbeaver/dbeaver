@@ -390,6 +390,7 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         monitor.beginTask("Process query", 1);
+        monitor.subTask("Initialize context");
         try {
             // Prepare statement
             closeStatement();
@@ -413,6 +414,7 @@ public class SQLQueryJob extends DataSourceJob
                 startQueryAlerted = true;
             }
 
+            monitor.subTask("Execute query");
             startTime = System.currentTimeMillis();
 
             SQLQuery execStatement = sqlQuery;
