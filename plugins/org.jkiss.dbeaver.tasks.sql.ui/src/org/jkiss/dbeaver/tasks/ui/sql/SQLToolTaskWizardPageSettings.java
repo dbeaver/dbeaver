@@ -224,7 +224,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         loadSettings();
 
-        if (taskOptionsViewer.getTree().getItems().length == 0) {
+        if (taskOptionsViewer.getTree().getItemCount() == 0) {
             settingsPanel.setMaximizedControl(objectsPanel);
         }
 
