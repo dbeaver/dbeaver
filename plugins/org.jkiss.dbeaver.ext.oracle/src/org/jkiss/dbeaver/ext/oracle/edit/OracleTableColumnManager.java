@@ -106,15 +106,21 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
  
 	static String replaceColumnTypeAction(String modifyClause, OracleDataType dataType) {
 		String modifiedClause;
+		// modifyClause: " MODIFY ${COLUMN_NAME} ${COLUMN_TYPE}"
+		String[] splitClause = modifyClause.split(" ");
+		
 		// need to add decimal
 		if (DBPDataKind.NUMERIC == dataType.getDataKind()) {
 			// when the type is changed in the UI, decimal type is converted to DECIMAL(38,0)
-			if (dataType.getName() == "DECIMAL") {
-				modifiedClause = modifyClause.replace("DECIMAL", "NUMBER");
-			} else if (dataType.getName() == "INTEGER") {
-				modifiedClause = modifyClause.replace("INTEGER", "NUMBER(38)");
-			} else if (dataType.getName() == "SMALLINT") {
-				modifiedClause = modifyClause.replace("SMALLINT", "NUMBER(38)");
+			if (dataType.getName().equals("DECIMAL")) {
+				splitClause[3] = splitClause[3].replace("DECIMAL", "NUMBER");
+				modifiedClause = String.join(" ", splitClause);
+			} else if (dataType.getName().equals("INTEGER")) {
+				splitClause[3] = splitClause[3].replace("INTEGER", "NUMBER(38)");
+				modifiedClause = String.join(" ", splitClause);
+			} else if (dataType.getName().equals("SMALLINT")) {
+				splitClause[3] = splitClause[3].replace("SMALLINT", "NUMBER(38)");
+				modifiedClause = String.join(" ", splitClause);
 			} else {
 				modifiedClause = modifyClause;
 			}
