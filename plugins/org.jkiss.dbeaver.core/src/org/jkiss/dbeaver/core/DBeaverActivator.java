@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
@@ -138,5 +139,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
         }
     }
 
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(DBeaverCore.PLUGIN_ID, path);
+    }
 
 }
