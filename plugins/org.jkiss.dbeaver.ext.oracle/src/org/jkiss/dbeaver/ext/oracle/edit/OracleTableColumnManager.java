@@ -108,12 +108,12 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 		String modifiedClause;
 		// need to add decimal
 		if (DBPDataKind.NUMERIC == dataType.getDataKind()) {
-//			if(dataType.getName() == "DECIMAL") {
-//				modifiedClause = modifyClause.replace("DECIMAL", "NUMBER");
-//			} else 
-				if(dataType.getName() == "INTEGER") {
+			// when the type is changed in the UI, decimal type is converted to DECIMAL(38,0)
+			if (dataType.getName() == "DECIMAL") {
+				modifiedClause = modifyClause.replace("DECIMAL", "NUMBER");
+			} else if (dataType.getName() == "INTEGER") {
 				modifiedClause = modifyClause.replace("INTEGER", "NUMBER(38)");
-			} else if(dataType.getName() == "SMALLINT") {
+			} else if (dataType.getName() == "SMALLINT") {
 				modifiedClause = modifyClause.replace("SMALLINT", "NUMBER(38)");
 			} else {
 				modifiedClause = modifyClause;
