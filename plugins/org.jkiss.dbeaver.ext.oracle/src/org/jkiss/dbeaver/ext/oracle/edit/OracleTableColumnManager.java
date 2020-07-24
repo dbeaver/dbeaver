@@ -97,13 +97,33 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
+                replaceColumnTypeAction(" MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options), column.getDataType()))); //$NON-NLS-1$
         }
         if (hasComment) {
             addColumnCommentAction(actionList, column);
         }
     }
-
+ 
+	static String replaceColumnTypeAction(String modifyClause, OracleDataType dataType) {
+		String modifiedClause;
+		// need to add decimal
+		if (DBPDataKind.NUMERIC == dataType.getDataKind()) {
+//			if(dataType.getName() == "DECIMAL") {
+//				modifiedClause = modifyClause.replace("DECIMAL", "NUMBER");
+//			} else 
+				if(dataType.getName() == "INTEGER") {
+				modifiedClause = modifyClause.replace("INTEGER", "NUMBER(38)");
+			} else if(dataType.getName() == "SMALLINT") {
+				modifiedClause = modifyClause.replace("SMALLINT", "NUMBER(38)");
+			} else {
+				modifiedClause = modifyClause;
+			}
+		} else {
+			modifiedClause = modifyClause;
+		}
+		return modifiedClause;
+	}
+    
     static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment column",
