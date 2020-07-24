@@ -672,6 +672,10 @@ public class GeneralUtils {
         return Platform.getOS().contains("win32");
     }
 
+    public static boolean isMacOS() {
+        return Platform.getOS().contains("macos");
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // Adapters
     // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
