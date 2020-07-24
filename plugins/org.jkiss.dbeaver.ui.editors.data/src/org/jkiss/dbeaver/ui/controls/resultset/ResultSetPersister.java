@@ -934,7 +934,7 @@ class ResultSetPersister {
             // Compare attributes with existing model attributes
             List<DBCAttributeMetaData> attributes = rsMeta.getAttributes();
             if (attributes.size() != curAttributes.length) {
-                log.debug("Wrong meta attributes count - can't refresh");
+                log.debug("Wrong meta attributes count (" + attributes.size() + " <> " + curAttributes.length + ") - can't refresh");
                 return;
             }
             for (int i = 0; i < curAttributes.length; i++) {
