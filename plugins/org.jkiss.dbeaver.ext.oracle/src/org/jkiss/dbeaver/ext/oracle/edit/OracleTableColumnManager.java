@@ -111,15 +111,10 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 		
 		// need to add decimal
 		if (DBPDataKind.NUMERIC == dataType.getDataKind()) {
-			// when the type is changed in the UI, decimal type is converted to DECIMAL(38,0)
-			if (dataType.getName().equals("DECIMAL")) {
-				splitClause[3] = splitClause[3].replace("DECIMAL", "NUMBER");
-				modifiedClause = String.join(" ", splitClause);
-			} else if (dataType.getName().equals("INTEGER")) {
-				splitClause[3] = splitClause[3].replace("INTEGER", "NUMBER(38)");
-				modifiedClause = String.join(" ", splitClause);
-			} else if (dataType.getName().equals("SMALLINT")) {
-				splitClause[3] = splitClause[3].replace("SMALLINT", "NUMBER(38)");
+			// when the type is changed in the UI, decimal type is converted to
+			// DECIMAL(38,0)
+			if (dataType.getName().equals("DECIMAL") || dataType.getName().equals("INTEGER") || dataType.getName().equals("SMALLINT")) {
+				splitClause[3] = "NUMBER(38)";
 				modifiedClause = String.join(" ", splitClause);
 			} else {
 				modifiedClause = modifyClause;
