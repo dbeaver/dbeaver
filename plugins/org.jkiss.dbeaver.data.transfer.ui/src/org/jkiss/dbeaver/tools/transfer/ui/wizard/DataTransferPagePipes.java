@@ -79,7 +79,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(new int[]{66, 33});
+        //sash.setWeights(new int[]{66, 33});
 
         updatePageCompletion();
 
@@ -235,7 +235,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(inputsTable.getTable());
-            UIUtils.maxTableColumnsWidth(inputsTable.getTable());
+            //UIUtils.maxTableColumnsWidth(inputsTable.getTable());
         });
     }
 
@@ -255,7 +255,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(nodesTable.getTable());
-            UIUtils.maxTableColumnsWidth(nodesTable.getTable());
+            //UIUtils.maxTableColumnsWidth(nodesTable.getTable());
         });
 
         DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
