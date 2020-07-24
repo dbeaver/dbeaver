@@ -64,6 +64,8 @@ class MySQLDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
+        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
