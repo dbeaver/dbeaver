@@ -109,6 +109,9 @@ public class DataExporterSQL extends StreamExporterAbstract {
     {
         PrintWriter out = getWriter();
         SQLDialect.MultiValueInsertMode insertMode = rowsInStatement == 1 ? SQLDialect.MultiValueInsertMode.NOT_SUPPORTED : getMultiValueInsertMode();
+        if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED) {
+            rowsInStatement = 1;
+        }
         int columnsSize = columns.length;
         boolean firstRow = false;
         if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || rowCount % rowsInStatement == 0) {
