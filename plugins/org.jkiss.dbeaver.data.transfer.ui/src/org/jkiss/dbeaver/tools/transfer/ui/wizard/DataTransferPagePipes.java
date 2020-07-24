@@ -79,13 +79,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        //sash.setWeights(new int[]{66, 33});
-
-        updatePageCompletion();
+        sash.setWeights(new int[]{60, 40});
 
         setControl(composite);
-
-        updatePageCompletion();
     }
 
     private void createNodesTable(Composite composite) {
@@ -232,11 +228,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.setLabelProvider(labelProvider);
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
-
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(inputsTable.getTable());
-            //UIUtils.maxTableColumnsWidth(inputsTable.getTable());
-        });
     }
 
     @Override
@@ -253,11 +244,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             loadProducers();
         }
 
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(nodesTable.getTable());
-            //UIUtils.maxTableColumnsWidth(nodesTable.getTable());
-        });
-
         DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
         DataTransferNodeDescriptor producer = getWizard().getSettings().getProducer();
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
@@ -272,6 +258,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+
+        UIUtils.maxTableColumnsWidth(inputsTable.getTable());
+        UIUtils.maxTableColumnsWidth(nodesTable.getTable());
 
         updatePageCompletion();
     }
