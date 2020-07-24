@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -74,6 +75,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
     private Font fontItalic;
+    private boolean isLinux;
+
+    public StatisticsNavigatorNodeRenderer() {
+        isLinux = !GeneralUtils.isWindows() && !GeneralUtils.isMacOS();
+    }
 
     public Font getFontItalic(Tree tree) {
         if (fontItalic == null) {
@@ -111,13 +117,20 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         DBPDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
                         Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
 
-                        gc.setForeground(
-                            bgColor == null ?
-                                tree.getDisplay().getSystemColor(
-                                    (UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW)) :
-                                UIUtils.getContrastColor(bgColor));
-                        gc.setFont(getFontItalic(tree));
-                        gc.drawText(" - " + hostText, event.x + event.width + 2, event.y, true);
+                        Color hostNameColor = tree.getDisplay().getSystemColor(
+                            (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
+                                SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
+                        gc.setForeground(hostNameColor);
+                        Font hostNameFont = getFontItalic(tree);
+                        gc.setFont(hostNameFont);
+                        Point hostTextSize = gc.stringExtent(hostText);
+
+                        int xOffset = isLinux ? 16 : 2;
+
+                        gc.drawText(" - " + hostText,
+                            event.x + event.width + xOffset,
+                            event.y + ((event.height - hostTextSize.y) / 2),
+                            true);
                         gc.setFont(oldFont);
                     }
                 }
