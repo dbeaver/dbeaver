@@ -313,8 +313,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
-        if (!selectedObjects.isEmpty()) {
-            DBUtils.getDefaultContext(selectedObjects.get(0), false);
+        SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
+
+        if (settings != null && !settings.getObjectList().isEmpty()) {
+            return DBUtils.getDefaultContext(settings.getObjectList().get(0), false);
         }
         return null;
     }
