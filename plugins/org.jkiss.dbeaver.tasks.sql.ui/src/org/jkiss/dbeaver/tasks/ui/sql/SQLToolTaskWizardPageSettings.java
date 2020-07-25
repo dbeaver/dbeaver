@@ -151,7 +151,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 }
             });
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
+            ToolItem[] moveButtons = new ToolItem[2];
+            moveButtons[0] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = objectTable.getSelectionIndex();
@@ -161,9 +162,11 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                         selectedObjects.set(selectionIndex, prevScript);
                         refreshObjects();
                     }
+                    moveButtons[0].setEnabled(selectionIndex > 1);
+                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
                 }
             });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
+            moveButtons[1] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = objectTable.getSelectionIndex();
@@ -173,15 +176,20 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                         selectedObjects.set(selectionIndex, nextScript);
                         refreshObjects();
                     }
+                    moveButtons[0].setEnabled(selectionIndex > 0);
+                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 2);
                 }
             });
             objectsViewer.addSelectionChangedListener(event -> {
                 int selectionIndex = objectTable.getSelectionIndex();
                 deleteItem.setEnabled(selectionIndex >= 0);
-                moveUpItem.setEnabled(selectionIndex > 0);
-                moveDownItem.setEnabled(selectionIndex < objectTable.getItemCount() - 1);
+                moveButtons[0].setEnabled(selectionIndex > 0);
+                moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
             });
             deleteItem.setEnabled(false);
+
+            moveButtons[0].setEnabled(false);
+            moveButtons[1].setEnabled(false);
         }
 
         {
