@@ -250,6 +250,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
                 return EXIT_OK;
             }
 
+            
             // if the exit code property has been set to the relaunch code, then
             // return that code now, otherwise this is a normal restart
             return EXIT_RELAUNCH.equals(Integer.getInteger(PROP_EXIT_CODE)) ? EXIT_RELAUNCH

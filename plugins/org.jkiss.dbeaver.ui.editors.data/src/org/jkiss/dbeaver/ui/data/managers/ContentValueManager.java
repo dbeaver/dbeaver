@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -27,9 +28,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.storage.ExternalContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
@@ -49,14 +52,19 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.awt.Desktop;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 
 /**
  * JDBC Content value handler.
@@ -69,7 +77,7 @@ public class ContentValueManager extends BaseValueManager {
     private static final Log log = Log.getLog(ContentValueManager.class);
 
     public static final String PROP_CATEGORY_CONTENT = "CONTENT";
-
+    
     public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, final IValueEditor activeEditor)
         throws DBCException
     {
@@ -87,24 +95,21 @@ public class ContentValueManager extends BaseValueManager {
             	@Override
             	public void run() {
         			try {
-        				if (controller.getValue() == null) {
+        				final Object value = controller.getValue();
+        				if (value == null) {
         					DBWorkbench.getPlatformUI().showError("Data is empty", "Can not save null data value");
         				}
-        				
-        				DBDContent castContent = (DBDContent)controller.getValue();
-						File tmpFile = File.createTempFile("dbtmp", ".octet-stream");
-						FileOutputStream fos = new FileOutputStream(tmpFile);
-						if (castContent.getRawValue() == null) {
-							DBWorkbench.getPlatformUI().showError("Open Content", "Raw value was null");
-							fos.close();
-						}
-						fos.write((byte[])castContent.getRawValue());
-						fos.close();
-						// use OS to open the file
-						DBWorkbench.getPlatformUI().showMessageBox("Open Content", "Opening the file at " + tmpFile.getPath(), false);
-						Desktop.getDesktop().open(tmpFile);
-						// delete the file when the user closes the DBeaver application
-						tmpFile.deleteOnExit();
+        				if (value instanceof DBDContent) {
+        					getDBDContent(value);
+        				} else {
+        					String str = controller.getValueHandler()
+        							.getValueDisplayString(controller.getValueType(), 
+        									controller.getValue(), DBDDisplayFormat.EDIT);
+        					String charset = 
+        							DBValueFormatting.getDefaultBinaryFileEncoding(controller.getExecutionContext().getDataSource());
+        					byte[] bytes = str.getBytes(charset);
+        					openOctetStream(bytes);
+        				}
 					} catch (IOException e) {
 						DBWorkbench.getPlatformUI().showError("Open content", "Error while trying to open the value", e);
 					} catch (Exception e) {
@@ -129,6 +134,61 @@ public class ContentValueManager extends BaseValueManager {
             });
             manager.add(new Separator());
         }
+    }
+    
+    private static void getDBDContent(Object value) throws IOException, DBCException {
+		DBDContent content = (DBDContent) value;
+		try {
+			UIUtils.runInProgressService(monitor -> {
+				String charset = null;
+				DBDContentStorage storage;
+				try {
+					storage = content.getContents(monitor);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+					if (storage != null) {
+						try (InputStream inputStream = storage.getContentStream()) {
+							ContentUtils.copyStreams(inputStream, -1, buffer, monitor);
+						} catch (IOException e) {
+							DBWorkbench.getPlatformUI().showError("IOException", "File exception", e);
+						}
+						charset = storage.getCharset();
+					} else {
+						charset = DBValueFormatting.getDefaultBinaryFileEncoding(content.getDataSource());
+					}
+					byte[] byteData = buffer.toByteArray();
+					openOctetStream(byteData);
+				} catch (DBCException e1) {
+					DBWorkbench.getPlatformUI().showError("DBCException", "Error reading contents", e1);
+				} catch (IOException e) {
+					DBWorkbench.getPlatformUI().showError("IOException", "File exception while opening", e);
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			DBWorkbench.getPlatformUI().showError("Reading from content", "Error loading contents from file", e);
+		}
+    }
+    
+    private static void openOctetStream(byte[] data) throws IOException {
+		File tmpFile = File.createTempFile("dbtmp", ".octet-stream");
+		FileOutputStream fos = new FileOutputStream(tmpFile);
+		if (data == null) {
+			DBWorkbench.getPlatformUI().showError("Open Content", "Raw value was null");
+			fos.close();
+		}
+		if (data.length == 0) {
+			log.info("file has no content");
+			fos.close();
+			tmpFile.delete();
+		} else {
+			fos.write(data);
+			fos.close();
+			// use OS to open the file
+			DBWorkbench.getPlatformUI().showMessageBox("Open Content", 
+					"Opening the file at " + tmpFile.getPath(), false);
+			Desktop.getDesktop().open(tmpFile);
+			// delete the file when the user closes the DBeaver application
+			tmpFile.deleteOnExit();
+		}
     }
 
     public static IValueEditor openContentEditor(@NotNull IValueController controller)
