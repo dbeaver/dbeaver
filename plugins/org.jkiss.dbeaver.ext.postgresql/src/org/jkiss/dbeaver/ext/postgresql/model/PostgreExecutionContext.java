@@ -86,15 +86,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return true;
     }
 
-    void setDefaultsFrom(@NotNull PostgreExecutionContext initFrom) {
-        this.activeUser = initFrom.activeUser;
-        this.searchPath.clear();
-        this.defaultSearchPath = new ArrayList<>(initFrom.defaultSearchPath);
-    }
-
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, PostgreDatabase catalog, PostgreSchema schema) throws DBCException {
-        PostgreDataSource dataSource = getDefaultCatalog().getDataSource();
         try {
             JDBCRemoteInstance oldInstance = getOwnerInstance();
             boolean changed = false;
@@ -140,13 +133,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         // Check default active schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
-            if (useBootstrapSettings) {
-                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
-                    setSearchPath(monitor, bootstrap.getDefaultSchemaName());
-                }
-            }
-
             try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_schema(),session_user")) {
                 try (JDBCResultSet rs = stat.executeQuery()) {
                     if (rs.nextRow()) {
@@ -163,7 +149,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             if (searchPathStr != null) {
                 for (String str : searchPathStr.split(",")) {
                     str = str.trim();
-                    this.searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str));
+                    String spSchema = DBUtils.getUnQuotedIdentifier(getDataSource(), str);
+                    if (!searchPath.contains(spSchema)) {
+                        this.searchPath.add(spSchema);
+                    }
                 }
                 if (activeSchema == null) {
                     // This may happen
@@ -179,6 +168,18 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             }
 
             defaultSearchPath = new ArrayList<>(searchPath);
+
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                String bsSchemaName = bootstrap.getDefaultSchemaName();
+                if (!CommonUtils.isEmpty(bsSchemaName)) {
+                    setSearchPath(monitor, bsSchemaName);
+                    PostgreSchema bsSchema = getDefaultCatalog().getSchema(monitor, bsSchemaName);
+                    if (bsSchema != null) {
+                        activeSchema = bsSchema;
+                    }
+                }
+            }
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
