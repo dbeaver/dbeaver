@@ -2272,6 +2272,7 @@ public class ResultSetViewer extends Viewer
             popup.setLocation(location);
         }
 
+        popup.setModeless(true);
         if (popup.open() == IDialogConstants.OK_ID) {
             Object value = popup.getValue();
 
