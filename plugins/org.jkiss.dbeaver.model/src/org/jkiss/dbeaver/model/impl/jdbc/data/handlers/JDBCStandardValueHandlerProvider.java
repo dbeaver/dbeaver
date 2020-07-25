@@ -49,6 +49,9 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
             case BINARY:
             case CONTENT:
+                if ("UUID".equalsIgnoreCase(typedObject.getTypeName())) {
+                    return JDBCUUIDValueHandler.INSTANCE;
+                }
                 return JDBCContentValueHandler.INSTANCE;
             case ARRAY:
                 return JDBCArrayValueHandler.INSTANCE;
