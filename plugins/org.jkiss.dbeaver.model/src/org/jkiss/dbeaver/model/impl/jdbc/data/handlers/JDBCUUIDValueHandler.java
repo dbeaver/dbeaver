@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -61,7 +62,7 @@ public class JDBCUUIDValueHandler extends JDBCObjectValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
-        if (value instanceof String) {
+        if (value instanceof String && paramType.getDataKind() != DBPDataKind.STRING) {
             value = UUID.fromString((String) value);
         }
         if (value instanceof UUID) {
