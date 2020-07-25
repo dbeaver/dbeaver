@@ -159,6 +159,7 @@ public class OracleConstants {
      * Oracle error codes
      */
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
+    public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
 
     /**

@@ -286,8 +286,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         Throwable rootCause = GeneralUtils.getRootCause(error);
-        if (rootCause instanceof SQLException && ((SQLException) rootCause).getErrorCode() == OracleConstants.EC_FEATURE_NOT_SUPPORTED) {
-            return ErrorType.FEATURE_UNSUPPORTED;
+        if (rootCause instanceof SQLException) {
+            switch (((SQLException) rootCause).getErrorCode()) {
+                case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
+                    return ErrorType.RESULT_SET_MISSING;
+                case OracleConstants.EC_FEATURE_NOT_SUPPORTED:
+                    return ErrorType.FEATURE_UNSUPPORTED;
+            }
         }
         return super.discoverErrorType(error);
     }

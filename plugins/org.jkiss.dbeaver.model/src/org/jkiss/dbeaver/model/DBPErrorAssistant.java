@@ -33,7 +33,8 @@ public interface DBPErrorAssistant
         DRIVER_CLASS_MISSING,
         PERMISSION_DENIED,
         FEATURE_UNSUPPORTED,
-        TRANSACTION_ABORTED
+        TRANSACTION_ABORTED,    // Txn aborted, PG-specific
+        RESULT_SET_MISSING      // No resultset, Oracle-specific (#8026)
     }
 
     class ErrorPosition
