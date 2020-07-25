@@ -95,6 +95,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_HIGHLIGHT, true);
             //editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128"); //$NON-NLS-1$
+
+            // Enable "delete spaces as tabs" option by default
+            editorStore.setDefault(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_DELETE_SPACES_AS_TABS, true);
         }
     }
 
