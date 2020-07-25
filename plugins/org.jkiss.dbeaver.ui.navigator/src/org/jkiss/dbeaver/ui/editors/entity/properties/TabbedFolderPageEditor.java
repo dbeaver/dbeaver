@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -29,6 +30,8 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.services.INestable;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,7 +43,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 /**
  * EditorWrapperSection
  */
-public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
+public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable, ISearchContextProvider {
 
     private static final Log log = Log.getLog(TabbedFolderPageEditor.class);
 
@@ -245,6 +248,37 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
     @Override
     public boolean isSaveOnCloseNeeded() {
         return editor != null && editor.isSaveOnCloseNeeded();
+    }
+
+    @Override
+    public boolean isSearchPossible() {
+        return editor instanceof ISearchContextProvider || editor instanceof ITextEditor;
+    }
+
+    @Override
+    public boolean isSearchEnabled() {
+        return isSearchPossible();
+    }
+
+    @Override
+    public boolean performSearch(SearchType searchType) {
+        if (editor instanceof ISearchContextProvider) {
+            return ((ISearchContextProvider) editor).performSearch(searchType);
+        } else if (editor instanceof ITextEditor) {
+            String teAction;
+            switch (searchType) {
+                case NONE: teAction = ITextEditorActionConstants.FIND; break;
+                case NEXT: teAction = ITextEditorActionConstants.FIND_NEXT; break;
+                case PREVIOUS: teAction = ITextEditorActionConstants.FIND_PREVIOUS; break;
+                default: return false;
+            }
+            IAction action = ((ITextEditor) editor).getAction(teAction);
+            if (action != null) {
+                action.run();
+                return true;
+            }
+        }
+        return false;
     }
 
     private class TabbedFolderPageEditorSite extends MultiPageEditorSite implements INestedEditorSite {
