@@ -208,14 +208,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         if (initFrom != null) {
-            ((PostgreExecutionContext)context).setDefaultsFrom((PostgreExecutionContext) initFrom);
             final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
-            if (activeSchema != null) {
+            if (activeSchema != null && activeSchema != ((PostgreExecutionContext) context).getDefaultSchema()) {
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
-        } else {
-            ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
