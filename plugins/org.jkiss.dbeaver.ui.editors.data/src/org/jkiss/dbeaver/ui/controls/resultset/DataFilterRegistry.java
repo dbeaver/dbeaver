@@ -135,7 +135,7 @@ class DataFilterRegistry {
     void saveDataFilter(DBSDataContainer object, DBDDataFilter dataFilter) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {
-            if (dataFilter.hasFilters()) {
+            if (dataFilter.isDirty()) {
                 SavedDataFilter newStates = new SavedDataFilter(object.getDataSource(), dataFilter);
                 savedFilters.put(objectId, newStates);
             } else {
