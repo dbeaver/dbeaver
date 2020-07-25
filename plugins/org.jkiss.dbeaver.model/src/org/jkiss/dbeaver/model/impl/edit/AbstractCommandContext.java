@@ -205,7 +205,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 if (error != null) {
                                     throw error;
                                 }
-                                if (txnManager != null) {
+                                if (txnManager != null && !txnManager.isAutoCommit()) {
                                     // Commit all processed changes
                                     txnManager.commit(session);
                                 }
