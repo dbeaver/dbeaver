@@ -107,6 +107,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 txnLevel = dataSource.getContainer().getDefaultTransactionsIsolation();
             }
 
+            if (txnLevel != null) {
+                try {
+                    this.connection.setTransactionIsolation(txnLevel);
+                    this.transactionIsolationLevel = txnLevel;
+                } catch (Throwable e) {
+                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
+                }
+            }
+
             try {
                 connection.setAutoCommit(autoCommit);
                 this.autoCommit = autoCommit;
@@ -120,15 +129,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 } catch (Throwable e) {
                     log.debug("Can't check auto-commit state", e); //$NON-NLS-1$
                     this.autoCommit = false;
-                }
-            }
-
-            if (!this.autoCommit && txnLevel != null) {
-                try {
-                    this.connection.setTransactionIsolation(txnLevel);
-                    this.transactionIsolationLevel = txnLevel;
-                } catch (Throwable e) {
-                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
 
