@@ -996,7 +996,7 @@ class ResultSetPersister {
                         List<DBDAttributeConstraint> constraints = new ArrayList<>();
                         boolean hasKey = true;
                         for (DBDAttributeBinding keyAttr : idAttributes) {
-                            final Object keyValue = row.values[keyAttr.getOrdinalPosition()];
+                            final Object keyValue = viewer.getModel().getCellValue(keyAttr, row);
                             if (DBUtils.isNullValue(keyValue)) {
                                 hasKey = false;
                                 break;
