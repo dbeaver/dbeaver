@@ -514,7 +514,19 @@ public class SQLQueryJob extends DataSourceJob
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                     if (hasResultSet && fetchResultSets) {
-                        DBCResultSet resultSet = dbcStatement.openResultSet();
+                        DBCResultSet resultSet;
+                        try {
+                            resultSet = dbcStatement.openResultSet();
+                        } catch (DBCException e) {
+                            DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(session.getDataSource(), e);
+                            if (errorType == DBPErrorAssistant.ErrorType.RESULT_SET_MISSING) {
+                                // We need to ignore this error and try to get next results
+                                if (dbcStatement.nextResults()) {
+                                    continue;
+                                }
+                            }
+                            throw e;
+                        }
                         if (resultSet == null) {
                             // Kind of bug in the driver. It says it has resultset but returns null
                             break;
