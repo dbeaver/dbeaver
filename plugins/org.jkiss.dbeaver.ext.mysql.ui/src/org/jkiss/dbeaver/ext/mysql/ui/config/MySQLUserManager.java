@@ -45,6 +45,8 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     // Perhaps we should set it in UI? For now it is always disabled
     private static final String OPTION_SUPPRESS_FLUSH_PRIVILEGES = "suppress.flushPrivileges";
 
+    private static final boolean USE_DIRECT_UPDATE = false;
+
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
     {
@@ -97,7 +99,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     @Override
     public void filterCommands(DBECommandQueue<MySQLUser> queue)
     {
-        if (!queue.isEmpty() && !MySQLUtils.isAlterUSerSupported(queue.getObject().getDataSource())) {
+        if (USE_DIRECT_UPDATE && !queue.isEmpty() && !MySQLUtils.isAlterUSerSupported(queue.getObject().getDataSource())) {
             // Add privileges flush to the tail
             queue.add(
                 new DBECommandAbstract<MySQLUser>(
