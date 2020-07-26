@@ -234,7 +234,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     } finally {
                         if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                            if (txnManager != null) {
+                            if (txnManager != null && txnManager.isSupportsTransactions()) {
                                 try {
                                     txnManager.commit(session);
                                 } catch (Exception e) {
