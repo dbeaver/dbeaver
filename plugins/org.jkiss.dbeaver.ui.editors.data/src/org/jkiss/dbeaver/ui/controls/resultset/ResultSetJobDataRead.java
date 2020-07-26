@@ -106,6 +106,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
 
         DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
+        progressMonitor.beginTask("Read data", 1);
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,
             purpose,
@@ -130,6 +131,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             error = e;
         } finally {
             visualizer.completeLoading(null);
+            progressMonitor.done();
         }
 
         return Status.OK_STATUS;

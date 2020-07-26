@@ -189,6 +189,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     if (!reuse) {
                         statement.close();
                     }
+                    if (rowIndex > 0 && rowIndex % 100 == 0) {
+                        session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
+                    }
                 }
             }
             values.clear();

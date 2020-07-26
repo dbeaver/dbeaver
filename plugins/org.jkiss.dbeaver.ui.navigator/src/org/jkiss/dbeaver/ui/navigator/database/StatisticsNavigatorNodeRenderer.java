@@ -275,6 +275,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
+                monitor.beginTask("Collect database statistics", 1);
                 ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
                 long maxStatSize = 0;
 
@@ -306,6 +307,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 });
             } catch (DBException e) {
                 log.error(e);
+            } finally {
+                monitor.done();
             }
             return Status.OK_STATUS;
         }
