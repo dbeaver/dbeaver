@@ -175,7 +175,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             // other complex structures only in transactional mode
                             try {
                                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                                if (txnManager != null) {
+                                if (txnManager != null && txnManager.isSupportsTransactions()) {
                                     oldAutoCommit = txnManager.isAutoCommit();
                                     txnManager.setAutoCommit(monitor, false);
                                 }

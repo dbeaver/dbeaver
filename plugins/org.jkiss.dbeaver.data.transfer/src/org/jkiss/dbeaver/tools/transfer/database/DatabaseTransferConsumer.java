@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.edit.DBEStructEditor;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -131,7 +128,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        DBDAttributeBinding[] rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+        DBDAttributeBinding[] rsAttributes;
+        boolean dynamicTarget = targetContext.getDataSource().getInfo().isDynamicMetadata();
+        if (dynamicTarget) {
+            // Document-based datasource
+            rsAttributes = DBUtils.getAttributeBindings(session, sourceObject, resultSet.getMeta());
+        } else {
+            rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+        }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
         targetAttributes = new ArrayList<>(columnMappings.length);
@@ -158,10 +162,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
                 }
-            } else {
+            } else if (!dynamicTarget) {
                 columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
+                }
+            } else {
+                if (targetObject instanceof DBSDocumentContainer) {
+                    try {
+                        DBSEntityAttribute docAttribute = ((DBSDocumentContainer) targetObject).getDocumentAttribute(session.getProgressMonitor());
+                        columnMapping.targetAttr = new DatabaseMappingAttribute(containerMapping, columnMapping.sourceAttr);
+                        columnMapping.targetAttr.setTarget(docAttribute);
+                    } catch (DBException e) {
+                        throw new DBCException("");
+                    }
+                } else {
+                    throw new DBCException("Can not transfer data into dynamic database which doesn't support documents");
                 }
             }
             if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
@@ -490,12 +506,45 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (schema == null) {
             throw new DBException("No target container selected");
         }
-        String sql = generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
-        try {
-            executeDDL(session, sql);
-        } catch (DBCException e) {
-            throw new DBCException("Can't create target table:\n" + sql, e);
+        if (session.getDataSource().getInfo().isDynamicMetadata()) {
+            createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+        } else {
+            String sql = generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            try {
+                executeDDL(session, sql);
+            } catch (DBCException e) {
+                throw new DBCException("Can't create target table:\n" + sql, e);
+            }
         }
+    }
+
+    private void createTargetDynamicTable(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+        final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+
+        Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
+        if (!DBSEntity.class.isAssignableFrom(tableClass)) {
+            throw new DBException("Wrong table container child type: " + tableClass.getName());
+        }
+        SQLObjectEditor tableManager = editorsRegistry.getObjectManager(tableClass, SQLObjectEditor.class);
+        if (tableManager == null) {
+            throw new DBException("Entity manager not found for '" + tableClass.getName() + "'");
+        }
+        if (!(tableManager instanceof DBEObjectMaker)) {
+            throw new DBException("New target entity create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
+        }
+        DBECommandContext commandContext = new TargetCommandContext(executionContext);
+        Map<String, Object> options = new HashMap<>();
+        options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+        DBSObject targetEntity = tableManager.createNewObject(monitor, commandContext, schema, null, options);
+        if (targetEntity == null) {
+            throw new DBException("Null target entity returned");
+        }
+        if (targetEntity instanceof DBPNamedObject2) {
+            ((DBPNamedObject2) targetEntity).setName(containerMapping.getTargetName());
+        } else {
+            throw new DBException("Can not set name for target entity '" + targetEntity.getClass().getName() + "'");
+        }
+        commandContext.saveChanges(monitor, options);
     }
 
     public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
