@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,19 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
     private IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;
+    private ProgressState[] states = new ProgressState[0];
+
+    private static class ProgressState {
+        final String taskName;
+        final int totalWork;
+        int progress;
+        String subTask;
+
+        ProgressState(String taskName, int totalWork) {
+            this.taskName = taskName;
+            this.totalWork = totalWork;
+        }
+    }
 
     public DefaultProgressMonitor(IProgressMonitor nestedMonitor)
     {
@@ -47,24 +62,54 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     @Override
     public void beginTask(String name, int totalWork)
     {
+        ProgressState state = new ProgressState(name, totalWork);
+        states = ArrayUtils.add(ProgressState.class, states, state);
+
         nestedMonitor.beginTask(name, totalWork);
     }
 
     @Override
     public void done()
     {
+        if (states.length == 0) {
+            log.debug(new DBCException("Progress ended without start"));
+        } else {
+            ArrayUtils.remove(ProgressState.class, states, states.length - 1);
+        }
         nestedMonitor.done();
+
+        // Restore previous state
+        if (states.length > 0) {
+            ProgressState lastState = states[states.length - 1];
+            nestedMonitor.beginTask(lastState.taskName, lastState.totalWork);
+            if (lastState.subTask != null) {
+                nestedMonitor.subTask(lastState.subTask);
+            }
+            if (lastState.progress > 0) {
+                nestedMonitor.worked(lastState.progress);
+            }
+        }
     }
 
     @Override
     public void subTask(String name)
     {
+        if (states.length == 0) {
+            log.debug(new DBCException("Progress sub task without start"));
+        } else {
+            states[states.length - 1].subTask = name;
+        }
         nestedMonitor.subTask(name);
     }
 
     @Override
     public void worked(int work)
     {
+        if (states.length == 0) {
+            log.debug(new DBCException("Progress info without start"));
+        } else {
+            states[states.length - 1].progress += work;
+        }
         nestedMonitor.worked(work);
     }
 

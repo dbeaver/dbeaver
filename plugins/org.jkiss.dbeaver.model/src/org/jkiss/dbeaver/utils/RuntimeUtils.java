@@ -303,7 +303,6 @@ public class RuntimeUtils {
             try {
                 task.run(monitor);
             } finally {
-                monitor.done();
                 finished = true;
             }
         }
