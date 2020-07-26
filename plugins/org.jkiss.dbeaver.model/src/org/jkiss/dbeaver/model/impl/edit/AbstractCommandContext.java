@@ -102,7 +102,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
 
         boolean oldAutoCommit = false;
-        if (txnManager != null) {
+        if (txnManager != null && txnManager.isSupportsTransactions()) {
             oldAutoCommit = txnManager.isAutoCommit();
             if (oldAutoCommit != useAutoCommit) {
                 try {
