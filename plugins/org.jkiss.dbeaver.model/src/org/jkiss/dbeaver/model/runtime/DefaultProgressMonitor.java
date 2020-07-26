@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,8 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     @Override
     public boolean isCanceled()
     {
-        return nestedMonitor.isCanceled();
+        return nestedMonitor.isCanceled() ||
+            DBWorkbench.getPlatform().isShuttingDown(); // All monitors are canceled if workbench is shutting down
     }
 
     @Override
