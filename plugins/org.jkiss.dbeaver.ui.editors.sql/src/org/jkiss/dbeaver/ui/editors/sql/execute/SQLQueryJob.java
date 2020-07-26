@@ -263,7 +263,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.done();
 
                 // Commit data
-                if (txnManager != null && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
                             monitor.beginTask("Commit data", 1);

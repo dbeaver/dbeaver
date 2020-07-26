@@ -116,7 +116,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
             // Commit changes
-            if (txnManager != null && !useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !useAutoCommit) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
                     txnManager.commit(session);
                 } catch (DBCException e1) {
@@ -205,7 +205,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 if (error != null) {
                                     throw error;
                                 }
-                                if (txnManager != null && !txnManager.isAutoCommit()) {
+                                if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                                     // Commit all processed changes
                                     txnManager.commit(session);
                                 }

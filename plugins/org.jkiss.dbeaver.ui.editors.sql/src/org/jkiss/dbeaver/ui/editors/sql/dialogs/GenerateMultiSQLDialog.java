@@ -290,7 +290,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     private void commitChanges(DBCSession session) {
         try {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-            if (txnManager != null && !txnManager.isAutoCommit()) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 txnManager.commit(session);
             }
         } catch (Throwable e) {
