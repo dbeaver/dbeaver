@@ -637,11 +637,11 @@ class ResultSetPersister {
         }
 
         private Throwable executeStatements(DBRProgressMonitor monitor) {
-            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
+            monitor.beginTask(
+                ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
+                ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
 
-                monitor.beginTask(
-                    ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
-                    ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
 
                 if (!generateScript) {
                     IResultSetContainer container = viewer.getContainer();
