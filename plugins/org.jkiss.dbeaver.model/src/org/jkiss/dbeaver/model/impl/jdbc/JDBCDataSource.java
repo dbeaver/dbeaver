@@ -750,6 +750,7 @@ public abstract class JDBCDataSource
     }
 
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        if (true) return;
         try {
             statement.cancel();
         }

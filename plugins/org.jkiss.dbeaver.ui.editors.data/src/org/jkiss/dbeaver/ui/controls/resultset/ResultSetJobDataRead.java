@@ -95,7 +95,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             fetchFlags |= DBSDataContainer.FLAG_FETCH_SEGMENT;
         }
 
-        if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+        if (offset > 0 && getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
             if (maxRows > 0) {
                 maxRows += offset;
             }
