@@ -1115,9 +1115,8 @@ public final class SQLUtils {
         String delimiter = sqlDialect.getScriptDelimiter();
         if (!delimiter.isEmpty()) {
             if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                if (query.toUpperCase().endsWith(delimiter)) {
-                    String queryBeforeDelimiter = query.substring(query.lastIndexOf(delimiter));
-                    if (!Character.isLetterOrDigit(queryBeforeDelimiter.charAt(queryBeforeDelimiter.length() - 1))) {
+                if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
+                    if (!Character.isLetterOrDigit(query.charAt(query.lastIndexOf(delimiter) - 1))) {
                         return true;
                     }
                 }
