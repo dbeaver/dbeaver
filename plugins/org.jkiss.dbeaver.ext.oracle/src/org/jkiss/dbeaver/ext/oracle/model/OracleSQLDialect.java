@@ -433,7 +433,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
                     return "";
                 }
                 if (precision == 0) {
-                    precision = (int) column.getMaxLength();
+                    precision = OracleConstants.NUMERIC_MAX_PRECISION;
                 }
                 if (scale != null && scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
                     return "(" + precision + ',' + scale + ')';
