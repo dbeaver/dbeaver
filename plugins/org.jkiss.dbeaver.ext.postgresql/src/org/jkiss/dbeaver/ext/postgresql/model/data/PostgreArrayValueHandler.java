@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -98,7 +99,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         }
         if (itemType.getDataKind() == DBPDataKind.STRUCT) {
             // Items are structures. Parse them as CSV
-            List<Object> itemStrings = PostgreUtils.parseArrayString(value, delimiter);
+            List<Object> itemStrings = PostgreValueParser.parseArrayString(value, delimiter);
             Object[] itemValues = new Object[itemStrings.size()];
             DBDValueHandler itemValueHandler = DBUtils.findValueHandler(session, itemType);
             for (int i = 0; i < itemStrings.size(); i++) {
@@ -108,20 +109,20 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
             return new JDBCCollection(itemType, itemValueHandler, itemValues);
         } else {
-            List<Object> strings = PostgreUtils.parseArrayString(value, delimiter);
+            List<Object> strings = PostgreValueParser.parseArrayString(value, delimiter);
             Object[] contents = new Object[strings.size()];
             for (int i = 0; i < strings.size(); i++) {
-                contents[i] = PostgreUtils.convertStringToValue(session, itemType, String.valueOf(strings.get(i)), false);
+                contents[i] = PostgreValueParser.convertStringToValue(session, itemType, String.valueOf(strings.get(i)), false);
             }
             return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
         }
     }
 
     private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
-        String[] strings = PostgreUtils.parseObjectString(strValue.substring(1, strValue.length() - 1));
+        String[] strings = PostgreValueParser.parseObjectString(strValue.substring(1, strValue.length() - 1));
         Object[] contents = new Object[strings.length];
         for (int i = 0; i < strings.length; i++) {
-            contents[i] = PostgreUtils.convertStringToValue(session, itemType, strings[i], false);
+            contents[i] = PostgreValueParser.convertStringToValue(session, itemType, strings[i], false);
         }
         return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }

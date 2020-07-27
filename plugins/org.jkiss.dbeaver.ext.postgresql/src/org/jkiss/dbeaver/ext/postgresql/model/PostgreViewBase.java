@@ -121,7 +121,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
 
             for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
-                    PostgreTableColumnManager.addColumnCommentAction(actions, column);
+                    PostgreTableColumnManager.addColumnCommentAction(actions, column); //
                 }
             }
 
