@@ -1116,7 +1116,7 @@ public final class SQLUtils {
         if (!delimiter.isEmpty()) {
             if (Character.isLetterOrDigit(delimiter.charAt(0))) {
                 if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
-                    if (!Character.isLetterOrDigit(query.charAt(query.lastIndexOf(delimiter) - 1))) {
+                    if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
                         return true;
                     }
                 }
