@@ -2768,7 +2768,7 @@ public class SQLEditor extends SQLEditorBase implements
         IResultSetContainer,
         IResultSetValueReflector,
         IResultSetListener,
-        IResultSetExecuteListener,
+        IResultSetContainerExt,
         SQLQueryContainer,
         ISmartTransactionManager,
         IQueryExecuteController {

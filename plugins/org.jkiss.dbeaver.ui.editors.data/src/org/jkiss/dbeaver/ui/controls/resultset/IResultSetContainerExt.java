@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 /**
  * Result set execute processor
  */
-public interface IResultSetExecuteListener {
+public interface IResultSetContainerExt {
 
     void handleExecuteResult(DBCExecutionResult result);
 

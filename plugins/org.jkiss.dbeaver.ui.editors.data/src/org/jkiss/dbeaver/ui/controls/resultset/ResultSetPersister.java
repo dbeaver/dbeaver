@@ -585,8 +585,8 @@ class ResultSetPersister {
         }
 
         void notifyContainer(DBCExecutionResult result) {
-            if (viewer.getContainer() instanceof IResultSetExecuteListener) {
-                ((IResultSetExecuteListener) viewer.getContainer()).handleExecuteResult(result);
+            if (viewer.getContainer() instanceof IResultSetContainerExt) {
+                ((IResultSetContainerExt) viewer.getContainer()).handleExecuteResult(result);
             }
         }
 
