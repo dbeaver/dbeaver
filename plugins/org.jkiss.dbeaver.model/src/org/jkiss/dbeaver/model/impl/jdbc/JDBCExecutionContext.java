@@ -226,21 +226,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
-        boolean checkOk = false;//JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
-        closeOnFailure = true;
+        Boolean prevAutocommit = autoCommit;
+        Integer txnLevel = transactionIsolationLevel;
+        closeContext(false);
+        connect(monitor, prevAutocommit, txnLevel, this, false);
 
-        if (!checkOk) {
-            Boolean prevAutocommit = autoCommit;
-            Integer txnLevel = transactionIsolationLevel;
-            if (closeOnFailure) {
-                closeContext(false);
-            }
-            connect(monitor, prevAutocommit, txnLevel, this, false);
-
-            return InvalidateResult.RECONNECTED;
-        }
-        return InvalidateResult.ALIVE;
+        return InvalidateResult.RECONNECTED;
     }
 
     @Override
