@@ -117,11 +117,15 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         }
                     }
                 });
+                monitor.beginTask("Refresh objects", refreshObjects.size());
                 Set<DBNNode> refreshedSet = new HashSet<>();
                 for (DBNNode node : refreshObjects) {
                     if (node.isDisposed() || node.isLocked()) {
                         // Skip locked nodes
                         continue;
+                    }
+                    if (monitor.isCanceled()) {
+                        break;
                     }
                     // Check this node was already refreshed
                     if (!refreshedSet.isEmpty()) {
@@ -155,7 +159,9 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     catch (Throwable ex) {
                         error = ex;
                     }
+                    monitor.worked(1);
                 }
+                monitor.done();
                 return Status.OK_STATUS;
             }
         };
