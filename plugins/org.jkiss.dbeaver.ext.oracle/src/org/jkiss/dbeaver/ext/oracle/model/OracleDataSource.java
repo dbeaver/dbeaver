@@ -334,7 +334,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         if (publicSchema != null && publicSchema.getName().equals(name)) {
             return publicSchema;
         }
-        return schemaCache.getObject(monitor, this, name);
+        // Schema cache may be null during DataSource initialization
+        return schemaCache == null ? null : schemaCache.getObject(monitor, this, name);
     }
 
     @Association
