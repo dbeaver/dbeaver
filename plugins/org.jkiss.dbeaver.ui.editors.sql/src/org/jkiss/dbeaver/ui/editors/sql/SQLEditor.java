@@ -2763,7 +2763,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetValueReflector, IResultSetListener, SQLQueryContainer, ISmartTransactionManager, IQueryExecuteController {
+    public class QueryResultsContainer implements
+        DBSDataContainer,
+        IResultSetContainer,
+        IResultSetValueReflector,
+        IResultSetListener,
+        IResultSetExecuteListener,
+        SQLQueryContainer,
+        ISmartTransactionManager,
+        IQueryExecuteController {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -3194,6 +3202,11 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+
+        @Override
+        public void handleExecuteResult(DBCExecutionResult result) {
+            dumpQueryServerOutput(result);
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
@@ -3479,7 +3492,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void dumpQueryServerOutput(@Nullable SQLQueryResult result) {
+    private void dumpQueryServerOutput(@Nullable DBCExecutionResult result) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             final DBPDataSource dataSource = executionContext.getDataSource();
@@ -3566,9 +3579,9 @@ public class SQLEditor extends SQLEditorBase implements
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
         private final DBCExecutionContext executionContext;
-        private final SQLQueryResult result;
+        private final DBCExecutionResult result;
 
-        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext, SQLQueryResult result) {
+        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext, DBCExecutionResult result) {
             this.outputReader = outputReader;
             this.executionContext = executionContext;
             this.result = result;

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 
 import java.io.PrintWriter;
 
@@ -44,7 +43,7 @@ public interface DBCServerOutputReader extends DBPObject
     void readServerOutput(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext context,
-        @Nullable SQLQueryResult queryResult,
+        @Nullable DBCExecutionResult executionResult,
         @Nullable DBCStatement statement,
         @NotNull PrintWriter output)
         throws DBCException;
