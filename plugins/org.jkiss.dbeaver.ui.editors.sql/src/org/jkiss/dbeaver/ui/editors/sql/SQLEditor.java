@@ -2333,7 +2333,7 @@ public class SQLEditor extends SQLEditorBase implements
             return ISaveablePart2.YES;
         }
 
-        if (super.isDirty()) {
+        if (super.isDirty() || (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty())) {
             return ISaveablePart2.DEFAULT;
         }
         return ISaveablePart2.YES;
