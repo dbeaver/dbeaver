@@ -20,14 +20,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -168,20 +171,32 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             ResultSetJobDataRead loadService = (ResultSetJobDataRead) visualizer.getLoadService();
             if (loadService != null && loadService.isCanceled()) {
                 long cancelTimestamp = loadService.getCancelTimestamp();
-                long cancelTimeout = -1;//controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
+                long cancelTimeout = controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
                 if (cancelTimeout > 0 && System.currentTimeMillis() - cancelTimestamp > cancelTimeout) {
                     // Job was canceled but didn't end.
 
                     // Let's ask user about cancel force
+                    if (UIUtils.confirmAction(
+                        getDisplay().getActiveShell(),
+                        "Database not responding",
+                        "Database driver is not responding.\nDo you want to cancel request and invalidate connection?",
+                        SWT.ICON_WARNING))
+                    {
+                        // Run datasource invalidation
+                        DBPDataSource dataSource = dataContainer.getDataSource();
+                        if (dataSource != null) {
+                            new InvalidateJob(dataSource).schedule();
+                        }
 
-                    // So let's just ignore it (remove from queue and stop visualizing)
+                        // So let's just ignore active job (remove from queue and stop visualizing)
+                        controller.removeDataPump(loadService);
+                        loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
 
-                    controller.removeDataPump(loadService);
-                    loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
+                        visualizer.completeLoading(null);
+                        visualizer.visualizeLoading();
 
-                    visualizer.completeLoading(null);
-                    visualizer.visualizeLoading();
-                    return Status.OK_STATUS;
+                        return Status.OK_STATUS;
+                    }
                 }
             }
             if (!controller.getDataReceiver().isDataReceivePaused()) {
@@ -194,7 +209,6 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             }
             return Status.OK_STATUS;
         }
-
     }
 
 }
