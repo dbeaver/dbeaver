@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
@@ -64,7 +65,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
                 statement.setNull(paramIndex, Types.STRUCT);
             } else if (struct instanceof JDBCComposite) {
                 final Object[] values = ((JDBCComposite) struct).getValues();
-                final String string = PostgreUtils.generateObjectString(values);
+                final String string = PostgreValueParser.generateObjectString(values);
                 statement.setObject(paramIndex, string, Types.OTHER);
             }
         } else {
@@ -107,7 +108,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         if (attributes == null) {
             throw new DBException("Composite type '" + compType.getTypeName() + "' has no attributes");
         }
-        String[] parsedValues = PostgreUtils.parseObjectString(value);
+        String[] parsedValues = PostgreValueParser.parseObjectString(value);
         if (parsedValues.length != attributes.size()) {
             log.debug("Number of attributes (" + attributes.size() + ") doesn't match actual number of parsed strings (" + parsedValues.length + ")");
         }
@@ -116,7 +117,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         Iterator<PostgreDataTypeAttribute> attrIter = attributes.iterator();
         for (int i = 0; i < parsedValues.length && attrIter.hasNext(); i++) {
             final PostgreDataTypeAttribute itemAttr = attrIter.next();
-            attrValues[i] = PostgreUtils.convertStringToValue(session, itemAttr, parsedValues[i], true);
+            attrValues[i] = PostgreValueParser.convertStringToValue(session, itemAttr, parsedValues[i], true);
         }
 
         Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues, value);
