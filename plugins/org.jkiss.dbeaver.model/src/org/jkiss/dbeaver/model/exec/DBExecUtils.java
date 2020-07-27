@@ -389,11 +389,15 @@ public class DBExecUtils {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
                         try {
+                            monitor.beginTask("Switch to auto-commit mode", 1);
                             if (!transactionManager.isAutoCommit()) {
                                 transactionManager.setAutoCommit(monitor,true);
                             }
                         } catch (DBCException e) {
                             return GeneralUtils.makeExceptionStatus(e);
+                        }
+                        finally {
+                            monitor.done();
                         }
                         return Status.OK_STATUS;
                     }
