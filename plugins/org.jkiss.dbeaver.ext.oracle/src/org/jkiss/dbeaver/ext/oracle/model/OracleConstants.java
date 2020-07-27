@@ -161,6 +161,7 @@ public class OracleConstants {
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
+    public static final int NUMERIC_MAX_PRECISION = 38;
 
     /**
      * Connection type
