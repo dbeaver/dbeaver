@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -195,7 +196,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             String[] argDefaults = null;
             if (!CommonUtils.isEmpty(argDefaultsString)) {
                 try {
-                    argDefaults = PostgreUtils.parseObjectString(argDefaultsString);
+                    argDefaults = PostgreValueParser.parseObjectString(argDefaultsString);
                 } catch (DBCException e) {
                     log.debug("Error parsing function parameters defaults", e);
                 }
