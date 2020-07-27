@@ -584,6 +584,12 @@ class ResultSetPersister {
             this.listener = listener;
         }
 
+        void notifyContainer(DBCExecutionResult result) {
+            if (viewer.getContainer() instanceof IResultSetExecuteListener) {
+                ((IResultSetExecuteListener) viewer.getContainer()).handleExecuteResult(result);
+            }
+        }
+
         public Throwable getError() {
             return error;
         }
@@ -708,7 +714,11 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                deleteStats.accumulate(batch.execute(session));
+                                DBCStatistics bs = batch.execute(session);
+                                // Notify rsv container about statement execute
+                                this.notifyContainer(bs);
+
+                                deleteStats.accumulate(bs);
                             }
                         }
                         processStatementChanges(statement);
@@ -731,7 +741,11 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                insertStats.accumulate(batch.execute(session));
+                                DBCStatistics bs = batch.execute(session);
+                                // Notify rsv container about statement execute
+                                this.notifyContainer(bs);
+
+                                insertStats.accumulate(bs);
                             }
                         }
                         processStatementChanges(statement);
@@ -764,7 +778,11 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                updateStats.accumulate(batch.execute(session));
+                                DBCStatistics bs = batch.execute(session);
+                                // Notify rsv container about statement execute
+                                this.notifyContainer(bs);
+
+                                updateStats.accumulate(bs);
                             }
                         }
                         processStatementChanges(statement);

@@ -161,7 +161,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         } else {
                             // Execute each row separately
                             long startTime = System.currentTimeMillis();
-                            executeStatement(statement);
+                            executeStatement(statistics, statement);
                             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
 
                             long rowCount = statement.getUpdateRowCount();
@@ -288,6 +288,21 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 statistics.addRowsUpdated(rows);
             }
         }
+        saveExecuteWarnings(statistics, statement);
+    }
+
+    protected void executeStatement(DBCStatistics statistics, DBCStatement statement) throws DBCException {
+        statement.executeStatement();
+        saveExecuteWarnings(statistics, statement);
+    }
+
+    private void saveExecuteWarnings(DBCStatistics statistics, DBCStatement statement) throws DBCException {
+        Throwable[] warnings = statement.getStatementWarnings();
+        if (warnings != null) {
+            for (Throwable w : warnings) {
+                statistics.addWarning(w);
+            }
+        }
     }
 
     @Override
@@ -331,8 +346,5 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     protected abstract void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException;
 
-    protected void executeStatement(DBCStatement statement) throws DBCException {
-        statement.executeStatement();
-    }
 
 }
