@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
 import org.jkiss.utils.ArrayUtils;
@@ -71,7 +72,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private INavigatorFilter navigatorFilter;
     private Text filterControl;
     private boolean inlineRenameEnabled = false;
-    private DatabaseNavigatorItemRenderer itemRenderer;
+    private INavigatorItemRenderer itemRenderer;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -133,7 +134,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    public void setItemRenderer(DatabaseNavigatorItemRenderer itemRenderer) {
+    public void setItemRenderer(INavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
     }
 

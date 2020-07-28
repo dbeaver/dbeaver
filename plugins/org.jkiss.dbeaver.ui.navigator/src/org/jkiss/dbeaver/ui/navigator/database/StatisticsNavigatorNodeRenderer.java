@@ -47,6 +47,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ByteNumberFormat;
@@ -54,10 +57,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.text.Format;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Statistics node renderer.
@@ -69,6 +69,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
     private static final int PERCENT_FILL_WIDTH = 50;
 
+    private final INavigatorModelView view;
+
     private final ByteNumberFormat numberFormat = new ByteNumberFormat();
     private final Map<String, Format> classFormatMap = new HashMap<>();
 
@@ -77,8 +79,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private Font fontItalic;
     private boolean isLinux;
 
-    public StatisticsNavigatorNodeRenderer() {
-        isLinux = !GeneralUtils.isWindows() && !GeneralUtils.isMacOS();
+    public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
+        this.view = view;
+        this.isLinux = !GeneralUtils.isWindows() && !GeneralUtils.isMacOS();
+    }
+
+    public INavigatorModelView getView() {
+        return view;
     }
 
     public Font getFontItalic(Tree tree) {
@@ -95,141 +102,166 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         Object element = event.item.getData();
 
         if (element instanceof DBNDatabaseNode) {
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                if (element instanceof DBNDataSource) {
-                    DBPDataSourceContainer dataSourceContainer = ((DBNDataSource) element).getDataSourceContainer();
-                    DBPConnectionConfiguration configuration = dataSourceContainer.getConnectionConfiguration();
-                    if (!CommonUtils.isEmpty(configuration.getHostName())) {
-                        Font oldFont = gc.getFont();
-                        String hostText = configuration.getHostName();
-                        // For localhost ry to get real host name from tunnel configuration
-                        if (hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
-                            for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
-                                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                                    String tunnelHost = hc.getStringProperty("host");
-                                    if (!CommonUtils.isEmpty(tunnelHost)) {
-                                        hostText = tunnelHost;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        DBPDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
-                        Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
-
-                        Color hostNameColor = tree.getDisplay().getSystemColor(
-                            (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
-                                SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
-                        gc.setForeground(hostNameColor);
-                        Font hostNameFont = getFontItalic(tree);
-                        gc.setFont(hostNameFont);
-                        Point hostTextSize = gc.stringExtent(hostText);
-
-                        int xOffset = isLinux ? 16 : 2;
-
-                        gc.drawText(" - " + hostText,
-                            event.x + event.width + xOffset,
-                            event.y + ((event.height - hostTextSize.y) / 2),
-                            true);
-                        gc.setFont(oldFont);
-                    }
+            if (element instanceof DBNDataSource) {
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                    renderDataSourceHostName((DBNDataSource) element, tree, gc, event);
+                }
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                    renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
                 }
             }
 
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
-                DBSObject object = ((DBNDatabaseNode) element).getObject();
-                if (object instanceof DBPObjectStatistics) {
-                    String sizeText;
-                    int percentFull;
-                    boolean statsWasRead = false;
-                    DBSObject parentObject = DBUtils.getPublicObject(object.getParentObject());
-                    if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
-                        statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
-                    }
+                renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            }
+        }
+    }
 
-                    long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
-                    if (statsWasRead && maxObjectSize >= 0) {
-                        long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
-                        if (statObjectSize <= 0) {
-                            // Empty or no size - nothing to show
-                            return;
-                        }
-                        percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
-                        if (percentFull < 0 || percentFull > 100) {
-                            log.debug("Object stat > 100%!");
-                            percentFull = 100;
-                        }
-                        Format format;
-                        synchronized (classFormatMap) {
-                            format = classFormatMap.get(object.getClass().getName());
-                            if (format == null) {
-                                try {
-                                    Method getStatObjectSizeMethod = object.getClass().getMethod("getStatObjectSize");
-                                    Property propAnnotation = getStatObjectSizeMethod.getAnnotation(Property.class);
-                                    if (propAnnotation != null) {
-                                        Class<? extends Format> formatterClass = propAnnotation.formatter();
-                                        if (formatterClass != Format.class) {
-                                            format = formatterClass.getConstructor().newInstance();
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    log.debug(e);
-                                }
-                                if (format == null) {
-                                    format = numberFormat;
-                                }
-                                classFormatMap.put(object.getClass().getName(), format);
-                            }
-                        }
-                        sizeText = format.format(statObjectSize);
-                    } else {
-                        sizeText = "...";
-                        percentFull = 0;
-                        DBNNode parentNode = ((DBNDatabaseNode) element).getParentNode();
-                        while (parentNode instanceof DBNDatabaseFolder) {
-                            parentNode = parentNode.getParentNode();
-                        }
-                        if (parentNode instanceof DBNDatabaseNode) {
-                            if (!readObjectStatistics(
-                                (DBNDatabaseNode) parentNode,
-                                ((TreeItem) event.item).getParentItem())) {
-                                return;
-                            }
-                        }
-                    }
-                    Point textSize = gc.stringExtent(sizeText);
-                    textSize.x += 4;
+    ///////////////////////////////////////////////////////////////////
+    // Host name
 
-                    int caWidth = tree.getClientArea().width;
-                    int occupiedWidth = event.x + event.width + 4;
-                    int treeWidth;
-                    int xShift;
-                    ScrollBar hSB = tree.getHorizontalBar();
-                    if (hSB == null || !hSB.isVisible()) {
-                        treeWidth = tree.getClientArea().width;
-                        xShift = 0;
-                    } else {
-                        treeWidth = hSB.getMaximum();
-                        xShift = hSB.getSelection();
-                    }
-
-                    int xWidth = treeWidth - xShift;
-
-                    if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                        {
-                            CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
-                            Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
-                            gc.setBackground(fillColor);
-                            int fillWidth = PERCENT_FILL_WIDTH * percentFull / 100 + 1;
-                            int x = xWidth - fillWidth - 2;
-                            gc.fillRectangle(x, event.y + 2, fillWidth, event.height - 4);
+    private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event) {
+        DBPDataSourceContainer dataSourceContainer = element.getDataSourceContainer();
+        DBPConnectionConfiguration configuration = dataSourceContainer.getConnectionConfiguration();
+        if (!CommonUtils.isEmpty(configuration.getHostName())) {
+            Font oldFont = gc.getFont();
+            String hostText = configuration.getHostName();
+            // For localhost ry to get real host name from tunnel configuration
+            if (hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
+                for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
+                    if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                        String tunnelHost = hc.getStringProperty("host");
+                        if (!CommonUtils.isEmpty(tunnelHost)) {
+                            hostText = tunnelHost;
+                            break;
                         }
-
-                        gc.setForeground(tree.getForeground());
-                        int x = xWidth - textSize.x - 2;
-                        gc.drawText(sizeText, x + 2, event.y, true);
                     }
                 }
+            }
+            DBPDataSourceContainer ds = element.getDataSourceContainer();
+            Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
+
+            Color hostNameColor = tree.getDisplay().getSystemColor(
+                (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
+                    SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
+            gc.setForeground(hostNameColor);
+            Font hostNameFont = getFontItalic(tree);
+            gc.setFont(hostNameFont);
+            Point hostTextSize = gc.stringExtent(hostText);
+
+            int xOffset = isLinux ? 16 : 2;
+
+            gc.drawText(" - " + hostText,
+                event.x + event.width + xOffset,
+                event.y + ((event.height - hostTextSize.y) / 2),
+                true);
+            gc.setFont(oldFont);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    // node actions
+
+    private void renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
+        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
+        //System.out.println(nodeActions);
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    // Statistics renderer
+
+    private void renderObjectStatistics(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
+        DBSObject object = element.getObject();
+        if (object instanceof DBPObjectStatistics) {
+            String sizeText;
+            int percentFull;
+            boolean statsWasRead = false;
+            DBSObject parentObject = DBUtils.getPublicObject(object.getParentObject());
+            if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
+                statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
+            }
+
+            long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
+            if (statsWasRead && maxObjectSize >= 0) {
+                long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
+                if (statObjectSize <= 0) {
+                    // Empty or no size - nothing to show
+                    return;
+                }
+                percentFull = maxObjectSize == 0 ? 0 : (int) (statObjectSize * 100 / maxObjectSize);
+                if (percentFull < 0 || percentFull > 100) {
+                    log.debug("Object stat > 100%!");
+                    percentFull = 100;
+                }
+                Format format;
+                synchronized (classFormatMap) {
+                    format = classFormatMap.get(object.getClass().getName());
+                    if (format == null) {
+                        try {
+                            Method getStatObjectSizeMethod = object.getClass().getMethod("getStatObjectSize");
+                            Property propAnnotation = getStatObjectSizeMethod.getAnnotation(Property.class);
+                            if (propAnnotation != null) {
+                                Class<? extends Format> formatterClass = propAnnotation.formatter();
+                                if (formatterClass != Format.class) {
+                                    format = formatterClass.getConstructor().newInstance();
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.debug(e);
+                        }
+                        if (format == null) {
+                            format = numberFormat;
+                        }
+                        classFormatMap.put(object.getClass().getName(), format);
+                    }
+                }
+                sizeText = format.format(statObjectSize);
+            } else {
+                sizeText = "...";
+                percentFull = 0;
+                DBNNode parentNode = element.getParentNode();
+                while (parentNode instanceof DBNDatabaseFolder) {
+                    parentNode = parentNode.getParentNode();
+                }
+                if (parentNode instanceof DBNDatabaseNode) {
+                    if (!readObjectStatistics(
+                        (DBNDatabaseNode) parentNode,
+                        ((TreeItem) event.item).getParentItem())) {
+                        return;
+                    }
+                }
+            }
+            Point textSize = gc.stringExtent(sizeText);
+            textSize.x += 4;
+
+            int caWidth = tree.getClientArea().width;
+            int occupiedWidth = event.x + event.width + 4;
+            int treeWidth;
+            int xShift;
+            ScrollBar hSB = tree.getHorizontalBar();
+            if (hSB == null || !hSB.isVisible()) {
+                treeWidth = tree.getClientArea().width;
+                xShift = 0;
+            } else {
+                treeWidth = hSB.getMaximum();
+                xShift = hSB.getSelection();
+            }
+
+            int xWidth = treeWidth - xShift;
+
+            if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
+                {
+                    CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
+                    Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
+                    gc.setBackground(fillColor);
+                    int fillWidth = PERCENT_FILL_WIDTH * percentFull / 100 + 1;
+                    int x = xWidth - fillWidth - 2;
+                    gc.fillRectangle(x, event.y + 2, fillWidth, event.height - 4);
+                }
+
+                gc.setForeground(tree.getForeground());
+                int x = xWidth - textSize.x - 2;
+                gc.drawText(sizeText, x + 2, event.y, true);
             }
         }
     }

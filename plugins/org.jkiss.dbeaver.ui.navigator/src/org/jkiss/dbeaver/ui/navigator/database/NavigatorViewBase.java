@@ -97,7 +97,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public void createPartControl(Composite parent)
     {
         this.tree = createNavigatorTree(parent, null);
-        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer());
+        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
         getViewSite().setSelectionProvider(tree.getViewer());
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
@@ -308,6 +308,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 break;
             case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
             case NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME:
+            case NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS:
                 tree.getViewer().getTree().redraw();
                 break;
         }

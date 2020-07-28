@@ -27,12 +27,13 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 
 /**
  * Default node renderer.
  * Draws connection type marker next to the item name.
  */
-public class DefaultNavigatorNodeRenderer implements DatabaseNavigatorItemRenderer {
+public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
 
     @Override
     public void drawNodeBackground(DBNNode node, Tree tree, GC gc, Event event) {
