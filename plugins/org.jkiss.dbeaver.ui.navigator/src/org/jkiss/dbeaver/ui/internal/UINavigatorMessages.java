@@ -81,6 +81,8 @@ public class UINavigatorMessages extends NLS {
     public static String registry_entity_editor_descriptor_description;
     public static String registry_entity_editor_descriptor_name;
     public static String pref_page_database_general_group_navigator;
+    public static String pref_page_database_navigator_group_misc;
+    public static String pref_page_database_navigator_group_behavior;
 
     // DatabaseNavigator
     public static String pref_page_database_general_label_expand_navigator_tree;
@@ -95,6 +97,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_host_name_tip;
     public static String pref_page_database_general_label_show_statistics;
     public static String pref_page_database_general_label_show_statistics_tip;
+    public static String pref_page_database_general_label_show_node_actions;
+    public static String pref_page_database_general_label_show_node_actions_tip;
     public static String pref_page_database_general_label_color_all_nodes;
     public static String pref_page_database_general_label_color_all_nodes_tip;
     public static String pref_page_database_general_label_show_folder_placeholders;

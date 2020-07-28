@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.navigator.database;
+package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 /**
  * Tree item renderer
  */
-public interface DatabaseNavigatorItemRenderer {
+public interface INavigatorItemRenderer {
 
     void drawNodeBackground(DBNNode element, Tree tree, GC gc, Event event);
 
