@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.net.ssh.ui;singleton:=true
-Bundle-Version: 1.0.58.qualifier
-Bundle-Release-Date: 20200720
+Bundle-Version: 1.0.59.qualifier
+Bundle-Release-Date: 20200803
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.net.ssh.Activator
