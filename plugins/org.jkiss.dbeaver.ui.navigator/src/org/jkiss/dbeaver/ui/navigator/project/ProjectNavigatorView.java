@@ -32,13 +32,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersistor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 
 /**
  * ProjectNavigatorView
  */
-public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
+public class ProjectNavigatorView extends DecoratedProjectView
 {
 
     private static final Log log = Log.getLog(ProjectNavigatorView.class);
@@ -79,8 +78,11 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
+
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
         UIExecutionQueue.queueExec(this::restoreState);
+
+        getNavigatorTree().setLabelDecorator(labelDecorator);
     }
 
     @Override
