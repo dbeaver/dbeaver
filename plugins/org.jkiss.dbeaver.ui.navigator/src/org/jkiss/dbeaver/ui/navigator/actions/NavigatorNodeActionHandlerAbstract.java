@@ -34,6 +34,11 @@ public abstract class NavigatorNodeActionHandlerAbstract implements INavigatorNo
     }
 
     @Override
+    public boolean isSticky(INavigatorModelView view, DBNNode node) {
+        return true;
+    }
+
+    @Override
     public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
         return DBIcon.TYPE_UNKNOWN;
     }

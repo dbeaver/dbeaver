@@ -28,6 +28,8 @@ public interface INavigatorNodeActionHandler {
 
     boolean isEnabledFor(INavigatorModelView view, DBNNode node);
 
+    boolean isSticky(INavigatorModelView view, DBNNode node);
+
     DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node);
 
     String getNodeActionToolTip(INavigatorModelView view, DBNNode node);

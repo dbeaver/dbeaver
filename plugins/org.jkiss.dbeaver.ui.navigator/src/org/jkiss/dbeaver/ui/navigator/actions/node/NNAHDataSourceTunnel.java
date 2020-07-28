@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.navigator.actions.node;
 import org.eclipse.swt.widgets.Event;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
@@ -30,8 +31,16 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
+    public boolean isEnabledFor(INavigatorModelView view, DBNNode node) {
+        if (node instanceof DBNDataSource) {
+            return ((DBNDataSource) node).hasNetworkHandlers();
+        }
+        return false;
+    }
+
+    @Override
     public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
-        return DBIcon.TREE_SERVER;
+        return DBIcon.OVER_EXTERNAL;
     }
 
     @Override

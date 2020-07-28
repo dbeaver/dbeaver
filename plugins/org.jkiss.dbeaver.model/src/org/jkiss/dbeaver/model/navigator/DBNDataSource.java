@@ -40,6 +40,8 @@ import java.util.List;
  */
 public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAdaptable
 {
+    private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
+
     private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
 
@@ -165,19 +167,21 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
-        boolean hasNetworkHandlers = hasNetworkHandlers();
-        if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
-            if (image instanceof DBIconComposite) {
-                ((DBIconComposite) image).setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
-                ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
-            } else {
-                image = new DBIconComposite(
-                    image,
-                    false,
-                    null,
-                    hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null,
-                    dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
-                    null);
+        if (USE_ICON_DECORATIONS) {
+            boolean hasNetworkHandlers = hasNetworkHandlers();
+            if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
+                if (image instanceof DBIconComposite) {
+                    ((DBIconComposite) image).setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
+                    ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
+                } else {
+                    image = new DBIconComposite(
+                        image,
+                        false,
+                        null,
+                        hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null,
+                        dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
+                        null);
+                }
             }
         }
         return image;
