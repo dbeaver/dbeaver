@@ -108,7 +108,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         if (attributes == null) {
             throw new DBException("Composite type '" + compType.getTypeName() + "' has no attributes");
         }
-        String[] parsedValues = PostgreValueParser.parseObjectString(value);
+        String[] parsedValues = PostgreValueParser.parseSingleObject(value);
         if (parsedValues.length != attributes.size()) {
             log.debug("Number of attributes (" + attributes.size() + ") doesn't match actual number of parsed strings (" + parsedValues.length + ")");
         }
@@ -117,7 +117,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         Iterator<PostgreDataTypeAttribute> attrIter = attributes.iterator();
         for (int i = 0; i < parsedValues.length && attrIter.hasNext(); i++) {
             final PostgreDataTypeAttribute itemAttr = attrIter.next();
-            attrValues[i] = PostgreValueParser.convertStringToValue(session, itemAttr, parsedValues[i], true);
+            attrValues[i] = PostgreValueParser.convertStringToValue(session, itemAttr, parsedValues[i]);
         }
 
         Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues, value);
