@@ -21,10 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
@@ -45,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
@@ -160,10 +158,40 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     }
 
     ///////////////////////////////////////////////////////////////////
-    // node actions
+    // Node actions
 
     private void renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
+
+        int xWidth = getTreeWidth(tree);
+        int xPos = xWidth;
+        for (INavigatorNodeActionHandler nah : nodeActions) {
+            if (!nah.isSticky(view, element)) {
+                // Non-sticky buttons are active only for selected or hovered items
+                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
+                boolean isHover = false;
+                if (!isSelected && !isHover) {
+                    return;
+                }
+            }
+            DBPImage icon = nah.getNodeActionIcon(getView(), element);
+            if (icon != null) {
+                Image image = DBeaverIcons.getImage(icon);
+
+                Rectangle imageBounds = image.getBounds();
+                int imageSize = imageBounds.height;
+                    // event.height * 2 / 3;
+                xPos -= imageSize;
+                gc.drawImage(image, xPos, event.y + (event.height - imageSize) / 2);
+//                gc.drawImage(image,
+//                    0, 0, imageBounds.width, imageBounds.height,
+//                    xPos, event.y + (event.height - imageSize) / 2, imageBounds.width, imageBounds.height);
+            }
+//            gc.setForeground(tree.getForeground());
+//            int x = xWidth - textSize.x - 2;
+//            gc.drawText(sizeText, x + 2, event.y, true);
+
+        }
         //System.out.println(nodeActions);
     }
 
@@ -234,20 +262,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             Point textSize = gc.stringExtent(sizeText);
             textSize.x += 4;
 
-            int caWidth = tree.getClientArea().width;
+            //int caWidth = tree.getClientArea().width;
             int occupiedWidth = event.x + event.width + 4;
-            int treeWidth;
-            int xShift;
-            ScrollBar hSB = tree.getHorizontalBar();
-            if (hSB == null || !hSB.isVisible()) {
-                treeWidth = tree.getClientArea().width;
-                xShift = 0;
-            } else {
-                treeWidth = hSB.getMaximum();
-                xShift = hSB.getSelection();
-            }
-
-            int xWidth = treeWidth - xShift;
+            int xWidth = getTreeWidth(tree);
 
             if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
                 {
@@ -344,6 +361,24 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             }
             return Status.OK_STATUS;
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    // Utils
+
+    private int getTreeWidth(Tree tree) {
+        int treeWidth;
+        int xShift;
+        ScrollBar hSB = tree.getHorizontalBar();
+        if (hSB == null || !hSB.isVisible()) {
+            treeWidth = tree.getClientArea().width;
+            xShift = 0;
+        } else {
+            treeWidth = hSB.getMaximum();
+            xShift = hSB.getSelection();
+        }
+
+        return treeWidth - xShift;
     }
 
 }

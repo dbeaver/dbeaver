@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
@@ -30,8 +30,13 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 public class NNAHDataSourceConfiguration extends NavigatorNodeActionHandlerAbstract {
 
     @Override
+    public boolean isSticky(INavigatorModelView view, DBNNode node) {
+        return false;
+    }
+
+    @Override
     public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
-        return UIIcon.CONFIGURATION;
+        return DBIcon.OVER_LAMP;
     }
 
     @Override

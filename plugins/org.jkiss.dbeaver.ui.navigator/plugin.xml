@@ -789,13 +789,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.navigator.nodeAction">
-        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConfiguration">
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConfiguration" order="999">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
-        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceTunnel">
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceTunnel" order="200">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
-        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly">
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
     </extension>
