@@ -689,7 +689,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
         throws DBException
     {
-        if (true) return;
         if (context.isConnected()) {
             try {
                 // Sync execution context because async access during disconnect may cause troubles
