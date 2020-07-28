@@ -134,6 +134,14 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
+    public ILabelDecorator getLabelDecorator() {
+        return ((DatabaseNavigatorLabelProvider)treeViewer.getLabelProvider()).getLabelDecorator();
+    }
+
+    public void setLabelDecorator(ILabelDecorator labelDecorator) {
+        ((DatabaseNavigatorLabelProvider)treeViewer.getLabelProvider()).setLabelDecorator(labelDecorator);
+    }
+
     public void setItemRenderer(INavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
     }
