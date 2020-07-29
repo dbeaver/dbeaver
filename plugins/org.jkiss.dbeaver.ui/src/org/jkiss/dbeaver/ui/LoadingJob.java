@@ -82,6 +82,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         updateUIJob.schedule();
         Throwable error = null;
         RESULT result = null;
+        monitor.beginTask("Run service " + getName(), 1);
         try {
             result = this.loadingService.evaluate(monitor);
         }
@@ -95,6 +96,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         finally {
             loadFinished = true;
             UIUtils.asyncExec(new LoadFinisher(result, error));
+            monitor.done();
         }
         return Status.OK_STATUS;
     }
