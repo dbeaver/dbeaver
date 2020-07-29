@@ -232,7 +232,9 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
-            constraintObjects.addAll(checkConstraintObjects);
+            if (!CommonUtils.isEmpty(checkConstraintObjects)) {
+                constraintObjects.addAll(checkConstraintObjects);
+            }
             return constraintObjects;
         }
         else {
