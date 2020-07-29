@@ -45,7 +45,7 @@ public class NNAHDataSourceReadOnly extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public String getNodeActionToolTip(INavigatorModelView view, DBNNode node) {
-        return node.getName() + " is in read-only state";
+        return "Connection is read-only.\nYou cannot change data or database structure.";
     }
 
     @Override

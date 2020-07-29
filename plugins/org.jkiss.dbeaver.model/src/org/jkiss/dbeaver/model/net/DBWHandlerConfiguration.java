@@ -33,6 +33,9 @@ import java.util.Map;
  */
 public class DBWHandlerConfiguration {
 
+    public static final String PROP_HOST = "host";
+    public static final String PROP_PORT = "port";
+
     @NotNull
     private final DBWHandlerDescriptor descriptor;
     private DBPDataSourceContainer dataSource;

@@ -84,4 +84,10 @@ public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
             }
         }
     }
+
+    @Override
+    public void showDetailsToolTip(DBNNode node, Tree tree, Event event) {
+
+    }
+
 }

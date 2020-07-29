@@ -86,8 +86,8 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     @Override
     public boolean matchesParameters(String host, int port) {
-        if (host.equals(configuration.getStringProperty(SSHConstants.PROP_HOST))) {
-            int sshPort = configuration.getIntProperty(SSHConstants.PROP_PORT);
+        if (host.equals(configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST))) {
+            int sshPort = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
             return sshPort == port;
         }
         return false;

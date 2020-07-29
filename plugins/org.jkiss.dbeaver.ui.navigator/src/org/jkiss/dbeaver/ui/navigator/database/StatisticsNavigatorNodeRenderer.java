@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -66,6 +67,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
     private static final int PERCENT_FILL_WIDTH = 50;
+    //public static final String ITEM_WIDTH_ATTR = "item.width";
 
     private final INavigatorModelView view;
 
@@ -101,11 +103,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         if (element instanceof DBNDatabaseNode) {
             if (element instanceof DBNDataSource) {
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    renderDataSourceHostName((DBNDataSource) element, tree, gc, event);
-                }
+                int widthOccupied = 0;
                 if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
+                    widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
+                }
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                    renderDataSourceHostName((DBNDataSource) element, tree, gc, event, widthOccupied);
                 }
             }
 
@@ -115,26 +118,81 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         }
     }
 
+    @Override
+    public void showDetailsToolTip(DBNNode node, Tree tree, Event event) {
+        String detailsTip = getDetailsTipText(node, tree, event);
+        if (detailsTip != null) {
+            tree.setToolTipText(detailsTip);
+        } else {
+            tree.setToolTipText(null);
+        }
+    }
+
+    private String getDetailsTipText(DBNNode element, Tree tree, Event event) {
+        if (element instanceof DBNDatabaseNode) {
+            if (element instanceof DBNDataSource) {
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                    // Detect active action
+                    INavigatorNodeActionHandler overActionButton = getActionButtonFor(element, tree, event);
+                    if (overActionButton != null) {
+                        return overActionButton.getNodeActionToolTip(view, element);
+                    }
+                }
+                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
+                    return getDataSourceHostText(((DBNDataSource) element).getDataSourceContainer().getConnectionConfiguration());
+                }
+                return null;
+            }
+
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+                //renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
+            }
+        }
+        return null;
+    }
+
+    private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, Tree tree, Event event) {
+        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
+        int treeWidth = getTreeWidth(tree);
+        int widthOccupied = 0;
+        for (INavigatorNodeActionHandler nah : nodeActions) {
+            if (!nah.isSticky(view, element)) {
+                // Non-sticky buttons are active only for selected or hovered items
+                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
+                boolean isHover = false;
+                if (!isSelected && !isHover) {
+                    return null;
+                }
+            }
+            widthOccupied += 2; // Margin
+
+            DBPImage icon = nah.getNodeActionIcon(getView(), element);
+            if (icon != null) {
+                Image image = DBeaverIcons.getImage(icon);
+
+                Rectangle imageBounds = image.getBounds();
+                int imageSize = imageBounds.height;
+                widthOccupied += imageSize;
+
+                if (event.x > treeWidth - widthOccupied) {
+                    return nah;
+                }
+            }
+        }
+        return null;
+    }
+
     ///////////////////////////////////////////////////////////////////
     // Host name
 
-    private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event) {
+    private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event, int widthOccupied) {
         DBPDataSourceContainer dataSourceContainer = element.getDataSourceContainer();
         DBPConnectionConfiguration configuration = dataSourceContainer.getConnectionConfiguration();
         if (!CommonUtils.isEmpty(configuration.getHostName())) {
             Font oldFont = gc.getFont();
-            String hostText = configuration.getHostName();
-            // For localhost ry to get real host name from tunnel configuration
-            if (hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
-                for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
-                    if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                        String tunnelHost = hc.getStringProperty("host");
-                        if (!CommonUtils.isEmpty(tunnelHost)) {
-                            hostText = tunnelHost;
-                            break;
-                        }
-                    }
-                }
+            String hostText = getDataSourceHostText(configuration);
+            if (CommonUtils.isEmpty(hostText)) {
+                return;
             }
             DBPDataSourceContainer ds = element.getDataSourceContainer();
             Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
@@ -148,7 +206,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             Point hostTextSize = gc.stringExtent(hostText);
 
             int xOffset = isLinux ? 16 : 2;
+            int treeWidth = getTreeWidth(tree);
 
+            gc.setClipping(
+                event.x + event.width + xOffset,
+                event.y + ((event.height - hostTextSize.y) / 2),
+                treeWidth - (event.x + event.width + xOffset + widthOccupied),
+                event.height
+            );
             gc.drawText(" - " + hostText,
                 event.x + event.width + xOffset,
                 event.y + ((event.height - hostTextSize.y) / 2),
@@ -157,23 +222,44 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         }
     }
 
+    @NotNull
+    private String getDataSourceHostText(DBPConnectionConfiguration configuration) {
+        String hostText = configuration.getHostName();
+        // For localhost ry to get real host name from tunnel configuration
+        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
+            for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
+                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    if (!CommonUtils.isEmpty(tunnelHost)) {
+                        hostText = tunnelHost;
+                        break;
+                    }
+                }
+            }
+        }
+        return hostText;
+    }
+
     ///////////////////////////////////////////////////////////////////
     // Node actions
 
-    private void renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
+    private int renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
 
         int xWidth = getTreeWidth(tree);
         int xPos = xWidth;
+        int widthOccupied = 0;
         for (INavigatorNodeActionHandler nah : nodeActions) {
             if (!nah.isSticky(view, element)) {
                 // Non-sticky buttons are active only for selected or hovered items
                 boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
                 boolean isHover = false;
                 if (!isSelected && !isHover) {
-                    return;
+                    return widthOccupied;
                 }
             }
+            widthOccupied += 2; // Margin
+
             DBPImage icon = nah.getNodeActionIcon(getView(), element);
             if (icon != null) {
                 Image image = DBeaverIcons.getImage(icon);
@@ -182,6 +268,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 int imageSize = imageBounds.height;
                     // event.height * 2 / 3;
                 xPos -= imageSize;
+                widthOccupied += imageSize;
+                //gc.fillRectangle(xPos, event.y + (event.height - imageSize) / 2, imageBounds.width, imageBounds.height);
                 gc.drawImage(image, xPos, event.y + (event.height - imageSize) / 2);
 //                gc.drawImage(image,
 //                    0, 0, imageBounds.width, imageBounds.height,
@@ -193,6 +281,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         }
         //System.out.println(nodeActions);
+        return widthOccupied;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -278,7 +367,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
                 gc.setForeground(tree.getForeground());
                 int x = xWidth - textSize.x - 2;
-                gc.drawText(sizeText, x + 2, event.y, true);
+                gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
             }
         }
     }
