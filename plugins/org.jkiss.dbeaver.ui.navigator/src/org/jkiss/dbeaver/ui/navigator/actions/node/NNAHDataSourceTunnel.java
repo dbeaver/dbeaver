@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Tunnel action handler
@@ -45,7 +47,17 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public String getNodeActionToolTip(INavigatorModelView view, DBNNode node) {
-        return node.getName() + " uses network tunnel";
+        StringBuilder tip = new StringBuilder("Network handlers enabled:");
+        for (DBWHandlerConfiguration handler : ((DBNDataSource)node).getDataSourceContainer().getConnectionConfiguration().getHandlers()) {
+            if (handler.isEnabled()) {
+                tip.append("\n  -").append(handler.getHandlerDescriptor().getLabel());
+                String hostName = handler.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                if (!CommonUtils.isEmpty(hostName)) {
+                    tip.append(": ").append(hostName);
+                }
+            }
+        }
+        return tip.toString();
     }
 
     @Override

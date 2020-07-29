@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -122,7 +121,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             setInput(rootNode);
         }
 
-        new DefaultViewerToolTipSupport(treeViewer);
+        new DatabaseNavigatorToolTipSupport(this);
 
         initEditor();
 
@@ -142,7 +141,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         ((DatabaseNavigatorLabelProvider)treeViewer.getLabelProvider()).setLabelDecorator(labelDecorator);
     }
 
-    public void setItemRenderer(INavigatorItemRenderer itemRenderer) {
+    INavigatorItemRenderer getItemRenderer() {
+        return itemRenderer;
+    }
+
+    void setItemRenderer(INavigatorItemRenderer itemRenderer) {
         this.itemRenderer = itemRenderer;
     }
 

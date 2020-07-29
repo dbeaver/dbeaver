@@ -64,8 +64,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         }
 
         String sshAuthType = configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE);
-        String sshHost = configuration.getStringProperty(SSHConstants.PROP_HOST);
-        int sshPortNum = configuration.getIntProperty(SSHConstants.PROP_PORT);
+        String sshHost = configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+        int sshPortNum = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
         int aliveInterval = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
         int connectTimeout = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
         String sshLocalHost = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_LOCAL_HOST));

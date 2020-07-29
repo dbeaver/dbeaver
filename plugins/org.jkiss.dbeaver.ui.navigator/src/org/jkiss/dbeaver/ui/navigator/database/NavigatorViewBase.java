@@ -20,6 +20,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
@@ -118,6 +120,25 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         navigatorTree.getViewer().addSelectionChangedListener(
             event -> onSelectionChange((IStructuredSelection)event.getSelection())
         );
+        navigatorTree.getViewer().getTree().addListener(SWT.MouseDoubleClick, event -> {
+            event.doit = false;
+        });
+        navigatorTree.getViewer().getTree().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                super.mouseDoubleClick(e);
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                super.mouseDown(e);
+            }
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+                super.mouseUp(e);
+            }
+        });
         navigatorTree.getViewer().addDoubleClickListener(event -> {
             TreeViewer viewer = tree.getViewer();
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();

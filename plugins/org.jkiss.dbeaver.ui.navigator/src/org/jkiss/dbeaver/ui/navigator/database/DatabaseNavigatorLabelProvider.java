@@ -239,4 +239,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     public int getToolTipStyle(Object object) {
         return super.getToolTipStyle(object);
     }
+
+    @Override
+    public boolean useNativeToolTip(Object object) {
+        return true;
+    }
 }
