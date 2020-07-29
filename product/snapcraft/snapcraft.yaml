@@ -11,6 +11,12 @@ architectures:
   - build-on: [amd64, i386]
     run-on: amd64
 
+plugs:
+  config-dbeaver-ce:
+    interface: personal-files
+    read:
+    - $HOME/.ssh
+
 apps:
   dbeaver-ce:
     command: $SNAP/usr/share/dbeaver/dbeaver
@@ -27,6 +33,7 @@ apps:
       - network
       - home
       - removable-media
+      - config-dbeaver-ce
 
 parts:
   dbeaver-ce:
