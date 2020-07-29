@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -33,7 +32,6 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,25 +42,15 @@ import java.util.Date;
 /**
  * ProjectExplorerView
  */
-public class ProjectExplorerView extends NavigatorViewBase implements DBPProjectListener {
+public class ProjectExplorerView extends DecoratedProjectView implements DBPProjectListener {
 
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
-    private final ILabelDecorator labelDecorator;
 
     public ProjectExplorerView() {
         DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
-
-        labelDecorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
-        labelDecorator.addListener(event -> {
-                Object[] elements = event.getElements();
-                if (elements != null) {
-                    getNavigatorViewer().update(elements, null);
-                }
-            }
-        );
     }
 
     @Override
@@ -256,8 +244,6 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 
     @Override
     public void dispose() {
-        labelDecorator.dispose();
-
         DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
