@@ -93,6 +93,7 @@ public class PostgreValueParser {
                 return null;
             } else {
                 if (componentType instanceof PostgreDataType) {
+                    checkAmountOfBrackets(string);
                     List<Object> itemStrings = parseArrayString(string, ",");
                     return startTransformListOfValuesIntoArray(session, (PostgreDataType)componentType, itemStrings);
                 } else {
@@ -102,6 +103,44 @@ public class PostgreValueParser {
             }
         } catch (Exception e) {
             throw new DBCException("Error extracting array '" + itemType.getFullTypeName() + "' items", e);
+        }
+    }
+
+    private static void checkAmountOfBrackets(String string) throws DBCException {
+        int mostLeftMustacheCount = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == '{') {
+                mostLeftMustacheCount++;
+            } else {
+                break;
+            }
+        }
+        int mostRightMustacheCount = 0;
+        for (int i = string.length() - 1; i > string.length() - 1 - mostLeftMustacheCount; i--) {
+            if (string.charAt(i) == '}') {
+                mostRightMustacheCount++;
+            } else {
+                break;
+            }
+        }
+        if (mostLeftMustacheCount != mostRightMustacheCount) {
+            throw new DBCException("Amount of most left and most right array's brackets is not equal");
+        }
+
+        int leftMustacheCount = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == '{') {
+                leftMustacheCount++;
+            }
+        }
+        int rightMustacheCount = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == '}') {
+                rightMustacheCount++;
+            }
+        }
+        if (leftMustacheCount != rightMustacheCount) {
+            throw new DBCException("Amount of array's brackets is not equal");
         }
     }
 

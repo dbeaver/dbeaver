@@ -111,7 +111,7 @@ public class PostgreValueParserTest {
                 new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
                 new Object[]{innerCollection1, innerCollection2});
         Assert.assertArrayEquals(new Object[]{ innerCollection3, innerCollection3 },
-                (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}"));
+                (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}}"));
 
         Boolean[] booleans = {true, false};
         Assert.assertEquals(true, PostgreValueParser.convertStringToValue(session, booleanItemType, "true"));
