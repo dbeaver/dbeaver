@@ -90,7 +90,7 @@ public class PostgreValueParserTest {
     public void convertStringToValue() throws DBCException {
         Assert.assertEquals(1, PostgreValueParser.convertStringToValue(session, intItemType, "1"));
         Assert.assertEquals(1.111, PostgreValueParser.convertStringToValue(session, doubleItemType, "1.111"));
-        Assert.assertEquals("'A'", PostgreValueParser.convertStringToValue(session, stringItemType, "'A'"));
+        Assert.assertEquals("A", PostgreValueParser.convertStringToValue(session, stringItemType, "A"));
         Assert.assertArrayEquals(new String[]{"A", "B"},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayStringItemType, "{\"A\",\"B\"}"));
         Assert.assertArrayEquals(new Integer[]{1, 22},
@@ -103,7 +103,7 @@ public class PostgreValueParserTest {
                 new Double[]{1.1, 22.22});
         JDBCCollection innerCollection2 = new JDBCCollection(doubleItemType,
                 new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
-                new Double[]{3.3, 44.441});
+                new Double[]{3.3, 44.44});
         Assert.assertArrayEquals(new Object[]{innerCollection1, innerCollection2},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{1.1,22.22},{3.3,44.44}}"));
 
