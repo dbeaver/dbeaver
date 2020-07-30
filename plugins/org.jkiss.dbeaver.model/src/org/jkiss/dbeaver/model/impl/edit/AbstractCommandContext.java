@@ -116,7 +116,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
             // Commit changes
-            if (txnManager != null && txnManager.isSupportsTransactions() && !useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
                     txnManager.commit(session);
                 } catch (DBCException e1) {
@@ -127,7 +127,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             clearCommandQueues();
         } catch (Throwable e) {
             // Rollback changes
-            if (txnManager != null && txnManager.isSupportsTransactions() && !useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
                     txnManager.rollback(session, null);
                 } catch (DBCException e1) {
