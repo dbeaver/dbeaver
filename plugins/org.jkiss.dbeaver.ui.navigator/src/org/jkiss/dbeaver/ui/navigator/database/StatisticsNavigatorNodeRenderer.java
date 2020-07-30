@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -71,7 +72,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private final INavigatorModelView view;
 
-    private final ByteNumberFormat numberFormat = new ByteNumberFormat();
+    private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
+
     private final Map<String, Format> classFormatMap = new HashMap<>();
 
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
@@ -145,6 +147,22 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             }
 
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+                if (event.x > getTreeWidth(tree) - PERCENT_FILL_WIDTH) {
+                    DBSObject object = ((DBNDatabaseNode) element).getObject();
+                    if (object instanceof DBPObjectStatistics && ((DBPObjectStatistics) object).hasStatistics()) {
+                        long statObjectSize = ((DBPObjectStatistics) object).getStatObjectSize();
+                        if (statObjectSize > 0) {
+                            String formattedSize;
+                            try {
+                                DBDDataFormatter formatter = object.getDataSource().getContainer().getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, null);
+                                formattedSize = formatter.formatValue(statObjectSize);
+                            } catch (Exception e) {
+                                formattedSize = String.valueOf(statObjectSize);
+                            }
+                            return "Object size on disk: " + formattedSize + " bytes";
+                        }
+                    }
+                }
                 //renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
             }
         }

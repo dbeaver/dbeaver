@@ -100,7 +100,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected OracleTableBase(OracleSchema oracleSchema, ResultSet dbResult)
     {
         super(oracleSchema, true);
-        setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
+        setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }

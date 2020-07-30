@@ -876,7 +876,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             if (ex.getTargetException() instanceof DBException) {
                 throw (DBException) ex.getTargetException();
             }
-            throw new DBException("Can't read " + propertyName, ex.getTargetException());
+            throw new DBException("Can't read " + propertyName + ": " + ex.getTargetException().getMessage(), ex.getTargetException());
         }
     }
 
