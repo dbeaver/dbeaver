@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -51,13 +51,12 @@ public class Log
     }
 
     private final String name;
-    private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
+    private static ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
-    private static PrintWriter DEFAULT_DEBUG_WRITER;
     private final boolean doEclipseLog;
 
     public static Log getLog(Class<?> forClass) {
-        return new Log(forClass.getName(), false);
+        return new Log(forClass.getName(), true);
     }
 
     public static Log getLog(String name) {
@@ -72,16 +71,19 @@ public class Log
         return quietMode;
     }
 
-    public static PrintWriter getLogWriter() {
+    public static PrintStream getLogWriter() {
         return logWriter.get();
     }
 
-    public static void setLogWriter(Writer logWriter) {
+    public static void setLogWriter(OutputStream logWriter) {
         if (logWriter == null) {
             Log.logWriter.remove();
         } else {
-            PrintWriter printStream = new PrintWriter(logWriter, true);
-            Log.logWriter.set(printStream);
+            if (logWriter instanceof PrintStream) {
+                Log.logWriter.set((PrintStream) logWriter);
+            } else {
+                Log.logWriter.set(new PrintStream(logWriter, true));
+            }
         }
     }
 
@@ -120,7 +122,7 @@ public class Log
     }
 
     public void flush() {
-        PrintWriter logStream = logWriter.get();
+        PrintStream logStream = logWriter.get();
         if (logStream != null) {
             logStream.flush();
         }
@@ -184,12 +186,9 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintWriter logStream = logWriter.get();
+        PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
-            if (DEFAULT_DEBUG_WRITER == null) {
-                DEFAULT_DEBUG_WRITER = new PrintWriter(System.err, true);
-            }
-            PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
+            PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : System.err);
             if (debugWriter == null) {
                 return;
             }

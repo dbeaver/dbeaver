@@ -32,8 +32,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +45,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
     private DBPNativeClientLocation clientHome;
-    private Writer logWriter = new PrintWriter(System.out, true);
+    private PrintStream logWriter = System.out;
 
     private String clientHomeName;
 
@@ -85,11 +84,11 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         return null;
     }
 
-    public Writer getLogWriter() {
+    public PrintStream getLogWriter() {
         return logWriter;
     }
 
-    public void setLogWriter(Writer logWriter) {
+    public void setLogWriter(PrintStream logWriter) {
         this.logWriter = logWriter;
     }
 

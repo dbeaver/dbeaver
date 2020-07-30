@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -218,7 +217,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             }
             // Run task thru task manager
             // Pass executor to visualize task progress in UI
-            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, new PrintWriter(System.out));
+            TaskWizardExecutor executor = new TaskWizardExecutor(getRunnableContext(), task, log, System.out);
             if (getCurrentTask() == null) {
                 // Execute directly in wizard
                 executor.executeTask();
