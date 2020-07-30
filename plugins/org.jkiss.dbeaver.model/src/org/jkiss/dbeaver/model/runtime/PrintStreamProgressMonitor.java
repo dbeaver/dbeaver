@@ -14,28 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+package org.jkiss.dbeaver.model.runtime;
 
 import java.io.PrintStream;
-import java.util.Locale;
 
 /**
- * Task handler
+ * Progress monitor with extra logging
  */
-public interface DBTTaskHandler {
+public class PrintStreamProgressMonitor extends ProxyProgressMonitor {
 
-    void executeTask(
-        @NotNull DBRRunnableContext runnableContext,
-        @NotNull DBTTask task,
-        @NotNull Locale locale,
-        @NotNull Log log,
-        @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener)
-        throws DBException;
+    private final PrintStream out;
 
+    public PrintStreamProgressMonitor(DBRProgressMonitor monitor, PrintStream out) {
+        super(monitor);
+        this.out = out;
+    }
+
+    @Override
+    public void beginTask(String name, int totalWork) {
+        super.beginTask(name, totalWork);
+        out.println(name);
+    }
+
+    @Override
+    public void subTask(String name) {
+        super.subTask(name);
+        out.println("\t" + name);
+    }
 }
