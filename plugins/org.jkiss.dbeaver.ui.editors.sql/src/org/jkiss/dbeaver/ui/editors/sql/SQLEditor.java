@@ -3608,7 +3608,12 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
-                dumpOutput(monitor);
+                monitor.beginTask("Read server output", 1);
+                try {
+                    dumpOutput(monitor);
+                } finally {
+                    monitor.done();
+                }
 
                 schedule(200);
             }
