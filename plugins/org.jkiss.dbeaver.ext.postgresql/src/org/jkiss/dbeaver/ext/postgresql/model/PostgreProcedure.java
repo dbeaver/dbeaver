@@ -196,7 +196,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             String[] argDefaults = null;
             if (!CommonUtils.isEmpty(argDefaultsString)) {
                 try {
-                    argDefaults = PostgreValueParser.parseObjectString(argDefaultsString);
+                    argDefaults = PostgreValueParser.parseSingleObject(argDefaultsString);
                 } catch (DBCException e) {
                     log.debug("Error parsing function parameters defaults", e);
                 }

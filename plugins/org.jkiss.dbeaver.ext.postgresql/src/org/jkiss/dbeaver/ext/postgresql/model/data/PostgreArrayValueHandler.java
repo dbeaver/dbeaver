@@ -68,7 +68,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
-                    return convertStringArrayToCollection(session, itemType, strValue);
+                    return convertStringArrayToCollection(session, arrayType, strValue); //itemType
                 } else if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
@@ -112,19 +112,20 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             List<Object> strings = PostgreValueParser.parseArrayString(value, delimiter);
             Object[] contents = new Object[strings.size()];
             for (int i = 0; i < strings.size(); i++) {
-                contents[i] = PostgreValueParser.convertStringToValue(session, itemType, String.valueOf(strings.get(i)), false);
+                contents[i] = PostgreValueParser.convertStringToValue(session, itemType, String.valueOf(strings.get(i)));
             }
             return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
         }
     }
 
     private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
-        String[] strings = PostgreValueParser.parseObjectString(strValue.substring(1, strValue.length() - 1));
-        Object[] contents = new Object[strings.length];
-        for (int i = 0; i < strings.length; i++) {
-            contents[i] = PostgreValueParser.convertStringToValue(session, itemType, strings[i], false);
+        Object parsedArray = PostgreValueParser.convertStringToValue(session, itemType, strValue);
+        if (parsedArray instanceof Object[]){
+            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
+        } else {
+            // Can't parse
+            return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[]{parsedArray});
         }
-        return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }
 
     @NotNull
