@@ -595,7 +595,7 @@ public class PostgreSchema implements
             }
             sql.append("\nFROM pg_catalog.pg_class c\n")
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n")
-                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','c')")
+                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, getObjectId());
