@@ -3519,7 +3519,12 @@ public class SQLEditor extends SQLEditorBase implements
                     new AbstractJob("Refresh default object") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
-                            DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults);
+                            monitor.beginTask("Refresh default objects", 1);
+                            try {
+                                DBUtils.refreshContextDefaultsAndReflect(monitor, contextDefaults);
+                            } finally {
+                                monitor.done();
+                            }
                             return Status.OK_STATUS;
                         }
                     }.schedule();
@@ -3553,6 +3558,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Save query processors", queryProcessors.size());
             try {
                 for (QueryProcessor queryProcessor : queryProcessors) {
                     for (QueryResultsContainer resultsProvider : queryProcessor.getResultContainers()) {
@@ -3561,6 +3567,7 @@ public class SQLEditor extends SQLEditorBase implements
                             rsv.doSave(monitor);
                         }
                     }
+                    monitor.worked(1);
                 }
                 success = true;
                 return Status.OK_STATUS;
@@ -3572,6 +3579,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (success == null) {
                     success = true;
                 }
+                monitor.done();
             }
         }
     }
