@@ -100,10 +100,13 @@ public class CompileHandler extends OracleTaskHandler
                 Throwable error = null;
                 try {
                     UIUtils.runInProgressService(monitor -> {
+                        monitor.beginTask("Compile", 1);
                         try {
                             compileUnit(monitor, compileLog, unit);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
                         }
                     });
                     if (compileLog.getError() != null) {

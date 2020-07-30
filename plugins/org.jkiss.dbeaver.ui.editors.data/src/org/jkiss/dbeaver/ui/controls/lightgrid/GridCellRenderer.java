@@ -41,6 +41,10 @@ class GridCellRenderer extends AbstractRenderer
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
     static final Rectangle LINK_IMAGE_BOUNDS = new Rectangle(0, 0, 13, 13);
 
+    // Clipping limits cell paint with cell bounds. But is an expensive GC call.
+    // Generally we don't need it because we repaint whole grid left-to-right and all text tails will be overpainted by trailing cells
+    private static final boolean USE_CLIPPING = false;
+
     protected Color colorLineFocused;
 
     public GridCellRenderer(LightGrid grid)
@@ -125,9 +129,13 @@ class GridCellRenderer extends AbstractRenderer
                     if (image != null) {
                         // Reduce bounds by link image size
                         imageMargin = imageBounds.width + INSIDE_MARGIN;
-                        gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
+                        if (USE_CLIPPING) {
+                            gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
+                        }
                     } else {
-                        gc.setClipping(bounds);
+                        if (USE_CLIPPING) {
+                            gc.setClipping(bounds);
+                        }
                     }
                     Point textSize = gc.textExtent(text);
                     gc.drawString(
@@ -135,7 +143,9 @@ class GridCellRenderer extends AbstractRenderer
                             bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             true);
-                    gc.setClipping((Rectangle) null);
+                    if (USE_CLIPPING) {
+                        gc.setClipping((Rectangle) null);
+                    }
                     break;
                 default:
                     gc.drawString(
