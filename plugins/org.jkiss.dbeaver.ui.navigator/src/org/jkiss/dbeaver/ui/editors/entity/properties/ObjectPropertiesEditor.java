@@ -247,9 +247,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 //                        ((EditorActionBarContributor) activeFolderContributor).contributeToStatusLine(
 //                            actionBars.getStatusLineManager());
 //                    }
-                    activeFolderContributor.setActiveEditor(((TabbedFolderPageEditor) activeFolder).getEditor());
+                    IEditorPart activeEditor = ((TabbedFolderPageEditor) activeFolder).getEditor();
+                    activeFolderContributor.setActiveEditor(activeEditor);
+                }
+            } else if (activeFolder instanceof TabbedFolderPageNode) {
+                if (mainEditor instanceof EntityEditor) {
+                    // Overwrite external contributor actions with EntityEditor actions
+                    new EditorSearchActionsContributor().setActiveEditor(((EntityEditor) mainEditor).getActiveEditor());
                 }
             }
+
             actionBars.updateActionBars();
 
             synchronized (folderListeners) {
