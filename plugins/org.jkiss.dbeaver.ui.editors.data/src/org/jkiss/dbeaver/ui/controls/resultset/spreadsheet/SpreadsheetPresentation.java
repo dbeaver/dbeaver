@@ -1782,10 +1782,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                     }
                 }
-                return attr.getValueRenderer().getValueDisplayString(
-                    attr.getAttribute(),
-                    value,
-                    getValueRenderFormat(attr, value));
+                try {
+                    return attr.getValueRenderer().getValueDisplayString(
+                        attr.getAttribute(),
+                        value,
+                        getValueRenderFormat(attr, value));
+                } catch (Exception e) {
+                    return new DBDValueError(e);
+                }
             } else {
                 return value;
             }
