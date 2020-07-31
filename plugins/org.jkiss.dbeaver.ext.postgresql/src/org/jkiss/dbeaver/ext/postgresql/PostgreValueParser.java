@@ -51,7 +51,7 @@ public class PostgreValueParser {
                 try {
                     return prepareToParseArray(session, itemType, string);
                 } catch (Exception e) {
-                    log.error("Array parsing failed ", e);
+                    log.error("Array parsing failed");
                     return string;
                 }
             } else {
