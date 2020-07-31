@@ -569,7 +569,9 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().uniqueKeyCache.clearObjectCache(this);
-        getContainer().checkConstraintCache.clearObjectCache(this);
+        if (getDataSource().supportsCheckConstraints()) {
+            getContainer().checkConstraintCache.clearObjectCache(this);
+        }
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
         this.referenceCache = null;
