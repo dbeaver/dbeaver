@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +66,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             connectionType = OracleConstants.ConnectionType.BASIC;
         }
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
-            return connectionInfo.getUrl();
+            return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
         }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
