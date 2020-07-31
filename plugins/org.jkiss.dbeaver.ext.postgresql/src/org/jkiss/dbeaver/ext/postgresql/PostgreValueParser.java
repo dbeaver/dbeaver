@@ -48,10 +48,15 @@ public class PostgreValueParser {
             if (CommonUtils.isEmpty(string)) {
                 return new Object[0];
             } else if (string.startsWith("{") && string.endsWith("}")) {
-                return prepareToParseArray(session, itemType, string);
+                try {
+                    return prepareToParseArray(session, itemType, string);
+                } catch (Exception e) {
+                    log.error("Array parsing failed ", e);
+                    return string;
+                }
             } else {
                 log.error("Unsupported array string: '" + string + "'");
-                return null; //string
+                return string;
             }
         }
         if (CommonUtils.isEmpty(string)) {
@@ -90,7 +95,7 @@ public class PostgreValueParser {
             DBSDataType componentType = arrayDataType.getComponentType(session.getProgressMonitor());
             if (componentType == null) {
                 log.error("Can't get component type from array '" + itemType.getFullTypeName() + "'");
-                return null;
+                return string;
             } else {
                 if (componentType instanceof PostgreDataType) {
                     checkAmountOfBrackets(string);
@@ -98,7 +103,7 @@ public class PostgreValueParser {
                     return startTransformListOfValuesIntoArray(session, (PostgreDataType)componentType, itemStrings);
                 } else {
                     log.error("Incorrect type '" + itemType.getFullTypeName() + "'");
-                    return null;
+                    return string;
                 }
             }
         } catch (Exception e) {
@@ -194,7 +199,7 @@ public class PostgreValueParser {
         }
     }
 
-    public static String generateObjectString(Object[] values) throws DBCException {
+    public static String generateObjectString(Object[] values) {
         String[] line = new String[values.length];
         for (int i = 0; i < values.length; i++) {
             final Object value = values[i];
