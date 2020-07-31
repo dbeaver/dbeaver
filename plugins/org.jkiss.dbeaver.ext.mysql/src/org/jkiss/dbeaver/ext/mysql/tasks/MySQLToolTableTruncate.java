@@ -38,13 +38,14 @@ public class MySQLToolTableTruncate extends MySQLToolWithStatus<MySQLTableBase, 
         String sql = "";
         boolean force = settings.isForce();
         if (force) {
-            sql += "SET FOREIGN_KEY_CHECKS = 0;\n";
+            queries.add(new SQLDatabasePersistAction("SET FOREIGN_KEY_CHECKS = 0"));
         }
         sql += "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
-        if (force) {
-            sql += ";\nSET FOREIGN_KEY_CHECKS = 1";
-        }
         queries.add(new SQLDatabasePersistAction(sql));
+        if (force) {
+            queries.add(new SQLDatabasePersistAction("SET FOREIGN_KEY_CHECKS = 1"));
+        }
+
     }
 
     @Override
