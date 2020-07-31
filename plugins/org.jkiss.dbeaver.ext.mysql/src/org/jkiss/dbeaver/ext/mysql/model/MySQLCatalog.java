@@ -384,7 +384,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table constraints");
             uniqueKeyCache.getAllObjects(monitor, this);
-            checkConstraintCache.getAllObjects(monitor, this);
+            if (getDataSource().supportsCheckConstraints()) {
+                checkConstraintCache.getAllObjects(monitor, this);
+            }
         }
     }
 
@@ -426,7 +428,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         tableCache.clearCache();
         indexCache.clearCache();
         uniqueKeyCache.clearCache();
-        checkConstraintCache.clearCache();
+        if (getDataSource().supportsCheckConstraints()) {
+            checkConstraintCache.clearCache();
+        }
         proceduresCache.clearCache();
         triggerCache.clearCache();
         eventCache.clearCache();
