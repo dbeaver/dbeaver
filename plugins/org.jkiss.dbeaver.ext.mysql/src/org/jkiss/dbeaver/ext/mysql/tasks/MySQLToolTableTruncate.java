@@ -35,7 +35,15 @@ public class MySQLToolTableTruncate extends MySQLToolWithStatus<MySQLTableBase, 
 
     @Override
     public void generateObjectQueries(DBCSession session, MySQLToolTableTruncateSettings settings, List<DBEPersistAction> queries, MySQLTableBase object) throws DBCException {
-        String sql = "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        String sql = "";
+        boolean force = settings.isForce();
+        if (force) {
+            sql += "SET FOREIGN_KEY_CHECKS = 0;\n";
+        }
+        sql += "TRUNCATE TABLE " + object.getFullyQualifiedName(DBPEvaluationContext.DDL);
+        if (force) {
+            sql += ";\nSET FOREIGN_KEY_CHECKS = 1";
+        }
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
