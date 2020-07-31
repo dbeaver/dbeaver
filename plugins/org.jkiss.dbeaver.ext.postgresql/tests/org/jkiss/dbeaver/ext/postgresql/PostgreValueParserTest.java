@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
@@ -38,7 +39,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreValueParserTest {
@@ -76,13 +79,14 @@ public class PostgreValueParserTest {
     @Mock
     private PostgreDataType structItemType;
 
-    private TestPreferenceStore testPreferenceStore = new TestPreferenceStore();
+    private NumberDataFormatter numberDataFormatter = new NumberDataFormatter();
 
     @Mock
-    private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", testPreferenceStore);
+    private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", new TestPreferenceStore());
 
     @Before
     public void setUp() throws DBException, IllegalAccessException, InstantiationException {
+        numberDataFormatter.init(doubleItemType, Locale.ENGLISH, new HashMap<>());
         setupGeneralWhenMocks();
     }
 
@@ -91,12 +95,16 @@ public class PostgreValueParserTest {
         Assert.assertEquals(1, PostgreValueParser.convertStringToValue(session, intItemType, "1"));
         Assert.assertEquals(1.111, PostgreValueParser.convertStringToValue(session, doubleItemType, "1.111"));
         Assert.assertEquals("A", PostgreValueParser.convertStringToValue(session, stringItemType, "A"));
+        Assert.assertNotEquals("ABC", PostgreValueParser.convertStringToValue(session, stringItemType, "A"));
+        Assert.assertNotEquals(123, PostgreValueParser.convertStringToValue(session, intItemType, "1"));
         Assert.assertArrayEquals(new String[]{"A", "B"},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayStringItemType, "{\"A\",\"B\"}"));
         Assert.assertArrayEquals(new Integer[]{1, 22},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayIntItemType, "{1,22}"));
         Assert.assertArrayEquals(new Double[]{1.1, 22.22},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{1.1,22.22}"));
+        Assert.assertNotEquals(new Integer[]{33333, 22},
+                (Object[]) PostgreValueParser.convertStringToValue(session, arrayIntItemType, "{1,22}"));
 
         JDBCCollection innerCollection1 = new JDBCCollection(doubleItemType,
                 new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
@@ -112,9 +120,20 @@ public class PostgreValueParserTest {
                 new Object[]{innerCollection1, innerCollection2});
         Assert.assertArrayEquals(new Object[]{ innerCollection3, innerCollection3 },
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}}"));
+        Assert.assertEquals("{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}",
+                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}"));
+
+        //Bad input data tests
+        Assert.assertEquals("{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}",
+                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}"));
+        Assert.assertEquals("{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,",
+                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,"));
+        Assert.assertEquals("{{1.1,22.22},,44.44}},{1.1,22.22},{3.3,}",
+                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{1.1,22.22},,44.44}},{1.1,22.22},{3.3,}"));
 
         Boolean[] booleans = {true, false};
         Assert.assertEquals(true, PostgreValueParser.convertStringToValue(session, booleanItemType, "true"));
+        Assert.assertNotEquals(false, PostgreValueParser.convertStringToValue(session, booleanItemType, "true"));
         Assert.assertArrayEquals(booleans, (Object[]) PostgreValueParser.convertStringToValue(session, arrayBooleanItemType, "{TRUE,FALSE}"));
         //todo: add support alternatives to "true/false"
 //        Assert.assertArrayEquals(booleans, (Object[]) PostgreValueParser.convertStringToValue(session, arrayBooleanItemType, "{'t','f'}", true));
@@ -133,7 +152,7 @@ public class PostgreValueParserTest {
     }
 
     @Test
-    public void generateObjectString() throws DBCException {
+    public void generateObjectString() {
         Assert.assertEquals("(\"A\",\"B\")", PostgreValueParser.generateObjectString(new String[]{"A", "B"}));
         //todo: unquote numbers
         Assert.assertEquals("(\"1\",\"2\",\"3\")", PostgreValueParser.generateObjectString(new Integer[]{1, 2, 3}));
@@ -148,11 +167,13 @@ public class PostgreValueParserTest {
     }
 
     @Test
-    public void parseArrayString() throws DBCException {
+    public void parseArrayString() {
         List<String> stringList = new ArrayList<>();
         stringList.add("A");
         stringList.add("B");
         Assert.assertEquals(stringList, PostgreValueParser.parseArrayString("{\"A\",\"B\"}", ","));
+        Assert.assertNotEquals(stringList, PostgreValueParser.parseArrayString("{\"A\",\"B\",\"C\"}", ","));
+        Assert.assertNotEquals(stringList, PostgreValueParser.parseArrayString("{\"A\",\"B\"}", "."));
 
         List<String> intList = new ArrayList<>();
         intList.add("1");
@@ -165,6 +186,7 @@ public class PostgreValueParserTest {
         doublesList.add("1.123");
         doublesList.add("2.1421324124421");
         Assert.assertEquals(doublesList, PostgreValueParser.parseArrayString("{1.123,2.1421324124421}", ","));
+        Assert.assertNotEquals(doublesList, PostgreValueParser.parseArrayString("{1.123,2.1421324124421}", "."));
 //        Assert.assertEquals(doublesList, PostgreValueParser.parseArrayString("ARRAY[1.123,2.1421324124421]", ","));
 
         //Infinity, -Infinity, NaN //todo
@@ -184,7 +206,6 @@ public class PostgreValueParserTest {
         int3List.add(int2List);
         int3List.add(int2List);
         Assert.assertEquals(int3List, PostgreValueParser.parseArrayString("{{{1,22,333},{1,22,333}},{{1,22,333},{1,22,333}}}", ","));
-
 
     }
 
@@ -231,7 +252,7 @@ public class PostgreValueParserTest {
         Mockito.when(arrayBooleanItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayBooleanItemType.getComponentType(session.getProgressMonitor())).thenReturn(booleanItemType);
 
-        Mockito.when(dataFormatterProfile.createFormatter("", doubleItemType)).thenReturn(new NumberDataFormatter());
+        Mockito.when(dataFormatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, doubleItemType)).thenReturn(numberDataFormatter);
     }
 
 }
