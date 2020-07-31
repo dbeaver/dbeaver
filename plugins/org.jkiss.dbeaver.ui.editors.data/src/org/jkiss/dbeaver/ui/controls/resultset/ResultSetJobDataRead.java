@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
+import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -179,13 +179,13 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
                     if (UIUtils.confirmAction(
                         getDisplay().getActiveShell(),
                         "Database not responding",
-                        "Database driver is not responding.\nDo you want to cancel request and invalidate connection?",
+                        "Database driver is not responding.\nDo you want to cancel request and close connection?",
                         SWT.ICON_WARNING))
                     {
                         // Run datasource invalidation
                         DBPDataSource dataSource = dataContainer.getDataSource();
                         if (dataSource != null) {
-                            new InvalidateJob(dataSource).schedule();
+                            new DisconnectJob(dataSource.getContainer()).schedule();
                         }
 
                         // So let's just ignore active job (remove from queue and stop visualizing)
