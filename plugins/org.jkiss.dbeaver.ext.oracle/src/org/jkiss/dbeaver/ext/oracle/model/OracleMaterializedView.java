@@ -146,7 +146,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getContainer(DBRProgressMonitor monitor) throws DBException
     {
-        return OracleUtils.resolveLazyReference(monitor, getSchema(), getSchema().tableCache, this, "container");
+        return getAdditionalInfo(monitor).container;
     }
 
     @PropertyGroup()
