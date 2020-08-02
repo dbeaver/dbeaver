@@ -20,10 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IParameterValues;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -75,7 +72,11 @@ public class NavigatorHandlerToggleView extends AbstractHandler implements IElem
                 element.setTooltip(viewDescriptor.getDescription());
             }
 
-            final IViewPart view = UIUtils.getActiveWorkbenchWindow().getActivePage().findView(viewId);
+            IViewPart view = null;
+            IViewReference viewReference = UIUtils.getActiveWorkbenchWindow().getActivePage().findViewReference(viewId);
+            if (viewReference != null) {
+                view = viewReference.getView(false);
+            }
             element.setChecked(view != null);
         }
     }
