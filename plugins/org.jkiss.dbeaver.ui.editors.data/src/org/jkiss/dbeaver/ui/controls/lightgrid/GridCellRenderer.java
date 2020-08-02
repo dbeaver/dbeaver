@@ -162,32 +162,14 @@ class GridCellRenderer extends AbstractRenderer
             gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
         }
 
-        if (grid.isLinesVisible()) {
-            if (selected) {
-                gc.setForeground(grid.getLineSelectedColor());
-            } else {
-                gc.setForeground(grid.getLineColor());
-            }
-            gc.drawLine(
-                bounds.x,
-                bounds.y + bounds.height,
-                bounds.x + bounds.width,
-                bounds.y + bounds.height);
-            gc.drawLine(
-                bounds.x + bounds.width - 1,
-                bounds.y,
-                bounds.x + bounds.width - 1,
-                bounds.y + bounds.height);
-        }
-
         if (focus) {
 
             gc.setForeground(colorLineFocused);
             gc.drawRectangle(bounds.x, bounds.y, bounds.width - 1, bounds.height);
 
-            if (grid.isFocusControl()) {
+            //if (grid.isFocusControl()) {
                 gc.drawRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 2);
-            }
+            //}
         }
     }
 
