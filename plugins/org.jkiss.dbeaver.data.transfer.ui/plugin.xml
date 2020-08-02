@@ -14,16 +14,14 @@
         <image commandId="org.jkiss.dbeaver.core.import.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.png"/>
     </extension>
 
-<!--
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
                 class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
                 id="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
-                namespace="org.jkiss.dbeaver.tools.transfer"
-                properties="supportsImportFrom"
-                type="java.lang.Object"/>
+                namespace="org.jkiss.dbeaver.tasks.dataTransfer"
+                properties="supportsImportTo"
+                type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
     </extension>
--->
 
     <extension point="org.eclipse.ui.menus">
 
@@ -60,6 +58,10 @@
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                            <instanceof type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode">
+                                <test property="org.jkiss.dbeaver.tasks.dataTransfer.supportsImportTo"/>
+                            </instanceof>
+
 <!--
                             <adapt type="org.eclipse.core.resources.IFile">
                                 <or>
