@@ -29,8 +29,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.*;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -53,7 +57,7 @@ import java.util.List;
 /**
  * MySQLCatalog
  */
-public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector
+public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics
 {
 
     final TableCache tableCache = new TableCache();
@@ -70,6 +74,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     private Long databaseSize;
     private boolean persisted;
     private volatile boolean hasStatistics;
+    private long dbSize;
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -177,6 +182,26 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             this.additionalInfo.sqlPath = "";
             persisted = false;
         }
+    }
+
+    @Override
+    public boolean hasStatistics() {
+        return true;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return dbSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+    void setDatabaseSize(long dbSize) {
+        this.dbSize = dbSize;
     }
 
     @Override
