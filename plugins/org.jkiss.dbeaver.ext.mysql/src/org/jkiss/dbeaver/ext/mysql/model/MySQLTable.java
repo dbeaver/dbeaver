@@ -196,7 +196,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     @Override
     public long getStatObjectSize() {
-        return additionalInfo.dataLength;
+        return additionalInfo.dataLength + additionalInfo.indexLength;
     }
 
     @Nullable
