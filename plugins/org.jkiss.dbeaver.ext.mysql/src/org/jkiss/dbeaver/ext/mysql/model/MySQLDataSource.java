@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource {
+public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
@@ -79,6 +79,7 @@ public class MySQLDataSource extends JDBCDataSource {
     private String defaultCharset, defaultCollation;
     private int lowerCaseTableNames = 1;
     private SQLHelpProvider helpProvider;
+    private volatile boolean hasStatistics;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
@@ -633,6 +634,46 @@ public class MySQLDataSource extends JDBCDataSource {
                 return "BINARY";
             default:
                 return "VARCHAR";
+        }
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        if (!this.isMariaDB() && !this.isServerVersionAtLeast(4, 1)) {
+            // Not supported by MySQL server
+            hasStatistics = true;
+            return;
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT table_schema, SUM(data_length + index_length) \n" +
+                    "FROM information_schema.tables \n" +
+                    "GROUP BY table_schema"))
+            {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String dbName = dbResult.getString(1);
+                        MySQLCatalog catalog = catalogCache.getObject(monitor, this, dbName);
+                        if (catalog != null) {
+                            long dbSize = dbResult.getLong(2);
+                            catalog.setDatabaseSize(dbSize);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        } finally {
+            hasStatistics = true;
         }
     }
 
