@@ -2412,6 +2412,8 @@ public abstract class LightGrid extends Canvas {
                 startY += headerHeight - 1;
                 height -= headerHeight;
             }
+            startX -= hScrollSelectionInPixels;
+            width += hScrollSelectionInPixels;
 
             // Draw horizontal lines
             y = startY;
@@ -4614,19 +4616,6 @@ public abstract class LightGrid extends Canvas {
         gc.setForeground(foreground);
 
         gc.fillRectangle(x, y, width + 1, height);
-
-        if (isLinesVisible()) {
-            gc.setForeground(getLineColor());
-            gc.drawLine(
-                x,
-                y + height,
-                x + width,
-                y + height);
-            gc.drawLine(x + width - 1,
-                y,
-                x + width - 1,
-                y + height);
-        }
     }
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
