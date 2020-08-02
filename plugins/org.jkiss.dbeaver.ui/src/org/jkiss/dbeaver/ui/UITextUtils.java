@@ -96,11 +96,11 @@ public class UITextUtils {
             return t;
         }
 
-        if (width <= 0) {
+        if (width <= 1) {
             return ""; //$NON-NLS-1$
         }
-        int avgCharWidth = fontMetrics.getAverageCharWidth();
-        float length = t.length();
+        double avgCharWidth = fontMetrics.getAverageCharacterWidth();
+        double length = t.length();
         if (width < length * avgCharWidth) {
             length = (float) width / avgCharWidth;
             length *= 2; // In case of big number of narrow characters

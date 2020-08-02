@@ -371,6 +371,9 @@ public abstract class LightGrid extends Canvas {
             | SWT.SINGLE | SWT.MULTI | SWT.NO_FOCUS | SWT.CHECK | SWT.VIRTUAL;
         int newStyle = style & mask;
         newStyle |= SWT.DOUBLE_BUFFERED;
+        // ? do we need it? It may improve performance a bit (as drawBackgraound is relatively slow.
+        // https://www.eclipse.org/forums/index.php/t/146489/
+        // | SWT.NO_BACKGROUND;
         return newStyle;
     }
 
@@ -1200,10 +1203,11 @@ public abstract class LightGrid extends Canvas {
         } else if (getVisibleGridHeight() < 1) {
             bottomIndex = getTopIndex();
         } else {
-            RowRange range = getRowRange(getTopIndex(), getVisibleGridHeight(), false, false);
+            int visibleGridHeight = getVisibleGridHeight();
+            RowRange range = getRowRange(getTopIndex(), visibleGridHeight, false, false);
 
             bottomIndex = range.endIndex;
-            bottomIndexShownCompletely = range.height <= getVisibleGridHeight();
+            bottomIndexShownCompletely = range.height <= visibleGridHeight;
         }
 
         return bottomIndex;
@@ -1349,7 +1353,12 @@ public abstract class LightGrid extends Canvas {
      */
     private int getVisibleGridHeight()
     {
-        return getClientArea().height - (columnHeadersVisible ? headerHeight : 0);
+        Rectangle clientArea = getClientArea();
+        return getVisibleGridHeight(clientArea);
+    }
+
+    private int getVisibleGridHeight(Rectangle clientArea) {
+        return clientArea.height - (columnHeadersVisible ? headerHeight : 0);
     }
 
     /**
@@ -2213,13 +2222,14 @@ public abstract class LightGrid extends Canvas {
 
         final Rectangle clientArea = getClientArea();
         int availableHeight = clientArea.height - y;
-        int visibleRows = availableHeight / getItemHeight() + 1;
+        int itemHeight = getItemHeight();
+        int visibleRows = availableHeight / itemHeight + 1;
         if (getItemCount() > 0 && availableHeight > 0) {
             RowRange range = getRowRange(getTopIndex(), availableHeight, false, false);
             if (range.height >= availableHeight)
                 visibleRows = range.rows;
             else
-                visibleRows = range.rows + (availableHeight - range.height) / getItemHeight() + 1;
+                visibleRows = range.rows + (availableHeight - range.height) / itemHeight + 1;
         }
 
         int firstVisibleIndex = getTopIndex();
@@ -2243,7 +2253,7 @@ public abstract class LightGrid extends Canvas {
 
                 if (rowHeaderVisible) {
                     // row header is actually painted later
-                    x += rowHeaderWidth;
+                    x += rowHeaderWidth - 1;
                 }
                 x += pinnedColumnsWidth;
 
@@ -2261,7 +2271,7 @@ public abstract class LightGrid extends Canvas {
                         cellBounds.x = x;
                         cellBounds.y = y;
                         cellBounds.width = width;
-                        cellBounds.height = getItemHeight();
+                        cellBounds.height = itemHeight;
 
                         testPos.col = k;
                         testPos.row = row;
@@ -2280,7 +2290,7 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 if (x < clientArea.width) {
-                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight());
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, itemHeight);
                 }
 
                 x = 0;
@@ -2293,7 +2303,7 @@ public abstract class LightGrid extends Canvas {
                         cellBounds.x = 0;
                         cellBounds.y = y;
                         cellBounds.width = rowHeaderWidth;
-                        cellBounds.height = getItemHeight() + 1;
+                        cellBounds.height = itemHeight + 1;
 
                         gc.setClipping(cellBounds);
                         try {
@@ -2321,7 +2331,7 @@ public abstract class LightGrid extends Canvas {
                         cellBounds.x = x;
                         cellBounds.y = y;
                         cellBounds.width = width;
-                        cellBounds.height = getItemHeight();
+                        cellBounds.height = itemHeight;
 
                         testPos.col = k;
                         testPos.row = row;
@@ -2343,7 +2353,7 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
 
-                y += getItemHeight() + 1;
+                y += itemHeight + 1;
 
             } else {
 
@@ -2355,29 +2365,71 @@ public abstract class LightGrid extends Canvas {
 
                 for (GridColumn column : columns) {
                     if (column.isPinned()) continue;
-                    drawEmptyCell(gc, x, y, column.getWidth(), getItemHeight());
+                    drawEmptyCell(gc, x, y, column.getWidth(), itemHeight);
                     x += column.getWidth();
                 }
                 if (x < clientArea.width) {
-                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight());
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, itemHeight);
                 }
 
                 x = 0;
 
                 if (rowHeaderVisible) {
-                    drawEmptyRowHeader(gc, x, y, rowHeaderWidth, getItemHeight() + 1);
+                    drawEmptyRowHeader(gc, x, y, rowHeaderWidth, itemHeight + 1);
                     x += rowHeaderWidth;
                 }
                 for (GridColumn column : columns) {
                     if (!column.isPinned()) break;
-                    drawEmptyCell(gc, x, y, column.getWidth(), getItemHeight());
+                    drawEmptyCell(gc, x, y, column.getWidth(), itemHeight);
                     x += column.getWidth();
                 }
 
-                y += getItemHeight() + 1;
+                y += itemHeight + 1;
             }
 
             row++;
+        }
+
+        // Draw lines in the end. Do not paint lines to grid cell to optimize performance
+        if (this.isLinesVisible()) {
+//            if (selected) {
+//                gc.setForeground(grid.getLineSelectedColor());
+//            } else {
+//                gc.setForeground(grid.getLineColor());
+//            }
+            gc.setForeground(this.getLineColor());
+
+            int startY = 0;
+            int startX = 0;
+            int width = clientArea.width;
+            int height = clientArea.height;
+            if (rowHeaderVisible) {
+                // row header is actually painted later
+                startX += rowHeaderWidth - 1;
+                width -= rowHeaderWidth;
+            }
+            if (columnHeadersVisible) {
+                startY += headerHeight - 1;
+                height -= headerHeight;
+            }
+
+            // Draw horizontal lines
+            y = startY;
+            for (int i = 0; i < visibleRows; i++) {
+                y += itemHeight + 1;
+                gc.drawLine(startX, y, startX + width, y);
+            }
+
+            // Vertical lines
+            int x = startX;
+            for (int k = 0, columnsSize = columns.size(); k < columnsSize; k++) {
+                x += columns.get(k).getWidth();
+                gc.drawLine(
+                    x,
+                    startY,
+                    x,
+                    startY + height);
+            }
         }
 
 
@@ -2521,7 +2573,7 @@ public abstract class LightGrid extends Canvas {
         // if the scrollbar is visible set its values
         if (vScroll.getVisible()) {
             int max = getItemCount() + 1;
-            int thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
+            int thumb = (getVisibleGridHeight(clientArea) + 1) / (getItemHeight() + 1);
 
             // if possible, remember selection, if selection is too large, just
             // make it the max you can
