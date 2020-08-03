@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tasks.ui.sql;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -28,8 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.sql.task.SQLToolRunListener;
@@ -37,15 +35,14 @@ import org.jkiss.dbeaver.model.sql.task.SQLToolStatistics;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> {
     private static final Log log = Log.getLog(SQLToolTaskWizard.class);
@@ -141,27 +138,25 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
         }
     }
 
-    public void refreshOnFinish(){
-        final String jobName = getShell().getText();
-        final DataSourceJob job = new DataSourceJob(jobName, Objects.requireNonNull(pageSettings.getExecutionContext())) {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+    private void refreshOnFinish(){
+        try {
+            getContainer().run(true, true, monitor -> {
                 for (DBSObject object : objectList) {
                     if (taskHandler.needsRefreshOnFinish()) {
                         try {
                             DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
                             if (objectNode != null) {
-                                objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                                objectNode.refreshNode(new DefaultProgressMonitor(monitor), DBNEvent.FORCE_REFRESH);
                             }
                         } catch (Exception e) {
                             log.error("Error refreshing object '" + object.getName() + "'", e);
                         }
                     }
                 }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
+            });
+        } catch (InvocationTargetException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private class SQLTaskExecutor extends TaskWizardExecutor implements SQLToolRunListener {
