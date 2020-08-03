@@ -52,4 +52,9 @@ public class MySQLToolTableTruncate extends MySQLToolWithStatus<MySQLTableBase, 
     public boolean isNeedConfirmation() {
         return true;
     }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

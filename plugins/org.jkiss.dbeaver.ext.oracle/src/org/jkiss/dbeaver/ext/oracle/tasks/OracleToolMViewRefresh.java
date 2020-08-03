@@ -46,4 +46,9 @@ public class OracleToolMViewRefresh extends SQLToolExecuteHandler<OracleMaterial
                 ")";
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

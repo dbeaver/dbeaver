@@ -20,4 +20,9 @@ public class PostgreToolTableTriggerEnable extends PostgreToolWithStatus<Postgre
         String sql = "ALTER TABLE " + object.getTable() + " ENABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

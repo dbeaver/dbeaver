@@ -36,4 +36,9 @@ public class SQLServerToolTableTriggerEnable extends SQLServerToolWithStatus<SQL
         String sql = "ALTER TABLE " + object.getTable() + " ENABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

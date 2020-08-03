@@ -20,10 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.PrintStreamProgressMonitor;
@@ -153,6 +158,22 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                             }
                                         }
+                                        if (needsRefreshOnFinish()) {
+                                            if (object instanceof DBPRefreshableObject) {
+                                                ((DBPRefreshableObject) object).refreshObject(monitor);
+                                            }
+                                            else if (object instanceof DBPStatefulObject) {
+                                                ((DBPStatefulObject) object).refreshObjectState(monitor);
+                                            }
+                                            try {
+                                                DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
+                                                if (objectNode != null) {
+                                                    objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                                                }
+                                            } catch (Exception e) {
+                                                log.error("Error refreshing object '" + object.getName() + "'", e);
+                                            }
+                                        }
                                     }
                                 }
                             } catch (Exception e) {
@@ -232,4 +253,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         return false;
     }
 
+    protected boolean needsRefreshOnFinish() {
+        return false;
+    }
 }

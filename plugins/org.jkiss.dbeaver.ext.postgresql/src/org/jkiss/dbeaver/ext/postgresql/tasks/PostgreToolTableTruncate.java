@@ -66,4 +66,9 @@ public class PostgreToolTableTruncate extends PostgreToolWithStatus<PostgreTable
             log.error("Error committing transactions", e);
         }
     }
+
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

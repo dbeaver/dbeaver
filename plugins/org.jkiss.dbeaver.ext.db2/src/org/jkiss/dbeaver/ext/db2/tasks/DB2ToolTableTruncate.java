@@ -46,4 +46,8 @@ public class DB2ToolTableTruncate extends DB2ToolWithStatus<DB2TableBase, DB2Too
         queries.add(new SQLDatabasePersistAction(sql));
     }
 
+    @Override
+    protected boolean needsRefreshOnFinish() {
+        return true;
+    }
 }
