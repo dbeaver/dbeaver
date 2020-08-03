@@ -376,7 +376,17 @@ class ResultSetPersister {
             if (row.changes == null) continue;
 
             DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
-            DBSEntity table = rowIdentifier.getEntity();
+            DBSEntity table;
+            if (rowIdentifier != null) {
+                table = rowIdentifier.getEntity();
+            } else {
+                DBSDataContainer dataContainer = viewer.getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    table = (DBSEntity) dataContainer;
+                } else {
+                    throw new DBCException("Can't determine target entity");
+                }
+            }
             {
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
                 // Updated columns
@@ -386,23 +396,25 @@ class ResultSetPersister {
                             changedAttr,
                             model.getCellValue(changedAttr, row)));
                 }
-                // Key columns
-                List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
-                for (DBDAttributeBinding metaColumn : idColumns) {
-                    Object keyValue = model.getCellValue(metaColumn, row);
-                    // Try to find old key oldValue
-                    if (row.changes != null && row.changes.containsKey(metaColumn)) {
-                        keyValue = row.changes.get(metaColumn);
-                        if (keyValue instanceof DBDContent) {
-                            if (keyValue instanceof DBDValueCloneable) {
-                                keyValue = ((DBDValueCloneable) keyValue).cloneValue(monitor);
-                                ((DBDContent) keyValue).resetContents();
-                            } else {
-                                throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) + "' can't be used as a key. Value clone is not supported.");
+                if (rowIdentifier != null) {
+                    // Key columns
+                    List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
+                    for (DBDAttributeBinding metaColumn : idColumns) {
+                        Object keyValue = model.getCellValue(metaColumn, row);
+                        // Try to find old key oldValue
+                        if (row.changes != null && row.changes.containsKey(metaColumn)) {
+                            keyValue = row.changes.get(metaColumn);
+                            if (keyValue instanceof DBDContent) {
+                                if (keyValue instanceof DBDValueCloneable) {
+                                    keyValue = ((DBDValueCloneable) keyValue).cloneValue(monitor);
+                                    ((DBDContent) keyValue).resetContents();
+                                } else {
+                                    throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) + "' can't be used as a key. Value clone is not supported.");
+                                }
                             }
                         }
+                        statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                     }
-                    statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                 }
                 updateStatements.add(statement);
             }
@@ -556,6 +568,10 @@ class ResultSetPersister {
                 // Check attributes of non-virtual identifier
                 DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
                 if (rowIdentifier == null) {
+                    if (viewer.getModel().isDynamicMetadata() && attr.getDataKind() == DBPDataKind.DOCUMENT) {
+                        // Document contains ID inside - no need to check
+                        continue;
+                    }
                     // We shouldn't be here ever!
                     // Virtual id should be created if we missing natural one
                     throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
