@@ -375,7 +375,11 @@ public class ComplexObjectEditor extends TreeViewer {
         }
         if (complexValue instanceof DBDComposite) {
             for (ComplexElement item : items) {
-                ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
+                try {
+                    ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
+                } catch (DBCException e) {
+                    log.error("Error setting attribute value", e);
+                }
             }
         } else if (complexValue instanceof DBDCollection) {
             if (items != null) {

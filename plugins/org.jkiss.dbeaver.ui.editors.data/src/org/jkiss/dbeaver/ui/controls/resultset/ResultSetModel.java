@@ -477,7 +477,11 @@ public class ResultSetModel {
                 }
             }
             if (ownerValue != null) {
-                ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                try {
+                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                } catch (DBCException e) {
+                    e.printStackTrace();
+                }
             } else {
                 row.values[rootIndex] = value;
             }
@@ -601,15 +605,25 @@ public class ResultSetModel {
         this.clearData();
 
         {
+            boolean isDocumentBased = false;
+
             // Extract nested attributes from single top-level attribute
             if (attributes.length == 1 && attributes[0].getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
                 DBDAttributeBinding topAttr = attributes[0];
                 if (topAttr.getDataKind() == DBPDataKind.DOCUMENT) {
+                    isDocumentBased = true;
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
                         attributes = nested.toArray(new DBDAttributeBinding[0]);
                         fillVisibleAttributes();
                     }
+                }
+            }
+
+            if (isDocumentBased) {
+                DBSDataContainer dataContainer = getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    singleSourceEntity = (DBSEntity) dataContainer;
                 }
             }
         }
