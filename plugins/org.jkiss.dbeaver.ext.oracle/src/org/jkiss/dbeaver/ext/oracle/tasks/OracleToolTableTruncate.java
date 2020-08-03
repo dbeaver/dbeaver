@@ -40,7 +40,7 @@ public class OracleToolTableTruncate extends SQLToolExecuteHandler<OracleTableBa
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

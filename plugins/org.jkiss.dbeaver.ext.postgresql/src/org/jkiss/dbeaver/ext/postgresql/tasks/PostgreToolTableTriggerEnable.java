@@ -22,7 +22,7 @@ public class PostgreToolTableTriggerEnable extends PostgreToolWithStatus<Postgre
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

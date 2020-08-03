@@ -158,22 +158,6 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                             }
                                         }
-                                        if (needsRefreshOnFinish()) {
-                                            if (object instanceof DBPRefreshableObject) {
-                                                ((DBPRefreshableObject) object).refreshObject(monitor);
-                                            }
-                                            else if (object instanceof DBPStatefulObject) {
-                                                ((DBPStatefulObject) object).refreshObjectState(monitor);
-                                            }
-                                            try {
-                                                DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
-                                                if (objectNode != null) {
-                                                    objectNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                                                }
-                                            } catch (Exception e) {
-                                                log.error("Error refreshing object '" + object.getName() + "'", e);
-                                            }
-                                        }
                                     }
                                 }
                             } catch (Exception e) {
@@ -253,7 +237,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         return false;
     }
 
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return false;
     }
 }

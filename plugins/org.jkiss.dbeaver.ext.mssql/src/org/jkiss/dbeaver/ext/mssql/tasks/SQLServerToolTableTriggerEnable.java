@@ -38,7 +38,7 @@ public class SQLServerToolTableTriggerEnable extends SQLServerToolWithStatus<SQL
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

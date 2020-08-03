@@ -54,7 +54,7 @@ public class MySQLToolTableTruncate extends MySQLToolWithStatus<MySQLTableBase, 
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

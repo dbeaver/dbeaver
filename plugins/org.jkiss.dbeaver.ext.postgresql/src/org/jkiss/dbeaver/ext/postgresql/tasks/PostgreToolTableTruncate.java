@@ -68,7 +68,7 @@ public class PostgreToolTableTruncate extends PostgreToolWithStatus<PostgreTable
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

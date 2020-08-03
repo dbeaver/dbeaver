@@ -47,7 +47,7 @@ public class DB2ToolTableTruncate extends DB2ToolWithStatus<DB2TableBase, DB2Too
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }

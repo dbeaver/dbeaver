@@ -48,7 +48,7 @@ public class OracleToolMViewRefresh extends SQLToolExecuteHandler<OracleMaterial
     }
 
     @Override
-    protected boolean needsRefreshOnFinish() {
+    public boolean needsRefreshOnFinish() {
         return true;
     }
 }
