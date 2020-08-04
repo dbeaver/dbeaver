@@ -38,4 +38,8 @@ public class OracleToolTableTruncate extends SQLToolExecuteHandler<OracleTableBa
         if(settings.isReusable()) sql += " REUSE STORAGE";
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    public boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

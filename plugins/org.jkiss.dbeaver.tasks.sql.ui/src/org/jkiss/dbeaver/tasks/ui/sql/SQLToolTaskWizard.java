@@ -23,11 +23,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.sql.task.SQLToolRunListener;
 import org.jkiss.dbeaver.model.sql.task.SQLToolStatistics;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages;
@@ -35,6 +40,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskWizardExecutor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +51,8 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
     private SQLToolTaskWizardPageSettings pageSettings;
     private SQLToolTaskWizardPageStatus pageStatus;
     private SQLToolExecuteHandler taskHandler;
+
+    private List<DBSObject> objectList;
 
     public SQLToolTaskWizard() {
     }
@@ -58,6 +66,7 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
         }
         settings = taskHandler.createToolSettings();
         settings.loadConfiguration(UIUtils.getDialogRunnableContext(), task.getProperties());
+        objectList = settings.getObjectList();
     }
 
     public SQLToolExecuteHandler getTaskHandler() {
@@ -121,10 +130,34 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
 
             TaskWizardExecutor executor = new SQLTaskExecutor(task);
             executor.executeTask();
+            if (taskHandler.needsRefreshOnFinish()) {
+                refreshOnFinish();
+            }
             return false;
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), TasksSQLUIMessages.sql_tool_task_wizard_message_error_running_task, e);
             return false;
+        }
+    }
+
+    private void refreshOnFinish() throws Exception {
+        try {
+            getContainer().run(true, true, monitor -> {
+                for (DBSObject object : objectList) {
+                    try {
+                        DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
+                        if (objectNode != null) {
+                            objectNode.refreshNode(new DefaultProgressMonitor(monitor), DBNEvent.FORCE_REFRESH);
+                        }
+                    } catch (Exception e) {
+                        log.error("Error refreshing object '" + object.getName() + "'", e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw new Exception("Refresh error", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
