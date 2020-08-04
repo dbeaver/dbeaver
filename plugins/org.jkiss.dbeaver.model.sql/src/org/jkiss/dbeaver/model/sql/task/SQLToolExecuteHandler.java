@@ -132,25 +132,29 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                         false)) {
                                         long execTime = System.currentTimeMillis() - startTime;
                                         statement.executeStatement();
-                                        if (listener instanceof SQLToolRunListener){
-                                            if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
-                                                List<? extends SQLToolStatistics> executeStatistics =
-                                                    ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
-                                                        object,
-                                                        settings,
-                                                        action,
-                                                        session,
-                                                        statement);
-                                                monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
-                                                if (!CommonUtils.isEmpty(executeStatistics)) {
-                                                    for (SQLToolStatistics stat : executeStatistics) {
-                                                        stat.setExecutionTime(execTime);
+                                        if (listener instanceof SQLToolRunListener) {
+                                            if (action.getType() != DBEPersistAction.ActionType.INITIALIZER && action.getType() != DBEPersistAction.ActionType.FINALIZER) {
+                                                SQLToolStatisticsSimple statisticsSimple = new SQLToolStatisticsSimple(object, false);
+                                                if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
+                                                    List<? extends SQLToolStatistics> executeStatistics =
+                                                            ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
+                                                                    object,
+                                                                    settings,
+                                                                    action,
+                                                                    session,
+                                                                    statement);
+                                                    monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
+                                                    if (!CommonUtils.isEmpty(executeStatistics)) {
+                                                        for (SQLToolStatistics stat : executeStatistics) {
+                                                            stat.setExecutionTime(execTime);
+                                                        }
+                                                        ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                                    } else {
+                                                        ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(statisticsSimple));
                                                     }
-                                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                                } else {
+                                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(statisticsSimple));
                                                 }
-                                            } else {
-                                                SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
-                                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                             }
                                         }
                                     }
