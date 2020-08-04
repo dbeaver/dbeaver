@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -143,19 +144,23 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
     private void refreshOnFinish() throws Exception {
         try {
             getContainer().run(true, true, monitor -> {
+                monitor.beginTask("Object refreshing", objectList.size());
                 for (DBSObject object : objectList) {
                     try {
                         DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
                         if (objectNode != null) {
                             objectNode.refreshNode(new DefaultProgressMonitor(monitor), DBNEvent.FORCE_REFRESH);
+                            monitor.isCanceled();
+                            monitor.worked(1);
                         }
                     } catch (Exception e) {
                         log.error("Error refreshing object '" + object.getName() + "'", e);
                     }
                 }
+                monitor.done();
             });
         } catch (InvocationTargetException e) {
-            throw new Exception("Refresh error", e.getTargetException());
+            throw new DBCException("Refresh error", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
