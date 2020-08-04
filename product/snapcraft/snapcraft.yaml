@@ -33,6 +33,7 @@ apps:
       - network
       - home
       - removable-media
+      - ssh-keys
       - config-dbeaver-ce
 
 parts:
