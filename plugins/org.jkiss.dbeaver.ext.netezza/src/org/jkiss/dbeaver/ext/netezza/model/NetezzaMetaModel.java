@@ -16,16 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.netezza.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -37,6 +40,34 @@ public class NetezzaMetaModel extends GenericMetaModel
 {
     public NetezzaMetaModel() {
         super();
+    }
+
+    @Override
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+        JDBCPreparedStatement dbStat;
+        if (forParent != null) {
+            dbStat = session.prepareStatement("SELECT"
+                    + " RELATION AS TABLE_NAME, ATTNAME as COLUMN_NAME, CONSTRAINTNAME AS PK_NAME, CONTYPE"
+                    + " FROM _v_relation_keydata"
+                    + " WHERE DATABASE=? AND SCHEMA=? AND RELATION=? AND (CONTYPE='u' OR CONTYPE='p')");
+            dbStat.setString(1, forParent.getDataSource().getName());
+            dbStat.setString(2, forParent.getSchema().getName());
+            dbStat.setString(3, forParent.getName());
+        } else {
+            dbStat = session.prepareStatement("SELECT"
+                    + " RELATION AS TABLE_NAME, ATTNAME as COLUMN_NAME, CONSTRAINTNAME AS PK_NAME, CONTYPE"
+                    + " FROM _v_relation_keydata");
+        }
+        return dbStat;
+    }
+
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) {
+        String type = JDBCUtils.safeGetString(dbResult, "CONTYPE");
+        if (type != null && type.equals("u")) {
+            return DBSEntityConstraintType.UNIQUE_KEY;
+        }
+        return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
