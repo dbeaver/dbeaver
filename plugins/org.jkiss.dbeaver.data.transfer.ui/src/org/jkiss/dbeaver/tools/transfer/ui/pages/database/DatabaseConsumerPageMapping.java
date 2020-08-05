@@ -158,7 +158,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         {
             // Control buttons
             Composite buttonsPanel = new Composite(composite, SWT.NONE);
-            buttonsPanel.setLayout(new GridLayout(5, false));
+            buttonsPanel.setLayout(new GridLayout(6, false));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             autoAssignButton = new Button(buttonsPanel, SWT.PUSH);
@@ -221,6 +221,22 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 {
                     DatabaseMappingObject selectedMapping = getSelectedMapping();
                     showDDL(selectedMapping instanceof DatabaseMappingContainer ?
+                        (DatabaseMappingContainer) selectedMapping :
+                        ((DatabaseMappingAttribute)selectedMapping).getParent());
+                }
+            });
+
+            final Button previewButton = new Button(buttonsPanel, SWT.PUSH);
+            previewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PREVIEW));
+            previewButton.setText(DTMessages.data_transfer_wizard_page_preview_name);
+            previewButton.setToolTipText(DTMessages.data_transfer_wizard_page_preview_description);
+            previewButton.setEnabled(false);
+            previewButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    DatabaseMappingObject selectedMapping = getSelectedMapping();
+                    showPreview(selectedMapping instanceof DatabaseMappingContainer ?
                         (DatabaseMappingContainer) selectedMapping :
                         ((DatabaseMappingAttribute)selectedMapping).getParent());
                 }
@@ -289,6 +305,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified);
                 columnsButton.setEnabled(hasMappings);
                 ddlButton.setEnabled(hasMappings);
+                previewButton.setEnabled(hasMappings);
             });
             mappingViewer.addDoubleClickListener(event -> {
                 DatabaseMappingObject selectedMapping = getSelectedMapping();
@@ -736,6 +753,30 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
     }
 
+    private void showPreview(DatabaseMappingContainer mappingContainer) {
+        DatabaseConsumerSettings consumerSettings = getDatabaseConsumerSettings();
+        PreviewMappingDialog previewDialog = new PreviewMappingDialog(
+            getShell(),
+            getPipe(mappingContainer),
+            mappingContainer,
+            consumerSettings);
+        previewDialog.open();
+    }
+
+    private DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
+        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+            if (pipe.getProducer() == null) {
+                continue;
+            }
+            DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+            DatabaseMappingContainer mapping = settings.getDataMapping(sourceObject);
+            if (mapping == mappingContainer) {
+                return pipe;
+            }
+        }
+        return null;
+    }
     private DatabaseMappingObject getSelectedMapping()
     {
         IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();

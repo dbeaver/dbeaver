@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -26,7 +24,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingAttribute;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
@@ -49,7 +47,7 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -60,7 +58,7 @@ import java.util.Set;
 /**
  * ColumnsMappingDialog
  */
-public class ColumnsMappingDialog extends StatusDialog {
+public class ColumnsMappingDialog extends BaseDialog {
 
     private final DatabaseConsumerSettings settings;
     private final DatabaseMappingContainer mapping;
@@ -70,7 +68,7 @@ public class ColumnsMappingDialog extends StatusDialog {
 
     public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping)
     {
-        super(wizard.getShell());
+        super(wizard.getShell(), DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName(), null);
         this.settings = settings;
         this.mapping = mapping;
         attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
@@ -83,11 +81,10 @@ public class ColumnsMappingDialog extends StatusDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
 
-        getShell().setText(DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
@@ -122,7 +119,6 @@ public class ColumnsMappingDialog extends StatusDialog {
                         DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                         attribute.setMappingType(DatabaseMappingType.skip);
                     }
-                    updateStatus(Status.OK_STATUS);
                     mappingViewer.refresh();
                 } else if (e.character == SWT.SPACE) {
                     for (TableItem item : mappingViewer.getTable().getSelection()) {
@@ -131,7 +127,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         try {
                             attribute.updateMappingType(new VoidProgressMonitor());
                         } catch (DBException e1) {
-                            updateStatus(GeneralUtils.makeExceptionStatus(e1));
+                            DBWorkbench.getPlatformUI().showError("Bad mapping", "Invalid column mapping", e1);
                         }
                     }
                     mappingViewer.refresh();
@@ -203,15 +199,13 @@ public class ColumnsMappingDialog extends StatusDialog {
                         }
 
                         items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
-                        CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+                        return new CustomComboBoxCellEditor(
                             mappingViewer,
                             mappingViewer.getTable(),
-                            items.toArray(new String[items.size()]),
+                            items.toArray(new String[0]),
                             SWT.DROP_DOWN);
-                        updateStatus(Status.OK_STATUS);
-                        return editor;
                     } catch (DBException e) {
-                        updateStatus(GeneralUtils.makeExceptionStatus(e));
+                        DBWorkbench.getPlatformUI().showError("Bad value", "Wrong target column", e);
                         return null;
                     }
                 }
@@ -253,9 +247,8 @@ public class ColumnsMappingDialog extends StatusDialog {
                             attrMapping.setMappingType(DatabaseMappingType.create);
                             attrMapping.setTargetName(name);
                         }
-                        updateStatus(Status.OK_STATUS);
                     } catch (DBException e) {
-                        updateStatus(GeneralUtils.makeExceptionStatus(e));
+                        DBWorkbench.getPlatformUI().showError("Bad value", "Wrong target", e);
                     } finally {
                         mappingViewer.refresh();
                     }
