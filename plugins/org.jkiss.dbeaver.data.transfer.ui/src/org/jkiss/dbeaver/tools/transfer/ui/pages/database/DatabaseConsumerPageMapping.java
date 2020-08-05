@@ -725,6 +725,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         } catch (InterruptedException e) {
             return;
         }
+        if (CommonUtils.isEmpty(ddl[0])) {
+            UIUtils.showMessageBox(getShell(), "No schema changes", "No changes are needed for this mapping", SWT.ICON_INFORMATION);
+            return;
+        }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             serviceSQL.openSQLViewer(
