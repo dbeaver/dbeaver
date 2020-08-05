@@ -125,25 +125,27 @@ class GridCellRenderer extends AbstractRenderer
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     // Right (numbers, datetimes)
+                    Point textSize = gc.textExtent(text);
+                    boolean useClipping = textSize.x > bounds.width;
+
                     int imageMargin = 0;
                     if (image != null) {
                         // Reduce bounds by link image size
                         imageMargin = imageBounds.width + INSIDE_MARGIN;
-                        if (USE_CLIPPING) {
+                        if (useClipping) {
                             gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
                         }
                     } else {
-                        if (USE_CLIPPING) {
+                        if (useClipping) {
                             gc.setClipping(bounds);
                         }
                     }
-                    Point textSize = gc.textExtent(text);
                     gc.drawString(
                             text,
                             bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             true);
-                    if (USE_CLIPPING) {
+                    if (useClipping) {
                         gc.setClipping((Rectangle) null);
                     }
                     break;
