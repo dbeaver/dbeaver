@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -51,7 +52,9 @@ public class DataImportHandler extends DataTransferHandler {
     private IDataTransferNode getNodeByFile(IFile file) {
         DataTransferProcessorDescriptor processor = getProcessorByFile(file);
         if (processor != null) {
-            return new StreamTransferProducer(file.getFullPath().toFile(), processor);
+            return new StreamTransferProducer(
+                new StreamEntityMapping(file.getFullPath().toFile()),
+                processor);
         }
         return null;
     }

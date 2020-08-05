@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -126,7 +127,8 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         if (file != null) {
             final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
-            StreamTransferProducer producer = new StreamTransferProducer(file);
+
+            StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
             pipe.setProducer(producer);
 
             try {
@@ -134,7 +136,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                     producerSettings.updateProducerSettingsFromStream(
                         monitor,
                         producer,
-                        pipe.getConsumer(),
                         getWizard().getSettings());
                 });
             } catch (InvocationTargetException e) {

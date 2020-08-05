@@ -16,56 +16,19 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporter;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+public abstract class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWizard> {
+    public StreamProducerPagePreview() {
+        super(DTMessages.data_transfer_wizard_page_preview_name);
+        setTitle(DTMessages.data_transfer_wizard_page_preview_title);
+        setDescription(DTMessages.data_transfer_wizard_page_preview_description);
+        setPageComplete(false);
+    }
 
-public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWizard> {
-
+/*
     private static final Log log = Log.getLog(StreamProducerPagePreview.class);
 
     private List<DataTransferPipe> pipeList = new ArrayList<>();
@@ -76,18 +39,11 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     private DBSObject currentObject;
     private boolean activated;
 
-    public StreamProducerPagePreview() {
-        super(DTMessages.data_transfer_wizard_page_preview_name);
-        setTitle(DTMessages.data_transfer_wizard_page_preview_title);
-        setDescription(DTMessages.data_transfer_wizard_page_preview_description);
-        setPageComplete(false);
-    }
-
     private StreamProducerSettings getProducerSettings() {
         return getWizard().getPageSettings(StreamProducerPagePreview.this, StreamProducerSettings.class);
     }
 
-    private StreamProducerSettings.EntityMapping getCurrentEntityMappings() {
+    private StreamEntityMapping getCurrentEntityMappings() {
         final DBSEntity entity = (DBSEntity) currentObject;
         final StreamProducerSettings settings = getProducerSettings();
         return settings.getEntityMapping(entity);
@@ -144,7 +100,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     @Override
                     protected Control createEditor(Table table, final int index, final TableItem item) {
                         StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
-                        StreamProducerSettings.EntityMapping entityMappings = getCurrentEntityMappings();
+                        StreamEntityMapping entityMappings = getCurrentEntityMappings();
 
                         if (index == 1) {
                             // Source column
@@ -341,7 +297,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
 
         final DBSEntity entity = (DBSEntity) currentObject;
-        StreamProducerSettings.EntityMapping entityMapping = getCurrentEntityMappings();
+        StreamEntityMapping entityMapping = getCurrentEntityMappings();
         DataTransferPipe currentPipe = getCurrentPipe();
         StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
 
@@ -394,7 +350,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
     }
 
-    private void refreshPreviewTable(StreamProducerSettings.EntityMapping entityMapping) {
+    private void refreshPreviewTable(StreamEntityMapping entityMapping) {
         previewTable.removeAll();
         for (TableColumn column : previewTable.getColumns()) {
             column.dispose();
@@ -447,7 +403,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         });
     }
 
-    private void updateAttributeMappings(StreamProducerSettings.EntityMapping entityMapping) {
+    private void updateAttributeMappings(StreamEntityMapping entityMapping) {
         for (StreamProducerSettings.AttributeMapping am : entityMapping.getAttributeMappings()) {
             // Create mapping item
 
@@ -566,7 +522,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 setErrorMessage(DTUIMessages.stream_producer_page_preview_error_message_wrong_input_object);
                 return false;
             }
-            StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
+            StreamEntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
             if (!entityMapping.isComplete()) {
                 setErrorMessage(DTUIMessages.stream_producer_page_preview_error_message_set_mappings_for_all_columns);
                 return false;
@@ -580,7 +536,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
         private List<Object[]> rows = new ArrayList<>();
         private DBSEntity sampleObject;
-        private final StreamProducerSettings.EntityMapping entityMapping;
+        private final StreamEntityMapping entityMapping;
         private DBCResultSetMetaData meta;
         private final List<StreamProducerSettings.AttributeMapping> attributes;
 
@@ -590,7 +546,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             this.attributes = entityMapping.getValuableAttributeMappings();
         }
 
-        StreamProducerSettings.EntityMapping getEntityMapping() {
+        StreamEntityMapping getEntityMapping() {
             return entityMapping;
         }
 
@@ -677,5 +633,5 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
     }
-
+*/
 }
