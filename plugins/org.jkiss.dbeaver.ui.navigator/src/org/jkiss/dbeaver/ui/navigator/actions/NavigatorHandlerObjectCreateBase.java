@@ -312,10 +312,14 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            monitor.beginTask("Create new database object", 1);
             try {
+                monitor.subTask("Create object instance");
                 newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject, options);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
+            } finally {
+                monitor.done();
             }
         }
     }
