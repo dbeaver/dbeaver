@@ -150,7 +150,9 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
                         DBNDatabaseNode objectNode = DBNUtils.getNodeByObject(object);
                         if (objectNode != null) {
                             objectNode.refreshNode(new DefaultProgressMonitor(monitor), DBNEvent.FORCE_REFRESH);
-                            monitor.isCanceled();
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
                             monitor.worked(1);
                         }
                     } catch (Exception e) {
