@@ -20,7 +20,9 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -64,7 +66,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
     @NotNull
     @Override
-    public List<StreamDataImporterColumnInfo> readColumnsInfo(@NotNull InputStream inputStream) throws DBException {
+    public List<StreamDataImporterColumnInfo> readColumnsInfo(StreamEntityMapping entityMapping, @NotNull InputStream inputStream) throws DBException {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
@@ -83,8 +85,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         String column = line[i];
                         if (headerPosition == HeaderPosition.none) {
                             column = null;
+                        } else {
+                            column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
                         }
-                        columnsInfo.add(new StreamDataImporterColumnInfo(i, column));
+                        columnsInfo.add(
+                            new StreamDataImporterColumnInfo(
+                                entityMapping, i, column, "VARCHAR", DBPDataKind.STRING));
                     }
                     break;
                 }
@@ -121,7 +127,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     @Override
     public void runImport(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource streamDataSource, @NotNull InputStream inputStream, @NotNull IDataTransferConsumer consumer) throws DBException {
         IStreamDataImporterSite site = getSite();
-        StreamProducerSettings.EntityMapping entityMapping = site.getSettings().getEntityMapping(site.getSourceObject());
+        StreamEntityMapping entityMapping = site.getSourceObject();
         Map<String, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);

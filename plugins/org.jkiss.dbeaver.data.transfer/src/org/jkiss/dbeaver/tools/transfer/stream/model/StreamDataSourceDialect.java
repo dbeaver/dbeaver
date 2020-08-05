@@ -14,19 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import java.util.Map;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLStateType;
 
 /**
- * IStreamDataImporterSite
+ * StreamDataSourceDialect
  */
-public interface IStreamDataImporterSite {
+public class StreamDataSourceDialect extends BasicSQLDialect {
 
-    StreamProducerSettings getSettings();
+    public StreamDataSourceDialect()
+    {
+    }
 
-    StreamEntityMapping getSourceObject();
+    @NotNull
+    @Override
+    public String getDialectName() {
+        return "Stream";
+    }
 
-    Map<String, Object> getProcessorProperties();
+    @NotNull
+    @Override
+    public SQLStateType getSQLStateType()
+    {
+        return SQLStateType.UNKNOWN;
+    }
 
+    @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return true;
+    }
 }

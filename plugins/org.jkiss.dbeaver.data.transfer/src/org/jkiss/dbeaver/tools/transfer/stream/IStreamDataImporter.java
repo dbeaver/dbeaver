@@ -35,7 +35,7 @@ public interface IStreamDataImporter extends IDataTransferProcessor {
     void init(@NotNull IStreamDataImporterSite site) throws DBException;
 
     @NotNull
-    List<StreamDataImporterColumnInfo> readColumnsInfo(@NotNull InputStream inputStream) throws DBException;
+    List<StreamDataImporterColumnInfo> readColumnsInfo(StreamEntityMapping entityMapping, @NotNull InputStream inputStream) throws DBException;
 
     void runImport(
         @NotNull DBRProgressMonitor monitor,

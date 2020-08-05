@@ -21,18 +21,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -48,9 +43,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,40 +55,35 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     public static final String NODE_ID = "stream_producer";
 
-    private File inputFile;
+    private StreamEntityMapping entityMapping;
     private DataTransferProcessorDescriptor defaultProcessor;
-    private StreamSourceObject sourceObject;
     private StreamDataSource streamDataSource;
 
     public StreamTransferProducer() {
     }
 
-    public StreamTransferProducer(File file) {
-        this(file, null);
+    public StreamTransferProducer(StreamEntityMapping entityMapping) {
+        this(entityMapping, null);
     }
 
-    public StreamTransferProducer(File file, DataTransferProcessorDescriptor defaultProcessor) {
-        this.inputFile = file;
+    public StreamTransferProducer(StreamEntityMapping entityMapping, DataTransferProcessorDescriptor defaultProcessor) {
+        this.entityMapping = entityMapping;
         this.defaultProcessor = defaultProcessor;
-        this.sourceObject = new StreamSourceObject(new StreamProducerSettings.EntityMapping(file.getName()));
     }
 
-    public StreamDataSource getStreamDataSource() {
-        if (streamDataSource == null) {
-            this.streamDataSource = new StreamDataSource(inputFile.getName());
-        }
-        return streamDataSource;
+    public StreamEntityMapping getEntityMapping() {
+        return entityMapping;
     }
 
     @Override
     public DBSEntity getDatabaseObject()
     {
-        return sourceObject;
+        return entityMapping;
     }
 
     @Override
     public String getObjectName() {
-        return inputFile == null ? null : inputFile.getName();
+        return entityMapping == null ? null : entityMapping.getName();
     }
 
     @Override
@@ -109,6 +96,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public String getObjectContainerName() {
+        File inputFile = entityMapping.getInputFile();
         return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
     }
 
@@ -118,7 +106,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     }
 
     public File getInputFile() {
-        return inputFile;
+        return entityMapping.getInputFile();
     }
 
     @Override
@@ -138,19 +126,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             throw new DBException("Stream data producer requires data processor");
         }
 
-        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(sourceObject);
-        if (entityMapping != null) {
-            loadObjectDefinition(entityMapping);
-        }
-
         Map<String, Object> processorProperties = settings.getProcessorProperties();
-        StreamDataImporterSite site = new StreamDataImporterSite(settings, (DBSEntity) databaseObject, processorProperties);
+        StreamDataImporterSite site = new StreamDataImporterSite(settings, entityMapping, processorProperties);
         IStreamDataImporter importer = (IStreamDataImporter) processor;
         importer.init(site);
 
         // Perform transfer
-        try (InputStream is = new FileInputStream(inputFile)) {
-            importer.runImport(monitor, getStreamDataSource(), is, consumer);
+        try (InputStream is = new FileInputStream(entityMapping.getInputFile())) {
+            importer.runImport(monitor, entityMapping.getDataSource(), is, consumer);
         } catch (IOException e) {
             throw new DBException("IO error", e);
         } finally {
@@ -158,151 +141,11 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
     }
 
-    private void loadObjectDefinition(StreamProducerSettings.EntityMapping entityMapping) throws DBException {
-        if (defaultProcessor == null) {
-            return;
-        }
-        this.sourceObject.entityMapping = entityMapping;
-    }
-
-    private class StreamSourceObject implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
-
-        private StreamProducerSettings.EntityMapping entityMapping;
-
-        StreamSourceObject(StreamProducerSettings.EntityMapping entityMapping) {
-            this.entityMapping = entityMapping;
-        }
-
-        @NotNull
-        @Override
-        public DBSEntityType getEntityType() {
-            return DBSEntityType.TABLE;
-        }
-
-        @Override
-        public List<StreamSourceAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-            List<StreamProducerSettings.AttributeMapping> attrMappings = entityMapping.getValuableAttributeMappings();
-            List<StreamSourceAttribute> result = new ArrayList<>(attrMappings.size());
-            for (StreamProducerSettings.AttributeMapping sa : attrMappings) {
-                result.add(new StreamSourceAttribute(this, sa));
-            }
-            return result;
-        }
-
-        @Override
-        public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
-            for (StreamProducerSettings.AttributeMapping sa : entityMapping.getAttributeMappings()) {
-                if (sa.isValuable() && attributeName.equals(sa.getSourceAttributeName())) {
-                    return new StreamSourceAttribute(this, sa);
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return null;
-        }
-
-        @Override
-        public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return null;
-        }
-
-        @Override
-        public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return null;
-        }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
-
-        @Override
-        public DBSObject getParentObject() {
-            return null;
-        }
-
-        @NotNull
-        @Override
-        public DBPDataSource getDataSource() {
-            return getStreamDataSource();
-        }
-
-        @Override
-        public int getSupportedFeatures() {
-            return DATA_SELECT;
-        }
-
-        @NotNull
-        @Override
-        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
-            throw new DBCException("Not implemented");
-        }
-
-        @Override
-        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
-            return -1;
-        }
-
-        @NotNull
-        @Override
-        public String getName() {
-            return StreamTransferProducer.this.getObjectName();
-        }
-
-        @Override
-        public boolean isPersisted() {
-            return true;
-        }
-
-        @NotNull
-        @Override
-        public String getFullyQualifiedName(DBPEvaluationContext context) {
-            return getName();
-        }
-    }
-
-    private static class StreamSourceAttribute extends AbstractAttribute implements DBSEntityAttribute {
-
-        private final StreamSourceObject sourceObject;
-        private final StreamProducerSettings.AttributeMapping attributeMapping;
-
-        StreamSourceAttribute(StreamSourceObject sourceObject, StreamProducerSettings.AttributeMapping attributeMapping) {
-            super(attributeMapping.getSourceAttributeName(), "String", 1, attributeMapping.getSourceAttributeIndex(), Integer.MAX_VALUE, null, null, false, false);
-            this.sourceObject = sourceObject;
-            this.attributeMapping = attributeMapping;
-        }
-
-        @Override
-        public DBPDataKind getDataKind() {
-            return DBPDataKind.STRING;
-        }
-
-        @Override
-        public String getDefaultValue() {
-            return attributeMapping.getDefaultValue();
-        }
-
-        @NotNull
-        @Override
-        public DBSEntity getParentObject() {
-            return sourceObject;
-        }
-
-        @NotNull
-        @Override
-        public DBPDataSource getDataSource() {
-            return sourceObject.getDataSource();
-        }
-    }
-
     public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, StreamTransferProducer> {
 
         @Override
         public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, StreamTransferProducer object, Map<String, Object> state) {
-            state.put("file", object.inputFile.getAbsolutePath());
+            state.put("file", object.getInputFile().getAbsolutePath());
             if (object.defaultProcessor != null) {
                 state.put("node", object.defaultProcessor.getNode().getId());
                 state.put("processor", object.defaultProcessor.getId());
@@ -326,7 +169,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
                     }
                 }
             }
-            return new StreamTransferProducer(inputFile, processor);
+            return new StreamTransferProducer(new StreamEntityMapping(inputFile), processor);
         }
     }
 
