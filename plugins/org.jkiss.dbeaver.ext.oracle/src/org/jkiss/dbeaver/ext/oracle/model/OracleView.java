@@ -122,14 +122,12 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
                 log.warn("Error getting view definition from system package", e);
             }
         }
-        Boolean isCompact = (Boolean) options.get("script.format.compact");
-        if (isCompact != null) {
-            if (!isCompact) {
-                if (viewFullText == null){
-                    viewFullText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
-                }
-                return viewFullText;
+        boolean isCompact = CommonUtils.getBoolean(options.get(OPTION_SCRIPT_FORMAT_COMPACT), true);
+        if (!isCompact) {
+            if (viewFullText == null){
+                viewFullText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
             }
+            return viewFullText;
         }
         return viewText;
     }
