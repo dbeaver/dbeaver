@@ -43,11 +43,4 @@ public class OracleToolRefreshMView implements IUserInterfaceTool
                 new StructuredSelection(objects.toArray()));
     }
 
-    /*
-        @Override
-        protected boolean needsRefreshOnFinish() {
-            return true;
-        }
-    }*/
-
 }

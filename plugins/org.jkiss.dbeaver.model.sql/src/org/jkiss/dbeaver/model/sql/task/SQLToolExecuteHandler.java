@@ -236,4 +236,8 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         return false;
     }
 
+    public boolean needsRefreshOnFinish() {
+        return false;
+    }
+
 }

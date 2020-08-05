@@ -51,12 +51,4 @@ public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
                     new StructuredSelection(objects.toArray()));
             }
     }
-
-
-    /*        @Override
-        protected boolean needsRefreshOnFinish() {
-            return true;
-        }
-    }*/
-
 }

@@ -42,12 +42,4 @@ public class MySQLToolTruncate implements IUserInterfaceTool
                 MySQLTasks.TASK_TABLE_TRUNCATE,
                 new StructuredSelection(objects.toArray()));
     }
-
-    /*
-        @Override
-        protected boolean needsRefreshOnFinish() {
-            return true;
-        }
-    }*/
-
 }
