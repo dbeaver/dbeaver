@@ -244,7 +244,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         targetContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
         protocolTabCustom.setControl(targetContainer);
 
-        final Label urlLabel = UIUtils.createControlLabel(targetContainer, "JDBC URL"); //$NON-NLS-1$
+        final Label urlLabel = UIUtils.createControlLabel(targetContainer, "JDBC URL Template"); //$NON-NLS-1$
         urlLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         connectionUrlText = new Text(targetContainer, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
