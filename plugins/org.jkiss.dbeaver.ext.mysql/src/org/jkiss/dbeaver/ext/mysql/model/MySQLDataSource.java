@@ -80,6 +80,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private int lowerCaseTableNames = 1;
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
+    private boolean containsCheckConstraintTable;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
@@ -325,6 +326,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
+
+            // Check check constraints in base
+            try {
+                String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
+                        "WHERE\n" +
+                        "\tt.TABLE_SCHEMA = 'information_schema'\n" +
+                        "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'");
+                containsCheckConstraintTable = (resultSet != null);
+            } catch (SQLException e) {
+                log.debug("Error reading information schema", e);
+            }
         }
     }
 
@@ -735,10 +747,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     public boolean supportsCheckConstraints() {
         if (this.isMariaDB()) {
-            return this.isServerVersionAtLeast(10, 2);
+            return this.isServerVersionAtLeast(10, 2) && containsCheckConstraintTable;
         }
         else {
-            return this.isServerVersionAtLeast(8, 0);
+            return this.isServerVersionAtLeast(8, 0) && containsCheckConstraintTable;
         }
     }
 
