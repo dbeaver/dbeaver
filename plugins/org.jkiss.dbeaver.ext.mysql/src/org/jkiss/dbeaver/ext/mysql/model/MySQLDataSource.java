@@ -329,18 +329,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
             // Check check constraints in base
             try {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "select * from information_schema.TABLES t\n" +
-                                "where\n" +
-                                "\tt.TABLE_SCHEMA = 'information_schema'\n" +
-                                "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'"))
-                {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                            containsCheckConstraintTable = dbResult.next();
-                    }
-                }
+                String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
+                        "WHERE\n" +
+                        "\tt.TABLE_SCHEMA = 'information_schema'\n" +
+                        "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'");
+                containsCheckConstraintTable = (resultSet != null);
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.debug("Error reading information schema", e);
             }
         }
     }
