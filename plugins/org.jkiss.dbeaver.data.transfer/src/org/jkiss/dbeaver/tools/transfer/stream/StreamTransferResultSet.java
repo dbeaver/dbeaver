@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
-import org.jkiss.dbeaver.tools.transfer.stream.model.StreamTransferSession;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
@@ -42,7 +41,7 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     private static final Log log = Log.getLog(StreamTransferResultSet.class);
 
-    private final StreamTransferSession session;
+    private final DBCSession session;
     private final DBCStatement statement;
     private StreamProducerSettings.EntityMapping entityMapping;
     private List<DBCAttributeMetaData> metaAttrs;
@@ -54,7 +53,7 @@ public class StreamTransferResultSet implements DBCResultSet {
     private final int[] targetToSourceMap;
     private DateTimeFormatter dateTimeFormat;
 
-    public StreamTransferResultSet(StreamTransferSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
+    public StreamTransferResultSet(DBCSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
         this.session = session;
         this.statement = statement;
         this.entityMapping = entityMapping;

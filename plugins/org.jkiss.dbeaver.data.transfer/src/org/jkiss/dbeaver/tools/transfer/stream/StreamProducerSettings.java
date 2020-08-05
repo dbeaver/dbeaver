@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -30,15 +31,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -201,7 +198,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         private MappingType mappingType = MappingType.NONE;
         private StreamDataImporterColumnInfo sourceColumn;
 
-        public AttributeMapping(DBSEntityAttribute attr) {
+        AttributeMapping(DBSEntityAttribute attr) {
             this.sourceAttributeName = this.targetAttributeName = attr.getName();
             this.targetAttribute = attr;
             this.targetValueHandler = DBUtils.findValueHandler(attr.getDataSource(), attr);
@@ -352,85 +349,109 @@ public class StreamProducerSettings implements IDataTransferSettings {
                     entityMapping.put(DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML), em);
                 }
             }
-            updateMappingsFromStream(dataTransferSettings);
+            runnableContext.run(true, true, monitor -> {
+                updateMappingsFromStream(monitor, dataTransferSettings);
+            });
         } catch (Exception e) {
             log.error("Error loading stream producer settings", e);
         }
     }
 
-    public void updateMappingsFromStream(DataTransferSettings dataTransferSettings) throws DBException {
-        final Map<String, Object> processorProperties = dataTransferSettings.getProcessorProperties();
+    public void updateMappingsFromStream(DBRProgressMonitor monitor, DataTransferSettings dataTransferSettings) {
         for (DataTransferPipe pipe : dataTransferSettings.getDataPipes()) {
             StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
-            if (producer != null && pipe.getConsumer() != null) {
-                DBSObject targetObject = pipe.getConsumer().getDatabaseObject();
-                if (targetObject instanceof DBSEntity) {
-                    DBSEntity entity = (DBSEntity) targetObject;
+            updateProducerSettingsFromStream(monitor, producer, pipe.getConsumer(), dataTransferSettings);
+        }
+    }
 
-                    StreamProducerSettings.EntityMapping entityMapping = getEntityMapping(entity);
+    public void updateProducerSettingsFromStream(DBRProgressMonitor monitor, @NotNull StreamTransferProducer producer, IDataTransferConsumer consumer, DataTransferSettings dataTransferSettings) {
+        if (consumer == null) {
+            return;
+        }
+        monitor.beginTask("Update data produces settings from import stream", 1);
+        final Map<String, Object> processorProperties = dataTransferSettings.getProcessorProperties();
 
-                    List<StreamDataImporterColumnInfo> columnInfos = null;
-                    File inputFile = producer.getInputFile();
+        DBSObject targetObject = consumer.getDatabaseObject();
+        if (targetObject instanceof DBSEntity) {
+            DBSEntity targetEntity = (DBSEntity) targetObject;
 
-                    if (inputFile != null && inputFile.exists()) {
-                        IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
+            EntityMapping entityMapping = getEntityMapping(targetEntity);
 
-                        if (importer instanceof IStreamDataImporter) {
-                            IStreamDataImporter sdi = (IStreamDataImporter) importer;
-                            try (InputStream is = new FileInputStream(inputFile)) {
-                                sdi.init(new StreamDataImporterSite(this, entity, processorProperties));
-                                try {
-                                    columnInfos = sdi.readColumnsInfo(is);
-                                } finally {
-                                    sdi.dispose();
+            List<StreamDataImporterColumnInfo> columnInfos = null;
+            File inputFile = producer.getInputFile();
+
+            if (inputFile != null && inputFile.exists()) {
+                IDataTransferProcessor importer = dataTransferSettings.getProcessor().getInstance();
+
+                if (importer instanceof IStreamDataImporter) {
+                    IStreamDataImporter sdi = (IStreamDataImporter) importer;
+                    try (InputStream is = new FileInputStream(inputFile)) {
+                        sdi.init(new StreamDataImporterSite(this, targetEntity, processorProperties));
+                        try {
+                            columnInfos = sdi.readColumnsInfo(is);
+                        } finally {
+                            sdi.dispose();
+                        }
+                    } catch (Exception e) {
+                        log.error("IO error while reading columns from stream", e);
+                    }
+                }
+                entityMapping.setStreamColumns(columnInfos);
+            }
+
+            try {
+                // Create (on demand) target attribute mappings
+                monitor.subTask("Load attributes form target object");
+                for (DBSEntityAttribute attr : CommonUtils.safeCollection(targetEntity.getAttributes(monitor))) {
+                    if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
+                    entityMapping.getAttributeMapping(attr);
+                }
+                monitor.worked(1);
+            } catch (DBException e) {
+                log.error("Error updating column mappings", e);
+            }
+
+            // Map source columns
+            if (columnInfos != null) {
+                List<AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
+                for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
+                    boolean mappingFound = false;
+                    if (columnInfo.getColumnName() != null) {
+                        for (AttributeMapping attr : attributeMappings) {
+                            if (CommonUtils.equalObjects(attr.getSourceAttributeName(), columnInfo.getColumnName())) {
+                                if (attr.getMappingType() == AttributeMapping.MappingType.NONE || attr.getSourceAttributeIndex() < 0) {
+                                    // Set source name only if it wasn't set
+                                    attr.setSourceAttributeName(columnInfo.getColumnName());
+                                    attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                                    if (attr.getMappingType() == AttributeMapping.MappingType.NONE) {
+                                        attr.setMappingType(AttributeMapping.MappingType.IMPORT);
+                                    }
+                                    attr.setSourceColumn(columnInfo);
                                 }
-                            } catch (IOException e) {
-                                throw new DBException("IO error", e);
+                                mappingFound = true;
+                                break;
                             }
                         }
-                        entityMapping.setStreamColumns(columnInfos);
                     }
-
-                    // Map source columns
-                    if (columnInfos != null) {
-                        List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
-                        for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
-                            boolean mappingFound = false;
-                            if (columnInfo.getColumnName() != null) {
-                                for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
-                                    if (CommonUtils.equalObjects(attr.getSourceAttributeName(), columnInfo.getColumnName())) {
-                                        if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE || attr.getSourceAttributeIndex() < 0) {
-                                            // Set source name only if it wasn't set
-                                            attr.setSourceAttributeName(columnInfo.getColumnName());
-                                            attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
-                                            if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
-                                                attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
-                                            }
-                                            attr.setSourceColumn(columnInfo);
-                                        }
-                                        mappingFound = true;
-                                        break;
-                                    }
+                    if (!mappingFound) {
+                        if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
+                            AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
+                            if (attr.getMappingType() == AttributeMapping.MappingType.NONE) {
+                                if (!CommonUtils.isEmpty(columnInfo.getColumnName())) {
+                                    attr.setSourceAttributeName(columnInfo.getColumnName());
                                 }
-                            }
-                            if (!mappingFound) {
-                                if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
-                                    StreamProducerSettings.AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
-                                    if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
-                                        if (!CommonUtils.isEmpty(columnInfo.getColumnName())) {
-                                            attr.setSourceAttributeName(columnInfo.getColumnName());
-                                        }
-                                        attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
-                                        attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
-                                        attr.setSourceColumn(columnInfo);
-                                    }
-                                }
+                                attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                                attr.setMappingType(AttributeMapping.MappingType.IMPORT);
+                                attr.setSourceColumn(columnInfo);
                             }
                         }
                     }
                 }
             }
         }
+        monitor.done();
     }
 
     @Override
