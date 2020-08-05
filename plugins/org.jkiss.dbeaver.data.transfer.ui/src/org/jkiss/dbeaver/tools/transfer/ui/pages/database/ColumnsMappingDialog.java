@@ -94,7 +94,9 @@ public class ColumnsMappingDialog extends StatusDialog {
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_container, mapping.getSource().getDataSource().getContainer().getName(), SWT.BORDER | SWT.READ_ONLY);
+        DBPDataSource sourceDataSource = mapping.getSource().getDataSource();
+        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_container,
+            sourceDataSource == null ? "" : sourceDataSource.getContainer().getName(), SWT.BORDER | SWT.READ_ONLY);
         Text sourceEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_entity, DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
         ((GridData)sourceEntity.getLayoutData()).widthHint = 600;
         ((GridData)sourceEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;

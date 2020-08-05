@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.importer;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
@@ -33,7 +34,7 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
     }
 
     @Override
-    public void init(IStreamDataImporterSite site) throws DBException
+    public void init(@NotNull IStreamDataImporterSite site) throws DBException
     {
         this.site = site;
     }

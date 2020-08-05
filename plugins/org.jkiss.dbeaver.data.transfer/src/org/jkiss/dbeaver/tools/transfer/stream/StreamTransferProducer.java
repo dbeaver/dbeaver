@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -65,6 +66,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     private File inputFile;
     private DataTransferProcessorDescriptor defaultProcessor;
     private StreamSourceObject sourceObject;
+    private StreamDataSource streamDataSource;
 
     public StreamTransferProducer() {
     }
@@ -77,6 +79,13 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         this.inputFile = file;
         this.defaultProcessor = defaultProcessor;
         this.sourceObject = new StreamSourceObject(new StreamProducerSettings.EntityMapping(file.getName()));
+    }
+
+    public StreamDataSource getStreamDataSource() {
+        if (streamDataSource == null) {
+            this.streamDataSource = new StreamDataSource(inputFile.getName());
+        }
+        return streamDataSource;
     }
 
     @Override
@@ -125,6 +134,9 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         if (!(databaseObject instanceof DBSEntity)) {
             throw new DBException("Wrong consumer object for stream producer: " + databaseObject);
         }
+        if (processor == null) {
+            throw new DBException("Stream data producer requires data processor");
+        }
 
         StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(sourceObject);
         if (entityMapping != null) {
@@ -138,7 +150,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
         // Perform transfer
         try (InputStream is = new FileInputStream(inputFile)) {
-            importer.runImport(monitor, is, consumer);
+            importer.runImport(monitor, getStreamDataSource(), is, consumer);
         } catch (IOException e) {
             throw new DBException("IO error", e);
         } finally {
@@ -146,7 +158,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         }
     }
 
-    public void loadObjectDefinition(StreamProducerSettings.EntityMapping entityMapping) throws DBException {
+    private void loadObjectDefinition(StreamProducerSettings.EntityMapping entityMapping) throws DBException {
         if (defaultProcessor == null) {
             return;
         }
@@ -157,7 +169,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
         private StreamProducerSettings.EntityMapping entityMapping;
 
-        public StreamSourceObject(StreamProducerSettings.EntityMapping entityMapping) {
+        StreamSourceObject(StreamProducerSettings.EntityMapping entityMapping) {
             this.entityMapping = entityMapping;
         }
 
@@ -212,9 +224,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
             return null;
         }
 
+        @NotNull
         @Override
         public DBPDataSource getDataSource() {
-            return null;
+            return getStreamDataSource();
         }
 
         @Override

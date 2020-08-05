@@ -27,11 +27,13 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,7 +107,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
-        settingsDivider.setWeights(new int[]{ 400, 600 });
+        settingsDivider.setWeights(new int[]{400, 600});
 
         setControl(settingsDivider);
 
@@ -119,9 +122,28 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
         extensions.add("*");
 
-        File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[extensions.size()]));
+        File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[0]));
         if (file != null) {
-            pipe.setProducer(new StreamTransferProducer(file));
+            final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+
+            StreamTransferProducer producer = new StreamTransferProducer(file);
+            pipe.setProducer(producer);
+
+            try {
+                getWizard().getRunnableContext().run(true, true, monitor -> {
+                    producerSettings.updateProducerSettingsFromStream(
+                        monitor,
+                        producer,
+                        pipe.getConsumer(),
+                        getWizard().getSettings());
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Column mappings error", "Error reading column mappings from stream", e.getTargetException());
+                return false;
+            } catch (InterruptedException e) {
+                // ignore
+            }
+
             updatePageCompletion();
             return true;
         }
@@ -173,18 +195,14 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     }
 
     @Override
-    public void deactivatePage()
-    {
-        //final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
-
+    public void deactivatePage() {
         getWizard().getSettings().setProcessorProperties(propertySource.getPropertiesWithDefaults());
 
         super.deactivatePage();
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    protected boolean determinePageCompletion() {
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getConsumer() == null || pipe.getConsumer().getObjectName() == null || pipe.getProducer() == null || pipe.getProducer().getObjectName() == null) {
                 return false;
