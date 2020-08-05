@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -96,11 +97,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
+        Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -153,94 +150,96 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             };
         }
 
-        createMappingsTree(composite);
+        Composite mappingsGroup = UIUtils.createComposite(composite, 2);
+        mappingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        createMappingsTree(mappingsGroup);
 
         {
             // Control buttons
-            Composite buttonsPanel = new Composite(composite, SWT.NONE);
-            buttonsPanel.setLayout(new GridLayout(6, false));
-            buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Composite buttonsPanel = UIUtils.createComposite(mappingsGroup, 1);
+            buttonsPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            autoAssignButton = new Button(buttonsPanel, SWT.PUSH);
-            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
-            autoAssignButton.setText(DTMessages.data_transfer_db_consumer_auto_assign);
-            autoAssignButton.addSelectionListener(new SelectionAdapter() {
+            autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_auto_assign,
+                new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     autoAssignMappings();
                 }
             });
+            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
 
-            final Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_existing_table,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        mapExistingTable((DatabaseMappingContainer) getSelectedMapping());
+                    }
+                });
             mapTableButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-            mapTableButton.setText(DTMessages.data_transfer_db_consumer_existing_table);
             mapTableButton.setEnabled(false);
-            mapTableButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    mapExistingTable((DatabaseMappingContainer) getSelectedMapping());
-                }
-            });
 
-            final Button createNewButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button createNewButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_new_table,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        mapNewTable((DatabaseMappingContainer) getSelectedMapping());
+                    }
+                });
             createNewButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_VIEW));
-            createNewButton.setText(DTMessages.data_transfer_db_consumer_new_table);
             createNewButton.setEnabled(false);
-            createNewButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    mapNewTable((DatabaseMappingContainer) getSelectedMapping());
-                }
-            });
 
-            final Button columnsButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button columnsButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_column_mappings,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        DatabaseMappingObject selectedMapping = getSelectedMapping();
+                        mapColumns(selectedMapping instanceof DatabaseMappingContainer ?
+                            (DatabaseMappingContainer) selectedMapping :
+                            ((DatabaseMappingAttribute)selectedMapping).getParent());
+                    }
+                });
             columnsButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMNS));
-            columnsButton.setText(DTMessages.data_transfer_db_consumer_column_mappings);
             columnsButton.setEnabled(false);
-            columnsButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DatabaseMappingObject selectedMapping = getSelectedMapping();
-                    mapColumns(selectedMapping instanceof DatabaseMappingContainer ?
-                        (DatabaseMappingContainer) selectedMapping :
-                        ((DatabaseMappingAttribute)selectedMapping).getParent());
-                }
-            });
 
-            final Button ddlButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button ddlButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_db_consumer_ddl,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        DatabaseMappingObject selectedMapping = getSelectedMapping();
+                        showDDL(selectedMapping instanceof DatabaseMappingContainer ?
+                            (DatabaseMappingContainer) selectedMapping :
+                            ((DatabaseMappingAttribute)selectedMapping).getParent());
+                    }
+                });
             ddlButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
-            ddlButton.setText(DTMessages.data_transfer_db_consumer_ddl);
             ddlButton.setEnabled(false);
-            ddlButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DatabaseMappingObject selectedMapping = getSelectedMapping();
-                    showDDL(selectedMapping instanceof DatabaseMappingContainer ?
-                        (DatabaseMappingContainer) selectedMapping :
-                        ((DatabaseMappingAttribute)selectedMapping).getParent());
-                }
-            });
 
-            final Button previewButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button previewButton = UIUtils.createDialogButton(buttonsPanel,
+                DTMessages.data_transfer_wizard_page_preview_name.replace("P", "&P"),
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        DatabaseMappingObject selectedMapping = getSelectedMapping();
+                        showPreview(selectedMapping instanceof DatabaseMappingContainer ?
+                            (DatabaseMappingContainer) selectedMapping :
+                            ((DatabaseMappingAttribute)selectedMapping).getParent());
+                    }
+                });
             previewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PREVIEW));
-            previewButton.setText(DTMessages.data_transfer_wizard_page_preview_name);
             previewButton.setToolTipText(DTMessages.data_transfer_wizard_page_preview_description);
             previewButton.setEnabled(false);
-            previewButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DatabaseMappingObject selectedMapping = getSelectedMapping();
-                    showPreview(selectedMapping instanceof DatabaseMappingContainer ?
-                        (DatabaseMappingContainer) selectedMapping :
-                        ((DatabaseMappingAttribute)selectedMapping).getParent());
-                }
-            });
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
@@ -261,6 +260,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
                                     container.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.skip);
                                 }
+                                selectNextColumn(item);
                             }
                             updated = true;
                         } else if (e.character == SWT.SPACE) {
@@ -274,6 +274,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
                                     setMappingTarget(container, container.getSource().getName());
                                 }
+                                selectNextColumn(item);
                             }
                             updated = true;
                         }
@@ -331,6 +332,17 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
 
         setControl(composite);
+    }
+
+    private void selectNextColumn(TreeItem item) {
+        TreeItem parentItem = item.getParentItem();
+        if (parentItem != null) {
+            TreeItem[] childItems = parentItem.getItems();
+            int index = ArrayUtils.indexOf(childItems, item);
+            if (index >= 0 && index < childItems.length - 1) {
+                mappingViewer.setSelection(new StructuredSelection(childItems[index + 1].getData()));
+            }
+        }
     }
 
     private void createMappingsTree(Composite composite)
@@ -506,6 +518,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     return ((DatabaseMappingContainer) parentElement).getAttributeMappings(getWizard().getRunnableContext()).toArray();
                 }
                 return null;
+            }
+        });
+        mappingViewer.addDoubleClickListener(event -> {
+            DatabaseMappingObject selectedMapping = getSelectedMapping();
+            if (selectedMapping instanceof DatabaseMappingContainer) {
+                mapColumns((DatabaseMappingContainer) selectedMapping);
+            } else if (selectedMapping instanceof DatabaseMappingAttribute) {
+                mapColumns(((DatabaseMappingAttribute) selectedMapping).getParent());
             }
         });
     }
@@ -845,6 +865,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 model.add(mapping);
             }
             mappingViewer.setInput(model);
+            if (!model.isEmpty()) {
+                mappingViewer.setSelection(new StructuredSelection(model.get(0)));
+            }
 
             Tree table = mappingViewer.getTree();
             int totalWidth = table.getClientArea().width;
