@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
-import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -57,7 +56,6 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     private StreamEntityMapping entityMapping;
     private DataTransferProcessorDescriptor defaultProcessor;
-    private StreamDataSource streamDataSource;
 
     public StreamTransferProducer() {
     }
@@ -114,7 +112,8 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         @NotNull DBRProgressMonitor monitor,
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
-        @NotNull StreamProducerSettings settings, DBTTask task)
+        @NotNull StreamProducerSettings settings,
+        @Nullable DBTTask task)
         throws DBException
     {
         // Initialize importer
