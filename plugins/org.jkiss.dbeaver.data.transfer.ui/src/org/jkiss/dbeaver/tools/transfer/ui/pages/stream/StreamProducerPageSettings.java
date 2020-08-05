@@ -49,6 +49,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
@@ -197,7 +198,13 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     public void deactivatePage() {
-        getWizard().getSettings().setProcessorProperties(propertySource.getPropertiesWithDefaults());
+        Map<String, Object> processorProperties = propertySource.getPropertiesWithDefaults();
+        getWizard().getSettings().setProcessorProperties(processorProperties);
+
+        final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        if (producerSettings != null) {
+            producerSettings.setProcessorProperties(processorProperties);
+        }
 
         super.deactivatePage();
     }

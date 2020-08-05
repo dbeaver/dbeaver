@@ -82,7 +82,9 @@ public class StreamProducerSettings implements IDataTransferSettings {
     public void updateMappingsFromStream(DBRProgressMonitor monitor, DataTransferSettings dataTransferSettings) {
         for (DataTransferPipe pipe : dataTransferSettings.getDataPipes()) {
             StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
-            updateProducerSettingsFromStream(monitor, producer, dataTransferSettings);
+            if (producer.getEntityMapping() != null) {
+                updateProducerSettingsFromStream(monitor, producer, dataTransferSettings);
+            }
         }
     }
 

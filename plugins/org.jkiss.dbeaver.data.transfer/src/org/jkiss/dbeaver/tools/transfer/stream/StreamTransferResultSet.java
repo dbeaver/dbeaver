@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,8 +31,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stream producer result set
@@ -43,7 +44,7 @@ public class StreamTransferResultSet implements DBCResultSet {
     private final DBCSession session;
     private final DBCStatement statement;
     private final StreamEntityMapping entityMapping;
-    private List<DBCAttributeMetaData> metaAttrs;
+    private final List<DBCAttributeMetaData> metaAttrs;
     // Stream row: values in source attributes order
     private Object[] streamRow;
     private final List<StreamDataImporterColumnInfo> attributeMappings;
@@ -54,7 +55,9 @@ public class StreamTransferResultSet implements DBCResultSet {
         this.statement = statement;
         this.entityMapping = entityMapping;
         this.attributeMappings = this.entityMapping.getStreamColumns();
-        this.metaAttrs = new ArrayList<>(attributeMappings.size());
+        this.metaAttrs = attributeMappings.stream()
+            .map(c -> new LocalResultSetColumn(this, c.getOrdinalPosition(), c.getName(), c))
+            .collect(Collectors.toList());
     }
 
     public void setStreamRow(Object[] streamRow) {

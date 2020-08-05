@@ -123,7 +123,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         @NotNull DBRProgressMonitor monitor1,
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
-        @NotNull DatabaseProducerSettings settings, DBTTask task)
+        @NotNull DatabaseProducerSettings settings,
+        @Nullable DBTTask task)
         throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
