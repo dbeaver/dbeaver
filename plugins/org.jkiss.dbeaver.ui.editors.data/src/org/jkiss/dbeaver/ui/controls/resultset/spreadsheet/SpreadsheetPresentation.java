@@ -193,13 +193,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public boolean isDirty() {
-        boolean hasActiveEditor =
-            activeInlineEditor != null &&
+        return activeInlineEditor != null &&
             activeInlineEditor.getControl() != null &&
             !activeInlineEditor.getControl().isDisposed() &&
-            !getController().getModel().isAttributeReadOnly(getCurrentAttribute()) &&
+            !DBExecUtils.isAttributeReadOnly(getCurrentAttribute()) &&
             !(activeInlineEditor instanceof IValueEditorStandalone);
-        return hasActiveEditor;
     }
 
     @Override

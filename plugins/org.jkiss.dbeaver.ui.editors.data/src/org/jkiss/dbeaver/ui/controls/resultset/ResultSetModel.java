@@ -812,43 +812,6 @@ public class ResultSetModel {
         return changesCount != 0;
     }
 
-    public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
-//        if (!isSingleSource()) {
-//            return true;
-//        }
-        if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
-            return true;
-        }
-        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
-            return true;
-        }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
-    }
-
-    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
-        if (attribute == null || attribute.getMetaAttribute() == null) {
-            return "Null meta attribute";
-        }
-        if (attribute.getMetaAttribute().isReadOnly()) {
-            return "Attribute is read-only";
-        }
-        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null) {
-            String status = attribute.getRowIdentifierStatus();
-            return status != null ? status : "No row identifier found";
-        }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
-            return "Underlying entity doesn't support data modification";
-        }
-        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
-            return "Underlying entity doesn't support data update";
-        }
-        return null;
-    }
-
     public boolean isUpdateInProgress() {
         return updateInProgress;
     }

@@ -1786,7 +1786,7 @@ public class ResultSetViewer extends Viewer
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return model.getAttributeReadOnlyStatus(attr);
+            return DBExecUtils.getAttributeReadOnlyStatus(attr);
         }
         return null;
     }
