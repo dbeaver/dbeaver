@@ -131,7 +131,7 @@ class PreviewMappingDialog extends BaseDialog {
             DBWorkbench.getPlatformUI().showError(DTUIMessages.stream_producer_page_preview_title_load_entity_meta,
                 DTUIMessages.stream_producer_page_preview_message_entity_attributes, finalError);
         }
-
+        UIUtils.asyncExec(() -> getShell().setFocus());
     }
 
     private void loadImportPreview(

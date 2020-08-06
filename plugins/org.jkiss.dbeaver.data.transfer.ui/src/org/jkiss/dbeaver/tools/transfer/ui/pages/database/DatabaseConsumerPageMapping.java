@@ -599,6 +599,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
                             containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing);
+                            mappingViewer.refresh();
                             return;
                         }
                     }
@@ -620,6 +621,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 attrMapping.setMappingType(DatabaseMappingType.create);
                 attrMapping.setTargetName(name);
             }
+            mappingViewer.refresh();
         }
     }
 
