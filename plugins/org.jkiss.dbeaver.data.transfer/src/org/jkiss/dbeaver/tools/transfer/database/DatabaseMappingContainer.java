@@ -131,7 +131,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     return targetName;
                 }
-                return "?";
+                return "";
         }
     }
 

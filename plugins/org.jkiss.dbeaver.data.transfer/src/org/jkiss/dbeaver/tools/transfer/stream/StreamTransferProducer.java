@@ -119,7 +119,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         // Initialize importer
         DBSObject databaseObject = consumer.getDatabaseObject();
         if (!(databaseObject instanceof DBSEntity)) {
-            throw new DBException("Wrong consumer object for stream producer: " + databaseObject);
+            //throw new DBException("Wrong consumer object for stream producer: " + databaseObject);
         }
         if (processor == null) {
             throw new DBException("Stream data producer requires data processor");

@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,8 +33,10 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -140,16 +143,12 @@ class PreviewMappingDialog extends BaseDialog {
         DBRProgressMonitor monitor) throws DBException {
         PreviewConsumer previewConsumer = new PreviewConsumer(monitor, mappingContainer);
 
+        IDataTransferProducer producer = pipe.getProducer();
+        IDataTransferSettings producerSettings = getNodeSettings(producer);
+
+        IDataTransferSettings consumerSettings = getNodeSettings(pipe.getConsumer());
+
         try {
-            IDataTransferProducer producer = pipe.getProducer();
-            DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeByType(producer.getClass());
-            if (producerNode == null) {
-                throw new DBException("Cannot find producer descriptor for " + producer.getClass().getName());
-            }
-            IDataTransferSettings producerSettings = dtSettings.getNodeSettings(producerNode);
-            if (producerSettings == null) {
-                throw new DBException("Cannot find producer settings for " + producerNode.getName());
-            }
 
             IDataTransferConsumer realConsumer = pipe.getConsumer();
             try {
@@ -159,7 +158,7 @@ class PreviewMappingDialog extends BaseDialog {
                 producer.transferData(
                     previewConsumer.getCtlMonitor(),
                     previewConsumer,
-                    dtSettings.getProcessor().getInstance(),
+                    dtSettings.getProcessor() == null ? null : dtSettings.getProcessor().getInstance(),
                     producerSettings,
                     null);
             } finally {
@@ -171,7 +170,16 @@ class PreviewMappingDialog extends BaseDialog {
 
         List<Object[]> rows = previewConsumer.getRows();
         List<String[]> strRows = new ArrayList<>(rows.size());
-        try (DBCSession session = DBUtils.openUtilSession(monitor, mappingContainer.getTarget(), "Generate preview values")) {
+        DBSObject target = mappingContainer.getTarget();
+        if (target == null) {
+            if (consumerSettings instanceof DatabaseConsumerSettings) {
+                target = ((DatabaseConsumerSettings) consumerSettings).getContainer();
+            }
+        }
+        if (target == null) {
+            throw new DBException("Can not determine target container");
+        }
+        try (DBCSession session = DBUtils.openUtilSession(monitor, target, "Generate preview values")) {
             DatabaseTransferConsumer.ColumnMapping[] columnMappings = previewConsumer.getColumnMappings();
             for (Object[] row : rows) {
                 String[] strRow = new String[row.length];
@@ -219,6 +227,19 @@ class PreviewMappingDialog extends BaseDialog {
                 previewTable.setRedraw(true);
             }
         });
+    }
+
+    @NotNull
+    private IDataTransferSettings getNodeSettings(IDataTransferNode node) throws DBException {
+        DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeByType(node.getClass());
+        if (producerNode == null) {
+            throw new DBException("Cannot find node descriptor for " + node.getClass().getName());
+        }
+        IDataTransferSettings producerSettings = dtSettings.getNodeSettings(producerNode);
+        if (producerSettings == null) {
+            throw new DBException("Cannot find node settings for " + producerNode.getName());
+        }
+        return producerSettings;
     }
 
     private class PreviewConsumer extends DatabaseTransferConsumer {

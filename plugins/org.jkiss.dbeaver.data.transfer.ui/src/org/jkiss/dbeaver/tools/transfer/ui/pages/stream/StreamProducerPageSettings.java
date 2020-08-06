@@ -26,7 +26,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -173,6 +176,8 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
+                IDataTransferConsumer originalConsumer = pipe.getConsumer();
+
                 DataTransferSettings dtSettings = getWizard().getSettings();
                 List<DataTransferPipe> newPipes = new ArrayList<>(dtSettings.getDataPipes());
                 newPipes.remove(pipe);
@@ -199,6 +204,14 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                         DatabaseMappingContainer mapping = new DatabaseMappingContainer(dcs, producer.getDatabaseObject());
                         mapping.setTargetName(generateTableName(file));
                         dcs.addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
+
+                        if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObject) {
+                            DBNDatabaseNode containerNode = DBNUtils.getNodeByObject(
+                                monitor, (DBSObject)originalConsumer.getTargetObjectContainer(), false);
+                            if (containerNode != null) {
+                                dcs.setContainerNode(containerNode);
+                            }
+                        }
                     }
                 }
 
