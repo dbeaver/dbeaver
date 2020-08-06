@@ -413,7 +413,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         return targetName;
                     }
                     String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
-                    setValue(element, newName);
+                    //setValue(element, newName);
                     return newName;
                 }
                 if (mapping instanceof DatabaseMappingContainer) {
