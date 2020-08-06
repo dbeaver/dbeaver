@@ -165,7 +165,6 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         if (!CommonUtils.getBoolean(options.get(OPTION_SCRIPT_FORMAT_COMPACT), true)) {
             options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
             options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, true);
-            return DBStructUtils.generateTableDDL(monitor, this, options, false);
         }
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
