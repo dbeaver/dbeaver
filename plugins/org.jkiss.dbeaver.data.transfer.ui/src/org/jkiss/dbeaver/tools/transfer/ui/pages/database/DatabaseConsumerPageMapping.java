@@ -408,6 +408,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
+                    String targetName = mapping.getTargetName();
+                    if (!CommonUtils.isEmpty(targetName)) {
+                        return targetName;
+                    }
                     String newName = transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()));
                     setValue(element, newName);
                     return newName;

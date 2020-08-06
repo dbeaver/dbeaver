@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -63,7 +65,7 @@ class PreviewMappingDialog extends BaseDialog {
         DataTransferPipe pipe,
         DatabaseMappingContainer mappingContainer,
         DataTransferSettings dtSettings) {
-        super(parentShell, DTMessages.data_transfer_wizard_page_preview_name, null);
+        super(parentShell, DTMessages.data_transfer_wizard_page_preview_name + " - " + mappingContainer.getTargetName(), null);
 
         this.pipe = pipe;
         this.mappingContainer = mappingContainer;
@@ -188,29 +190,34 @@ class PreviewMappingDialog extends BaseDialog {
         }
 
         UIUtils.asyncExec(() -> {
-            previewTable.removeAll();
-            for (TableColumn column : previewTable.getColumns()) {
-                column.dispose();
-            }
-            for (DatabaseTransferConsumer.ColumnMapping columnMapping : previewConsumer.getColumnMappings()) {
-                if (columnMapping == null) {
-                    continue;
+            previewTable.setRedraw(false);
+            try {
+                previewTable.removeAll();
+                for (TableColumn column : previewTable.getColumns()) {
+                    column.dispose();
                 }
-                TableColumn column = new TableColumn(previewTable, SWT.NONE);
-                column.setText(columnMapping.targetAttr.getTargetName());
-                column.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(columnMapping.targetAttr.getTarget())));
-                column.setData(columnMapping);
-            }
+                for (DatabaseTransferConsumer.ColumnMapping columnMapping : previewConsumer.getColumnMappings()) {
+                    if (columnMapping == null) {
+                        continue;
+                    }
+                    TableColumn column = new TableColumn(previewTable, SWT.NONE);
+                    column.setText(columnMapping.targetAttr.getTargetName());
+                    column.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(columnMapping.targetAttr.getTarget())));
+                    column.setData(columnMapping);
+                }
 
-            for (String[] row : strRows) {
-                TableItem previewItem = new TableItem(previewTable, SWT.NONE);
-                for (int i = 0; i < row.length; i++) {
-                    if (row[i] != null) {
-                        previewItem.setText(i, row[i]);
+                for (String[] row : strRows) {
+                    TableItem previewItem = new TableItem(previewTable, SWT.NONE);
+                    for (int i = 0; i < row.length; i++) {
+                        if (row[i] != null) {
+                            previewItem.setText(i, row[i]);
+                        }
                     }
                 }
+                UIUtils.packColumns(previewTable);
+            } finally {
+                previewTable.setRedraw(true);
             }
-            UIUtils.packColumns(previewTable);
         });
     }
 
@@ -238,6 +245,14 @@ class PreviewMappingDialog extends BaseDialog {
             return getPreviewRows();
         }
 
+        @Override
+        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+            if (getPreviewRows().size() >= previewRowCount) {
+                fetchEnded = true;
+                return;
+            }
+            super.fetchRow(session, resultSet);
+        }
     }
 
 }

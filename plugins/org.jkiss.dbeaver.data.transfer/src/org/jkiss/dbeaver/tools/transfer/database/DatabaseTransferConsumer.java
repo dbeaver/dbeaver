@@ -79,6 +79,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private boolean useIsolatedConnection;
     private Boolean oldAutoCommit;
 
+    // Used only for non-explicit import
+    // In this case consumer will be replaced with explicit consumers during configuration
+    private DBSObjectContainer targetObjectContainer;
+
     private boolean isPreview;
     private List<Object[]> previewRows;
 
@@ -106,12 +110,23 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         this.targetObject = targetObject;
     }
 
+    public DatabaseTransferConsumer(DBSObjectContainer targetObjectContainer) {
+        this.targetObjectContainer = targetObjectContainer;
+    }
+
+    public DBSObjectContainer getTargetObjectContainer() {
+        return targetObjectContainer;
+    }
+
     public ColumnMapping[] getColumnMappings() {
         return columnMappings;
     }
 
     @Override
     public DBSObject getDatabaseObject() {
+        if (targetObjectContainer != null) {
+            return targetObjectContainer;
+        }
         return targetObject;
     }
 
@@ -783,6 +798,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public String getObjectName() {
+        if (targetObjectContainer != null) {
+            return targetObjectContainer.getName();
+        }
+
         String targetName = null;
         if (targetObject != null) {
             targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
@@ -815,12 +834,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             case skip:
                 return "[Skip]";
             default:
-                return "?";
+                return targetName;
         }
     }
 
     @Override
     public DBPImage getObjectIcon() {
+        if (targetObjectContainer != null) {
+            return DBIcon.TREE_FOLDER_TABLE;
+        }
         if (targetObject instanceof DBPImageProvider) {
             return DBValueFormatting.getObjectImage(targetObject);
         }
@@ -829,17 +851,26 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public String getObjectContainerName() {
+        if (targetObjectContainer != null) {
+            return DBUtils.getObjectFullName(targetObjectContainer, DBPEvaluationContext.UI);
+        }
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getName() : "?";
     }
 
     @Override
     public DBPImage getObjectContainerIcon() {
+        if (targetObjectContainer != null) {
+            return DBIcon.TREE_FOLDER_TABLE;
+        }
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getDriver().getIcon() : null;
     }
 
     private DBPDataSourceContainer getDataSourceContainer() {
+        if (targetObjectContainer != null) {
+            return targetObjectContainer.getDataSource().getContainer();
+        }
         if (targetObject != null) {
             return targetObject.getDataSource().getContainer();
         }

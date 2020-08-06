@@ -74,7 +74,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     }
 
     @Override
-    public DBSEntity getDatabaseObject()
+    public StreamEntityMapping getDatabaseObject()
     {
         return entityMapping;
     }
