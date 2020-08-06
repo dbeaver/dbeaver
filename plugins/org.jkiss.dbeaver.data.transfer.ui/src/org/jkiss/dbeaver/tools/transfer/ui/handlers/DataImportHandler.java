@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -44,6 +45,10 @@ public class DataImportHandler extends DataTransferHandler {
             IFile file = RuntimeUtils.getObjectAdapter(object, IFile.class);
             if (file != null) {
                 return getNodeByFile(file);
+            }
+            final DBSObjectContainer objectContainer = RuntimeUtils.getObjectAdapter(object, DBSObjectContainer.class);
+            if (objectContainer != null && DataTransferPropertyTester.isObjectContainerSupportsImport(objectContainer)) {
+                return new DatabaseTransferConsumer(objectContainer);
             }
             return null;
         }

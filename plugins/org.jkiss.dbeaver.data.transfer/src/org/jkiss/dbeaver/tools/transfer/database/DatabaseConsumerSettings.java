@@ -209,14 +209,16 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             } else if (!dataPipes.isEmpty()) {
                 for (DataTransferPipe pipe : dataPipes) {
                     IDataTransferProducer producer = pipe.getProducer();
-                    DBSObject dbObject = producer.getDatabaseObject();
-                    if (dbObject instanceof DBSDataContainer) {
-                        DBSDataContainer sourceDC = (DBSDataContainer)dbObject;
-                        Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
-                        if (dmcSettings != null) {
-                            DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
-                            dmc.loadSettings(runnableContext, dmcSettings);
-                            dataMappings.put(sourceDC, dmc);
+                    if (producer != null) {
+                        DBSObject dbObject = producer.getDatabaseObject();
+                        if (dbObject instanceof DBSDataContainer) {
+                            DBSDataContainer sourceDC = (DBSDataContainer) dbObject;
+                            Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
+                            if (dmcSettings != null) {
+                                DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
+                                dmc.loadSettings(runnableContext, dmcSettings);
+                                dataMappings.put(sourceDC, dmc);
+                            }
                         }
                     }
                 }

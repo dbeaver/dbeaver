@@ -103,6 +103,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 sdi.init(new StreamDataImporterSite(this, entityMapping, processorProperties));
                 try {
                     columnInfos = sdi.readColumnsInfo(entityMapping, is);
+                    entityMapping.setStreamColumns(columnInfos);
                 } finally {
                     sdi.dispose();
                 }
@@ -110,7 +111,6 @@ public class StreamProducerSettings implements IDataTransferSettings {
                 log.error("IO error while reading columns from stream", e);
             }
         }
-        entityMapping.setStreamColumns(columnInfos);
 
         monitor.done();
     }

@@ -173,7 +173,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 selectConsumer(consumerDesc, null, false);
                 consumerOptional = false;
             } else {
-                DBWorkbench.getPlatformUI().showError(DTMessages.data_transfer_settings_title_find_consumer, DTMessages.data_transfer_settings_message_find_data_consumer);
+                DBWorkbench.getPlatformUI().showError(
+                    DTMessages.data_transfer_settings_title_find_consumer,
+                    DTMessages.data_transfer_settings_message_find_data_consumer);
             }
             producerOptional = true;
         } else {
@@ -203,6 +205,13 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 String consumerId = CommonUtils.toString(config.get("consumer"));
                 if (!CommonUtils.isEmpty(consumerId)) {
                     DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
+
+                    // Check that this consumer is allowed
+                    if (!CommonUtils.isEmpty(initObjects)) {
+                        if (!DataTransferRegistry.getInstance().getAvailableConsumers(initObjects).contains(consumerNode)) {
+                            consumerNode = null;
+                        }
+                    }
                     if (consumerNode != null) {
                         if (this.consumer == null){
                             savedConsumer = consumerNode;
@@ -220,6 +229,13 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 String producerId = CommonUtils.toString(config.get("producer"));
                 if (!CommonUtils.isEmpty(producerId)) {
                     DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
+                    // Check that this producer is allowed
+                    if (!CommonUtils.isEmpty(initObjects)) {
+                        if (!DataTransferRegistry.getInstance().getAvailableProducers(initObjects).contains(producerNode)) {
+                            producerNode = null;
+                        }
+                    }
+
                     if (producerNode != null) {
                         if (this.producer == null) {
                             savedProducer = producerNode;

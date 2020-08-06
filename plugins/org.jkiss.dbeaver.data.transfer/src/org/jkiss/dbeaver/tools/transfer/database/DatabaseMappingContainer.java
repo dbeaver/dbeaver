@@ -128,6 +128,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default:
+                if (!CommonUtils.isEmpty(targetName)) {
+                    return targetName;
+                }
                 return "?";
         }
     }
