@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -161,6 +162,11 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (!CommonUtils.getBoolean(options.get(OPTION_SCRIPT_FORMAT_COMPACT), true)) {
+            options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
+            options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, true);
+            return DBStructUtils.generateTableDDL(monitor, this, options, false);
+        }
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
