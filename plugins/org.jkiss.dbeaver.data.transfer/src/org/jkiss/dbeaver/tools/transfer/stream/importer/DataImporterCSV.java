@@ -90,7 +90,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
                         columnsInfo.add(
                             new StreamDataImporterColumnInfo(
-                                entityMapping, i, column, "VARCHAR", DBPDataKind.STRING));
+                                entityMapping, i, column, "VARCHAR", 1024, DBPDataKind.STRING));
                     }
                     break;
                 }
@@ -161,6 +161,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     int targetAttrSize = entityMapping.getStreamColumns().size();
                     boolean headerRead = false;
                     for (int lineNum = 0; ; ) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         String[] line = csvReader.readNext();
                         if (line == null) {
                             break;

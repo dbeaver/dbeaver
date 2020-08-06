@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -778,12 +779,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     private void showPreview(DatabaseMappingContainer mappingContainer) {
-        DatabaseConsumerSettings consumerSettings = getDatabaseConsumerSettings();
+        DataTransferPipe pipe = getPipe(mappingContainer);
+        DataTransferSettings dtSettings = getWizard().getSettings();
+
         PreviewMappingDialog previewDialog = new PreviewMappingDialog(
             getShell(),
-            getPipe(mappingContainer),
+            pipe,
             mappingContainer,
-            consumerSettings);
+            dtSettings);
         previewDialog.open();
     }
 

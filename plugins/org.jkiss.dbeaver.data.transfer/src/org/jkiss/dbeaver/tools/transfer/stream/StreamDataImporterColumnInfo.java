@@ -29,8 +29,8 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
     private StreamEntityMapping entityMapping;
     private final DBPDataKind dataKind;
 
-    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, DBPDataKind dataKind) {
-        super(columnName, typeName, -1, columnIndex, -1, null, null, false, false);
+    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
+        super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
         this.entityMapping = entity;
         this.dataKind = dataKind;
     }
