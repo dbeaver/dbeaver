@@ -98,10 +98,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                     }
                     TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
-                    if (chooseSourceFile(pipe)) {
-                        updateItemData(item, pipe);
-                        updatePageCompletion();
-                    }
+                    chooseSourceFile(pipe);
                 }
 
                 @Override
@@ -166,7 +163,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         } catch (InterruptedException e) {
             // ignore
         }
-
+        reloadPipes();
         updatePageCompletion();
         return true;
     }
