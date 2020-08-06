@@ -321,7 +321,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public void addDataMappings(DBRRunnableContext context, DBSDataContainer dataContainer, DatabaseMappingContainer mappingContainer) {
         dataMappings.put(dataContainer, mappingContainer);
 
-        if (dialogSettings != null) {
+        if (mappingContainer.getTarget() == null && dialogSettings != null) {
             // Load settings
             Map<String, Object> mappings = (Map<String, Object>) dialogSettings.get("mappings");
             if (mappings != null) {

@@ -106,7 +106,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     @Override
     public DBSObject getParentObject() {
-        return null;
+        return dataSource;
     }
 
     @NotNull
@@ -170,5 +170,21 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         Map<String, Object> mappings = new LinkedHashMap<>();
         mappings.put("entityId", entityName);
         return mappings;
+    }
+
+    @Override
+    public String toString() {
+        return inputFile.getAbsolutePath();
+    }
+
+    @Override
+    public int hashCode() {
+        return inputFile.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof StreamEntityMapping &&
+            CommonUtils.equalObjects(inputFile, ((StreamEntityMapping) obj).inputFile);
     }
 }

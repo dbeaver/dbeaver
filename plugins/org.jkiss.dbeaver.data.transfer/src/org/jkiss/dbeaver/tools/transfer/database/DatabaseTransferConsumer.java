@@ -74,16 +74,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
+
     private List<DBSEntityAttribute> targetAttributes;
     private boolean useIsolatedConnection;
     private Boolean oldAutoCommit;
 
-    private static class ColumnMapping {
-        DBDAttributeBinding sourceAttr;
-        DatabaseMappingAttribute targetAttr;
-        DBDValueHandler sourceValueHandler;
-        DBDValueHandler targetValueHandler;
-        int targetIndex = -1;
+    private boolean isPreview;
+    private List<Object[]> previewRows;
+
+    public static class ColumnMapping {
+        public DBDAttributeBinding sourceAttr;
+        public DatabaseMappingAttribute targetAttr;
+        public DBDValueHandler sourceValueHandler;
+        public DBDValueHandler targetValueHandler;
+        private int targetIndex = -1;
 
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
@@ -102,9 +106,25 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         this.targetObject = targetObject;
     }
 
+    public ColumnMapping[] getColumnMappings() {
+        return columnMappings;
+    }
+
     @Override
     public DBSObject getDatabaseObject() {
         return targetObject;
+    }
+
+    protected boolean isPreview() {
+        return isPreview;
+    }
+
+    protected void setPreview(boolean preview) {
+        isPreview = preview;
+    }
+
+    protected List<Object[]> getPreviewRows() {
+        return previewRows;
     }
 
     @Override
@@ -117,7 +137,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
 
-        if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 targetObject.truncateData(
@@ -136,9 +156,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } else {
             rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
-        columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
-        targetAttributes = new ArrayList<>(columnMappings.length);
+        targetAttributes = new ArrayList<>(rsAttributes.length);
+        List<ColumnMapping> colMaps = new ArrayList<>(rsAttributes.length);
         for (int i = 0; i < rsAttributes.length; i++) {
             if (isSkipColumn(rsAttributes[i])) {
                 continue;
@@ -193,24 +213,29 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
             }
             columnMapping.sourceValueHandler = columnMapping.sourceAttr.getValueHandler();
-            columnMapping.targetValueHandler = DBUtils.findValueHandler(targetSession.getDataSource(), targetAttr);
+            columnMapping.targetValueHandler = DBUtils.findValueHandler(targetContext.getDataSource(), targetAttr);
             columnMapping.targetIndex = targetAttributes.size();
 
-            columnMappings[i] = columnMapping;
+            colMaps.add(columnMapping);
 
             targetAttributes.add(targetAttr);
         }
+        columnMappings = colMaps.toArray(new ColumnMapping[0]);
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
-        if (targetObject instanceof DBSDataManipulatorExt) {
-            ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+        if (!isPreview) {
+            if (targetObject instanceof DBSDataManipulatorExt) {
+                ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+            }
+            executeBatch = targetObject.insertData(
+                targetSession,
+                attributes,
+                null,
+                executionSource);
+        } else {
+            previewRows = new ArrayList<>();
+            executeBatch = new PreviewBatch();
         }
-
-        executeBatch = targetObject.insertData(
-            targetSession,
-            attributes,
-            null,
-            executionSource);
     }
 
     private boolean isSkipColumn(DBDAttributeBinding attr) {
@@ -255,6 +280,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void insertBatch(boolean force) throws DBCException {
+        if (isPreview) {
+            return;
+        }
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (needCommit && executeBatch != null) {
             targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
@@ -308,7 +336,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 executeBatch = null;
             }
         } finally {
-            if (targetObject instanceof DBSDataManipulatorExt) {
+            if (!isPreview && targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
                     targetSession,
                     DBSManipulationType.INSERT,
@@ -332,7 +360,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         try {
-            useIsolatedConnection = settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
+            useIsolatedConnection = !isPreview && settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
             targetContext = useIsolatedConnection ?
                 DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer", null) : DBUtils.getDefaultContext(targetDB, false);
         } catch (DBException e) {
@@ -341,16 +369,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         targetSession.enableLogging(false);
 
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-        if (txnManager != null && txnManager.isSupportsTransactions()) {
-            oldAutoCommit = txnManager.isAutoCommit();
-            if (settings.isUseTransactions()) {
-                if (oldAutoCommit) {
-                    txnManager.setAutoCommit(monitor, false);
-                }
-            } else {
-                if (!oldAutoCommit) {
-                    txnManager.setAutoCommit(monitor, true);
+        if (!isPreview) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
+            if (txnManager != null && txnManager.isSupportsTransactions()) {
+                oldAutoCommit = txnManager.isAutoCommit();
+                if (settings.isUseTransactions()) {
+                    if (oldAutoCommit) {
+                        txnManager.setAutoCommit(monitor, false);
+                    }
+                } else {
+                    if (!oldAutoCommit) {
+                        txnManager.setAutoCommit(monitor, true);
+                    }
                 }
             }
         }
@@ -372,7 +402,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void closeExporter() {
-        if (targetSession != null && oldAutoCommit != null) {
+        if (!isPreview && targetSession != null && oldAutoCommit != null) {
             try {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
                 if (txnManager != null) {
@@ -411,7 +441,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             DBSObject dbObject = checkTargetContainer(monitor);
 
             boolean hasNewObjects = false;
-            if (containerMapping != null) {
+            if (!isPreview && containerMapping != null) {
                 DBSObjectContainer container = settings.getContainer();
                 if (container == null) {
                     throw new DBException("No target datasource - can't create target objects");
@@ -886,4 +916,26 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
+    private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
+        @Override
+        public void add(@NotNull Object[] attributeValues) throws DBCException {
+            previewRows.add(attributeValues);
+        }
+
+        @NotNull
+        @Override
+        public DBCStatistics execute(@NotNull DBCSession session) throws DBCException {
+            return new DBCStatistics();
+        }
+
+        @Override
+        public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+    }
 }
