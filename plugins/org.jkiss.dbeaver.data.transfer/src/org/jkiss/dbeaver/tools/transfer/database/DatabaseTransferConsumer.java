@@ -87,7 +87,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         public DatabaseMappingAttribute targetAttr;
         public DBDValueHandler sourceValueHandler;
         public DBDValueHandler targetValueHandler;
-        private int targetIndex = -1;
+        public int targetIndex = -1;
 
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
@@ -156,9 +156,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } else {
             rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
+        columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
-        targetAttributes = new ArrayList<>(rsAttributes.length);
-        List<ColumnMapping> colMaps = new ArrayList<>(rsAttributes.length);
+        targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.length; i++) {
             if (isSkipColumn(rsAttributes[i])) {
                 continue;
@@ -216,11 +216,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             columnMapping.targetValueHandler = DBUtils.findValueHandler(targetContext.getDataSource(), targetAttr);
             columnMapping.targetIndex = targetAttributes.size();
 
-            colMaps.add(columnMapping);
+            columnMappings[i] = columnMapping;
 
             targetAttributes.add(targetAttr);
         }
-        columnMappings = colMaps.toArray(new ColumnMapping[0]);
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
         if (!isPreview) {

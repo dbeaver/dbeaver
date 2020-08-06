@@ -175,10 +175,13 @@ class PreviewMappingDialog extends BaseDialog {
                 String[] strRow = new String[row.length];
                 for (int i = 0; i < columnMappings.length; i++) {
                     DatabaseTransferConsumer.ColumnMapping attr = columnMappings[i];
-                    Object srcValue = row[i];
+                    if (attr == null) {
+                        continue;
+                    }
+                    Object srcValue = row[attr.targetIndex];
                     Object value = attr.sourceValueHandler.getValueFromObject(session, attr.sourceAttr, srcValue, false, true);
                     String valueStr = attr.targetValueHandler.getValueDisplayString(attr.targetAttr.getTarget(), value, DBDDisplayFormat.UI);
-                    strRow[i] = valueStr;
+                    strRow[attr.targetIndex] = valueStr;
                 }
                 strRows.add(strRow);
             }
@@ -190,6 +193,9 @@ class PreviewMappingDialog extends BaseDialog {
                 column.dispose();
             }
             for (DatabaseTransferConsumer.ColumnMapping columnMapping : previewConsumer.getColumnMappings()) {
+                if (columnMapping == null) {
+                    continue;
+                }
                 TableColumn column = new TableColumn(previewTable, SWT.NONE);
                 column.setText(columnMapping.targetAttr.getTargetName());
                 column.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(columnMapping.targetAttr.getTarget())));
