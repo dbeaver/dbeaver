@@ -609,6 +609,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                 }
                 containerMapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create);
+                ((DatabaseMappingContainer) mapping).setTarget(null);
                 ((DatabaseMappingContainer) mapping).setTargetName(name);
             } else {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
