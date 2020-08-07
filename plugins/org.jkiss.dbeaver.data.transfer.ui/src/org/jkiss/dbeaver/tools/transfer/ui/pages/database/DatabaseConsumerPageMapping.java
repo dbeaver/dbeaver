@@ -905,6 +905,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
 
         {
+            // Load model. Update it only if mapping have different set of source columns
+            // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
             List<DatabaseMappingContainer> model = new ArrayList<>();
 
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
@@ -912,23 +914,28 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     continue;
                 }
                 DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-                DatabaseMappingContainer mapping = null;//settings.getDataMapping(sourceObject);
-                if (mapping == null) {
+                DatabaseMappingContainer mapping = settings.getDataMapping(sourceObject);
+                {
+                    DatabaseMappingContainer newMapping;
                     if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
                         try {
-                            mapping = new DatabaseMappingContainer(
+                            newMapping = new DatabaseMappingContainer(
                                 getWizard().getRunnableContext(),
                                 getDatabaseConsumerSettings(),
                                 sourceObject,
-                                ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject());
+                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
                         } catch (DBException e) {
                             setMessage(e.getMessage(), IMessageProvider.ERROR);
-                            mapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
+                            newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
                         }
                     } else {
-                        mapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
+                        newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
                     }
-                    settings.addDataMappings(getWizard().getRunnableContext(), sourceObject, mapping);
+                    newMapping.getAttributeMappings(getWizard().getRunnableContext());
+                    if (mapping == null || !mapping.isSameMapping(newMapping)) {
+                        mapping = newMapping;
+                        settings.addDataMappings(getWizard().getRunnableContext(), sourceObject, mapping);
+                    }
                 }
                 model.add(mapping);
             }
