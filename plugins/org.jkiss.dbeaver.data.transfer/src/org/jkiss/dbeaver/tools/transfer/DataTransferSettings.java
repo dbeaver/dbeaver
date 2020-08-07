@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,6 +50,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
 
     public static final int DEFAULT_THREADS_NUM = 1;
 
+    private final DataTransferState state;
     private List<DataTransferPipe> dataPipes;
 
     private DataTransferNodeDescriptor producer;
@@ -71,14 +75,16 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private boolean showFinalMessage = true;
 
     public DataTransferSettings(
-        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBRProgressMonitor monitor,
         @Nullable Collection<IDataTransferProducer> producers,
         @Nullable Collection<IDataTransferConsumer> consumers,
         @NotNull Map<String, Object> configuration,
+        @NotNull DataTransferState state,
         boolean selectDefaultNodes,
         boolean isExport) {
+        this.state = state;
         initializePipes(producers, consumers, isExport);
-        loadSettings(runnableContext, configuration);
+        loadSettings(monitor, configuration);
 
         if (!selectDefaultNodes) {
             // Now cleanup all nodes. We needed them only to load default producer/consumer settings
@@ -89,18 +95,24 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     public DataTransferSettings(
-        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBTTask task,
         @NotNull Log taskLog,
-        @NotNull Map<String, Object> configuration) {
+        @NotNull Map<String, Object> configuration,
+        @NotNull DataTransferState state) {
         this(
-            runnableContext,
-            getNodesFromLocation(runnableContext, task, taskLog, "producers", IDataTransferProducer.class),
-            getNodesFromLocation(runnableContext, task, taskLog, "consumers", IDataTransferConsumer.class),
+            monitor,
+            getNodesFromLocation(monitor, task, state, taskLog, "producers", IDataTransferProducer.class),
+            getNodesFromLocation(monitor, task, state, taskLog, "consumers", IDataTransferConsumer.class),
             getTaskOrSavedSettings(task, configuration),
+            state,
             !task.getProperties().isEmpty(),
             isExportTask(task)
         );
+    }
+
+    public DataTransferState getState() {
+        return state;
     }
 
     public static boolean isExportTask(DBTTask task) {
@@ -114,6 +126,16 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             return savedSettings;
         }
         return taskSettings;
+    }
+
+    public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
+        // Wait 1 minute maximum
+        RuntimeUtils.runTask(loader, "Load data transfer settings", 60000, false);
+        DataTransferSettings settings = loader.getResult();
+        if (settings == null) {
+            throw new DBException("Timeout while loading data transfer settings");
+        }
+        return settings;
     }
 
     private void initializePipes(@Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers, boolean isExport) {
@@ -193,7 +215,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
     }
 
-    public void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> config) {
+    public void loadSettings(DBRProgressMonitor monitor, Map<String, Object> config) {
         this.setMaxJobCount(CommonUtils.toInt(config.get("maxJobCount"), DataTransferSettings.DEFAULT_THREADS_NUM));
         this.setShowFinalMessage(CommonUtils.getBoolean(config.get("showFinalMessage"), this.isShowFinalMessage()));
 
@@ -303,6 +325,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         if (consumer != null) {
             nodeNames.put(consumer.getNodeClass().getSimpleName(), consumer);
         }
+
+        MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
         for (Map.Entry<String, DataTransferNodeDescriptor> node : nodeNames.entrySet()) {
             Map<String, Object> nodeSection = JSONUtils.getObject(config, node.getKey());
             IDataTransferSettings nodeSettings = this.getNodeSettings(node.getValue());
@@ -499,11 +523,12 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
     }
 
-    public static <T> List<T> getNodesFromLocation(@NotNull DBRRunnableContext runnableContext, DBTTask task, Log taskLog, String nodeType, Class<T> nodeClass) {
+    public static <T> List<T> getNodesFromLocation(@NotNull DBRProgressMonitor monitor, DBTTask task, DataTransferState state, Log taskLog, String nodeType, Class<T> nodeClass) {
         Map<String, Object> config = task.getProperties();
         List<T> result = new ArrayList<>();
         Object nodeList = config.get(nodeType);
         if (nodeList instanceof Collection) {
+            MonitorRunnableContext runnableContext = new MonitorRunnableContext(monitor);
             for (Object nodeObj : (Collection)nodeList) {
                 if (nodeObj instanceof Map) {
                     try {
@@ -512,10 +537,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                             result.add(nodeClass.cast(node));
                         }
                     } catch (DBCException e) {
-                        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                            DBWorkbench.getPlatformUI().showError(DTMessages.data_transfer_settings_title_configuration_error,
-                                    DTMessages.data_transfer_settings_message_error_reading_task_configuration, e);
-                        }
+                        state.addError(e);
                         taskLog.error(e);
                     }
                 }

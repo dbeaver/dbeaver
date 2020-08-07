@@ -894,7 +894,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
         }
 
-        settings.loadNode(getWizard().getRunnableContext(), producerContainer);
+        settings.loadNode(getWizard().getRunnableContext(), getWizard().getSettings(), producerContainer);
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
             try {
