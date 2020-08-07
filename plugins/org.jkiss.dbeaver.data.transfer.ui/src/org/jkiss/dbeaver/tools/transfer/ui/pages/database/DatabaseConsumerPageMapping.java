@@ -36,11 +36,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -766,7 +768,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         DBPDataSource dataSource = container.getDataSource();
 
-        final String[] ddl = new String[1];
+        final DBEPersistAction[][] ddl = new DBEPersistAction[1][];
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 monitor.beginTask(DTUIMessages.database_consumer_page_mapping_monitor_task, 1);
@@ -784,17 +786,19 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         } catch (InterruptedException e) {
             return;
         }
-        if (CommonUtils.isEmpty(ddl[0])) {
+        DBEPersistAction[] persistActions = ddl[0];
+        if (ArrayUtils.isEmpty(persistActions)) {
             UIUtils.showMessageBox(getShell(), "No schema changes", "No changes are needed for this mapping", SWT.ICON_INFORMATION);
             return;
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
+            String sql = SQLUtils.generateScript(dataSource, persistActions, false);
             int result = serviceSQL.openSQLViewer(
                 DBUtils.getDefaultContext(container, true),
                 DTUIMessages.database_consumer_page_mapping_sqlviewer_title,
                 null,
-                ddl[0],
+                sql,
                 true,
                 false);
             if (result == IDialogConstants.PROCEED_ID) {
