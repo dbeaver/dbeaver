@@ -65,6 +65,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         // Set utf-8 as default charset
         connectionsProps.put("characterEncoding", GeneralUtils.UTF8_ENCODING);
         connectionsProps.put("tinyInt1isBit", "false");
+        // Tell MySQL to use the (typically longer) interactive_timeout variable as the connection timeout
+        // instead of wait_timeout.
+        // This longer timeout is for connections directly in use by a human, who'd prefer MySQL not 
+        // kill their connection while they were on a coffee break.
+        connectionsProps.put("interactiveClient", "true");
         // Auth plugins
 //        connectionsProps.put("authenticationPlugins",
 //            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
