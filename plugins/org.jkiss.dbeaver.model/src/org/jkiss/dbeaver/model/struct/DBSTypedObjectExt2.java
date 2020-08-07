@@ -19,12 +19,20 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * DBSTypedObjectEditor2
+ * DBSTypedObjectExt2
  */
-public interface DBSTypedObjectEditor2 extends DBPObject {
+public interface DBSTypedObjectExt2 extends DBPObject {
     /**
-     * Database specific full type name (with modifiers). E.g. VARCHAR(120) or NUMBER(20,3)
+     * Database specific type name
      */
-    void setFullTypeName(String typeName);
+    void setTypeName(String typeName);
+
+    void setMaxLength(long maxLength);
+
+    void setScale(Integer scale);
+
+    void setPrecision(Integer precision);
+
+    void setRequired(boolean required);
 
 }

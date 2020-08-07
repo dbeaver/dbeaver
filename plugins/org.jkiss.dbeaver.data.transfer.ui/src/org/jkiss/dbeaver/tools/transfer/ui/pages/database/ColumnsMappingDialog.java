@@ -58,7 +58,7 @@ import java.util.Set;
 /**
  * ColumnsMappingDialog
  */
-public class ColumnsMappingDialog extends BaseDialog {
+class ColumnsMappingDialog extends BaseDialog {
 
     private final DatabaseConsumerSettings settings;
     private final DatabaseMappingContainer mapping;
@@ -66,7 +66,7 @@ public class ColumnsMappingDialog extends BaseDialog {
     private TableViewer mappingViewer;
     private Font boldFont;
 
-    public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping)
+    ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping)
     {
         super(wizard.getShell(), DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName(), null);
         this.settings = settings;
@@ -264,7 +264,7 @@ public class ColumnsMappingDialog extends BaseDialog {
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                     DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
-                    cell.setText(attrMapping.getTargetType(dataSource));
+                    cell.setText(attrMapping.getTargetType(dataSource, true));
                     cell.setFont(boldFont);
                 }
             });
@@ -283,9 +283,9 @@ public class ColumnsMappingDialog extends BaseDialog {
                             types.add(type.getName());
                         }
                     }
-                    types.add(attrMapping.getTargetType(dataSource));
+                    types.add(attrMapping.getTargetType(dataSource, true));
 
-                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[types.size()]), SWT.BORDER);
+                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[0]), SWT.BORDER);
                 }
                 @Override
                 protected boolean canEdit(Object element)
@@ -296,7 +296,7 @@ public class ColumnsMappingDialog extends BaseDialog {
                 protected Object getValue(Object element)
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
-                    return attrMapping.getTargetType(settings.getTargetDataSource(attrMapping));
+                    return attrMapping.getTargetType(settings.getTargetDataSource(attrMapping), true);
                 }
                 @Override
                 protected void setValue(Object element, Object value)

@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -53,8 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class PreviewMappingDialog extends BaseProgressDialog {
-
-    private static final Log log = Log.getLog(PreviewMappingDialog.class);
 
     private static final int previewRowCount = 100;
     private static final String DIALOG_ID = "DBeaver.DataTransfer.PreviewMappingDialog";
@@ -111,7 +108,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
         return main;
     }
 
-    public void loadTransferPreview() {
+    private void loadTransferPreview() {
         Throwable error = null;
         try {
             this.run(true, true, monitor -> {
@@ -186,8 +183,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
             DatabaseTransferConsumer.ColumnMapping[] columnMappings = previewConsumer.getColumnMappings();
             for (Object[] row : rows) {
                 String[] strRow = new String[row.length];
-                for (int i = 0; i < columnMappings.length; i++) {
-                    DatabaseTransferConsumer.ColumnMapping attr = columnMappings[i];
+                for (DatabaseTransferConsumer.ColumnMapping attr : columnMappings) {
                     if (attr == null) {
                         continue;
                     }
