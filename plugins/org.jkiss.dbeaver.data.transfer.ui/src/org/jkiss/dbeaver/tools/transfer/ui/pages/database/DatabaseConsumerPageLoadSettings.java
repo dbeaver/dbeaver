@@ -17,11 +17,9 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -47,12 +45,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         final DatabaseConsumerSettings settings = getSettings();
 

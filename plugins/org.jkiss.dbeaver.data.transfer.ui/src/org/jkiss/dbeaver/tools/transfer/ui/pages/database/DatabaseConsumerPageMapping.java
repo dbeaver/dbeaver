@@ -102,7 +102,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
 
         Composite composite = UIUtils.createComposite(parent, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             // Target container

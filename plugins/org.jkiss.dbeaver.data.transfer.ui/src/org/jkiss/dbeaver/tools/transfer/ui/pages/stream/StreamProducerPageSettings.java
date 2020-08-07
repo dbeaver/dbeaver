@@ -77,7 +77,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         initializeDialogUnits(parent);
 
         SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
-        settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Composite inputFilesGroup = UIUtils.createControlGroup(settingsDivider, DTMessages.data_transfer_wizard_settings_group_input_files, 1, GridData.FILL_BOTH, 0);
