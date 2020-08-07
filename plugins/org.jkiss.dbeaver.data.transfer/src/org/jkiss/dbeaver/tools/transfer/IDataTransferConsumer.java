@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,4 +58,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      */
     void finishTransfer(DBRProgressMonitor monitor, boolean last);
 
+    // If not null then this consumer is a fake one which must be replaced by explicit target consumers on configuration stage
+    @Nullable
+    Object getTargetObjectContainer();
 }

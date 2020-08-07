@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -44,6 +46,10 @@ public class DataImportHandler extends DataTransferHandler {
             if (file != null) {
                 return getNodeByFile(file);
             }
+            final DBSObjectContainer objectContainer = RuntimeUtils.getObjectAdapter(object, DBSObjectContainer.class);
+            if (objectContainer != null && DataTransferPropertyTester.isObjectContainerSupportsImport(objectContainer)) {
+                return new DatabaseTransferConsumer(objectContainer);
+            }
             return null;
         }
     }
@@ -51,7 +57,9 @@ public class DataImportHandler extends DataTransferHandler {
     private IDataTransferNode getNodeByFile(IFile file) {
         DataTransferProcessorDescriptor processor = getProcessorByFile(file);
         if (processor != null) {
-            return new StreamTransferProducer(file.getFullPath().toFile(), processor);
+            return new StreamTransferProducer(
+                new StreamEntityMapping(file.getFullPath().toFile()),
+                processor);
         }
         return null;
     }

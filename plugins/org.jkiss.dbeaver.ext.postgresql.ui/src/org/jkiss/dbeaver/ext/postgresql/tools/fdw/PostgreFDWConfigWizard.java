@@ -330,7 +330,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                     if (catalogSchema != null) {
                         catalogSchema.getDataTypes(monitor);
                     }
-                    String defTypeName = DBStructUtils.mapTargetDataType(database, attr);
+                    String defTypeName = DBStructUtils.mapTargetDataType(database, attr, true);
                     String plainTargetTypeName = SQLUtils.stripColumnTypeModifiers(defTypeName);
                     PostgreDataType dataType = database.getDataType(monitor, plainTargetTypeName);
                     if (dataType == null) {

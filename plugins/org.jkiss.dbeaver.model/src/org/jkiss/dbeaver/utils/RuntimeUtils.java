@@ -200,13 +200,17 @@ public class RuntimeUtils {
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask(getName(), 1);
                 try {
+                    monitor.subTask("Execute task");
                     monitoringTask.run(monitor);
                 } catch (InvocationTargetException e) {
                     log.error(getName() + " - error", e.getTargetException());
                     return Status.OK_STATUS;
                 } catch (InterruptedException e) {
                     // do nothing
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }
@@ -221,8 +225,9 @@ public class RuntimeUtils {
                 break;
             }
             try {
-                Thread.sleep(50);
-                DBWorkbench.getPlatformUI().readAndDispatchEvents();
+                if (!DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                    Thread.sleep(50);
+                }
             } catch (InterruptedException e) {
                 log.debug("Task '" + taskName + "' was interrupted");
                 break;
