@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -807,10 +809,31 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     "Create target objects",
                     "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
                     // Create target objects
-                    //autoAssignMappings();
+                    if (applySchemaChanges(dataSource, persistActions)) {
+                        autoAssignMappings();
+                    }
                 }
             }
         }
+    }
+
+    private boolean applySchemaChanges(DBPDataSource dataSource, DBEPersistAction[] persistActions) {
+        try {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Apply schema changes")) {
+                    DatabaseTransferConsumer.executeDDL(session, persistActions);
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+            return true;
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Schema changes save",
+                "Error applying schema changes", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        return false;
     }
 
     private void showPreview(DatabaseMappingContainer mappingContainer) {

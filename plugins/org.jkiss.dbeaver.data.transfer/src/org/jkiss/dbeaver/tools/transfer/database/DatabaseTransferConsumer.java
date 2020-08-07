@@ -621,6 +621,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
 
+        List<DBEPersistAction> actions = new ArrayList<>();
+
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             sql.append("CREATE TABLE ");
             if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
@@ -663,14 +665,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
             }
             sql.append(")");
+            actions.add(new SQLDatabasePersistAction("Table DDL", sql.toString()));
         } else {
             for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                 if (attr.getMappingType() == DatabaseMappingType.create) {
-                    sql.append(generateTargetAttributeDDL(dataSource, attr)).append(";\n");
+                    actions.add(generateTargetAttributeDDL(dataSource, attr));
                 }
             }
         }
-        return new DBEPersistAction[]{new SQLDatabasePersistAction("Table DDL", sql.toString())};
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) {
@@ -746,19 +749,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
         try {
-            executeDDL(session, generateTargetAttributeDDL(session.getDataSource(), attribute));
+            executeDDL(session, new DBEPersistAction[] { generateTargetAttributeDDL(session.getDataSource(), attribute) } );
         } catch (DBCException e) {
             throw new DBCException("Can't create target column", e);
         }
     }
 
     @NotNull
-    private static DBEPersistAction[] generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
+    private static DBEPersistAction generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
             .append(" ADD ");
         appendAttributeClause(dataSource, sql, attribute);
-        return new DBEPersistAction[] { new SQLDatabasePersistAction(sql.toString()) };
+        return new SQLDatabasePersistAction(sql.toString());
     }
 
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
