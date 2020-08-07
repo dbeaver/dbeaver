@@ -289,7 +289,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             updated = true;
                         }
                         if (updated) {
-                            mappingViewer.refresh();
+                            updateMappingsAndButtons();
                             updatePageCompletion();
                             if (element instanceof DatabaseMappingContainer) {
                                 // Select next container
@@ -635,7 +635,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 attrMapping.setMappingType(DatabaseMappingType.create);
                 attrMapping.setTargetName(name);
             }
-            mappingViewer.refresh();
+            updateMappingsAndButtons();
         }
     }
 
@@ -653,7 +653,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 }
             }
         }
-        mappingViewer.refresh();
+        updateMappingsAndButtons();
         updatePageCompletion();
     }
 
@@ -706,11 +706,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_error_mapping_table,
                             DTUIMessages.database_consumer_page_mapping_message_error_mapping_existing_table, e);
                 }
-                mappingViewer.refresh();
-                mappingViewer.setSelection(mappingViewer.getSelection());
+                updateMappingsAndButtons();
                 updatePageCompletion();
             }
         }
+    }
+
+    private void updateMappingsAndButtons() {
+        mappingViewer.refresh();
+        mappingViewer.setSelection(mappingViewer.getSelection());
     }
 
     private void mapNewTable(DatabaseMappingContainer mapping)
@@ -723,8 +727,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             try {
                 mapping.setTargetName(tableName);
                 mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create);
-                mappingViewer.refresh();
-                mappingViewer.setSelection(mappingViewer.getSelection());
+                updateMappingsAndButtons();
                 updatePageCompletion();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
@@ -787,12 +790,22 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
-            serviceSQL.openSQLViewer(
+            int result = serviceSQL.openSQLViewer(
                 DBUtils.getDefaultContext(container, true),
                 DTUIMessages.database_consumer_page_mapping_sqlviewer_title,
                 null,
                 ddl[0],
-                false, false);
+                true,
+                false);
+            if (result == IDialogConstants.PROCEED_ID) {
+                if (UIUtils.confirmAction(
+                    getShell(),
+                    "Create target objects",
+                    "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
+                    // Create target objects
+                    //autoAssignMappings();
+                }
+            }
         }
     }
 

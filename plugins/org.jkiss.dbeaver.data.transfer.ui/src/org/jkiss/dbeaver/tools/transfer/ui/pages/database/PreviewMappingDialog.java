@@ -45,13 +45,13 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.BaseProgressDialog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-class PreviewMappingDialog extends BaseDialog {
+class PreviewMappingDialog extends BaseProgressDialog {
 
     private static final Log log = Log.getLog(PreviewMappingDialog.class);
 
@@ -113,7 +113,7 @@ class PreviewMappingDialog extends BaseDialog {
     public void loadTransferPreview() {
         Throwable error = null;
         try {
-            UIUtils.runInProgressDialog(monitor -> {
+            this.run(true, true, monitor -> {
                 monitor.beginTask("Load preview", 1);
                 try {
                     // Load preview
@@ -129,6 +129,8 @@ class PreviewMappingDialog extends BaseDialog {
             });
         } catch (InvocationTargetException e) {
             error = e.getTargetException();
+        } catch (InterruptedException e) {
+            // Ignore
         }
 
         Throwable finalError = error;
