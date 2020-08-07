@@ -149,6 +149,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
         pipe.setProducer(producer);
 
+/*
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 producerSettings.updateProducerSettingsFromStream(
@@ -162,6 +163,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         } catch (InterruptedException e) {
             // ignore
         }
+*/
         reloadPipes();
         updatePageCompletion();
         return true;
@@ -187,10 +189,12 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                         singlePipe.initPipe(dtSettings, newPipes.size(), newPipes.size());
                         newPipes.add(singlePipe);
 
+/*
                         producerSettings.updateProducerSettingsFromStream(
                             monitor,
                             producer,
                             dtSettings);
+*/
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }

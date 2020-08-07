@@ -290,6 +290,21 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         }
     }
 
+    public boolean isSameMapping(DatabaseMappingContainer mapping) {
+        if (!CommonUtils.equalObjects(source, mapping.source) ||
+            attributeMappings.size() != mapping.attributeMappings.size()) {
+            return false;
+        }
+        for (int i = 0; i < attributeMappings.size(); i++) {
+            if (!CommonUtils.equalObjects(
+                attributeMappings.get(i).getSource().getName(),
+                mapping.attributeMappings.get(i).getSource().getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private class MetadataReceiver implements DBDDataReceiver {
 
         private DBDAttributeBinding[] attributes;
