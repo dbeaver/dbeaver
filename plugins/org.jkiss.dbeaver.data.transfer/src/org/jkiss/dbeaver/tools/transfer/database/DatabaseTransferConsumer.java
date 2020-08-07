@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -454,7 +457,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             DBSObject dbObject = checkTargetContainer(monitor);
 
-            boolean hasNewObjects = false;
             if (!isPreview && containerMapping != null) {
                 DBSObjectContainer container = settings.getContainer();
                 if (container == null) {
@@ -462,86 +464,96 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
                 targetObject = containerMapping.getTarget();
 
-                try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
-                    // We may need to change active catalog to create target object in the proper location
-                    DBSCatalog oldCatalog = null;
-                    DBSSchema oldSchema = null;
-                    DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
-                    if (catalog != null) {
-                        DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
-                        if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
-                            oldCatalog = contextDefaults.getDefaultCatalog();
-                            try {
-                                contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
-                            } catch (DBCException e) {
-                                log.debug(e);
-                            }
-                        }
-                    }
-                    try {
-                        switch (containerMapping.getMappingType()) {
-                            case create:
-                                createTargetTable(session, containerMapping);
-                                hasNewObjects = true;
-                                break;
-                            case existing:
-                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                    if (attr.getMappingType() == DatabaseMappingType.create) {
-                                        createTargetAttribute(session, attr);
-                                        hasNewObjects = true;
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    finally {
-                        if (oldCatalog != null) {
-                            // Revert to old catalog
-                            try {
-                                session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
-                            } catch (DBCException e) {
-                                log.debug(e);
-                            }
-                        }
-                    }
-                }
+                boolean hasNewObjects = createTargetDatabaseObjects(monitor, dbObject);
 
                 if (hasNewObjects) {
-                    if (!USE_STRUCT_DDL) {
-                        monitor.subTask("Refresh navigator model");
-                        settings.getContainerNode().refreshNode(monitor, this);
-                    }
-
-                    // Reflect database changes in mappings
-                    {
-                        switch (containerMapping.getMappingType()) {
-                            case create:
-                                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
-                                if (newTarget == null) {
-                                    throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                                } else if (!(newTarget instanceof DBSDataManipulator)) {
-                                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
-                                }
-                                containerMapping.setTarget((DBSDataManipulator) newTarget);
-                                containerMapping.setMappingType(DatabaseMappingType.existing);
-                                targetObject = (DBSDataManipulator) newTarget;
-                                // ! Fall down is ok here
-                            case existing:
-                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                    if (attr.getMappingType() == DatabaseMappingType.create) {
-                                        attr.updateMappingType(monitor);
-                                        if (attr.getTarget() == null) {
-                                            log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                    }
+                    refreshDatabaseModel(monitor, container);
                 }
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private boolean createTargetDatabaseObjects(DBRProgressMonitor monitor, DBSObject dbObject) throws DBException {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
+            // We may need to change active catalog to create target object in the proper location
+            DBSCatalog oldCatalog = null;
+            DBSSchema oldSchema = null;
+            DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
+            if (catalog != null) {
+                DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
+                if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
+                    oldCatalog = contextDefaults.getDefaultCatalog();
+                    try {
+                        contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+            try {
+                switch (containerMapping.getMappingType()) {
+                    case create:
+                        createTargetTable(session, containerMapping);
+                        return true;
+                    case existing:
+                        boolean hasNewObjects = false;
+                        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                            if (attr.getMappingType() == DatabaseMappingType.create) {
+                                createTargetAttribute(session, attr);
+                                hasNewObjects = true;
+                            }
+                        }
+                        return hasNewObjects;
+                    default:
+                        return false;
+                }
+            }
+            finally {
+                if (oldCatalog != null) {
+                    // Revert to old catalog
+                    try {
+                        session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+        }
+    }
+
+    private void refreshDatabaseModel(DBRProgressMonitor monitor, DBSObjectContainer container) throws DBException {
+        if (!USE_STRUCT_DDL) {
+            monitor.subTask("Refresh navigator model");
+            settings.getContainerNode().refreshNode(monitor, this);
+        }
+
+        // Reflect database changes in mappings
+        {
+            switch (containerMapping.getMappingType()) {
+                case create:
+                    DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
+                    if (newTarget == null) {
+                        throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
+                    } else if (!(newTarget instanceof DBSDataManipulator)) {
+                        throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
+                    }
+                    containerMapping.setTarget((DBSDataManipulator) newTarget);
+                    containerMapping.setMappingType(DatabaseMappingType.existing);
+                    targetObject = (DBSDataManipulator) newTarget;
+                    // ! Fall down is ok here
+                case existing:
+                    for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                        if (attr.getMappingType() == DatabaseMappingType.create) {
+                            attr.updateMappingType(monitor);
+                            if (attr.getTarget() == null) {
+                                log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
+                            }
+                        }
+                    }
+                    break;
+            }
         }
     }
 
@@ -572,9 +584,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         SQLObjectEditor tableManager = editorsRegistry.getObjectManager(tableClass, SQLObjectEditor.class);
         if (tableManager == null) {
             throw new DBException("Entity manager not found for '" + tableClass.getName() + "'");
-        }
-        if (!(tableManager instanceof DBEObjectMaker)) {
-            throw new DBException("New target entity create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
         }
         DBECommandContext commandContext = new TargetCommandContext(executionContext);
         Map<String, Object> options = new HashMap<>();

@@ -163,17 +163,22 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_auto_assign,
+                UIIcon.ASTERISK,
+                "Auto-assign table and column mappings",
                 new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    autoAssignMappings();
-                }
-            });
-            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        autoAssignMappings();
+                    }
+                });
+
+            UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
             final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_existing_table,
+                DBIcon.TREE_TABLE,
+                "Select target table",
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -181,11 +186,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         mapExistingTable((DatabaseMappingContainer) getSelectedMapping());
                     }
                 });
-            mapTableButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             mapTableButton.setEnabled(false);
 
             final Button createNewButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_new_table,
+                DBIcon.TREE_VIEW,
+                "Set target table name",
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -193,11 +199,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         mapNewTable((DatabaseMappingContainer) getSelectedMapping());
                     }
                 });
-            createNewButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_VIEW));
             createNewButton.setEnabled(false);
 
             final Button columnsButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_column_mappings,
+                DBIcon.TREE_COLUMNS,
+                "Configure column mappings (advanced)",
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -208,11 +215,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             ((DatabaseMappingAttribute)selectedMapping).getParent());
                     }
                 });
-            columnsButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMNS));
             columnsButton.setEnabled(false);
+
+            UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
             final Button ddlButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_ddl,
+                UIIcon.SQL_TEXT,
+                "View target DDL (if any new tables or columns must be created)",
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -223,11 +233,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             ((DatabaseMappingAttribute)selectedMapping).getParent());
                     }
                 });
-            ddlButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
             ddlButton.setEnabled(false);
 
             final Button previewButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_wizard_page_preview_name.replace("P", "&P"),
+                UIIcon.SQL_PREVIEW,
+                DTMessages.data_transfer_wizard_page_preview_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -238,8 +249,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             ((DatabaseMappingAttribute)selectedMapping).getParent());
                     }
                 });
-            previewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PREVIEW));
-            previewButton.setToolTipText(DTMessages.data_transfer_wizard_page_preview_description);
             previewButton.setEnabled(false);
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
@@ -273,7 +282,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                     attribute.updateMappingType(new VoidProgressMonitor());
                                 } else if (element instanceof DatabaseMappingContainer) {
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
-                                    setMappingTarget(container, container.getSource().getName());
+                                    setMappingTarget(container, container.getTargetName());
                                 }
                                 selectNextColumn(item);
                             }
@@ -636,7 +645,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (element instanceof DatabaseMappingContainer) {
                 DatabaseMappingContainer container = (DatabaseMappingContainer) element;
                 try {
-                    setMappingTarget(container, container.getSource().getName());
+                    setMappingTarget(container, container.getTargetName());
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,
                     NLS.bind(DTUIMessages.database_consumer_page_mapping_message_error_auto_mapping_source_table, container.getSource().getName()),
@@ -698,6 +707,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             DTUIMessages.database_consumer_page_mapping_message_error_mapping_existing_table, e);
                 }
                 mappingViewer.refresh();
+                mappingViewer.setSelection(mappingViewer.getSelection());
                 updatePageCompletion();
             }
         }
@@ -714,6 +724,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 mapping.setTargetName(tableName);
                 mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.create);
                 mappingViewer.refresh();
+                mappingViewer.setSelection(mappingViewer.getSelection());
                 updatePageCompletion();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(DTUIMessages.database_consumer_page_mapping_title_mapping_error,

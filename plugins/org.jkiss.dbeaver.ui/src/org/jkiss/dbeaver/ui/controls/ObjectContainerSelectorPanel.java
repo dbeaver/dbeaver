@@ -135,13 +135,15 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                     new Class[]{DBSObjectContainer.class},
                     new Class[] { DBSObjectContainer.class },
                     new Class[]{ DBSSchema.class });
-                try {
-                    checkValidContainerNode(node);
-                    setSelectedNode((DBNDatabaseNode) node);
-                    addNodeToHistory((DBNDatabaseNode) node);
-                    saveHistory();
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Bad container node", "Node '" + node.getName() + "' cannot be selected as table container", e);
+                if (node != null) {
+                    try {
+                        checkValidContainerNode(node);
+                        setSelectedNode((DBNDatabaseNode) node);
+                        addNodeToHistory((DBNDatabaseNode) node);
+                        saveHistory();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Bad container node", "Node '" + node.getName() + "' cannot be selected as table container", e);
+                    }
                 }
             }
         };
