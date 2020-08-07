@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,7 +33,7 @@ import java.util.*;
 /**
  * Virtual attribute
  */
-public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, DBPImageProvider
+public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, DBPImageProvider, DBSTypedObjectExt2
 {
     private final DBVEntity entity;
     private final DBVEntityAttribute parent;
@@ -45,6 +46,9 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
     private String expression;
     private DBPDataKind dataKind = DBPDataKind.UNKNOWN;
     private String typeName;
+    private long maxLength = -1;
+    private Integer precision;
+    private Integer scale;
 
     private DBVTransformSettings transformSettings;
     private Map<String, Object> properties;
@@ -175,17 +179,32 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
 
     @Override
     public Integer getScale() {
-        return -1;
+        return this.scale;
+    }
+
+    @Override
+    public void setScale(Integer scale) {
+        this.scale = scale;
     }
 
     @Override
     public Integer getPrecision() {
-        return -1;
+        return this.precision;
+    }
+
+    @Override
+    public void setPrecision(Integer precision) {
+        this.precision = precision;
     }
 
     @Override
     public long getMaxLength() {
-        return -1;
+        return this.maxLength;
+    }
+
+    @Override
+    public void setMaxLength(long maxLength) {
+        this.maxLength = maxLength;
     }
 
     @Override
@@ -201,6 +220,11 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
     @Override
     public boolean isRequired() {
         return false;
+    }
+
+    @Override
+    public void setRequired(boolean required) {
+
     }
 
     @Override
