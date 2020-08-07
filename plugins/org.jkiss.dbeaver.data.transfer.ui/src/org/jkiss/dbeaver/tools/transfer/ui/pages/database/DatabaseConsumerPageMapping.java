@@ -912,7 +912,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     continue;
                 }
                 DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-                DatabaseMappingContainer mapping = settings.getDataMapping(sourceObject);
+                DatabaseMappingContainer mapping = null;//settings.getDataMapping(sourceObject);
                 if (mapping == null) {
                     if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
                         try {
