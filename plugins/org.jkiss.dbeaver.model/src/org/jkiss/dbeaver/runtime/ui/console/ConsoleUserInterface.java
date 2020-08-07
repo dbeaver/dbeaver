@@ -204,7 +204,8 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void readAndDispatchEvents() {
+    public boolean readAndDispatchEvents() {
 
+        return false;
     }
 }

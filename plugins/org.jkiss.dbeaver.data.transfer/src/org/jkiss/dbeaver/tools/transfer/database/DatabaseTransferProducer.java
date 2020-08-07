@@ -88,7 +88,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public String getObjectName() {
-        return dataContainer == null ? null : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        return dataContainer == null ? "?" : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override
@@ -322,6 +322,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             case "entity": {
                                 String id = CommonUtils.toString(state.get("entityId"));
                                 producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                if (producer.dataContainer == null) {
+                                    throw new DBException("Can't find database object '" + id + "'");
+                                }
                                 break;
                             }
                             case "query": {
@@ -329,8 +332,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 String queryText = CommonUtils.toString(state.get("query"));
                                 DBPDataSourceContainer ds = project.getDataSourceRegistry().getDataSource(dsId);
                                 if (ds == null) {
-                                    log.debug("Can't find datasource "+ dsId);
-                                    return;
+                                    throw new DBCException("Can't find datasource "+ dsId);
                                 }
                                 if (!ds.isConnected()) {
                                     ds.connect(monitor, true, true);

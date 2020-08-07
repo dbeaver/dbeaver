@@ -191,7 +191,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             checkContainerConnection(runnableContext);
         }
 
-        loadNode(runnableContext, null);
+        loadNode(runnableContext, dataTransferSettings, null);
 
         // Load mapping for current objects
         Map<String, Object> mappings = (Map<String, Object>) settings.get("mappings");
@@ -289,7 +289,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
     }
 
-    public void loadNode(DBRRunnableContext runnableContext, @Nullable DBSObjectContainer producerContainer) {
+    public void loadNode(DBRRunnableContext runnableContext, DataTransferSettings settings, @Nullable DBSObjectContainer producerContainer) {
         if (containerNode == null && (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null)) {
             if (!CommonUtils.isEmpty(containerNodePath) || producerContainer != null) {
                 try {
@@ -312,6 +312,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     });
                     checkContainerConnection(runnableContext);
                 } catch (InvocationTargetException e) {
+                    settings.getState().addError(e.getTargetException());
                     log.error("Error getting container node", e.getTargetException());
                 } catch (InterruptedException e) {
                     // ignore

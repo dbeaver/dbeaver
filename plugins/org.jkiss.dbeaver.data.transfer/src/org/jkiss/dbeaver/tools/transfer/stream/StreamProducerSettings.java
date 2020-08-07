@@ -108,6 +108,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
                     sdi.dispose();
                 }
             } catch (Exception e) {
+                dataTransferSettings.getState().addError(e);
                 log.error("IO error while reading columns from stream", e);
             }
         }

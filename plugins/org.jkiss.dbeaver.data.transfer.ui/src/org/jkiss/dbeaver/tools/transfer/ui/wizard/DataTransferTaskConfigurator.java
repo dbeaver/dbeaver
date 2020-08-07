@@ -80,7 +80,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new DataTransferWizard(UIUtils.getDefaultRunnableContext(), taskConfiguration);
+        return DataTransferWizard.openWizard(taskConfiguration);
     }
 
     private static class ConfigPanel implements DBTTaskConfigPanel {
