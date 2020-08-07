@@ -305,11 +305,29 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     public void deactivatePage() {
         Map<String, Object> processorProperties = propertySource.getPropertiesWithDefaults();
-        getWizard().getSettings().setProcessorProperties(processorProperties);
+        DataTransferSettings dtSettings = getWizard().getSettings();
+        dtSettings.setProcessorProperties(processorProperties);
 
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         if (producerSettings != null) {
             producerSettings.setProcessorProperties(processorProperties);
+        }
+
+        try {
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                for (DataTransferPipe pipe : dtSettings.getDataPipes()) {
+                    if (pipe.getProducer() instanceof StreamTransferProducer) {
+                        producerSettings.updateProducerSettingsFromStream(
+                            monitor,
+                            (StreamTransferProducer) pipe.getProducer(),
+                            dtSettings);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error updating stream settings", "Error updating settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
         }
 
         super.deactivatePage();

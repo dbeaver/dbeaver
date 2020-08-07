@@ -774,7 +774,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 monitor.beginTask(DTUIMessages.database_consumer_page_mapping_monitor_task, 1);
                 try {
                     DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-                    ddl[0] = DatabaseTransferConsumer.generateTargetTableDDL(monitor, executionContext, container, mapping);
+                    ddl[0] = DatabaseTransferUtils.generateTargetTableDDL(monitor, executionContext, container, mapping);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -821,11 +821,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 monitor.beginTask("Save schema changes in the database", 1);
                 try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Apply schema changes")) {
-                    DatabaseTransferConsumer.executeDDL(session, persistActions);
+                    DatabaseTransferUtils.executeDDL(session, persistActions);
 
                     DatabaseConsumerSettings consumerSettings = getDatabaseConsumerSettings();
                     if (consumerSettings != null) {
-                        DatabaseTransferConsumer.refreshDatabaseModel(monitor, consumerSettings, mapping);
+                        DatabaseTransferUtils.refreshDatabaseModel(monitor, consumerSettings, mapping);
                     }
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
