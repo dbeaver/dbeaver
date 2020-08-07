@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -47,12 +47,7 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         setControl(composite);
     }
@@ -88,7 +83,10 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
             producerSettingsPage.setWizard(getWizard());
             Composite producerGroup = UIUtils.createPlaceholder(settingsComposite, 1);
             UIUtils.createInfoLabel(producerGroup, producerSettingsPage.getTitle());
-            producerSettingsPage.createControl(producerGroup);
+            Composite settingPanel = new Composite(producerGroup, SWT.NONE);
+            settingPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            settingPanel.setLayout(new FillLayout());
+            producerSettingsPage.createControl(settingPanel);
             if (producerSettingsPage instanceof ActiveWizardPage) {
                 ((ActiveWizardPage) producerSettingsPage).activatePage();
             }
@@ -98,7 +96,10 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
             consumerSettingsPage.setWizard(getWizard());
             Composite consumerGroup = UIUtils.createPlaceholder(settingsComposite, 1);
             UIUtils.createInfoLabel(consumerGroup, consumerSettingsPage.getTitle());
-            consumerSettingsPage.createControl(consumerGroup);
+            Composite settingPanel = new Composite(consumerGroup, SWT.NONE);
+            settingPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            settingPanel.setLayout(new FillLayout());
+            consumerSettingsPage.createControl(settingPanel);
             if (consumerSettingsPage instanceof ActiveWizardPage) {
                 ((ActiveWizardPage) consumerSettingsPage).activatePage();
             }

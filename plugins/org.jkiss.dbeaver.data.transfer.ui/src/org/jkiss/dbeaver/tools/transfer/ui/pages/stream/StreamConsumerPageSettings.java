@@ -72,7 +72,6 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         initializeDialogUnits(parent);
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
         Composite composite = UIUtils.createComposite(parent, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             Composite generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.FILL_HORIZONTAL, 0);
