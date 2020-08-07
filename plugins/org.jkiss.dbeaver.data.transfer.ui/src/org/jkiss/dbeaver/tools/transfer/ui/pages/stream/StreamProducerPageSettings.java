@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -145,11 +146,9 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     private boolean updateSingleConsumer(DataTransferPipe pipe, File file) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
-
         StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
         pipe.setProducer(producer);
 
-/*
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 producerSettings.updateProducerSettingsFromStream(
@@ -163,7 +162,19 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         } catch (InterruptedException e) {
             // ignore
         }
-*/
+        IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
+        if (consumerSettings instanceof DatabaseConsumerSettings) {
+            DatabaseMappingContainer mapping = new DatabaseMappingContainer((DatabaseConsumerSettings) consumerSettings, producer.getDatabaseObject());
+            if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator) {
+                mapping.setTarget((DBSDataManipulator) pipe.getConsumer().getDatabaseObject());
+            } else {
+                mapping.setTarget(null);
+                mapping.setTargetName(generateTableName(producer.getInputFile()));
+            }
+
+            ((DatabaseConsumerSettings) consumerSettings).addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
+        }
+
         reloadPipes();
         updatePageCompletion();
         return true;
@@ -171,7 +182,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     private boolean updateMultiConsumers(DataTransferPipe pipe, File[] files) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
-
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 IDataTransferConsumer originalConsumer = pipe.getConsumer();
@@ -188,21 +198,21 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                     try {
                         singlePipe.initPipe(dtSettings, newPipes.size(), newPipes.size());
                         newPipes.add(singlePipe);
-
-/*
-                        producerSettings.updateProducerSettingsFromStream(
-                            monitor,
-                            producer,
-                            dtSettings);
-*/
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
+                    producerSettings.updateProducerSettingsFromStream(
+                        monitor,
+                        producer,
+                        dtSettings);
+
                     IDataTransferSettings consumerSettings = dtSettings.getNodeSettings(dtSettings.getConsumer());
                     if (consumerSettings instanceof DatabaseConsumerSettings) {
                         DatabaseConsumerSettings dcs = (DatabaseConsumerSettings) consumerSettings;
                         DatabaseMappingContainer mapping = new DatabaseMappingContainer(dcs, producer.getDatabaseObject());
-                        mapping.setTargetName(generateTableName(file));
+                        //mapping.setTarget(null);
+                        mapping.setTargetName(generateTableName(producer.getInputFile()));
+
                         dcs.addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
 
                         if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObject) {
@@ -316,15 +326,25 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         if (producerSettings != null) {
             producerSettings.setProcessorProperties(processorProperties);
         }
+        IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
 
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 for (DataTransferPipe pipe : dtSettings.getDataPipes()) {
                     if (pipe.getProducer() instanceof StreamTransferProducer) {
+                        StreamTransferProducer producer = (StreamTransferProducer) pipe.getProducer();
                         producerSettings.updateProducerSettingsFromStream(
                             monitor,
-                            (StreamTransferProducer) pipe.getProducer(),
+                            producer,
                             dtSettings);
+
+                        if (consumerSettings instanceof DatabaseConsumerSettings) {
+                            DatabaseMappingContainer mapping = ((DatabaseConsumerSettings) consumerSettings).getDataMapping(
+                                producer.getDatabaseObject());
+                            if (mapping != null) {
+                                mapping.getAttributeMappings(monitor);
+                            }
+                        }
                     }
                 }
             });

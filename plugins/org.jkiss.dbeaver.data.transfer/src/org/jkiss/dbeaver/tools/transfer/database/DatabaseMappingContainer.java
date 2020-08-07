@@ -122,7 +122,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public String getTargetName() {
         String targetTableName = targetName;
         if (CommonUtils.isEmpty(targetTableName)) {
-            if (source != null) {
+            if (target != null) {
+                targetTableName = target.getName();
+            } else if (source != null) {
                 targetTableName = source.getName();
             } else {
                 targetTableName = "";
