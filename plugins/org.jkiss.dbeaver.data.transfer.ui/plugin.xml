@@ -82,7 +82,6 @@
 
         <configPages node="stream_producer">
             <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPageSettings"/>
-<!--            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPagePreview" type="preview"/>-->
         </configPages>
 
         <configPages node="stream_consumer">
