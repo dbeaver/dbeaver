@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -809,21 +808,30 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     "Create target objects",
                     "Database metadata will be modified by creating new table(s) and column(s).\nAre you sure you want to proceed?")) {
                     // Create target objects
-                    if (applySchemaChanges(dataSource, persistActions)) {
+                    if (applySchemaChanges(dataSource, mapping, persistActions)) {
                         autoAssignMappings();
+                        updateMappingsAndButtons();
                     }
                 }
             }
         }
     }
 
-    private boolean applySchemaChanges(DBPDataSource dataSource, DBEPersistAction[] persistActions) {
+    private boolean applySchemaChanges(DBPDataSource dataSource, DatabaseMappingContainer mapping, DBEPersistAction[] persistActions) {
         try {
             getWizard().getRunnableContext().run(true, true, monitor -> {
+                monitor.beginTask("Save schema changes in the database", 1);
                 try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Apply schema changes")) {
                     DatabaseTransferConsumer.executeDDL(session, persistActions);
-                } catch (DBCException e) {
+
+                    DatabaseConsumerSettings consumerSettings = getDatabaseConsumerSettings();
+                    if (consumerSettings != null) {
+                        DatabaseTransferConsumer.refreshDatabaseModel(monitor, consumerSettings, mapping);
+                    }
+                } catch (Exception e) {
                     throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
             });
             return true;

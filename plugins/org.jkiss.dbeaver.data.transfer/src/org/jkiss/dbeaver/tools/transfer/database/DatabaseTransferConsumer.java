@@ -468,7 +468,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 boolean hasNewObjects = createTargetDatabaseObjects(monitor, dbObject);
 
                 if (hasNewObjects) {
-                    refreshDatabaseModel(monitor, container);
+                    refreshDatabaseModel(monitor, settings, containerMapping);
+                    targetObject = containerMapping.getTarget();
                 }
             }
         } finally {
@@ -523,10 +524,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private void refreshDatabaseModel(DBRProgressMonitor monitor, DBSObjectContainer container) throws DBException {
+    public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
+        DBSObjectContainer container = consumerSettings.getContainer();
         if (!USE_STRUCT_DDL) {
             monitor.subTask("Refresh navigator model");
-            settings.getContainerNode().refreshNode(monitor, this);
+            consumerSettings.getContainerNode().refreshNode(monitor, containerMapping);
         }
 
         // Reflect database changes in mappings
@@ -541,7 +543,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                     containerMapping.setTarget((DBSDataManipulator) newTarget);
                     containerMapping.setMappingType(DatabaseMappingType.existing);
-                    targetObject = (DBSDataManipulator) newTarget;
                     // ! Fall down is ok here
                 case existing:
                     for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
