@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
@@ -212,7 +213,13 @@ class PreviewMappingDialog extends BaseProgressDialog {
                     }
                     TableColumn column = new TableColumn(previewTable, SWT.NONE);
                     column.setText(columnMapping.targetAttr.getTargetName());
-                    column.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(columnMapping.targetAttr.getTarget())));
+
+                    DBSAttributeBase attr = columnMapping.targetAttr.getTarget();
+                    if (attr == null) {
+                        // We can use icon from source attribute
+                        attr = columnMapping.sourceAttr;
+                    }
+                    column.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr)));
                     column.setData(columnMapping);
                 }
 

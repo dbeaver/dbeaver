@@ -20,9 +20,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
@@ -38,22 +37,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
     @Override
     public void executePersistAction(DBCSession session, DBECommand<OBJECT_TYPE> command, DBEPersistAction action) throws DBException
     {
-        String script = action.getScript();
-        if (script == null) {
-            action.afterExecute(session, null);
-        } else {
-            DBCStatement dbStat = DBUtils.createStatement(session, script, false);
-            try {
-                action.beforeExecute(session);
-                dbStat.executeStatement();
-                action.afterExecute(session, null);
-            } catch (DBCException e) {
-                action.afterExecute(session, e);
-                throw e;
-            } finally {
-                dbStat.close();
-            }
-        }
+        DBExecUtils.executePersistAction(session, action);
     }
 
     public static abstract class AbstractObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
