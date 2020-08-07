@@ -29,7 +29,7 @@ public interface DBRRunnableContext
      * If any exception will occure when running this process then it'll written in log
      * @param runnable runnable implementation
      */
-    public void run(
+    void run(
         boolean fork,
         boolean cancelable,
         DBRRunnableWithProgress runnable)

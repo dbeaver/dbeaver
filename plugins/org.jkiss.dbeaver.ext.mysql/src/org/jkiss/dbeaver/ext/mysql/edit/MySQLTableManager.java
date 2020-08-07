@@ -21,10 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -55,6 +52,11 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         MySQLTableForeignKey.class,
         MySQLTableIndex.class,
     };
+
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return super.getMakerOptions(dataSource) | FEATURE_SUPPORTS_COPY;
+    }
 
     @Nullable
     @Override

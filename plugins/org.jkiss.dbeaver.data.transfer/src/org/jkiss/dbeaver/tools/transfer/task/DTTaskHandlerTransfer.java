@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.tools.transfer.DataTransferJob;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.DataTransferState;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -47,8 +48,17 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         @NotNull PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
-        DataTransferSettings settings = new DataTransferSettings(runnableContext, task, log, Collections.emptyMap());
-        executeWithSettings(runnableContext, task, locale, log, listener, settings);
+        DataTransferSettings[] settings = new DataTransferSettings[1];
+        try {
+            runnableContext.run(true, true, monitor -> {
+                settings[0] = new DataTransferSettings(monitor, task, log, Collections.emptyMap(), new DataTransferState());
+            });
+        } catch (InvocationTargetException e) {
+            throw new DBException("Error loading task settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            return;
+        }
+        executeWithSettings(runnableContext, task, locale, log, listener, settings[0]);
     }
 
     public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, @NotNull DBTTaskExecutionListener listener, DataTransferSettings settings) throws DBException {

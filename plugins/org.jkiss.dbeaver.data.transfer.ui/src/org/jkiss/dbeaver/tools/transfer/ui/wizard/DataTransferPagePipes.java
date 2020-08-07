@@ -305,7 +305,15 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     protected boolean determinePageCompletion() {
-        return getWizard().getSettings().getConsumer() != null && getWizard().getSettings().getProducer() != null;
+        DataTransferSettings settings = getWizard().getSettings();
+        if (settings.getConsumer() == null || settings.getProducer() == null) {
+            return false;
+        }
+//        if (settings.isProducerOptional()) {
+//            settings.setProcessorProperties();
+//        }
+
+        return true;
     }
 
 }

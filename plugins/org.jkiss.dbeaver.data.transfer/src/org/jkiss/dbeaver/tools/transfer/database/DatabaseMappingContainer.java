@@ -120,15 +120,23 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     @Override
     public String getTargetName() {
+        String targetTableName = targetName;
+        if (CommonUtils.isEmpty(targetTableName)) {
+            if (source != null) {
+                targetTableName = source.getName();
+            } else {
+                targetTableName = "";
+            }
+        }
         switch (mappingType) {
             case existing:
                 return target.getName();
             case create:
-                return targetName;
+                return targetTableName;
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default:
-                return "?";
+                return targetTableName;
         }
     }
 

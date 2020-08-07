@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * DialogUtils
@@ -104,6 +105,21 @@ public class DialogUtils {
             return null;
         }
         return loadFile;
+    }
+
+    public static File[] openFileList(Shell parentShell, String[] filterExt)
+    {
+        FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
+        if (filterExt != null) {
+            fileDialog.setFilterExtensions(filterExt);
+        }
+        String fileName = openFileDialog(fileDialog);
+        if (CommonUtils.isEmpty(fileName)) {
+            return null;
+        }
+        File filterPath = new File(fileDialog.getFilterPath());
+        String[] fileNames = fileDialog.getFileNames();
+        return Arrays.stream(fileNames).map(fn -> new File(filterPath, fn)).toArray(File[]::new);
     }
 
     public static String openFileDialog(FileDialog fileDialog)

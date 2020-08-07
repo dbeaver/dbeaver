@@ -9,7 +9,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" icon="icons/excel.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" icon="platform:/plugin/org.jkiss.dbeaver.data.office/icons/excel.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">

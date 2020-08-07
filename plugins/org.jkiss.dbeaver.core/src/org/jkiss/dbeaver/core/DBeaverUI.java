@@ -423,10 +423,15 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void readAndDispatchEvents() {
+    public boolean readAndDispatchEvents() {
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
-            currentDisplay.readAndDispatch();
+            if (!currentDisplay.readAndDispatch()) {
+                currentDisplay.sleep();
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 

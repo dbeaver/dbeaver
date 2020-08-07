@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.model.struct;
 
-import java.util.Map;
+import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * IStreamDataImporterSite
+ * DBSTypedObjectExt2
  */
-public interface IStreamDataImporterSite {
+public interface DBSTypedObjectExt2 extends DBPObject {
+    /**
+     * Database specific type name
+     */
+    void setTypeName(String typeName);
 
-    StreamProducerSettings getSettings();
+    void setMaxLength(long maxLength);
 
-    StreamEntityMapping getSourceObject();
+    void setScale(Integer scale);
 
-    Map<String, Object> getProcessorProperties();
+    void setPrecision(Integer precision);
+
+    void setRequired(boolean required);
 
 }
