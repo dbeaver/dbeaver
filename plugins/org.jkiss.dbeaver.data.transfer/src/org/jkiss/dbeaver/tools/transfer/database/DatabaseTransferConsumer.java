@@ -563,6 +563,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return targetObject != null ? targetObject : containerMapping == null ? null : containerMapping.getTarget();
     }
 
+    public void setTargetObject(DBSDataManipulator targetObject) {
+        this.targetObject = targetObject;
+    }
+
     @Override
     public String getObjectName() {
         if (targetObjectContainer != null) {

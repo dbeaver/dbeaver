@@ -104,7 +104,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     }
 
     public File getInputFile() {
-        return entityMapping.getInputFile();
+        return entityMapping == null ? null : entityMapping.getInputFile();
     }
 
     @Override

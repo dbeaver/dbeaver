@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -91,7 +92,12 @@ public class DatabaseTransferConsumerSerializer implements DBPObjectSerializer<D
                         if (project == null) {
                             throw new DBCException("Project '" + projectName + "' not found");
                         }
-                        //consumer.targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, entityId);
+                        DBSDataManipulator targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, entityId);
+                        if (targetObject != null) {
+                            consumer.setTargetObject(targetObject);
+                        } else {
+                            throw new DBCException("Entity '" + entityId + "' not found");
+                        }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

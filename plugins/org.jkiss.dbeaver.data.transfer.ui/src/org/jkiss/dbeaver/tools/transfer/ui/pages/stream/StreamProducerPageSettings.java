@@ -111,7 +111,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                     widgetSelected(e);
                 }
             });
-            UIUtils.asyncExec(() -> UIUtils.packColumns(filesTable, true));
         }
 
         {
@@ -243,14 +242,14 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, pipe.getProducer().getObjectName());
+            item.setText(0, String.valueOf(pipe.getProducer().getObjectName()));
         }
         if (pipe.getConsumer() == null) {
             item.setImage(1, null);
             item.setText(1, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
-            item.setText(1, pipe.getConsumer().getObjectName());
+            item.setText(1, String.valueOf(pipe.getConsumer().getObjectName()));
         }
     }
 
@@ -268,6 +267,8 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         reloadPipes();
 
         updatePageCompletion();
+
+        UIUtils.asyncExec(() -> UIUtils.packColumns(filesTable, true));
     }
 
     @Override
@@ -320,7 +321,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     protected boolean determinePageCompletion() {
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-            if (pipe.getConsumer() == null || pipe.getConsumer().getObjectName() == null || pipe.getProducer() == null || pipe.getProducer().getObjectName() == null) {
+            if (pipe.getConsumer() == null || pipe.getProducer() == null) {
                 return false;
             }
         }
@@ -339,7 +340,10 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
             updateItemData(item, pipe);
         }
         if (firstTime && !dataPipes.isEmpty()) {
-            chooseSourceFile(dataPipes.get(0));
+            DataTransferPipe pipe = dataPipes.get(0);
+            if (pipe.getProducer() instanceof StreamTransferProducer && ((StreamTransferProducer) pipe.getProducer()).getInputFile() == null) {
+                chooseSourceFile(pipe);
+            }
         }
     }
 
