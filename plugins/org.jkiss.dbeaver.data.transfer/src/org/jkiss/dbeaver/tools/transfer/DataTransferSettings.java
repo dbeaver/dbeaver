@@ -348,6 +348,16 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 nodeSettings.loadSettings(runnableContext, this, nodeSection);
             }
         }
+
+        // Initialize pipes with loaded settings
+        for (int i = 0; i < dataPipes.size(); i++) {
+            DataTransferPipe pipe = dataPipes.get(i);
+            try {
+                pipe.initPipe(this, i, dataPipes.size());
+            } catch (Exception e) {
+                state.addError(e);
+            }
+        }
     }
 
     public boolean isConsumerOptional() {

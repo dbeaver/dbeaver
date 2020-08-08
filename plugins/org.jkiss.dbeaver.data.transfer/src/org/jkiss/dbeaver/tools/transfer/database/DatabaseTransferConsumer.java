@@ -53,8 +53,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
-    private DBSDataContainer sourceObject;
-    private DBSDataManipulator targetObject;
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -72,6 +70,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     // Used only for non-explicit import
     // In this case consumer will be replaced with explicit consumers during configuration
     private DBSObjectContainer targetObjectContainer;
+    // Used in deserialized or directly instantiated consumers
+    private DBSDataManipulator localTargetObject;
 
     private boolean isPreview;
     private List<Object[]> previewRows;
@@ -97,7 +97,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     public DatabaseTransferConsumer(DBSDataManipulator targetObject) {
-        this.targetObject = targetObject;
+        this.localTargetObject = targetObject;
     }
 
     public DatabaseTransferConsumer(DBSObjectContainer targetObjectContainer) {
@@ -106,10 +106,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public DBSObjectContainer getTargetObjectContainer() {
         return targetObjectContainer;
-    }
-
-    public DatabaseMappingContainer getContainerMapping() {
-        return containerMapping;
     }
 
     public ColumnMapping[] getColumnMappings() {
@@ -121,7 +117,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetObjectContainer != null) {
             return targetObjectContainer;
         }
-        return targetObject;
+        return containerMapping == null ? localTargetObject : containerMapping.getTarget();
     }
 
     protected boolean isPreview() {
@@ -143,9 +139,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } catch (DBException e) {
             throw new DBCException("Error initializing exporter");
         }
+        if (containerMapping == null) {
+            throw new DBCException("Internal error: consumer mappings not set");
+        }
 
-        AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
+        AbstractExecutionSource executionSource = new AbstractExecutionSource(containerMapping.getSource(), targetContext, this);
 
+        DBSDataManipulator targetObject = getTargetObject();
         if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
@@ -161,9 +161,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean dynamicTarget = targetContext.getDataSource().getInfo().isDynamicMetadata();
         if (dynamicTarget) {
             // Document-based datasource
-            rsAttributes = DBUtils.getAttributeBindings(session, sourceObject, resultSet.getMeta());
+            rsAttributes = DBUtils.getAttributeBindings(session, getSourceObject(), resultSet.getMeta());
         } else {
-            rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+            rsAttributes = DBUtils.makeLeafAttributeBindings(session, getSourceObject(), resultSet);
         }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
@@ -344,12 +344,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 executeBatch = null;
             }
         } finally {
+            DBSDataManipulator targetObject = getTargetObject();
             if (!isPreview && targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
                     targetSession,
                     DBSManipulationType.INSERT,
                     targetAttributes.toArray(new DBSAttributeBase[0]),
-                    new AbstractExecutionSource(sourceObject, targetContext, this));
+                    new AbstractExecutionSource(getSourceObject(), targetContext, this));
             }
         }
     }
@@ -395,6 +396,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
             if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
                 // Init connection
@@ -404,7 +406,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 throw new DBCException("Can't initialize database consumer. No target object and no target container");
             }
         }
-        containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
 
         return targetObject == null ? settings.getContainer() : targetObject;
     }
@@ -437,8 +438,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<String, Object> processorProperties) {
-        this.sourceObject = (DBSDataContainer) sourceObject;
         this.settings = settings;
+        this.containerMapping = settings.getDataMapping((DBSDataContainer) sourceObject);
     }
 
     @Override
@@ -453,13 +454,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (container == null) {
                     throw new DBException("No target datasource - can't create target objects");
                 }
-                targetObject = containerMapping.getTarget();
 
                 boolean hasNewObjects = createTargetDatabaseObjects(monitor, dbObject);
 
                 if (hasNewObjects) {
                     DatabaseTransferUtils.refreshDatabaseModel(monitor, settings, containerMapping);
-                    targetObject = containerMapping.getTarget();
                 }
             }
         } finally {
@@ -553,18 +552,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
-            if (targetObject != null) {
-                DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
+            if (getTargetObject() != null) {
+                DBWorkbench.getPlatformUI().openEntityEditor(getTargetObject());
             }
         }
     }
 
+    public DBSDataContainer getSourceObject() {
+        return containerMapping == null ? null : containerMapping.getSource();
+    }
+
     public DBSDataManipulator getTargetObject() {
-        return targetObject != null ? targetObject : containerMapping == null ? null : containerMapping.getTarget();
+        return containerMapping == null ? localTargetObject : containerMapping.getTarget();
     }
 
     public void setTargetObject(DBSDataManipulator targetObject) {
-        this.targetObject = targetObject;
+        this.localTargetObject = targetObject;
     }
 
     @Override
@@ -573,30 +576,28 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return targetObjectContainer.getName();
         }
 
+        DBSDataManipulator targetObject = getTargetObject();
+
         String targetName = null;
         if (targetObject != null) {
             targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
         }
-        if (settings == null) {
-            return targetName;
-        }
 
         if (targetName != null) {
-            return targetName;
+            return targetName + " [Existing]";
         }
 
-        DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
-        if (dataMapping == null) {
+        if (containerMapping == null) {
             return "?";
         }
 
-        targetName = dataMapping.getTargetName();
+        targetName = containerMapping.getTargetFullName();
 
-        switch (dataMapping.getMappingType()) {
+        switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
             case existing:
-                for (DatabaseMappingAttribute attr : dataMapping.getAttributeMappings(new VoidProgressMonitor())) {
+                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {
                         return targetName + " [Alter]";
                     }
@@ -605,7 +606,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             case skip:
                 return "[Skip]";
             default:
-                return targetName;
+                return targetName + " [Existing]";
         }
     }
 
@@ -614,6 +615,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetObjectContainer != null) {
             return DBIcon.TREE_FOLDER_TABLE;
         }
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject instanceof DBPImageProvider) {
             return DBValueFormatting.getObjectImage(targetObject);
         }
@@ -642,6 +644,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetObjectContainer != null) {
             return targetObjectContainer.getDataSource().getContainer();
         }
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject != null) {
             return targetObject.getDataSource().getContainer();
         }
@@ -655,7 +658,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public boolean equals(Object obj) {
         return obj instanceof DatabaseTransferConsumer &&
-            CommonUtils.equalObjects(targetObject, ((DatabaseTransferConsumer) obj).targetObject);
+            CommonUtils.equalObjects(getTargetObject(), ((DatabaseTransferConsumer) obj).getTargetObject());
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
