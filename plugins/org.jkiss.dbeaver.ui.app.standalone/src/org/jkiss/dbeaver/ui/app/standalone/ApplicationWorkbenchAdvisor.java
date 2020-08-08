@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -156,6 +158,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(settingsChangeListener);
 */
 
+    }
+
+    @Override
+    public IAdaptable getDefaultPageInput() {
+        return ResourcesPlugin.getWorkspace().getRoot();
     }
 
     protected boolean isPropertyChangeRequiresRestart(String property) {
