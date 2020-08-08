@@ -245,7 +245,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (node instanceof DBNDatabaseFolder) {
             final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
             if (!CommonUtils.isEmpty(metaChildren)) {
-                Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
+                Class<?> nodeClass;
+                if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
+                    nodeClass = node.getChildrenClass((DBXTreeItem)metaChildren.get(0));
+                } else {
+                    nodeClass = ((DBNContainer) node).getChildrenClass();
+                }
                 String nodeType = metaChildren.get(0).getChildrenTypeLabel(node.getDataSource(), null);
                 DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
