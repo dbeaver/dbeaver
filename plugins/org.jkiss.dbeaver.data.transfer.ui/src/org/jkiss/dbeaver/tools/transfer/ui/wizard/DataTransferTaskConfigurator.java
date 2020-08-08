@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -255,7 +256,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setData(pipe);
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
-            item.setText(0, node.getObjectName());
+            item.setText(0, CommonUtils.toString(node.getObjectName(), "?"));
 
             DBSObject object = node.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {

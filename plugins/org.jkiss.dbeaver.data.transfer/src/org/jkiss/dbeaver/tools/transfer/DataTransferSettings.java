@@ -289,6 +289,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             String processorId = CommonUtils.toString(config.get("processor"));
             if (!CommonUtils.isEmpty(processorId)) {
                 savedProcessor = processorNode.getProcessor(processorId);
+                if (savedProcessor == null) {
+                    state.addError(new DBException("Processor '" + processorId + "' not found in '" + processorNode.getName() + "'"));
+                }
             }
         }
         if (this.consumerOptional && savedConsumer != null) {
