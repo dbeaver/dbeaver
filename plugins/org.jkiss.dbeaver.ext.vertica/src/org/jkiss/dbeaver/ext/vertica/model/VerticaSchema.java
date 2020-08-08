@@ -111,8 +111,8 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
 
 * */
     @Association
-    public Collection<VerticaTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTableBase> tables = getTables(monitor);
+    public List<VerticaTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<VerticaTable> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {

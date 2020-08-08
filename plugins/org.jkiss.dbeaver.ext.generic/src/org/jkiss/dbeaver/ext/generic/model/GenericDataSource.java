@@ -349,17 +349,17 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
 
     @Override
-    public Collection<GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 
     @Override
-    public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getPhysicalTables(monitor);
     }
 
     @Override
-    public Collection<GenericTableBase> getTables(DBRProgressMonitor monitor)
+    public List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
     }
