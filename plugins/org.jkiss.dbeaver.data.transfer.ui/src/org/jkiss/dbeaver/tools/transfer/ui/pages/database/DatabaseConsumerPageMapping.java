@@ -869,6 +869,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         return null;
     }
+
     private DatabaseMappingObject getSelectedMapping()
     {
         IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
@@ -880,6 +881,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
 
+        // Detect producer container (e.g. schema)
         DBSObjectContainer producerContainer = null;
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() != null) {
@@ -904,43 +906,47 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
         }
 
+
         {
-            // Load model. Update it only if mapping have different set of source columns
+            // Load columns model. Update it only if mapping have different set of source columns
             // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
             List<DatabaseMappingContainer> model = new ArrayList<>();
 
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-                if (pipe.getProducer() == null) {
+                if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
                     continue;
                 }
-                DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-                DatabaseMappingContainer mapping = settings.getDataMapping(sourceObject);
+                DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+                DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
                 {
+                    // Create new mapping for source object
                     DatabaseMappingContainer newMapping;
                     if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
                         try {
                             newMapping = new DatabaseMappingContainer(
                                 getWizard().getRunnableContext(),
                                 getDatabaseConsumerSettings(),
-                                sourceObject,
+                                sourceDataContainer,
                                 ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
                         } catch (DBException e) {
                             setMessage(e.getMessage(), IMessageProvider.ERROR);
-                            newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
+                            newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
                         }
                     } else {
-                        newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
+                        newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
                     }
                     newMapping.getAttributeMappings(getWizard().getRunnableContext());
+                    // Update current mapping if it differs from new one
                     if (mapping == null || !mapping.isSameMapping(newMapping)) {
                         mapping = newMapping;
-                        settings.addDataMappings(getWizard().getRunnableContext(), sourceObject, mapping);
+                        settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
                     }
                 }
                 model.add(mapping);
             }
             mappingViewer.setInput(model);
             if (!model.isEmpty()) {
+                // Select first element
                 mappingViewer.setSelection(new StructuredSelection(model.get(0)));
             }
 

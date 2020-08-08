@@ -107,9 +107,12 @@ public class DialogUtils {
         return loadFile;
     }
 
-    public static File[] openFileList(Shell parentShell, String[] filterExt)
+    public static File[] openFileList(Shell parentShell, String title, String[] filterExt)
     {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
+        if (title != null) {
+            fileDialog.setText(title);
+        }
         if (filterExt != null) {
             fileDialog.setFilterExtensions(filterExt);
         }

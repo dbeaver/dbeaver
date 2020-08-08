@@ -48,6 +48,7 @@ import java.util.List;
 
 class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
+    private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
 
@@ -217,6 +218,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     public void activatePage() {
+        if (activated) {
+            // Second activation - we need to disable any selectors
+
+        }
+        activated = true;
         if (getWizard().getSettings().isConsumerOptional()) {
             setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);
