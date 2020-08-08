@@ -38,7 +38,6 @@ import java.util.*;
 /**
  * DatabaseMappingContainer
  */
-@SuppressWarnings("unchecked")
 public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
