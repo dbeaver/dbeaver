@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
@@ -304,6 +306,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         return true;
+    }
+
+    public String getTargetFullName() {
+        DBSObjectContainer container = consumerSettings.getContainer();
+
+        if (container instanceof DBSSchema || container instanceof DBSCatalog) {
+            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
+        }
+        return targetName;
     }
 
     private class MetadataReceiver implements DBDDataReceiver {
