@@ -233,6 +233,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         dtSettings.setDataPipes(newPipes, true);
+        dtSettings.setPipeChangeRestricted(true);
         return true;
     }
 

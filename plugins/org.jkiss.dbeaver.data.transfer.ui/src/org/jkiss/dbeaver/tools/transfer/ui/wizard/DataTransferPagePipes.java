@@ -220,7 +220,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     public void activatePage() {
         if (activated) {
             // Second activation - we need to disable any selectors
-
+            if (getWizard().getSettings().isPipeChangeRestricted() || getWizard().isTaskEditor()) {
+                nodesTable.getTable().setEnabled(false);
+            }
+            return;
         }
         activated = true;
         if (getWizard().getSettings().isConsumerOptional()) {

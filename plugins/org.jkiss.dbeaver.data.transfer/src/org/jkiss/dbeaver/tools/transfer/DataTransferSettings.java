@@ -73,6 +73,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private transient int curPipeNum = 0;
 
     private boolean showFinalMessage = true;
+    // Hacky flag. Says that pipe selection is frozen.
+    // Makes sense for special case like multi-file import
+    private boolean pipeChangeRestricted;
 
     public DataTransferSettings(
         @NotNull DBRProgressMonitor monitor,
@@ -126,6 +129,14 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             return savedSettings;
         }
         return taskSettings;
+    }
+
+    public boolean isPipeChangeRestricted() {
+        return pipeChangeRestricted;
+    }
+
+    public void setPipeChangeRestricted(boolean pipeChangeRestricted) {
+        this.pipeChangeRestricted = pipeChangeRestricted;
     }
 
     public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
