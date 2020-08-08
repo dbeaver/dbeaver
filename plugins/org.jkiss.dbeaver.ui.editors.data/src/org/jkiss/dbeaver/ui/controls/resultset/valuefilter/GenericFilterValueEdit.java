@@ -70,7 +70,6 @@ class GenericFilterValueEdit {
 
     private KeyLoadJob loadJob;
     private IValueEditor editor;
-    private Text textControl;
 
     @NotNull
     private final ResultSetViewer viewer;
@@ -502,11 +501,13 @@ class GenericFilterValueEdit {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Read filter values", 1);
             final DBCExecutionContext executionContext = viewer.getExecutionContext();
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
             try {
+                monitor.subTask("Read enumeration");
                 final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
@@ -519,6 +520,8 @@ class GenericFilterValueEdit {
             } catch (Throwable e) {
                 populateValues(Collections.emptyList());
                 log.error(e);
+            } finally {
+                monitor.done();
             }
             return Status.OK_STATUS;
         }
