@@ -252,7 +252,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                         } else {
                             savedConsumer = this.consumer;
                         }
-                        if (this.isConsumerOptional()) {
+                        if (consumerNode.hasProcessors()) {
                             processorNode = consumerNode;
                         }
                     }
@@ -276,7 +276,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                         } else {
                             savedProducer = this.producer;
                         }
-                        if (this.isProducerOptional()) {
+                        if (producerNode.hasProcessors()) {
                             processorNode = producerNode;
                         }
                     }
