@@ -704,7 +704,7 @@ public class DBExecUtils {
                         //  - We use some explicit entity (e.g. table data editor)
                         //  - Table metadata was specified for column
                         //  - Database doesn't support column name collisions (default)
-                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
+                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().needsTableMetaForColumnResolution()) &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
