@@ -169,11 +169,11 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Override
     public long getStatObjectSize() {
-        if (diskSpace != null && diskSpace == 0 && subTables != null) {
-            long partSizeSum = 0;
+        if (diskSpace != null && subTables != null) {
+            long partSizeSum = diskSpace;
             for (PostgreTableInheritance ti : subTables) {
                 PostgreTableBase partTable = ti.getParentObject();
-                if (partTable instanceof PostgreTableReal) {
+                if (partTable.isPartition() && partTable instanceof PostgreTableReal) {
                     partSizeSum += ((PostgreTableReal) partTable).getStatObjectSize();
                 }
             }
