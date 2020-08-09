@@ -91,6 +91,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExplainPlanXML() {
         return false;
     }

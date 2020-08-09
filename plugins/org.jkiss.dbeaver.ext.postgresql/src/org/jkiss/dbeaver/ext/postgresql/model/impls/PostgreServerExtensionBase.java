@@ -339,6 +339,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExplainPlan() {
         return true;
     }

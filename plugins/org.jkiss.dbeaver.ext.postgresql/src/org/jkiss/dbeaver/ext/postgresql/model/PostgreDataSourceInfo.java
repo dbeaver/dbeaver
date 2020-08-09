@@ -44,8 +44,8 @@ class PostgreDataSourceInfo extends JDBCDataSourceInfo {
     }
 
     @Override
-    public boolean supportsDuplicateColumnsInResults() {
-        return true;
+    public boolean needsTableMetaForColumnResolution() {
+        return dataSource.getServerType().supportsEntityMetadataInResults();
     }
 
     @Override
