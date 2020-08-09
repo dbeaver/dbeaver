@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Generic struct container
@@ -50,9 +51,9 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
     ForeignKeysCache getForeignKeysCache();
 
     Collection<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException;
-    Collection<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
+    List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<? extends GenericTableBase> getTables(DBRProgressMonitor monitor) throws DBException;
+    List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor) throws DBException;
 
     GenericTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException;
 
