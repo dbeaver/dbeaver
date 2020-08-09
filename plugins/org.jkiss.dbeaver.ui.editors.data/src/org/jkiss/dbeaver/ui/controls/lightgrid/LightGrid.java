@@ -3056,7 +3056,7 @@ public abstract class LightGrid extends Canvas {
         if (isListening(SWT.DragDetect)) {
 
             if (hoveringOnHeaderDragArea && hoveringColumn != null) {
-                if (e.button == 1 && (hoveringColumn.isOverIcon(e.x, e.y) || selectedColumns.contains(hoveringColumn))) {
+                if (e.button == 1/* && (hoveringColumn.isOverIcon(e.x, e.y) || selectedColumns.contains(hoveringColumn))*/) {
                     if (dragDetect(e)) {
                         // Drag and drop started
                         headerColumnDragStarted = true;
