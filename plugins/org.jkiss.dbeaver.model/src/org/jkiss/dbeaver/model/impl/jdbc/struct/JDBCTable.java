@@ -699,7 +699,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     // Ignore it
                     //keyPattern = Double.parseDouble((String) keyPattern);
                 }
-            } else if (keyPattern instanceof CharSequence && keyColumn.getDataKind() == DBPDataKind.STRING) {
+            } else if (keyPattern instanceof CharSequence /*&& keyColumn.getDataKind() == DBPDataKind.STRING*/) {
                 // Its ok
             } else {
                 searchInKeys = false;
@@ -758,8 +758,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 query.append(DBUtils.getQuotedIdentifier(keyColumn));
                 if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
                     query.append(" >= ?");
-                } else {
+                } else if (keyColumn.getDataKind() == DBPDataKind.STRING) {
                     query.append(" LIKE ?");
+                } else {
+                    query.append(" = ?");
                 }
             }
             // Add desc columns conditions
