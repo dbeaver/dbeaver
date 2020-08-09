@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -57,7 +56,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.text.Format;
-import java.util.*;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Statistics node renderer.
@@ -314,6 +316,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             DBSObject parentObject = DBUtils.getPublicObject(object.getParentObject());
             if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
                 statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
+            } else {
+                statsWasRead = ((DBPObjectStatistics) object).hasStatistics();
             }
 
             long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
@@ -359,8 +363,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     parentNode = parentNode.getParentNode();
                 }
                 if (parentNode instanceof DBNDatabaseNode) {
+                    DBSObject realParentObject = DBUtils.getPublicObject(((DBNDatabaseNode)parentNode).getObject());
                     if (!readObjectStatistics(
-                        (DBNDatabaseNode) parentNode,
+                        element.getParentNode(),
+                        realParentObject,
                         ((TreeItem) event.item).getParentItem())) {
                         return;
                     }
@@ -399,31 +405,29 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return -1;
     }
 
-    private boolean readObjectStatistics(DBNDatabaseNode parentNode, TreeItem parentItem) {
-        DBSObject parentObject = DBUtils.getPublicObject(parentNode.getObject());
-        if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
-            // Read stats always event if it is already collected.
-            // Because we need to calc max object size anyway
-            synchronized (statReaders) {
-                StatReadJob statReadJob = statReaders.get(parentObject);
-                if (statReadJob == null) {
-                    statReadJob = new StatReadJob(parentObject, parentItem);
-                    statReaders.put(parentObject, statReadJob);
-                    statReadJob.schedule();
-                }
+    private boolean readObjectStatistics(DBNNode parentNode, DBSObject parentObject, TreeItem parentItem) {
+        // Read stats always event if it is already collected.
+        // Because we need to calc max object size anyway
+        synchronized (statReaders) {
+            StatReadJob statReadJob = statReaders.get(parentObject);
+            if (statReadJob == null) {
+                statReadJob = new StatReadJob(parentNode, parentObject, parentItem);
+                statReaders.put(parentObject, statReadJob);
+                statReadJob.schedule();
             }
-            return true;
         }
-        return false;
+        return true;
     }
 
     private static class StatReadJob extends AbstractJob {
 
+        private final DBNNode parentNode;
         private final DBSObject collector;
         private final TreeItem treeItem;
 
-        StatReadJob(DBSObject collector, TreeItem treeItem) {
+        StatReadJob(DBNNode parentNode, DBSObject collector, TreeItem treeItem) {
             super("Read statistics for " + DBUtils.getObjectFullName(collector, DBPEvaluationContext.UI));
+            this.parentNode = parentNode;
             this.collector = collector;
             this.treeItem = treeItem;
         }
@@ -432,14 +436,19 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
-                ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
+                if (collector instanceof DBPObjectStatisticsCollector) {
+                    // Parent object is not necessary is stats collector.
+                    // E.g. table partition parent is table while stats collector is schema
+                    ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
+                }
                 long maxStatSize = 0;
 
-                if (collector instanceof DBSObjectContainer) {
+                if (parentNode instanceof DBNDatabaseNode) {
                     // Calculate max object size
-                    Collection<? extends DBSObject> children = ((DBSObjectContainer) collector).getChildren(monitor);
+                    DBNDatabaseNode[] children = ((DBNDatabaseNode)parentNode).getChildren(monitor);
                     if (children != null) {
-                        for (DBSObject child : children) {
+                        for (DBNDatabaseNode childNode : children) {
+                            DBSObject child = childNode.getObject();
                             if (child instanceof DBPObjectStatistics) {
                                 long statObjectSize = ((DBPObjectStatistics) child).getStatObjectSize();
                                 maxStatSize = Math.max(maxStatSize, statObjectSize);
