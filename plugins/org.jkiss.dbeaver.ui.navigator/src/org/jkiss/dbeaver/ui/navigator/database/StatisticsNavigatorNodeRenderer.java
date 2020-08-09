@@ -313,11 +313,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             String sizeText;
             int percentFull;
             boolean statsWasRead = false;
-            DBSObject parentObject = DBUtils.getPublicObject(object.getParentObject());
+            DBNNode parentNode = getParentItem(element);
+            DBSObject parentObject = parentNode instanceof DBNDatabaseNode ? DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject()) : null;
             if (parentObject instanceof DBPObjectStatisticsCollector) { // && !((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()
                 statsWasRead = ((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected();
             } else {
-                statsWasRead = ((DBPObjectStatistics) object).hasStatistics();
+                // If there is no stats collector then do not check for stats presence
+                // Because it will trigger stats read job which won't read any statistics (as there is no way to load it for individual object).
+                statsWasRead = true;//((DBPObjectStatistics) object).hasStatistics();
             }
 
             long maxObjectSize = statsWasRead ? getMaxObjectSize((TreeItem) event.item) : -1;
@@ -358,10 +361,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             } else {
                 sizeText = "...";
                 percentFull = 0;
-                DBNNode parentNode = element.getParentNode();
-                while (parentNode instanceof DBNDatabaseFolder) {
-                    parentNode = parentNode.getParentNode();
-                }
                 if (parentNode instanceof DBNDatabaseNode) {
                     DBSObject realParentObject = DBUtils.getPublicObject(((DBNDatabaseNode)parentNode).getObject());
                     if (!readObjectStatistics(
@@ -394,6 +393,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
             }
         }
+    }
+
+    private DBNNode getParentItem(DBNDatabaseNode element) {
+        DBNNode parentNode = element.getParentNode();
+        while (parentNode instanceof DBNDatabaseFolder) {
+            parentNode = parentNode.getParentNode();
+        }
+        return parentNode;
     }
 
     private long getMaxObjectSize(TreeItem item) {
@@ -461,7 +468,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 UIUtils.asyncExec(() -> {
                     try {
                         if (!treeItem.isDisposed()) {
-                            treeItem.setData("nav.stat.maxSize", finalMaxStatSize);
+                            treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);
                             treeItem.getParent().redraw();
                         }
                     } finally {
