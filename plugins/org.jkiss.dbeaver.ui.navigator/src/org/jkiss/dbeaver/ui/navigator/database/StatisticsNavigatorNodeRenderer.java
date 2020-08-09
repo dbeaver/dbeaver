@@ -468,8 +468,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 UIUtils.asyncExec(() -> {
                     try {
                         if (!treeItem.isDisposed()) {
-                            treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);
-                            treeItem.getParent().redraw();
+                            Object prevValue = treeItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
+                            if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) {
+                                treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);
+                                treeItem.getParent().redraw();
+                            }
                         }
                     } finally {
                         synchronized (statReaders) {
