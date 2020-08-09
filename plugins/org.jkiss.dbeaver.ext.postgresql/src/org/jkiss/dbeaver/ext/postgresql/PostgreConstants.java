@@ -50,6 +50,7 @@ public class PostgreConstants {
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
+    public static final String PROP_SSL_PROXY = "sslProxyServer";
     public static final String PROP_SERVER_TYPE = "serverType";
 
     public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
