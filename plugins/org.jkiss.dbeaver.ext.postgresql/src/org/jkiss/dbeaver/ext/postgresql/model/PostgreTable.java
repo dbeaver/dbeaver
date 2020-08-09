@@ -159,6 +159,30 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     @Override
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+        super.fetchStatistics(dbResult);
+        if (diskSpace != null && diskSpace == 0 && hasSubClasses) {
+            // Prefetch partitions (shouldn't be too expensive, we already have all tables in cache)
+            getPartitions(dbResult.getSession().getProgressMonitor());
+        }
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        if (diskSpace != null && diskSpace == 0 && subTables != null) {
+            long partSizeSum = 0;
+            for (PostgreTableInheritance ti : subTables) {
+                PostgreTableBase partTable = ti.getParentObject();
+                if (partTable instanceof PostgreTableReal) {
+                    partSizeSum += ((PostgreTableReal) partTable).getStatObjectSize();
+                }
+            }
+            return partSizeSum;
+        }
+        return super.getStatObjectSize();
+    }
+
+    @Override
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
