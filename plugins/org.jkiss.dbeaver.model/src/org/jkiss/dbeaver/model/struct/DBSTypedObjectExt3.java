@@ -16,15 +16,16 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * DBSTypedObjectEditor1
+ * DBSTypedObjectExt3
  */
-public interface DBSTypedObjectEditor1 extends DBPObject {
+public interface DBSTypedObjectExt3 extends DBPObject {
     /**
-     * Database specific type name
+     * Database specific full type name (with modifiers). E.g. VARCHAR(120) or NUMBER(20,3)
      */
-    void setTypeName(String typeName);
+    void setFullTypeName(String typeName) throws DBException;
 
 }

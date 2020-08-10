@@ -167,11 +167,11 @@ class GridCellRenderer extends AbstractRenderer
         if (focus) {
 
             gc.setForeground(colorLineFocused);
-            gc.drawRectangle(bounds.x, bounds.y, bounds.width - 1, bounds.height);
+            gc.drawRectangle(bounds.x + 1, bounds.y, bounds.width - 2, bounds.height - 1);
 
-            //if (grid.isFocusControl()) {
-                gc.drawRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 2);
-            //}
+            if (grid.isFocusControl()) {
+                gc.drawRectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 3);
+            }
         }
     }
 

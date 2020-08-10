@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,7 +46,7 @@ import java.util.List;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBPNamedObject2, DBPOrderedObject
+public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
@@ -226,6 +227,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return fullTypeName;
     }
 
+    @Override
     public void setFullTypeName(String fullTypeName) {
         this.fullTypeName = fullTypeName;
         int divPos = fullTypeName.indexOf('(');

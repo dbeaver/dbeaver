@@ -163,7 +163,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    protected void readTableStatistics(JDBCSession session) throws SQLException {
+    protected void readTableStatistics(JDBCSession session) throws DBException, SQLException {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "select " +
                     "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
@@ -179,7 +179,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
         diskSpace = dbResult.getLong("total_rel_size");
         tableRelSize = dbResult.getLong("rel_size");
     }

@@ -747,7 +747,10 @@ public class GeneralUtils {
         return bb.array();
     }
 
-    public static UUID getUUIDFromBytes(byte[] bytes) {
+    public static UUID getUUIDFromBytes(byte[] bytes) throws IllegalArgumentException {
+        if (bytes.length < 16) {
+            throw new IllegalArgumentException("UUID length must be at least 16 bytes (actual length = " + bytes.length + ")");
+        }
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
     }

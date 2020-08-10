@@ -82,6 +82,8 @@
                         <reference definitionId="DBeaverPerspectiveActive"/>
                     </visibleWhen>
                 </command>
+                <separator name="view" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.eclipse.egit.ui.RepositoriesView"/></command>
             </menu>
         </menuContribution>
 
@@ -102,6 +104,8 @@
                     <reference definitionId="DBeaverPerspectiveActive"/>
                 </visibleWhen>
             </command>
+            <separator name="view" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.eclipse.egit.ui.RepositoriesView"/></command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -56,6 +57,11 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object)
     {
         return object.getContainer().getSchema().tableCache;
+    }
+
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return super.getMakerOptions(dataSource) | FEATURE_SUPPORTS_COPY;
     }
 
     @Override

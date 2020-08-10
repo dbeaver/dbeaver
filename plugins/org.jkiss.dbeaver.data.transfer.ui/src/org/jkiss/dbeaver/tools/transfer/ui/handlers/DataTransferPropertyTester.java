@@ -77,16 +77,21 @@ public class DataTransferPropertyTester extends PropertyTester
                 if (receiver instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) receiver).getObject();
                     if (object instanceof DBSObjectContainer) {
-                        try {
-                            Class<? extends DBSObject> childType = ((DBSObjectContainer) object).getChildType(new VoidProgressMonitor());
-                            return DBSDataContainer.class.isAssignableFrom(childType);
-                        } catch (DBException e) {
-                            log.error(e);
-                        }
+                        return isObjectContainerSupportsImport((DBSObjectContainer) object);
                     }
                 }
                 return false;
             }
+        }
+        return false;
+    }
+
+    public static boolean isObjectContainerSupportsImport(DBSObjectContainer object) {
+        try {
+            Class<? extends DBSObject> childType = object.getChildType(new VoidProgressMonitor());
+            return DBSDataContainer.class.isAssignableFrom(childType);
+        } catch (DBException e) {
+            log.error(e);
         }
         return false;
     }

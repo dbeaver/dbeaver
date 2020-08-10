@@ -227,7 +227,11 @@ public class SearchDataQuery implements ISearchQuery {
 //                        if (attribute.getMaxLength() > 0 && attribute.getMaxLength() < params.searchString.length()) {
 //                            continue;
 //                        }
-                        if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.LIKE)) {
+
+                        if (!params.isCaseSensitive() && ArrayUtils.contains(supportedOperators, DBCLogicalOperator.ILIKE)) {
+                            operator = DBCLogicalOperator.ILIKE;
+                            value = "%" + params.searchString + "%";
+                        } else if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.LIKE)) {
                             operator = DBCLogicalOperator.LIKE;
                             value = "%" + params.searchString + "%";
                         } else if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.EQUALS)) {

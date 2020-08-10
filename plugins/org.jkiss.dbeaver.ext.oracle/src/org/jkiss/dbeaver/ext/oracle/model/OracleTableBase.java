@@ -212,7 +212,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public Collection<OracleTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<OracleTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);

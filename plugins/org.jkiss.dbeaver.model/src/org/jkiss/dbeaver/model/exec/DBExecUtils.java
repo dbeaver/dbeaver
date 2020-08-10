@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -60,7 +59,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
-import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -248,9 +246,16 @@ public class DBExecUtils {
     }
 
     public static void executeScript(DBRProgressMonitor monitor, DBCExecutionContext executionContext, String jobName, List<DBEPersistAction> persistActions) {
-        boolean ignoreErrors = false;
-        monitor.beginTask(jobName, persistActions.size());
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
+            executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
+        }
+    }
+
+    public static void executeScript(DBCSession session, DBEPersistAction[] persistActions) {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        boolean ignoreErrors = false;
+        monitor.beginTask(session.getTaskTitle(), persistActions.length);
+        try {
             for (DBEPersistAction action : persistActions) {
                 if (monitor.isCanceled()) {
                     break;
@@ -259,22 +264,14 @@ public class DBExecUtils {
                     monitor.subTask(action.getTitle());
                 }
                 try {
-                    if (action instanceof SQLDatabasePersistActionComment) {
-                        continue;
-                    }
-                    String script = action.getScript();
-                    if (!CommonUtils.isEmpty(script)) {
-                        try (final Statement statement = ((JDBCSession) session).createStatement()) {
-                            statement.execute(script);
-                        }
-                    }
+                    executePersistAction(session, action);
                 } catch (Exception e) {
                     log.debug("Error executing query", e);
                     if (ignoreErrors) {
                         continue;
                     }
                     boolean keepRunning = true;
-                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(jobName, e, true)) {
+                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(session.getTaskTitle(), e, true)) {
                         case STOP:
                             keepRunning = false;
                             break;
@@ -297,6 +294,28 @@ public class DBExecUtils {
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBCException {
+        if (action instanceof SQLDatabasePersistActionComment) {
+            return;
+        }
+        String script = action.getScript();
+        if (script == null) {
+            action.afterExecute(session, null);
+        } else {
+            DBCStatement dbStat = DBUtils.createStatement(session, script, false);
+            try {
+                action.beforeExecute(session);
+                dbStat.executeStatement();
+                action.afterExecute(session, null);
+            } catch (DBCException e) {
+                action.afterExecute(session, e);
+                throw e;
+            } finally {
+                dbStat.close();
+            }
         }
     }
 
@@ -685,7 +704,7 @@ public class DBExecUtils {
                         //  - We use some explicit entity (e.g. table data editor)
                         //  - Table metadata was specified for column
                         //  - Database doesn't support column name collisions (default)
-                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
+                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().needsTableMetaForColumnResolution()) &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
@@ -800,4 +819,5 @@ public class DBExecUtils {
         }
         return null;
     }
+
 }

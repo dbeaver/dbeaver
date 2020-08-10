@@ -16,19 +16,17 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-
 import java.util.Map;
 
 public class StreamDataImporterSite implements IStreamDataImporterSite {
 
     private StreamProducerSettings settings;
-    private DBSEntity sourceObject;
+    private StreamEntityMapping entityMapping;
     private Map<String, Object> processorProperties;
 
-    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<String, Object> processorProperties) {
+    StreamDataImporterSite(StreamProducerSettings settings, StreamEntityMapping entityMapping, Map<String, Object> processorProperties) {
         this.settings = settings;
-        this.sourceObject = sourceObject;
+        this.entityMapping = entityMapping;
         this.processorProperties = processorProperties;
     }
 
@@ -38,8 +36,8 @@ public class StreamDataImporterSite implements IStreamDataImporterSite {
     }
 
     @Override
-    public DBSEntity getSourceObject() {
-        return sourceObject;
+    public StreamEntityMapping getSourceObject() {
+        return entityMapping;
     }
 
     @Override
