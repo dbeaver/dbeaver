@@ -45,4 +45,14 @@
 
     </extension>
 
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.editors.binary.HexCommandHandler">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.ui.hexEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
+    </extension>
+
 </plugin>
