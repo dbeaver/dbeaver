@@ -108,6 +108,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     public void run() {
                         showFullDDL = isChecked();
                         getPreferenceStore().setValue(PROP_FULL_DDL, showFullDDL);
+                        getPreferenceStore().setDefault(PROP_FULL_DDL, showFullDDL);
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
@@ -141,6 +142,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                 public void run() {
                     showPermissions = isChecked();
                     getPreferenceStore().setValue(PROP_SHOW_PERMISSIONS, showPermissions);
+                    getPreferenceStore().setDefault(PROP_SHOW_PERMISSIONS, showPermissions);
                     refreshPart(PostgreSourceViewEditor.this, true);
                 }
             }, true));
@@ -157,6 +159,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     public void run() {
                         showColumnComments = isChecked();
                         getPreferenceStore().setValue(PROP_COLUMN_COMMENTS, showPermissions);
+                        getPreferenceStore().setDefault(PROP_COLUMN_COMMENTS, showPermissions);
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
