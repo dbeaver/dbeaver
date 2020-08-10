@@ -271,12 +271,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // No value handler - get raw value
                 attrValue = resultSet.getAttributeValue(i);
             }
-            DatabaseMappingAttribute targetAttr = column.targetAttr;
-            rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
-                targetSession,
-                targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
-                attrValue,
-                false, false);
+            if (containerMapping != null && containerMapping.getTarget() instanceof DBSDocumentContainer) {
+                rowValues[column.targetIndex] = attrValue;
+            } else {
+                DatabaseMappingAttribute targetAttr = column.targetAttr;
+                rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
+                    targetSession,
+                    targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
+                    attrValue,
+                    false, false);
+            }
         }
         executeBatch.add(rowValues);
 
