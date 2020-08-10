@@ -156,7 +156,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     @Override
                     public void run() {
                         showColumnComments = isChecked();
-                        getPreferenceStore().setValue(PROP_COLUMN_COMMENTS, showPermissions);
+                        getPreferenceStore().setValue(PROP_COLUMN_COMMENTS, showColumnComments);
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
