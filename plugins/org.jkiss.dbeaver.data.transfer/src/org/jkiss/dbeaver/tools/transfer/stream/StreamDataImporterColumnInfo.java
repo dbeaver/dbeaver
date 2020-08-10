@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
     private StreamEntityMapping entityMapping;
-    private final DBPDataKind dataKind;
+    private DBPDataKind dataKind;
 
     public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
         super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
@@ -56,5 +56,9 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
     @Override
     public DBPDataSource getDataSource() {
         return entityMapping.getDataSource();
+    }
+
+    public void setDataKind(DBPDataKind dataKind) {
+        this.dataKind = dataKind;
     }
 }

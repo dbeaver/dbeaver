@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.stream.importer;
 import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +41,6 @@ import java.util.Map;
  * CSV importer
  */
 public class DataImporterCSV extends StreamImporterAbstract {
-
-    private static final Log log = Log.getLog(DataImporterCSV.class);
 
     private static final String PROP_ENCODING = "encoding";
     private static final String PROP_HEADER = "header";
@@ -132,27 +128,15 @@ public class DataImporterCSV extends StreamImporterAbstract {
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
-        DateTimeFormatter tsFormat = null;
-
-        String tsFormatPattern = CommonUtils.toString(properties.get(PROP_TIMESTAMP_FORMAT));
-        if (!CommonUtils.isEmpty(tsFormatPattern)) {
-            try {
-                tsFormat = DateTimeFormatter.ofPattern(tsFormatPattern);
-            } catch (Exception e) {
-                log.error("Wrong timestamp format: " + tsFormatPattern, e);
-            }
-            //Map<Object, Object> defTSProps = site.getSourceObject().getDataSource().getContainer().getDataFormatterProfile().getFormatterProperties(DBDDataFormatter.TYPE_NAME_TIMESTAMP);
-        }
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);
         try (DBCSession producerSession = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
             LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
             StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);
-            if (tsFormat != null) {
-                resultSet.setDateTimeFormat(tsFormat);
-            }
 
             consumer.fetchStart(producerSession, resultSet, -1, -1);
+
+            applyTransformHints(resultSet, consumer, getTimeStampFormat(properties, PROP_TIMESTAMP_FORMAT));
 
             try (Reader reader = openStreamReader(inputStream, properties)) {
                 try (CSVReader csvReader = openCSVReader(reader, properties)) {
