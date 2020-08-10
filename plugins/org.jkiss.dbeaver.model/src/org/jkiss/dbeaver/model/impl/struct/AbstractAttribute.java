@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 
 /**
  * AbstractAttribute
  */
-public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipObject
+public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObjectExt2, DBPToolTipObject
 {
     protected String name;
     protected int valueType;
@@ -116,6 +117,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return DBUtils.getFullTypeName(this);
     }
 
+    @Override
     public void setTypeName(String typeName)
     {
         this.typeName = typeName;
@@ -139,6 +141,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return maxLength;
     }
 
+    @Override
     public void setMaxLength(long maxLength)
     {
         this.maxLength = maxLength;
@@ -151,6 +154,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return scale;
     }
 
+    @Override
     public void setScale(Integer scale)
     {
         this.scale = scale;
@@ -163,6 +167,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return precision;
     }
 
+    @Override
     public void setPrecision(Integer precision)
     {
         this.precision = precision;
@@ -174,6 +179,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return required;
     }
 
+    @Override
     public void setRequired(boolean required)
     {
         this.required = required;

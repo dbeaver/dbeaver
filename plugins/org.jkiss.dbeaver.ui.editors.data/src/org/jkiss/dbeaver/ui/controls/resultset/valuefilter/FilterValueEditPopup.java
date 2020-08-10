@@ -111,6 +111,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     table.setSelection(0);
                 }
                 table.setFocus();
+            } else if (e.detail == SWT.TRAVERSE_RETURN) {
+                applyFilterValue();
             }
         });
         UIUtils.addEmptyTextHint(filterTextbox, text -> "Type partial value to search");

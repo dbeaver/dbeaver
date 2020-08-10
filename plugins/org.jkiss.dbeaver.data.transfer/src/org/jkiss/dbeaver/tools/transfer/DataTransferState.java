@@ -14,17 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * DBSTypedObjectEditor2
+ * DataTransferState
  */
-public interface DBSTypedObjectEditor2 extends DBPObject {
-    /**
-     * Database specific full type name (with modifiers). E.g. VARCHAR(120) or NUMBER(20,3)
-     */
-    void setFullTypeName(String typeName);
+public class DataTransferState {
 
+    private List<Throwable> loadErrors = new ArrayList<>();
+
+    public List<Throwable> getLoadErrors() {
+        return loadErrors;
+    }
+
+    public void addError(Throwable error) {
+        loadErrors.add(error);
+    }
+
+    public boolean hasErrors() {
+        return !loadErrors.isEmpty();
+    }
 }

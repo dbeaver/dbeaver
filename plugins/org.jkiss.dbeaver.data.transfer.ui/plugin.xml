@@ -76,13 +76,12 @@
         </configPages>
 
         <configPages node="database_consumer">
-            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageMapping" producerType="database_producer"/>
+            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageMapping"/>
             <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageLoadSettings" type="settings"/>
         </configPages>
 
         <configPages node="stream_producer">
             <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPageSettings"/>
-            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPagePreview" type="preview"/>
         </configPages>
 
         <configPages node="stream_consumer">

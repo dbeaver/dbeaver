@@ -114,7 +114,7 @@ public class DataTransferRegistry {
         return result;
     }
 
-    public DataTransferNodeDescriptor getNodeByType(Class<?> type) {
+    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type) {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeClass().equals(type)) {
                 return node;

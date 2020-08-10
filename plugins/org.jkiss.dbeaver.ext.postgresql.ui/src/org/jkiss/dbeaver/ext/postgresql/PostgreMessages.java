@@ -106,6 +106,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_connection_network_postgres_ssl_advanced;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
+    public static String dialog_connection_network_postgres_ssl_advanced_use_proxy;
+    public static String dialog_connection_network_postgres_ssl_advanced_use_proxy_tip;
 
     /* PostgreConnectionPage */
     public static String dialog_setting_connection_host;

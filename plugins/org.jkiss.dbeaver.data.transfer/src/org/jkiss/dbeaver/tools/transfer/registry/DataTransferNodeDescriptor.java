@@ -153,6 +153,10 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return false;
     }
 
+    public boolean hasProcessors() {
+        return !processors.isEmpty();
+    }
+
     public DataTransferProcessorDescriptor[] getProcessors() {
         return processors.toArray(new DataTransferProcessorDescriptor[0]);
     }

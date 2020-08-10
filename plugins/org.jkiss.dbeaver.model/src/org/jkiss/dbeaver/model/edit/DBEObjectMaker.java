@@ -35,6 +35,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_CREATE_FROM_PASTE      = 2;
     long FEATURE_EDITOR_ON_CREATE       = 4;
     long FEATURE_DELETE_CASCADE         = 8;
+    long FEATURE_SUPPORTS_COPY          = 16;
 
     /**
      * New object container.

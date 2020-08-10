@@ -189,13 +189,13 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public String getTargetType(DBPDataSource targetDataSource)
+    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers)
     {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
 
-        return DBStructUtils.mapTargetDataType(targetDataSource, source);
+        return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
     }
 
     public void setTargetType(String targetType)

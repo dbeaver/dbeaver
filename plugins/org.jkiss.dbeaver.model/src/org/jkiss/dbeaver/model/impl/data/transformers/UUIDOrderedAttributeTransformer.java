@@ -66,7 +66,7 @@ public class UUIDOrderedAttributeTransformer implements DBDAttributeTransformer 
             } else if (value instanceof JDBCContentBytes) {
                 bytes = ((JDBCContentBytes) value).getRawValue();
             }
-            if (bytes != null) {
+            if (bytes != null && bytes.length >= 16) {
             	// byte shift operations from Ebean ORM project pull request #1308 
             	long mostSigBits = ((long)bytes[4] << 56) // XXXXXXXX-____-____-...
         			+ ((long)(bytes[5] & 255) << 48)

@@ -68,8 +68,9 @@ public class SimpleExclusiveLock implements DBPExclusiveResource {
             }
             taskRunning = true;
             // Wait for a while
-            DBWorkbench.getPlatformUI().readAndDispatchEvents();
-            RuntimeUtils.pause(50);
+            if (!DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                RuntimeUtils.pause(50);
+            }
         }
     }
 
