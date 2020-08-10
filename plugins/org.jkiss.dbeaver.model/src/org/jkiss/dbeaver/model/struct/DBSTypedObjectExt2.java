@@ -14,29 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * PostgreServerPostgreSQL
+ * DBSTypedObjectExt2
  */
-public class PostgreServerEdb extends PostgreServerExtensionBase {
+public interface DBSTypedObjectExt2 extends DBPObject {
+    /**
+     * Database specific type name
+     */
+    void setTypeName(String typeName);
 
-    public static final String TYPE_ID = "edb";
+    void setMaxLength(long maxLength);
 
-    public PostgreServerEdb(PostgreDataSource dataSource) {
-        super(dataSource);
-    }
+    void setScale(Integer scale);
 
-    @Override
-    public boolean supportsEntityMetadataInResults() {
-        return true;
-    }
+    void setPrecision(Integer precision);
 
-    @Override
-    public String getServerTypeName() {
-        return "EnterpriseDB";
-    }
+    void setRequired(boolean required);
+
 }
-

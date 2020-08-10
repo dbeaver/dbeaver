@@ -121,4 +121,8 @@ public interface PostgreServerExtension
     Map<String, String> getDataTypeAliases();
 
     boolean supportsTableStatistics();
+
+    // True if driver returns source table name in ResultSetMetaData.
+    // It works for original PG driver but doesn't work for many forks (e.g. Redshift).
+    boolean supportsEntityMetadataInResults();
 }

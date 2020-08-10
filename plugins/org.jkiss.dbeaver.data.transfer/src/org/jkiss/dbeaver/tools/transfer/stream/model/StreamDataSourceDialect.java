@@ -14,29 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLStateType;
 
 /**
- * PostgreServerPostgreSQL
+ * StreamDataSourceDialect
  */
-public class PostgreServerEdb extends PostgreServerExtensionBase {
+public class StreamDataSourceDialect extends BasicSQLDialect {
 
-    public static final String TYPE_ID = "edb";
+    public StreamDataSourceDialect()
+    {
+    }
 
-    public PostgreServerEdb(PostgreDataSource dataSource) {
-        super(dataSource);
+    @NotNull
+    @Override
+    public String getDialectName() {
+        return "Stream";
+    }
+
+    @NotNull
+    @Override
+    public SQLStateType getSQLStateType()
+    {
+        return SQLStateType.UNKNOWN;
     }
 
     @Override
-    public boolean supportsEntityMetadataInResults() {
+    public boolean useCaseInsensitiveNameLookup() {
         return true;
     }
-
-    @Override
-    public String getServerTypeName() {
-        return "EnterpriseDB";
-    }
 }
-

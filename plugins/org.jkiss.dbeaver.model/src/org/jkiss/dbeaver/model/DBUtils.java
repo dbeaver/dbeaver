@@ -589,11 +589,7 @@ public final class DBUtils {
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
             log.debug("Can't find datasource '" + names[0] + "' in project " + project.getName());
-            dataSourceContainer = findDataSource(names[0]);
-            if (dataSourceContainer == null) {
-                log.debug("Can't find datasource '" + names[0] + "' in any project");
-                return null;
-            }
+            return null;
         }
         if (names.length == 1) {
             return dataSourceContainer;

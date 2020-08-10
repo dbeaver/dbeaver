@@ -38,6 +38,7 @@ import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FireBirdDataSource extends GenericDataSource
@@ -144,4 +145,15 @@ public class FireBirdDataSource extends GenericDataSource
 	public DBCPlanStyle getPlanStyle() {
 		return DBCPlanStyle.PLAN;
 	}
+
+    @Override
+    public List<FireBirdTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+        return (List<FireBirdTable>) super.getPhysicalTables(monitor);
+    }
+
+    @Override
+    public List<FireBirdTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return (List<FireBirdTable>) super.getTables(monitor);
+    }
+
 }

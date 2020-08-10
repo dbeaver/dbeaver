@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -30,11 +32,16 @@ import java.util.List;
  */
 public interface IStreamDataImporter extends IDataTransferProcessor {
 
-    void init(IStreamDataImporterSite site) throws DBException;
+    void init(@NotNull IStreamDataImporterSite site) throws DBException;
 
-    List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream) throws DBException;
+    @NotNull
+    List<StreamDataImporterColumnInfo> readColumnsInfo(StreamEntityMapping entityMapping, @NotNull InputStream inputStream) throws DBException;
 
-    void runImport(DBRProgressMonitor monitor, InputStream inputStream, IDataTransferConsumer consumer) throws DBException;
+    void runImport(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource streamDataSource,
+        @NotNull InputStream inputStream,
+        @NotNull IDataTransferConsumer consumer) throws DBException;
 
     void dispose();
 
