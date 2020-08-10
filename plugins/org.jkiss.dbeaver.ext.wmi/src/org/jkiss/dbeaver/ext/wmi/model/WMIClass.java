@@ -209,7 +209,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public Collection<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
+    public List<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
             readAttributes(monitor);
