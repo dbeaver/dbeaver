@@ -117,6 +117,6 @@ public interface DBPPlatformUI {
 
     void executeShellProgram(String shellCommand);
 
-    void readAndDispatchEvents();
+    boolean readAndDispatchEvents();
 
 }

@@ -88,6 +88,13 @@ public enum DBCLogicalOperator {
             return ArrayUtils.contains(arguments, srcValue);
         }
     },
+    ILIKE("ILIKE", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return srcValue != null && !ArrayUtils.isEmpty(arguments) &&
+                    SQLUtils.matchesLike(srcValue.toString(), arguments[0].toString());
+        }
+    },
     LIKE("LIKE", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {

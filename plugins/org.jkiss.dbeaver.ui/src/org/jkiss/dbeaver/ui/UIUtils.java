@@ -151,6 +151,11 @@ public class UIUtils {
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
     }
 
+    public static void createLabelSeparator(Composite toolBar, int style) {
+        Label label = new Label(toolBar, SWT.SEPARATOR | style);
+        label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+    }
+
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
@@ -1016,11 +1021,21 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener)
-    {
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener) {
+        return createDialogButton(parent, label, null, null, selectionListener);
+    }
+
+    @NotNull
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
         button.setFont(JFaceResources.getDialogFont());
+        if (icon != null) {
+            button.setImage(DBeaverIcons.getImage(icon));
+        }
+        if (toolTip != null) {
+            button.setToolTipText(toolTip);
+        }
 
         // Dialog settings
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);

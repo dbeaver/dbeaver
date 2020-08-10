@@ -43,6 +43,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -440,7 +441,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Association
-    public Collection<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;

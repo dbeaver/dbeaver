@@ -165,7 +165,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
-                initSSL(props, sslConfig);
+                boolean useProxy = sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY);
+                if (useProxy) {
+                    initProxySSL(props, sslConfig);
+                } else {
+                    initServerSSL(props, sslConfig);
+                }
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
@@ -175,7 +180,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         props.put(PostgreConstants.PROP_SSL, "true");
 
         final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
@@ -200,6 +205,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        // No special config
+        //initServerSSL(props, sslConfig);
     }
 
     @Override

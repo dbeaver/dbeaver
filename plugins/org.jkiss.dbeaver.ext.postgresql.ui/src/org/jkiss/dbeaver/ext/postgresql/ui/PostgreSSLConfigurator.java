@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -44,6 +45,8 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 {
+    private static final boolean ENABLE_PROXY = false;
+
     public static final String[] SSL_MODES = {"","disable","allow","prefer","require","verify-ca","verify-full"};
 
     private TextWithOpen rootCertText;
@@ -52,6 +55,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 
     private Combo sslModeCombo;
     private Combo sslFactoryCombo;
+    private Button useProxyService;
 
     @Override
     public void createControl(Composite parent, Runnable propertyChangeListener) {
@@ -91,6 +95,13 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
                 sslModeCombo.add(mode);
             }
             sslFactoryCombo = UIUtils.createLabelCombo(advGroup, PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_factory, SWT.DROP_DOWN);
+            if (ENABLE_PROXY) {
+                useProxyService = UIUtils.createCheckbox(
+                    advGroup,
+                    PostgreMessages.dialog_connection_network_postgres_ssl_advanced_use_proxy,
+                    PostgreMessages.dialog_connection_network_postgres_ssl_advanced_use_proxy_tip,
+                    false, 2);
+            }
         }
     }
 
@@ -100,6 +111,9 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         clientKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY)));
         rootCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT)));
         UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
+        if (ENABLE_PROXY) {
+            useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
+        }
 
         final Job resolveJob = new Job("Find factories") {
             {
@@ -135,5 +149,8 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText().trim());
         configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
         configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
+        if (ENABLE_PROXY) {
+            configuration.setProperty(PostgreConstants.PROP_SSL_PROXY, useProxyService.getSelection());
+        }
     }
 }

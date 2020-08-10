@@ -35,13 +35,17 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreTable
@@ -153,6 +157,30 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     public void setPartitionKey(String partitionKey) {
         this.partitionKey = partitionKey;
+    }
+
+    @Override
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+        super.fetchStatistics(dbResult);
+        if (diskSpace != null && diskSpace == 0 && hasSubClasses) {
+            // Prefetch partitions (shouldn't be too expensive, we already have all tables in cache)
+            getPartitions(dbResult.getSession().getProgressMonitor());
+        }
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        if (diskSpace != null && subTables != null) {
+            long partSizeSum = diskSpace;
+            for (PostgreTableInheritance ti : subTables) {
+                PostgreTableBase partTable = ti.getParentObject();
+                if (partTable.isPartition() && partTable instanceof PostgreTableReal) {
+                    partSizeSum += ((PostgreTableReal) partTable).getStatObjectSize();
+                }
+            }
+            return partSizeSum;
+        }
+        return super.getStatObjectSize();
     }
 
     @Override
@@ -381,5 +409,12 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
             }
         }
         return result;
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        superTables = null;
+        subTables = null;
+        return super.refreshObject(monitor);
     }
 }

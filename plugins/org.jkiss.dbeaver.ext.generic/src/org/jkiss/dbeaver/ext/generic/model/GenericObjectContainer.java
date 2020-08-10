@@ -92,8 +92,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTableBase> tables = getTables(monitor);
+    public List<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
+        List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<GenericTableBase> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {
@@ -107,8 +107,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTableBase> tables = getTables(monitor);
+    public List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<GenericTable> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {
@@ -122,7 +122,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<GenericTableBase> getTables(DBRProgressMonitor monitor)
+    public List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
@@ -165,7 +165,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                     newIndexCache = new ArrayList<>();
                     indexCache.clearCache();
                     // Load indexes for all tables and return copy of them
-                    Collection<GenericTableBase> tables = getTables(monitor);
+                    List<? extends GenericTableBase> tables = getTables(monitor);
                     monitor.beginTask("Cache indexes from tables", tables.size());
                     try {
                         for (GenericTableBase table : tables) {

@@ -62,7 +62,11 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                 bytes = ((JDBCContentBytes) value).getRawValue();
             }
             if (bytes != null) {
-                return GeneralUtils.getUUIDFromBytes(bytes).toString();
+                try {
+                    return GeneralUtils.getUUIDFromBytes(bytes).toString();
+                } catch (Exception e) {
+                    return String.valueOf(value);
+                }
             }
             return super.getValueDisplayString(column, value, format);
         }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -392,6 +393,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 DBWorkbench.getPlatformUI().executeShellProgram(settings.getOutputFolder());
             }
         }
+    }
+
+    @Override
+    public Object getTargetObject() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Object getTargetObjectContainer() {
+        return null;
     }
 
     private void executeFinishCommand() {

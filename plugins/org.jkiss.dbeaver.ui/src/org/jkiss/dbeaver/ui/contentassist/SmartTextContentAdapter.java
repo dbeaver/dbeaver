@@ -25,7 +25,7 @@ public class SmartTextContentAdapter extends TextContentAdapter {
             String contentsUC = contents.toUpperCase();
             for (int i = selection.x - 1; i >= 0; i--) {
                 String prefix = curValue.substring(i, selection.x);
-                if (i > 0 && contentsUC.startsWith(prefix)) {
+                if (i == 0 && contentsUC.startsWith(prefix)) {
                     text.setSelection(i, selection.x);
                     break;
                 }

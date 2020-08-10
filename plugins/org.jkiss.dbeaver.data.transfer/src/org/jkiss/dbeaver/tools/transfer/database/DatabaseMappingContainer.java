@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +40,6 @@ import java.util.*;
 /**
  * DatabaseMappingContainer
  */
-@SuppressWarnings("unchecked")
 public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
@@ -120,15 +121,25 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     @Override
     public String getTargetName() {
+        String targetTableName = targetName;
+        if (CommonUtils.isEmpty(targetTableName)) {
+            if (target != null) {
+                targetTableName = target.getName();
+            } else if (source != null) {
+                targetTableName = source.getName();
+            } else {
+                targetTableName = "";
+            }
+        }
         switch (mappingType) {
             case existing:
                 return target.getName();
             case create:
-                return targetName;
+                return targetTableName;
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default:
-                return "?";
+                return targetTableName;
         }
     }
 
@@ -280,6 +291,30 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
+    }
+
+    public boolean isSameMapping(DatabaseMappingContainer mapping) {
+        if (!CommonUtils.equalObjects(source, mapping.source) ||
+            attributeMappings.size() != mapping.attributeMappings.size()) {
+            return false;
+        }
+        for (int i = 0; i < attributeMappings.size(); i++) {
+            if (!CommonUtils.equalObjects(
+                attributeMappings.get(i).getSource().getName(),
+                mapping.attributeMappings.get(i).getSource().getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public String getTargetFullName() {
+        DBSObjectContainer container = consumerSettings.getContainer();
+
+        if (container instanceof DBSSchema || container instanceof DBSCatalog) {
+            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
+        }
+        return targetName;
     }
 
     private class MetadataReceiver implements DBDDataReceiver {
