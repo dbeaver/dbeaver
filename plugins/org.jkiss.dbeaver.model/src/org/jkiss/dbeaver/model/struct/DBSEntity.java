@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSEntity
@@ -42,7 +43,7 @@ public interface DBSEntity extends DBSObject
      * @param monitor progress monitor
      */
     @Nullable
-    Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
+    List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve attribute by it's name (case insensitive)

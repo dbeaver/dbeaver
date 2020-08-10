@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -170,16 +169,22 @@ public class DatabaseTransferUtils {
             if (tableManager == null) {
                 throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
             }
-            if (!(tableManager instanceof DBEStructEditor)) {
-                throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
+            Class<? extends DBSEntityAttribute> attrClass;
+            SQLObjectEditor<DBSEntityAttribute,?> attributeManager;
+            if (executionContext.getDataSource().getInfo().isDynamicMetadata()) {
+                attrClass = null;
+                attributeManager = null;
+            } else {
+                if (!(tableManager instanceof DBEStructEditor)) {
+                    throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
+                }
+                Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
+                attrClass = getChildType(childTypes, DBSEntityAttribute.class);
+                if (attrClass == null) {
+                    throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
+                }
+                attributeManager = editorsRegistry.getObjectManager(attrClass, SQLObjectEditor.class);
             }
-            Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
-            Class<? extends DBSEntityAttribute> attrClass = getChildType(childTypes, DBSEntityAttribute.class);
-            if (attrClass == null) {
-                throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
-            }
-
-            SQLObjectEditor<DBSEntityAttribute,?> attributeManager = editorsRegistry.getObjectManager(attrClass, SQLObjectEditor.class);
 
             Map<String, Object> options = new HashMap<>();
             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
@@ -187,7 +192,7 @@ public class DatabaseTransferUtils {
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
             DBSEntity table;
-            SQLStructEditor.StructCreateCommand createCommand = null;
+            DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 if (table instanceof DBPNamedObject2) {
@@ -196,7 +201,7 @@ public class DatabaseTransferUtils {
                     throw new DBException("Table name cannot be set for " + tableClass.getName());
                 }
 
-                createCommand = (SQLStructEditor.StructCreateCommand) tableManager.makeCreateCommand(table, options);
+                createCommand = tableManager.makeCreateCommand(table, options);
             } else {
                 table = (DBSEntity) containerMapping.getTarget();
                 if (table == null) {
@@ -204,40 +209,42 @@ public class DatabaseTransferUtils {
                 }
             }
 
-            for (DatabaseMappingAttribute attributeMapping : containerMapping.getAttributeMappings(monitor)) {
-                if (attributeMapping.getMappingType() != DatabaseMappingType.create) {
-                    continue;
-                }
-                DBSEntityAttribute newAttribute = attributeManager.createNewObject(monitor, commandContext, table, null, options);
-                if (!(newAttribute instanceof DBPNamedObject2)) {
-                    throw new DBException("Table column name cannot be set for " + attrClass.getName());
-                }
-                ((DBPNamedObject2) newAttribute).setName(attributeMapping.getTargetName());
+            if (attributeManager != null) {
+                for (DatabaseMappingAttribute attributeMapping : containerMapping.getAttributeMappings(monitor)) {
+                    if (attributeMapping.getMappingType() != DatabaseMappingType.create) {
+                        continue;
+                    }
+                    DBSEntityAttribute newAttribute = attributeManager.createNewObject(monitor, commandContext, table, null, options);
+                    if (!(newAttribute instanceof DBPNamedObject2)) {
+                        throw new DBException("Table column name cannot be set for " + attrClass.getName());
+                    }
+                    ((DBPNamedObject2) newAttribute).setName(attributeMapping.getTargetName());
 
-                // Set attribute properties
-                if (newAttribute instanceof DBSTypedObjectExt2) {
-                    DBSTypedObjectExt2 typedAttr = (DBSTypedObjectExt2) newAttribute;
+                    // Set attribute properties
+                    if (newAttribute instanceof DBSTypedObjectExt2) {
+                        DBSTypedObjectExt2 typedAttr = (DBSTypedObjectExt2) newAttribute;
 
-                    if (typedAttr instanceof DBSTypedObjectExt3) {
-                        String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
-                        ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
-                    } else {
-                        String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
-                        typedAttr.setTypeName(targetAttrType);
+                        if (typedAttr instanceof DBSTypedObjectExt3) {
+                            String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
+                            ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
+                        } else {
+                            String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
+                            typedAttr.setTypeName(targetAttrType);
+                        }
+
+                        DBSAttributeBase sourceAttr = attributeMapping.getSource();
+                        if (sourceAttr != null) {
+                            typedAttr.setMaxLength(sourceAttr.getMaxLength());
+                            typedAttr.setPrecision(sourceAttr.getPrecision());
+                            typedAttr.setScale(sourceAttr.getScale());
+                            typedAttr.setRequired(sourceAttr.isRequired());
+                        }
                     }
 
-                    DBSAttributeBase sourceAttr = attributeMapping.getSource();
-                    if (sourceAttr != null) {
-                        typedAttr.setMaxLength(sourceAttr.getMaxLength());
-                        typedAttr.setPrecision(sourceAttr.getPrecision());
-                        typedAttr.setScale(sourceAttr.getScale());
-                        typedAttr.setRequired(sourceAttr.isRequired());
+                    SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
+                    if (createCommand instanceof DBECommandAggregator) {
+                        ((DBECommandAggregator)createCommand).aggregateCommand(attrCreateCommand);
                     }
-                }
-
-                SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
-                if (createCommand != null) {
-                    createCommand.aggregateCommand(attrCreateCommand);
                 }
             }
 
