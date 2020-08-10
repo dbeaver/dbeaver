@@ -43,6 +43,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Super class for DB2 Tables, Views, Nicknames
@@ -132,7 +133,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
 
     @Override
-    public Collection<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
