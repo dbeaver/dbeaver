@@ -39,7 +39,10 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLTable base
@@ -92,7 +95,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public Collection<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTableColumn> childColumns = getContainer().tableCache.getChildren(monitor, getContainer(), this);
