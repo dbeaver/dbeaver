@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -193,7 +192,7 @@ public class DatabaseTransferUtils {
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
             DBSEntity table;
-            SQLStructEditor.ObjectCreateCommand createCommand = null;
+            DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 if (table instanceof DBPNamedObject2) {
@@ -243,8 +242,8 @@ public class DatabaseTransferUtils {
                     }
 
                     SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
-                    if (createCommand instanceof SQLStructEditor.StructCreateCommand) {
-                        ((SQLStructEditor.StructCreateCommand)createCommand).aggregateCommand(attrCreateCommand);
+                    if (createCommand instanceof DBECommandAggregator) {
+                        ((DBECommandAggregator)createCommand).aggregateCommand(attrCreateCommand);
                     }
                 }
             }
