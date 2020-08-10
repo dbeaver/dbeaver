@@ -395,6 +395,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
+    @Override
+    public Object getTargetObject() {
+        return null;
+    }
+
     @Nullable
     @Override
     public Object getTargetObjectContainer() {

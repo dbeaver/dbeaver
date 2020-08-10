@@ -58,6 +58,10 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      */
     void finishTransfer(DBRProgressMonitor monitor, boolean last);
 
+    // Target object. May be null or target database object (table)
+    @Nullable
+    Object getTargetObject();
+
     // If not null then this consumer is a fake one which must be replaced by explicit target consumers on configuration stage
     @Nullable
     Object getTargetObjectContainer();

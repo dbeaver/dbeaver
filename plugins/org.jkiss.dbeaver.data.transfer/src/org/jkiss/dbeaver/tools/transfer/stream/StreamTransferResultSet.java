@@ -60,6 +60,10 @@ public class StreamTransferResultSet implements DBCResultSet {
             .collect(Collectors.toList());
     }
 
+    public List<StreamDataImporterColumnInfo> getAttributeMappings() {
+        return attributeMappings;
+    }
+
     public void setStreamRow(Object[] streamRow) {
         this.streamRow = streamRow;
     }
@@ -93,7 +97,7 @@ public class StreamTransferResultSet implements DBCResultSet {
                 } catch (Exception e) {
                     LocalDateTime localDT = LocalDateTime.from(ta);
                     if (localDT != null) {
-                        value = java.util.Date.from(localDT.atZone(ZoneId.systemDefault()).toInstant());
+                        value = java.util.Date.from(localDT.atZone(ZoneId.of("UTC")).toInstant());
                     }
                 }
             } catch (Exception e) {
