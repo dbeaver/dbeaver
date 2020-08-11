@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -26,6 +27,8 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -42,7 +45,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBAUserCredentialsProvider, DBPNativeClientLocationManager {
+public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
+    DBAUserCredentialsProvider,
+    DBPNativeClientLocationManager,
+    DBPInformationProvider {
 
     public OracleDataSourceProvider()
     {
@@ -58,13 +64,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
-        OracleConstants.ConnectionType connectionType;
-        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
-        if (conTypeProperty != null) {
-            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
-        } else {
-            connectionType = OracleConstants.ConnectionType.BASIC;
-        }
+        OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
             return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
         }
@@ -123,6 +123,18 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             }
         }
         return url.toString();
+    }
+
+    @NotNull
+    private OracleConstants.ConnectionType getConnectionType(DBPConnectionConfiguration connectionInfo) {
+        OracleConstants.ConnectionType connectionType;
+        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
+        if (conTypeProperty != null) {
+            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
+        } else {
+            connectionType = OracleConstants.ConnectionType.BASIC;
+        }
+        return connectionType;
     }
 
     @NotNull
@@ -207,5 +219,32 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return connectionInfo.getUserPassword();
     }
 
+
+    @Nullable
+    @Override
+    public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
+        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
+            DBPConnectionConfiguration connectionInfo = ((DBPDataSourceContainer) object).getConnectionConfiguration();
+            OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
+            if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
+                return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
+            }
+            String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
+            if (connectionType == OracleConstants.ConnectionType.TNS) {
+                return databaseName;
+            } else {
+                String hostName = connectionInfo.getHostName();
+                String hostPort = connectionInfo.getHostPort();
+                if (CommonUtils.isEmpty(hostName)) {
+                    return null;
+                } else if (CommonUtils.isEmpty(hostPort)) {
+                    return hostName;
+                } else {
+                    return hostName + ":" + hostPort;
+                }
+            }
+        }
+        return null;
+    }
 
 }

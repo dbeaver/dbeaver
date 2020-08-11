@@ -22,12 +22,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -372,5 +375,35 @@ public class DataSourceUtils {
             }
         }
         return false;
+    }
+
+    @NotNull
+    public static String getDataSourceAddressText(DBPDataSourceContainer dataSourceContainer) {
+        DBPDataSourceProvider dataSourceProvider = dataSourceContainer.getDriver().getDataSourceProvider();
+        if (dataSourceProvider instanceof DBPInformationProvider) {
+            String objectInformation = ((DBPInformationProvider) dataSourceProvider).getObjectInformation(dataSourceContainer, DBPInformationProvider.INFO_TARGET_ADDRESS);
+            if (!CommonUtils.isEmpty(objectInformation)) {
+                return objectInformation;
+            }
+        }
+        DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
+        String hostText = cfg.getHostName();
+        // For localhost ry to get real host name from tunnel configuration
+        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
+            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
+                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    if (!CommonUtils.isEmpty(tunnelHost)) {
+                        hostText = tunnelHost;
+                        break;
+                    }
+                }
+            }
+        }
+        String hostPort = cfg.getHostPort();
+        if (!CommonUtils.isEmpty(hostPort)) {
+            return hostText + ":" + hostPort;
+        }
+        return hostText;
     }
 }
