@@ -141,6 +141,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
 
+    @Override
+    protected boolean isIncludeChildObjectReference(DBRProgressMonitor monitor, DBSObject childObject) throws DBException {
+        if (childObject instanceof DBSTableIndex) {
+            return isIncludeIndexInDDL(monitor, (DBSTableIndex) childObject);
+        }
+        return super.isIncludeChildObjectReference(monitor, childObject);
+    }
+
     protected String getCreateTableType(OBJECT_TYPE table) {
         return DBUtils.isView(table) ? "VIEW" : "TABLE";//$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -270,7 +278,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (im != null && table instanceof DBSTable) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
-                    if (!isIncludeIndexInDDL(index)) {
+                    if (!isIncludeIndexInDDL(monitor, index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index, options));
@@ -290,7 +298,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     }
 
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
         return !DBUtils.isHiddenObject(index) && !DBUtils.isInheritedObject(index);
     }
 
