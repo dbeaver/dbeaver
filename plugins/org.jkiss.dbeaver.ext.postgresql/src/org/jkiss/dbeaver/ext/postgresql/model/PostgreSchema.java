@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.h2.util.Utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -68,7 +69,8 @@ public class PostgreSchema implements
     DBPObjectStatisticsCollector,
     PostgreObject,
     PostgreScriptObject,
-    PostgrePrivilegeOwner
+    PostgrePrivilegeOwner,
+    DBPScriptObjectExt2
 {
 
     private static final Log log = Log.getLog(PostgreSchema.class);
@@ -396,13 +398,13 @@ public class PostgreSchema implements
             sql.append(" AUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
         }
         sql.append(";\n");
-        if (!CommonUtils.isEmpty(getDescription())) {
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
                 .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
             sql.append(";\n");
         }
 
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
             // Show DDL for all schema objects (do not include CREATE EXTENSION)
             monitor.beginTask("Cache schema", 1);
             cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
@@ -510,6 +512,12 @@ public class PostgreSchema implements
         } finally {
             hasStatistics = true;
         }
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option)
+               || DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
