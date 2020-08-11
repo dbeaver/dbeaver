@@ -450,7 +450,7 @@ public class DBExecUtils {
                             }
                             // Then search for unique index
                             for (DBSTableIndex index : indexes) {
-                                if (DBUtils.isIdentifierIndex(monitor, index)) {
+                                if (DBUtils.isIdentifierIndex(monitor, index) && !identifiers.contains(index)) {
                                     identifiers.add(index);
                                     break;
                                 }
@@ -479,30 +479,6 @@ public class DBExecUtils {
 
             }
         }
-        if (CommonUtils.isEmpty(identifiers)) {
-            // Check for pseudo attrs (ROWID)
-            // Do this after natural identifiers search (see #3829)
-            for (DBDAttributeBinding column : bindings) {
-                DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
-                if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                    identifiers.add(new DBDPseudoReferrer(table, column));
-                    break;
-                }
-            }
-        }
-
-//        if (CommonUtils.isEmpty(identifiers)) {
-//            if (nonIdentifyingConstraints != null) {
-//                identifiers.addAll(nonIdentifyingConstraints);
-//            }
-//        }
-
-        if (CommonUtils.isEmpty(identifiers)) {
-            // No physical identifiers or row ids
-            // Make new or use existing virtual identifier
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
-            identifiers.add(virtualEntity.getBestIdentifier());
-        }
 
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
@@ -523,10 +499,27 @@ public class DBExecUtils {
                     uniqueId = constraint;
                 }
             }
-            return uniqueId;
+            if (uniqueId != null) {
+                return uniqueId;
+            }
         }
 
-        return null;
+        {
+            // Check for pseudo attrs (ROWID)
+            // Do this after natural identifiers search (see #3829)
+            for (DBDAttributeBinding column : bindings) {
+                DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
+                if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
+                    identifiers.add(new DBDPseudoReferrer(table, column));
+                    break;
+                }
+            }
+        }
+
+        // No physical identifiers or row ids
+        // Make new or use existing virtual identifier
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
+        return virtualEntity.getBestIdentifier();
     }
 
     private static boolean isGoodReferrer(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings, DBSEntityReferrer referrer) throws DBException
@@ -539,10 +532,15 @@ public class DBExecUtils {
             return referrer instanceof DBVEntityConstraint;
         }
         for (DBSEntityAttributeRef ref : references) {
+            boolean refMatches = false;
             for (DBDAttributeBinding binding : bindings) {
                 if (binding.matches(ref.getAttribute(), false)) {
-                    return true;
+                    refMatches = true;
+                    break;
                 }
+            }
+            if (!refMatches) {
+                return false;
             }
         }
         return true;
