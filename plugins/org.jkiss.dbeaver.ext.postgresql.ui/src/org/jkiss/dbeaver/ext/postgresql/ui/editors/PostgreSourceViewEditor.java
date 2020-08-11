@@ -37,14 +37,6 @@ import java.util.Map;
  */
 public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
 
-    private static final String PROP_SHOW_PERMISSIONS = "pg.source.editor.showPermissions";
-    private static final String PROP_COLUMN_COMMENTS = "pg.source.editor.showColumnComments";
-    private static final String PROP_FULL_DDL = "pg.source.editor.showFullDDL";
-
-//    private Boolean showPermissions;
-//    private Boolean showColumnComments;
-//    private Boolean showFullDDL;
-
     public PostgreSourceViewEditor() {
 
     }
@@ -58,27 +50,6 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         }
         return true;
     }
-
-//    private boolean getShowPermissions() {
-//        if (showPermissions == null) {
-//            showPermissions = getPreferenceStore().getBoolean(PROP_SHOW_PERMISSIONS);
-//        }
-//        return showPermissions;
-//    }
-//
-//    private Boolean getShowColumnComments() {
-//        if (showColumnComments == null) {
-//            showColumnComments = getPreferenceStore().getBoolean(PROP_COLUMN_COMMENTS);
-//        }
-//        return showColumnComments;
-//    }
-//
-//    private Boolean getShowFullDDL() {
-//        if (showFullDDL == null) {
-//            showFullDDL = getPreferenceStore().getBoolean(PROP_FULL_DDL);
-//        }
-//        return showFullDDL;
-//    }
 
     @Override
     protected boolean isAnnotationRulerVisible() {
