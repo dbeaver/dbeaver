@@ -26,22 +26,19 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -143,7 +140,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     }
                 }
                 if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return getDataSourceHostText(((DBNDataSource) element).getDataSourceContainer().getConnectionConfiguration());
+                    return DataSourceUtils.getDataSourceAddressText(((DBNDataSource) element).getDataSourceContainer());
                 }
                 return null;
             }
@@ -207,13 +204,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event, int widthOccupied) {
         DBPDataSourceContainer dataSourceContainer = element.getDataSourceContainer();
-        DBPConnectionConfiguration configuration = dataSourceContainer.getConnectionConfiguration();
-        if (!CommonUtils.isEmpty(configuration.getHostName())) {
+
+        String hostText = DataSourceUtils.getDataSourceAddressText(dataSourceContainer);
+        if (!CommonUtils.isEmpty(hostText)) {
             Font oldFont = gc.getFont();
-            String hostText = getDataSourceHostText(configuration);
-            if (CommonUtils.isEmpty(hostText)) {
-                return;
-            }
+
             DBPDataSourceContainer ds = element.getDataSourceContainer();
             Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
 
@@ -240,24 +235,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 true);
             gc.setFont(oldFont);
         }
-    }
-
-    @NotNull
-    private String getDataSourceHostText(DBPConnectionConfiguration configuration) {
-        String hostText = configuration.getHostName();
-        // For localhost ry to get real host name from tunnel configuration
-        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
-            for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
-                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
-                    if (!CommonUtils.isEmpty(tunnelHost)) {
-                        hostText = tunnelHost;
-                        break;
-                    }
-                }
-            }
-        }
-        return hostText;
     }
 
     ///////////////////////////////////////////////////////////////////
