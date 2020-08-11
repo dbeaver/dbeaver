@@ -301,6 +301,12 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             this.selectProducer(savedProducer, savedProcessor, false);
         }
 
+        if (processorNode == producer) {
+            producerProcessor = true;
+        } else if (processorNode == consumer) {
+            producerProcessor = false;
+        }
+
         // Load processor properties
         Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
         {
@@ -468,7 +474,6 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     public void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor, boolean rewrite) {
         this.consumer = consumer;
         this.processor = processor;
-        this.producerProcessor = false;
         if (consumer != null && processor != null) {
             if (!processorPropsHistory.containsKey(processor)) {
                 processorPropsHistory.put(processor, new HashMap<>());
@@ -498,7 +503,6 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         this.producer = producer;
         this.processor = processor;
         if (producer != null && processor != null) {
-            this.producerProcessor = true;
             if (!processorPropsHistory.containsKey(processor)) {
                 processorPropsHistory.put(processor, new HashMap<>());
             }
