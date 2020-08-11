@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -49,6 +53,15 @@ public class DataImportHandler extends DataTransferHandler {
             final DBSObjectContainer objectContainer = RuntimeUtils.getObjectAdapter(object, DBSObjectContainer.class);
             if (objectContainer != null && DataTransferPropertyTester.isObjectContainerSupportsImport(objectContainer)) {
                 return new DatabaseTransferConsumer(objectContainer);
+            }
+            if (object instanceof DBSWrapper) {
+                object = ((DBSWrapper) object).getObject();
+            }
+            if (object instanceof DBPObject) {
+                object = DBUtils.getPublicObject((DBSObject) object);
+            }
+            if (object instanceof DBSObjectContainer && DataTransferPropertyTester.isObjectContainerSupportsImport((DBSObjectContainer) object)) {
+                return new DatabaseTransferConsumer((DBSObjectContainer) object);
             }
             return null;
         }
