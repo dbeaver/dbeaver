@@ -113,7 +113,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     @Override
     public void validateErrorCode(int exitCode) throws IOException {
         if (exitCode == 1) {
-            DBWorkbench.getPlatformUI().showError("Warning", "Errors ignored on restore");
+            DBWorkbench.getPlatformUI().showMessageBox("Warning", "Errors ignored on restore", false);
         } else {
             super.validateErrorCode(exitCode);
         }
