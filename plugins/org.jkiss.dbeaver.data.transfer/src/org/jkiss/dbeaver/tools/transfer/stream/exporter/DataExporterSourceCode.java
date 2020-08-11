@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -41,12 +43,19 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
 
     private static final String PROP_FORMAT_DATE_ISO = "formatDateISOPHP";
     private static final String PROP_LANGUAGE = "language";
+    private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
+
+    private static final String ROW_DELIMITER_DEFAULT = "default";
+    private static final String DEF_QUOTE_CHAR = "\"";
 
     private DBDAttributeBinding[] columns;
     private int rowNum = 0;
 
     private boolean formatDateISO = true;
     private ProgramLanguages language;
+    private String rowDelimiter;
+    private char quoteChar = '"';
 
     enum ProgramLanguages {
         PHP_VERSION_LESS_5_and_4 ("php version less 5.4"), PHP_VERSION_AT_LEAST_5_AND_4("php version at least 5.4");
@@ -74,6 +83,14 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         Map<String, Object> properties = site.getProperties();
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         language = ProgramLanguages.fromValue(CommonUtils.toString(properties.get(PROP_LANGUAGE)));
+        this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
+        if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
+            this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
+        }
+        Object quoteProp = properties.get(PROP_QUOTE_CHAR);
+        if (!quoteProp.equals(DEF_QUOTE_CHAR)) {
+            quoteChar = '\'';
+        }
     }
 
     @Override
@@ -81,12 +98,12 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         columns = getSite().getAttributes();
         String tableName = getSite().getSource().getName();
         PrintWriter out = getWriter();
-        out.write("<?php\n");
+        out.write("<?php" + rowDelimiter);
         out.write("$" + tableName + " = ");
         if(language == ProgramLanguages.PHP_VERSION_LESS_5_and_4) {
-            out.write("array(\n");
+            out.write("array(" + rowDelimiter);
         } else {
-            out.write("[\n");
+            out.write("[" + rowDelimiter);
         }
     }
 
@@ -94,13 +111,13 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
         PrintWriter out = getWriter();
         if (rowNum > 0) {
-            out.write(",\n");
+            out.write("," + rowDelimiter);
         }
         rowNum++;
         if(language == ProgramLanguages.PHP_VERSION_LESS_5_and_4) {
-            out.write("\tarray(\n");
+            out.write("\tarray(" + rowDelimiter);
         } else {
-            out.write("\t[\n");
+            out.write("\t[" + rowDelimiter);
         }
         for (int i = 0; i < columns.length; i++) {
             DBDAttributeBinding column = columns[i];
@@ -108,7 +125,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
             if (CommonUtils.isEmpty(columnName)) {
                 columnName = column.getName();
             }
-            out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" => ");
+            out.write("\t\t" + quoteChar + JSONUtils.escapeJsonString(columnName) + quoteChar + " => ");
             Object cellValue = row[column.getOrdinalPosition()];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
@@ -121,9 +138,9 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
                     if (cs != null) {
                         if (ContentUtils.isTextContent(content)) {
                             try (Reader in = cs.getContentReader()) {
-                                out.write("\"");
+                                out.write(quoteChar);
                                 writeCellValue(in);
-                                out.write("\"");
+                                out.write(quoteChar);
                             }
                         } else {
                             getSite().writeBinaryData(cs);
@@ -144,7 +161,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
             if (i < columns.length - 1) {
                 out.write(",");
             }
-            out.write("\n");
+            out.write(rowDelimiter);
         }
         if(language == ProgramLanguages.PHP_VERSION_LESS_5_and_4) {
             out.write("\t)");
@@ -158,17 +175,17 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
         PrintWriter out = getWriter();
         if(language == ProgramLanguages.PHP_VERSION_LESS_5_and_4) {
-            out.write("\n);");
+            out.write(rowDelimiter + ");");
         } else {
-            out.write("\n];");
+            out.write(rowDelimiter + "];");
         }
-        out.write("\n?>");
+        out.write(rowDelimiter + "?>");
     }
 
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            getWriter().write("\"" + JSONUtils.escapeJsonString(value) + "\"");
+            getWriter().write(quoteChar + JSONUtils.escapeJsonString(value) + quoteChar);
         } else {
             getWriter().write("null");
         }
