@@ -58,7 +58,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     private char quoteChar = '"';
 
     enum ProgramLanguages {
-        PHP_VERSION_LESS_5_and_4 ("php version less 5.4"), PHP_VERSION_AT_LEAST_5_AND_4("php version at least 5.4");
+        PHP_VERSION_LESS_5_and_4 ("PHP < 5.4"), PHP_VERSION_AT_LEAST_5_AND_4("PHP 5.4+");
         private final String value;
         ProgramLanguages(String v) {
             value = v;
