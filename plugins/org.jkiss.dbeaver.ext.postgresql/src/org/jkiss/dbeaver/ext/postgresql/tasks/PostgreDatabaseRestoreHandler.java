@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -109,4 +110,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         }
     }
 
+    @Override
+    public void validateErrorCode(int exitCode) throws IOException {
+        if (exitCode == 1) {
+            DBWorkbench.getPlatformUI().showMessageBox("Warning", "Errors ignored on restore.\nYou can look at the errors in the log.", false);
+        } else {
+            super.validateErrorCode(exitCode);
+        }
+    }
 }
