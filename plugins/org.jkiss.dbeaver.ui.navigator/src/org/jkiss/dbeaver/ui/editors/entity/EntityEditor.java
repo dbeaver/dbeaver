@@ -53,9 +53,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
@@ -1189,7 +1189,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public boolean isEntityContainer(DBSObjectContainer object) {
         try {
             Class<? extends DBSObject> childType = object.getChildType(new VoidProgressMonitor());
-            return childType != null && DBSEntity.class.isAssignableFrom(childType);
+            return childType != null && DBSTable.class.isAssignableFrom(childType);
         } catch (DBException e) {
             log.error(e);
             return false;

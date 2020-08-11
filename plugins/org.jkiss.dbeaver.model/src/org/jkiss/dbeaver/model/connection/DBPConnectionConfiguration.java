@@ -184,6 +184,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
+    public boolean hasProperty(String name) {
+        return properties.containsKey(name);
+    }
+
     public String getProperty(String name) {
         return properties.get(name);
     }

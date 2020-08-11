@@ -62,15 +62,15 @@ parts:
   #
   # More info: https://snapcraft-utils-library.readthedocs.io/en/latest/lib/cleanup.html 
   #
-  cleanup:
-    after:  # Make this part run last; list all your other parts here
-      - dbeaver-ce
-    plugin: nil
-    build-snaps:  # List all content-snaps and base snaps you're using here
-      - core18
-      - gnome-3-28-1804
-    override-prime: |
-      set -eux
-      for snap in "core18" "gnome-3-28-1804"; do  # List all content-snaps and base snaps you're using here
-        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
-      done
+  #cleanup:
+  #  after:  # Make this part run last; list all your other parts here
+  #    - dbeaver-ce
+  #  plugin: nil
+  #  build-snaps:  # List all content-snaps and base snaps you're using here
+  #    - core18
+  #    - gnome-3-28-1804
+  #  override-prime: |
+  #    set -eux
+  #    for snap in "core18" "gnome-3-28-1804"; do  # List all content-snaps and base snaps you're using here
+  #      cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+  #    done
