@@ -93,6 +93,14 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
         this.partitionKey = source.partitionKey;
 
+        for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+            if (srcIndex.isPrimaryKeyIndex()) {
+                continue;
+            }
+            PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
+            getSchema().indexCache.cacheObject(constr);
+        }
+
 /*
         // Copy FKs
         List<PostgreTableForeignKey> fkList = new ArrayList<>();
