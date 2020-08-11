@@ -137,8 +137,8 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
     }
 
     @Override
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
-        return !((PostgreIndex)index).isPrimaryKeyIndex() && super.isIncludeIndexInDDL(index);
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !((PostgreIndex)index).isPrimaryKeyIndex() && super.isIncludeIndexInDDL(monitor, index);
     }
 
 }
