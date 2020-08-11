@@ -74,6 +74,12 @@
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
             type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+            namespace="org.jkiss.dbeaver.model"
+            properties="childOfType"
+            type="org.jkiss.dbeaver.model.struct.DBSObject"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">

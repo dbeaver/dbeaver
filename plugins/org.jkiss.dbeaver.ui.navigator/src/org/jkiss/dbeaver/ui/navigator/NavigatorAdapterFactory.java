@@ -88,6 +88,9 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             } else if (adaptableObject instanceof DBPObject) {
                 object = (DBPObject) adaptableObject;
             }
+            if (object != null) {
+                object = DBUtils.getPublicObject((DBSObject) object);
+            }
             if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                 return adapterType.cast(object);
             }
