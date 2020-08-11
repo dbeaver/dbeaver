@@ -191,6 +191,10 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         resultSet.setStreamRow(line);
                         consumer.fetchRow(producerSession, resultSet);
                         lineNum++;
+
+                        if (lineNum % 1000 == 0) {
+                            monitor.subTask(String.valueOf(lineNum) + " rows processed");
+                        }
                     }
                 }
             } catch (IOException e) {
