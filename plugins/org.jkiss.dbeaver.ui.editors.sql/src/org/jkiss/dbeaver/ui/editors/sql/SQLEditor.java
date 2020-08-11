@@ -598,7 +598,15 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 SQLEditor.this.executionContext = newContext;
                 // Needed to update main toolbar
-                DBUtils.fireObjectSelect(instance, true);
+                // FIXME: silly workaround. Command state update doesn't happen in some cases
+                // FIXME: but it works after short pause. Seems to be a bug in E4 command framework
+                new AbstractJob("Notify context change") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        DBUtils.fireObjectSelect(instance, true);
+                        return Status.OK_STATUS;
+                    }
+                }.schedule(200);
             } catch (DBException e) {
                 error = e;
             } finally {

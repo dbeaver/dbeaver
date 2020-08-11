@@ -915,6 +915,45 @@ public final class SQLUtils {
         return script.toString();
     }
 
+    @NotNull
+    public static String generateComments(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
+    {
+        final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
+        StringBuilder script = new StringBuilder(64);
+        if (addComments) {
+            script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
+                .append(DBEAVER_DDL_WARNING).append(lineSeparator);
+        }
+        if (persistActions != null) {
+            String slComment;
+            String[] slComments = sqlDialect.getSingleLineComments();
+            if (ArrayUtils.isEmpty(slComments)) {
+                slComment = "--";
+            } else {
+                slComment = slComments[0];
+            }
+            for (DBEPersistAction action : persistActions) {
+                if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
+                    String scriptLine = action.getTitle();
+                    if (CommonUtils.isEmpty(scriptLine)) {
+                        continue;
+                    }
+                    script.append(slComment).append(" ").append(scriptLine);
+                } else {
+                    String scriptLine = action.getScript();
+                    if (CommonUtils.isEmpty(scriptLine)) {
+                        continue;
+                    }
+                    script.append(scriptLine);
+                }
+                script.append(lineSeparator);
+            }
+        }
+        return script.toString();
+    }
+
     public static String getScriptLineDelimiter(SQLDialect sqlDialect) {
         String delimiter = sqlDialect.getScriptDelimiter();
         if (!delimiter.isEmpty() && Character.isLetterOrDigit(delimiter.charAt(0))) {

@@ -352,10 +352,12 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         // Initialize pipes with loaded settings
         for (int i = 0; i < dataPipes.size(); i++) {
             DataTransferPipe pipe = dataPipes.get(i);
-            try {
-                pipe.initPipe(this, i, dataPipes.size());
-            } catch (Exception e) {
-                state.addError(e);
+            if (pipe.getProducer() != null && pipe.getConsumer() != null) {
+                try {
+                    pipe.initPipe(this, i, dataPipes.size());
+                } catch (Exception e) {
+                    state.addError(e);
+                }
             }
         }
     }
