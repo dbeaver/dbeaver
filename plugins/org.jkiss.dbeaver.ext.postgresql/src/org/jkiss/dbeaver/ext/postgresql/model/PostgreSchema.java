@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.h2.util.Utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
