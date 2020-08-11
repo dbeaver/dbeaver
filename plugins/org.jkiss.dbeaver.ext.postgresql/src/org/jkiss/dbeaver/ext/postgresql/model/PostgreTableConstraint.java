@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -30,6 +31,7 @@ import java.util.List;
  * PostgreTableConstraint
  */
 public class PostgreTableConstraint extends PostgreTableConstraintBase {
+    private static final Log log = Log.getLog(PostgreTableConstraint.class);
 
     private String source;
     private List<PostgreTableConstraintColumn> columns = new ArrayList<>();
@@ -41,6 +43,17 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public PostgreTableConstraint(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
         super(table, constraintName, constraintType);
+    }
+
+    public PostgreTableConstraint(DBRProgressMonitor monitor, PostgreTableReal owner, PostgreTableConstraint srcConstr) throws DBException {
+        super(monitor, owner, srcConstr);
+        this.source = srcConstr.source;
+        for (PostgreTableConstraintColumn srcCol : srcConstr.columns) {
+            PostgreTableColumn ownAttr = owner.getAttribute(monitor, srcCol.getAttribute().getName());
+            if (ownAttr != null) {
+                this.columns.add(new PostgreTableConstraintColumn(this, ownAttr, this.columns.size()));
+            }
+        }
     }
 
     @Override
