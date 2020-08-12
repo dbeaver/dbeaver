@@ -98,6 +98,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                 }
             }
         }
+
+        options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, getShowFullDDL());
+        options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
+        options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getShowPermissions());
         return options;
     }
 
