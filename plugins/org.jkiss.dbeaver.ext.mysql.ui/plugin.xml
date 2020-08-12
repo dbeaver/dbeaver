@@ -23,6 +23,7 @@
         <editor id="mysql.source.view" class="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
