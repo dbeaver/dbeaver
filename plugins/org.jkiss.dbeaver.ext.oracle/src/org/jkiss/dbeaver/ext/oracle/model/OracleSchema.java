@@ -500,6 +500,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
             String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
             String tableTypeColumns = hasAllAllTables ? "t.TABLE_TYPE_OWNER,t.TABLE_TYPE" : "NULL as TABLE_TYPE_OWNER, NULL as TABLE_TYPE";
+            boolean isObjNull = object == null;
 
 /*
             final JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -518,7 +519,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "FROM ALL_OBJECTS O\n" +
                 "LEFT OUTER JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t ON (t.OWNER = O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME AND o.OBJECT_TYPE = 'TABLE')\n" +
                 "WHERE O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
-                (object == null && objectName == null ? "": " AND t.TABLE_NAME" + tableOper + "?"));
+                (isObjNull && objectName == null ? "": " AND O.OBJECT_NAME" + tableOper + "?") + (!isObjNull && object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE = 'MATERIALIZED VIEW'" : ""));
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
