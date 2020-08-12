@@ -311,10 +311,10 @@ public class PostgreSchema implements
         return getTableCache().getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        return PostgreTableBase.class;
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return PostgreTableRegular.class;
     }
 
     @Override

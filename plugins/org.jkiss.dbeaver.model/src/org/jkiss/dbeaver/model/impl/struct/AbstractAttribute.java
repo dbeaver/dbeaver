@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
 /**
  * AbstractAttribute
  */
-public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObjectExt2, DBPToolTipObject
+public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObjectExt2, DBPToolTipObject, DBPNamedObject2
 {
     protected String name;
     protected int valueType;

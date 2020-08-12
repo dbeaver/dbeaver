@@ -161,7 +161,7 @@ public class DatabaseTransferUtils {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
         try {
-            Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
+            Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
             if (!DBSEntity.class.isAssignableFrom(tableClass)) {
                 throw new DBException("Wrong table container child type: " + tableClass.getName());
             }
@@ -191,12 +191,15 @@ public class DatabaseTransferUtils {
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
+            String tableFinalName;
+
             DBSEntity table;
             DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
+                tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), containerMapping.getTargetName());
                 if (table instanceof DBPNamedObject2) {
-                    ((DBPNamedObject2) table).setName(containerMapping.getTargetName());
+                    ((DBPNamedObject2) table).setName(tableFinalName);
                 } else {
                     throw new DBException("Table name cannot be set for " + tableClass.getName());
                 }
@@ -207,6 +210,7 @@ public class DatabaseTransferUtils {
                 if (table == null) {
                     throw new DBException("Internal error - target table not set");
                 }
+                tableFinalName = table.getName();
             }
 
             if (attributeManager != null) {
@@ -218,7 +222,9 @@ public class DatabaseTransferUtils {
                     if (!(newAttribute instanceof DBPNamedObject2)) {
                         throw new DBException("Table column name cannot be set for " + attrClass.getName());
                     }
-                    ((DBPNamedObject2) newAttribute).setName(attributeMapping.getTargetName());
+                    ((DBPNamedObject2) newAttribute).setName(
+                        DBObjectNameCaseTransformer.transformName(newAttribute.getDataSource(),
+                            attributeMapping.getTargetName()));
 
                     // Set attribute properties
                     if (newAttribute instanceof DBSTypedObjectExt2) {
@@ -247,6 +253,8 @@ public class DatabaseTransferUtils {
                     }
                 }
             }
+
+            containerMapping.setTargetName(tableFinalName);
 
             List<DBEPersistAction> actions = new ArrayList<>();
             for (DBECommand cmd : commandContext.getFinalCommands()) {
@@ -300,7 +308,7 @@ public class DatabaseTransferUtils {
     public static void createTargetDynamicTable(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
-        Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
+        Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
         if (!DBSEntity.class.isAssignableFrom(tableClass)) {
             throw new DBException("Wrong table container child type: " + tableClass.getName());
         }

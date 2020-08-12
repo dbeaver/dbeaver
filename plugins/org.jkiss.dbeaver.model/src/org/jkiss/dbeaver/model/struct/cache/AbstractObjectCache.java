@@ -72,7 +72,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
-    public <SUB_TYPE> Collection<SUB_TYPE> getTypedObjects(DBRProgressMonitor monitor, OWNER owner, Class<SUB_TYPE> type)
+    public <SUB_TYPE> List<SUB_TYPE> getTypedObjects(DBRProgressMonitor monitor, OWNER owner, Class<SUB_TYPE> type)
         throws DBException
     {
         List<SUB_TYPE> result = new ArrayList<>();
