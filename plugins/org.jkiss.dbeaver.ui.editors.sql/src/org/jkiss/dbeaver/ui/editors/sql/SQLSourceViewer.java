@@ -98,10 +98,19 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                 }
             }
         }
-
-        options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, getShowFullDDL());
-        options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
-        options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getShowPermissions());
+        T genObject = getSourceObject();
+        if (genObject instanceof DBPScriptObjectExt2) {
+            DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) genObject;
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
+                options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, getShowFullDDL());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
+                options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getShowPermissions());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+                options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
+            }
+        }
         return options;
     }
 
