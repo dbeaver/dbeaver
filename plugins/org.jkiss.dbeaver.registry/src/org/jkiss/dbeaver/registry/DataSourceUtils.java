@@ -387,6 +387,16 @@ public class DataSourceUtils {
             }
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
+        String hostText = getTargetTunnelHostName(cfg);
+        String hostPort = cfg.getHostPort();
+        if (!CommonUtils.isEmpty(hostPort)) {
+            return hostText + ":" + hostPort;
+        }
+        return hostText;
+    }
+
+    @NotNull
+    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
         String hostText = cfg.getHostName();
         // For localhost ry to get real host name from tunnel configuration
         if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
@@ -400,10 +410,6 @@ public class DataSourceUtils {
                 }
             }
         }
-        String hostPort = cfg.getHostPort();
-        if (!CommonUtils.isEmpty(hostPort)) {
-            return hostText + ":" + hostPort;
-        }
-        return hostText;
+        return CommonUtils.notEmpty(hostText);
     }
 }
