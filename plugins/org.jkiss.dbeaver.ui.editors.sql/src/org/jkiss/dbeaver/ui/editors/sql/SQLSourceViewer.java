@@ -45,10 +45,6 @@ import java.util.Map;
  */
 public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
 
-    protected Boolean showPermissions;
-    protected Boolean showColumnComments;
-    protected Boolean showFullDDL;
-
     private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
         @Override
         public void run() 
@@ -136,76 +132,53 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) genObject;
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show full DDL", Action.AS_CHECK_BOX) {
-                            {
-                                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE_EXTERNAL));
-                                setToolTipText("Show DDL for all schema objects");
-                                setChecked(getShowFullDDL());
-                            }
-
-                            @Override
-                            public void run() {
-                                showFullDDL = isChecked();
-                                getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, showFullDDL);
-                                refreshPart(SQLSourceViewer.this, true);
-                            }
-                        }, true));
+                        new SQLActionCheckBox("Show full DDL", "Show DDL for all schema objects",
+                                DBIcon.TREE_TABLE_EXTERNAL, getShowFullDDL(), DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS),
+                        true));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show permissions", Action.AS_CHECK_BOX) {
-                            {
-                                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PERMISSIONS));
-                                setToolTipText("Shows object permission grants");
-                                setChecked(getShowPermissions());
-                            }
-
-                            @Override
-                            public void run() {
-                                showPermissions = isChecked();
-                                getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, showPermissions);
-                                refreshPart(SQLSourceViewer.this, true);
-                            }
-                        }, true));
+                        new SQLActionCheckBox("Show permissions", "Shows object permission grants",
+                                DBIcon.TREE_PERMISSIONS, getShowPermissions(), DBPScriptObject.OPTION_INCLUDE_PERMISSIONS),
+                        true));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show comments", Action.AS_CHECK_BOX) {
-                            {
-                                setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT));
-                                setToolTipText("Show column comments in table definition");
-                                setChecked(getShowColumnComments());
-                            }
-
-                            @Override
-                            public void run() {
-                                showColumnComments = isChecked();
-                                getPreferenceStore().setValue(DBPScriptObject.OPTION_INCLUDE_COMMENTS, showColumnComments);
-                                refreshPart(SQLSourceViewer.this, true);
-                            }
-                        }, true));
+                        new SQLActionCheckBox("Show comments", "Show column comments in table definition",
+                                DBIcon.TYPE_TEXT, getShowColumnComments(), DBPScriptObject.OPTION_INCLUDE_COMMENTS),
+                        true));
             }
+        }
+    }
+
+    private class SQLActionCheckBox extends Action {
+        private final String option;
+
+        public SQLActionCheckBox(String text, String toolTipText, DBPImage image,
+                                 boolean checked, String option) {
+            super(text, Action.AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+            setToolTipText(toolTipText);
+            setChecked(checked);
+            this.option = option;
+        }
+
+        @Override
+        public void run() {
+            getPreferenceStore().setValue(option, isChecked());
+            refreshPart(SQLSourceViewer.this, true);
         }
     }
 
     protected boolean getShowPermissions() {
-        if (showPermissions == null) {
-            showPermissions = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS);
-        }
-        return showPermissions;
+        return getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS);
     }
 
-    protected Boolean getShowColumnComments() {
-        if (showColumnComments == null) {
-            showColumnComments = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS);
-        }
-        return showColumnComments;
+    protected boolean getShowColumnComments() {
+        return getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS);
     }
 
-    protected Boolean getShowFullDDL() {
-        if (showFullDDL == null) {
-            showFullDDL = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS);
-        }
-        return showFullDDL;
+    protected boolean getShowFullDDL() {
+        return getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS);
     }
 }
