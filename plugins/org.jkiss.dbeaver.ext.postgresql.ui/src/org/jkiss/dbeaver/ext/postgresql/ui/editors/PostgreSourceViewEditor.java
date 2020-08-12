@@ -89,12 +89,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     @Override
     protected Map<String, Object> getSourceOptions() {
         Map<String, Object> options = super.getSourceOptions();
-        boolean inDebug = isInDebugMode();
-        options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, inDebug);
-
-        options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, getShowFullDDL());
-        options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
-        options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getShowPermissions());
+        options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, isInDebugMode());
         return options;
     }
 
