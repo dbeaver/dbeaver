@@ -47,7 +47,8 @@ import java.util.*;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
+        implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
 
@@ -409,11 +410,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (this.isPersisted() && !omitHeader) {
             procDDL += ";\n";
 
-            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
+            if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
                 procDDL += "\nCOMMENT ON FUNCTION " + getFullQualifiedSignature() + " IS " + SQLUtils.quoteString(this, getDescription()) + ";\n";
             }
 
-            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
                 List<DBEPersistAction> actions = new ArrayList<>();
                 PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
                 procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false);
@@ -662,6 +663,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Association
     public List<PostgreDependency> getDependencies(DBRProgressMonitor monitor) throws DBCException {
         return PostgreDependency.readDependencies(monitor, this, true);
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
     }
 
     @Override

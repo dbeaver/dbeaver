@@ -369,11 +369,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return packageCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return DBSEntity.class;
+        return OracleTable.class;
     }
 
     @Override
@@ -517,7 +518,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "FROM ALL_OBJECTS O\n" +
                 "LEFT OUTER JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t ON (t.OWNER = O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME AND o.OBJECT_TYPE = 'TABLE')\n" +
                 "WHERE O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
-                (object == null && objectName == null ? "": " AND t.TABLE_NAME" + tableOper + "?"));
+                (object == null && objectName == null ? "": " AND O.OBJECT_NAME" + tableOper + "?") +
+                (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
+                (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "") +
+                (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;

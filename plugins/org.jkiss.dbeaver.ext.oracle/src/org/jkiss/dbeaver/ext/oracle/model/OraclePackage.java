@@ -137,8 +137,9 @@ public class OraclePackage extends OracleSchemaObject
         return proceduresCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return OracleProcedurePackaged.class;
     }

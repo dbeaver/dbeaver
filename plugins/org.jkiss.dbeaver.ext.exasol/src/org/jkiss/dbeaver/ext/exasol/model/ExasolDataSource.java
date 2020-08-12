@@ -474,8 +474,9 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	// Manage Children: ExasolSchema
 	// --------------------------
 
-	@Override
-	public Class<? extends ExasolSchema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	@NotNull
+    @Override
+	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}

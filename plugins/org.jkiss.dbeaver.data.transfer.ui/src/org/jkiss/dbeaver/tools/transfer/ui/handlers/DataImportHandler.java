@@ -106,7 +106,7 @@ public class DataImportHandler extends DataTransferHandler {
 
     public static boolean isObjectContainerSupportsImport(DBSObjectContainer object) {
         try {
-            Class<? extends DBSObject> childType = object.getChildType(new VoidProgressMonitor());
+            Class<? extends DBSObject> childType = object.getPrimaryChildType(new VoidProgressMonitor());
             return DBSDataContainer.class.isAssignableFrom(childType);
         } catch (DBException e) {
             log.error(e);

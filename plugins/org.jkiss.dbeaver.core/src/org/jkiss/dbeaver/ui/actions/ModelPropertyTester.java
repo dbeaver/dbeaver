@@ -56,7 +56,7 @@ public class ModelPropertyTester extends PropertyTester
                         if (expectedValue instanceof String) {
                             try {
                                 Class<?> expectedChildClass = Class.forName((String)expectedValue);
-                                Class<? extends DBSObject> childType = ((DBSObjectContainer)object).getChildType(new VoidProgressMonitor());
+                                Class<? extends DBSObject> childType = ((DBSObjectContainer)object).getPrimaryChildType(new VoidProgressMonitor());
                                 return expectedChildClass.isAssignableFrom(childType);
                             } catch (Exception e) {
                                 return false;

@@ -22,11 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
-import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
-import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
-import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableIndexCache;
-import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
-import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolViewCache;
+import org.jkiss.dbeaver.ext.exasol.model.cache.*;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolGrantee;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolJDBCObjectSimpleCacheLiterals;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -161,9 +157,10 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         return child;
     }
 
+    @NotNull
     @Override
-    public Class<ExasolTableBase> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
-    	return ExasolTableBase.class;
+    public Class<ExasolTable> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    	return ExasolTable.class;
     }
 
     @Override

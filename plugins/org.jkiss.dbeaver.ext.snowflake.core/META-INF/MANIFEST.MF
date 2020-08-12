@@ -7,6 +7,7 @@ Bundle-Release-Date: 20200817
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.snowflake.model

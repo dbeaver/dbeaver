@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,12 +48,39 @@ class SQLGeneratorDialog extends ViewSQLDialog {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        sqlGenerator.setFullyQualifiedNames(
-            getDialogBoundsSettings().get(PROP_USE_FQ_NAMES) == null ||
+        sqlGenerator.setFullyQualifiedNames(getDialogBoundsSettings().get(PROP_USE_FQ_NAMES) == null ||
                 getDialogBoundsSettings().getBoolean(PROP_USE_FQ_NAMES));
-        sqlGenerator.setCompactSQL(
-            getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
+        sqlGenerator.setCompactSQL(getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
                 getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
+
+        boolean supportPermissions = false;
+        boolean supportComments = false;
+        boolean supportFullDDL = false;
+        for (Object object : sqlGenerator.getObjects()) {
+            if (object instanceof DBPScriptObjectExt2) {
+                DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
+                    supportPermissions = true;
+                }
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+                    supportComments = true;
+                }
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
+                    supportFullDDL = true;
+                }
+                if (supportPermissions && supportComments && supportFullDDL) {
+                    break; //it supports everything
+                }
+            }
+        }
+
+        sqlGenerator.setShowPermissions(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS) != null &&
+                getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS));
+        sqlGenerator.setShowComments(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_COMMENTS) != null &&
+                getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS));
+        sqlGenerator.setShowFullDdl(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS) != null &&
+                getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
+
         UIUtils.runInUI(sqlGenerator);
         Object sql = sqlGenerator.getResult();
         if (sql != null) {
@@ -59,8 +88,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         }
 
         Composite composite = super.createDialogArea(parent);
-
-        Group settings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group settings = UIUtils.createControlGroup(composite, "Settings", 5, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         Button useFQNames = UIUtils.createCheckbox(settings, "Use fully qualified names", sqlGenerator.isFullyQualifiedNames());
         useFQNames.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -91,7 +119,57 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 }
             }
         });
+        if (supportComments) {
+            Button useShowComments = UIUtils.createCheckbox(settings, "Show comments", sqlGenerator.isShowComments());
+            useShowComments.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowComments(useShowComments.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, useShowComments.getSelection());
 
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
+        if (supportPermissions) {
+            Button useShowPermissions = UIUtils.createCheckbox(settings, "Show permissions", sqlGenerator.isIncludePermissions());
+            useShowPermissions.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowPermissions(useShowPermissions.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, useShowPermissions.getSelection());
+
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
+        if (supportFullDDL) {
+            Button useShowFullDdl = UIUtils.createCheckbox(settings, "Show full DDL", sqlGenerator.isShowFullDdl());
+            useShowFullDdl.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowFullDdl(useShowFullDdl.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, useShowFullDdl.getSelection());
+
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
         return composite;
     }
 }

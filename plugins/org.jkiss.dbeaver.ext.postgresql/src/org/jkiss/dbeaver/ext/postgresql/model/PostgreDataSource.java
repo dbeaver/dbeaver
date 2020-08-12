@@ -289,8 +289,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDatabase(childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return PostgreDatabase.class;

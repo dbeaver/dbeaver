@@ -244,8 +244,9 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends WMIContainer> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends WMIContainer> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
     }
