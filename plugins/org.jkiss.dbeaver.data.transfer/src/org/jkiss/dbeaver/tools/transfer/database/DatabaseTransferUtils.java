@@ -289,7 +289,8 @@ public class DatabaseTransferUtils {
     }
 
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
-        sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource, true));
+        String attrName = DBObjectNameCaseTransformer.transformName(dataSource, attr.getTargetName());
+        sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
