@@ -33,6 +33,10 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     protected List<OBJECT> objects;
     private boolean fullyQualifiedNames = true;
     private boolean compactSQL = false;
+    private boolean showComments = true;
+    private boolean showPermissions = false;
+    private boolean showFullDdl = false;
+
     private Map<String, Object> generatorOptions = new LinkedHashMap<>();
 
     public void initGenerator(List<OBJECT> objects) {
@@ -59,6 +63,31 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         this.compactSQL = compactSQL;
     }
 
+    public boolean isShowComments() {
+        return showComments;
+    }
+
+    public void setShowComments(boolean showComments) {
+        this.showComments = showComments;
+    }
+
+    public boolean isIncludePermissions() {
+        return showPermissions;
+    }
+
+    public void setShowPermissions(boolean showPermissions) {
+        this.showPermissions = showPermissions;
+    }
+
+    public boolean isShowFullDdl() {
+        return showFullDdl;
+    }
+
+    public void setShowFullDdl(boolean showFullDdl) {
+        this.showFullDdl = showFullDdl;
+    }
+
+
     public Object getGeneratorOption(String name) {
         return generatorOptions.get(name);
     }
@@ -84,8 +113,12 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     }
 
     protected void addOptions(Map<String, Object> options) {
+        options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
         options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
         options.put(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT, isCompactSQL());
+        options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, isIncludePermissions());
+        options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, isShowComments());
+        options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, isShowFullDdl());
         options.putAll(generatorOptions);
     }
 
