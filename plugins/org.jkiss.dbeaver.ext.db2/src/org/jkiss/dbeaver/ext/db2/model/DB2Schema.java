@@ -250,10 +250,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // Schema "Children" = Tables
     // --------------------------
 
+    @NotNull
     @Override
-    public Class<DB2TableBase> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<DB2Table> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return DB2TableBase.class;
+        return DB2Table.class;
     }
 
     @Override
@@ -292,7 +293,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // -----------------
 
     @Association
-    public Collection<DB2Table> getTables(DBRProgressMonitor monitor) throws DBException
+    public List<DB2Table> getTables(DBRProgressMonitor monitor) throws DBException
     {
         return tableCache.getTypedObjects(monitor, this, DB2Table.class);
     }

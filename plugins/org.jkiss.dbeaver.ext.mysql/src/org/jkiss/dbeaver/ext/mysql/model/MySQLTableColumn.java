@@ -228,14 +228,9 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) {
+    public void setFullTypeName(String fullTypeName) throws DBException {
+        super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
-        int divPos = fullTypeName.indexOf('(');
-        if (divPos != -1) {
-            super.setTypeName(fullTypeName.substring(0, divPos).trim());
-        } else {
-            super.setTypeName(fullTypeName);
-        }
     }
 
     @Override

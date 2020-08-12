@@ -273,8 +273,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return databaseCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerDatabase.class;
     }
 

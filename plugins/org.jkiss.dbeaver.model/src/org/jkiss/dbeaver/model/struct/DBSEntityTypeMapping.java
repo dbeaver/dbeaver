@@ -14,13 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.struct;
 
 /**
- * Can check whether object support an option or not
+ * Entity type
  */
-public interface DBPScriptObjectExt2 extends DBPObject {
+public class DBSEntityTypeMapping {
 
-    boolean supportsObjectDefinitionOption(String option);
+    private final DBSEntityType entityType;
+    private final Class<? extends DBSObject> entityClass;
 
+    public DBSEntityTypeMapping(DBSEntityType entityType, Class<? extends DBSObject> entityClass) {
+        this.entityType = entityType;
+        this.entityClass = entityClass;
+    }
+
+    public DBSEntityType getEntityType() {
+        return entityType;
+    }
+
+    public Class<? extends DBSObject> getEntityClass() {
+        return entityClass;
+    }
 }

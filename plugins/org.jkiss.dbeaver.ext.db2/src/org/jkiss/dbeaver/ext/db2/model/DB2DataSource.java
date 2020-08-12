@@ -347,8 +347,9 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // Manage Children: DB2Schema
     // --------------------------
 
+    @NotNull
     @Override
-    public Class<? extends DB2Schema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DB2Schema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return DB2Schema.class;
     }

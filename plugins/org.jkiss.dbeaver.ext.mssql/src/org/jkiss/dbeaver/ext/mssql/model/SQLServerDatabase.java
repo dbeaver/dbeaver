@@ -251,8 +251,9 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return schemaCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return SQLServerSchema.class;
     }
 

@@ -161,7 +161,7 @@ public class DatabaseTransferUtils {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
         try {
-            Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
+            Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
             if (!DBSEntity.class.isAssignableFrom(tableClass)) {
                 throw new DBException("Wrong table container child type: " + tableClass.getName());
             }
@@ -191,12 +191,15 @@ public class DatabaseTransferUtils {
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
+            String tableFinalName;
+
             DBSEntity table;
             DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
+                tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), containerMapping.getTargetName());
                 if (table instanceof DBPNamedObject2) {
-                    ((DBPNamedObject2) table).setName(containerMapping.getTargetName());
+                    ((DBPNamedObject2) table).setName(tableFinalName);
                 } else {
                     throw new DBException("Table name cannot be set for " + tableClass.getName());
                 }
@@ -207,6 +210,7 @@ public class DatabaseTransferUtils {
                 if (table == null) {
                     throw new DBException("Internal error - target table not set");
                 }
+                tableFinalName = table.getName();
             }
 
             if (attributeManager != null) {
@@ -218,26 +222,32 @@ public class DatabaseTransferUtils {
                     if (!(newAttribute instanceof DBPNamedObject2)) {
                         throw new DBException("Table column name cannot be set for " + attrClass.getName());
                     }
-                    ((DBPNamedObject2) newAttribute).setName(attributeMapping.getTargetName());
+                    ((DBPNamedObject2) newAttribute).setName(
+                        DBObjectNameCaseTransformer.transformName(newAttribute.getDataSource(),
+                            attributeMapping.getTargetName()));
 
                     // Set attribute properties
                     if (newAttribute instanceof DBSTypedObjectExt2) {
                         DBSTypedObjectExt2 typedAttr = (DBSTypedObjectExt2) newAttribute;
 
+                        boolean typeModifiersSet = false;
                         if (typedAttr instanceof DBSTypedObjectExt3) {
                             String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
                             ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
+                            typeModifiersSet = fullTargetTypeName.contains("(");
                         } else {
                             String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
                             typedAttr.setTypeName(targetAttrType);
                         }
 
-                        DBSAttributeBase sourceAttr = attributeMapping.getSource();
-                        if (sourceAttr != null) {
-                            typedAttr.setMaxLength(sourceAttr.getMaxLength());
-                            typedAttr.setPrecision(sourceAttr.getPrecision());
-                            typedAttr.setScale(sourceAttr.getScale());
-                            typedAttr.setRequired(sourceAttr.isRequired());
+                        if (!typeModifiersSet) {
+                            DBSAttributeBase sourceAttr = attributeMapping.getSource();
+                            if (sourceAttr != null) {
+                                typedAttr.setMaxLength(sourceAttr.getMaxLength());
+                                typedAttr.setPrecision(sourceAttr.getPrecision());
+                                typedAttr.setScale(sourceAttr.getScale());
+                                typedAttr.setRequired(sourceAttr.isRequired());
+                            }
                         }
                     }
 
@@ -247,6 +257,8 @@ public class DatabaseTransferUtils {
                     }
                 }
             }
+
+            containerMapping.setTargetName(tableFinalName);
 
             List<DBEPersistAction> actions = new ArrayList<>();
             for (DBECommand cmd : commandContext.getFinalCommands()) {
@@ -281,7 +293,8 @@ public class DatabaseTransferUtils {
     }
 
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
-        sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource, true));
+        String attrName = DBObjectNameCaseTransformer.transformName(dataSource, attr.getTargetName());
+        sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
@@ -300,7 +313,7 @@ public class DatabaseTransferUtils {
     public static void createTargetDynamicTable(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
         final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
 
-        Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
+        Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
         if (!DBSEntity.class.isAssignableFrom(tableClass)) {
             throw new DBException("Wrong table container child type: " + tableClass.getName());
         }

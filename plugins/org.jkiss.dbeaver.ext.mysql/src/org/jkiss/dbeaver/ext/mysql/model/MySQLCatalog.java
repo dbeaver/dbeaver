@@ -53,11 +53,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLCatalog
  */
-public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics
+public class MySQLCatalog implements
+    DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject,
+    DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics,
+    DBPScriptObject, DBPScriptObjectExt2
 {
 
     final TableCache tableCache = new TableCache();
@@ -75,6 +79,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     private boolean persisted;
     private volatile boolean hasStatistics;
     private long dbSize;
+
+    private transient String databaseDDL;
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -389,8 +395,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return tableCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;
@@ -426,9 +433,8 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(this))) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(this))) {
                     while (dbResult.next()) {
                         String tableName = dbResult.getString("Name");
                         MySQLTableBase table = tableCache.getObject(monitor, this, tableName);
@@ -446,10 +452,40 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (databaseDDL == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load database DDL")) {
+                try (JDBCStatement dbStat = session.createStatement()) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SHOW CREATE DATABASE " + DBUtils.getQuotedIdentifier(this))) {
+                        if (dbResult.nextRow()) {
+                            databaseDDL = JDBCUtils.safeGetString(dbResult, "Create Database");
+                        } else {
+                            databaseDDL = "-- Database definition is not available";
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException("Error reading database DDL", e);
+            }
+        }
+
+        if (CommonUtils.getOption(options, OPTION_INCLUDE_NESTED_OBJECTS)) {
+
+        }
+        return databaseDDL;
+    }
+
+    @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         hasStatistics = false;
+        databaseDDL = null;
         tableCache.clearCache();
         indexCache.clearCache();
         uniqueKeyCache.clearCache();

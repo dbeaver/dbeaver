@@ -592,8 +592,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return getSchema(monitor, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
