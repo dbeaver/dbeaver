@@ -518,9 +518,16 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "FROM ALL_OBJECTS O\n" +
                 "LEFT OUTER JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t ON (t.OWNER = O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME AND o.OBJECT_TYPE = 'TABLE')\n" +
                 "WHERE O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
-                (object == null && objectName == null ? "": " AND t.TABLE_NAME" + tableOper + "?"));
+                (object == null && objectName == null ? "": " AND O.OBJECT_NAME" + tableOper + "?" + " AND O.OBJECT_TYPE" + tableOper + "?"));
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
+            if (object instanceof OracleTable) {
+                dbStat.setString(3, "TABLE");
+            } else if (object instanceof OracleView) {
+                dbStat.setString(3, "VIEW");
+            } else if (object instanceof OracleMaterializedView) {
+                dbStat.setString(3, "MATERIALIZED VIEW");
+            }
             return dbStat;
         }
 
