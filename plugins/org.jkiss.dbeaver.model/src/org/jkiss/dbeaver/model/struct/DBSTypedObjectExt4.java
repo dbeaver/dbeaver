@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * DBSTypedObjectEditor3
+ * DBSTypedObjectExt4
  */
-public interface DBSTypedObjectEditor3<DATA_TYPE extends DBSDataType> extends DBPObject {
+public interface DBSTypedObjectExt4<DATA_TYPE extends DBSDataType> extends DBPObject {
     /**
      * Data type. Can be obtained from DBPDataTypeProvider.
      */
