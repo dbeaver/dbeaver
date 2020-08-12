@@ -369,11 +369,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return packageCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return DBSEntity.class;
+        return OracleTable.class;
     }
 
     @Override

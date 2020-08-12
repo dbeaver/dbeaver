@@ -178,7 +178,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
             if (nodeObject instanceof DBSObjectContainer) {
                 try {
-                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getChildType(new VoidProgressMonitor());
+                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getPrimaryChildType(new VoidProgressMonitor());
                     if (childrenClass != null) {
                         if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
                             // Upper level of container

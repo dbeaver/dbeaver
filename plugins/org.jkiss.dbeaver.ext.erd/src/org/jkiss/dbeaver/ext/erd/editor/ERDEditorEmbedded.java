@@ -253,7 +253,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {
-                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
+                Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
                 DBSObjectFilter objectFilter = objectContainer.getDataSource().getContainer().getObjectFilter(childType, objectContainer, true);
 
                 for (DBSObject entity : entities) {
