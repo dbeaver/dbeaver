@@ -57,18 +57,20 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         boolean supportComments = false;
         boolean supportFullDDL = false;
         for (Object object : sqlGenerator.getObjects()) {
-            DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
-            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
-                supportPermissions = true;
-            }
-            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
-                supportComments = true;
-            }
-            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
-                supportFullDDL = true;
-            }
-            if (supportPermissions && supportComments && supportFullDDL) {
-                break; //it supports everything
+            if (object instanceof DBPScriptObjectExt2) {
+                DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
+                    supportPermissions = true;
+                }
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+                    supportComments = true;
+                }
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
+                    supportFullDDL = true;
+                }
+                if (supportPermissions && supportComments && supportFullDDL) {
+                    break; //it supports everything
+                }
             }
         }
 
