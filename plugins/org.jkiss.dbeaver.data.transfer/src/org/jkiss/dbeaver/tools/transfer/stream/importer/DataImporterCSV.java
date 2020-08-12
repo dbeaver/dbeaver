@@ -80,7 +80,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     for (int i = 0; i < line.length; i++) {
                         String column = line[i];
                         if (headerPosition == HeaderPosition.none) {
-                            column = null;
+                            column = "Column" + (i + 1);
                         } else {
                             column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
                         }
@@ -168,7 +168,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             // Stream row may be shorter than header
                             String[] newLine = new String[targetAttrSize];
                             System.arraycopy(line, 0, newLine, 0, line.length);
-                            for (int i = line.length; i < targetAttrSize - line.length; i++) {
+                            for (int i = line.length; i < targetAttrSize; i++) {
                                 newLine[i] = null;
                             }
                             line = newLine;
