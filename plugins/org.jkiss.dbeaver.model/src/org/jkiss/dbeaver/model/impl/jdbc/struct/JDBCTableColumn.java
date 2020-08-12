@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -30,10 +31,7 @@ import org.jkiss.dbeaver.model.impl.DBDummyNumberTransformer;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
@@ -47,6 +45,8 @@ import java.util.TreeSet;
  * JDBC abstract table column
  */
 public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBCAttribute implements DBSTableColumn, DBSEntityAttribute, DBSAttributeEnumerable, DBPSaveableObject {
+
+    private static final Log log = Log.getLog(JDBCTableColumn.class);
 
     private final TABLE_TYPE table;
     private boolean persisted;
@@ -123,16 +123,17 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (dataSource instanceof DBPDataTypeProvider) {
             DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
             if (dataType != null) {
-                updateColumnDataType(dataType);
+                this.valueType = dataType.getTypeID();
             } else {
-                updateColumnDataType(null);
+                this.valueType = -1;
             }
-        }
-    }
-
-    protected void updateColumnDataType(@Nullable DBSDataType dataType) {
-        if (dataType != null) {
-            this.valueType = dataType.getTypeID();
+            if (this instanceof DBSTypedObjectExt4) {
+                try {
+                    ((DBSTypedObjectExt4) this).setDataType(dataType);
+                } catch (Throwable e) {
+                    log.debug(e);
+                }
+            }
         }
     }
 

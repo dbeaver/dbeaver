@@ -230,20 +230,24 @@ public class DatabaseTransferUtils {
                     if (newAttribute instanceof DBSTypedObjectExt2) {
                         DBSTypedObjectExt2 typedAttr = (DBSTypedObjectExt2) newAttribute;
 
+                        boolean typeModifiersSet = false;
                         if (typedAttr instanceof DBSTypedObjectExt3) {
                             String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
                             ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
+                            typeModifiersSet = fullTargetTypeName.contains("(");
                         } else {
                             String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
                             typedAttr.setTypeName(targetAttrType);
                         }
 
-                        DBSAttributeBase sourceAttr = attributeMapping.getSource();
-                        if (sourceAttr != null) {
-                            typedAttr.setMaxLength(sourceAttr.getMaxLength());
-                            typedAttr.setPrecision(sourceAttr.getPrecision());
-                            typedAttr.setScale(sourceAttr.getScale());
-                            typedAttr.setRequired(sourceAttr.isRequired());
+                        if (!typeModifiersSet) {
+                            DBSAttributeBase sourceAttr = attributeMapping.getSource();
+                            if (sourceAttr != null) {
+                                typedAttr.setMaxLength(sourceAttr.getMaxLength());
+                                typedAttr.setPrecision(sourceAttr.getPrecision());
+                                typedAttr.setScale(sourceAttr.getScale());
+                                typedAttr.setRequired(sourceAttr.isRequired());
+                            }
                         }
                     }
 
