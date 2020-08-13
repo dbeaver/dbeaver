@@ -547,12 +547,6 @@
         </dialect>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" class="org.jkiss.dbeaver.ext.postgresql.sql.PostgreDialectAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
-        </factory>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.networkHandler">
         <handler
                 type="config"

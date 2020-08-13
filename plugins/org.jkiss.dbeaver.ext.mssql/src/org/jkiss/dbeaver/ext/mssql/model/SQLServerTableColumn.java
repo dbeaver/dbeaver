@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,7 +50,9 @@ import java.util.List;
 /**
  * SQLServerTableColumn
  */
-public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject, SQLServerObject, JDBCColumnKeyType {
+public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements
+    DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject,
+    SQLServerObject, JDBCColumnKeyType, DBSTypedObjectExt4<SQLServerDataType> {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
     private long objectId;
@@ -187,8 +190,10 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return dataType;
     }
 
+    @Override
     public void setDataType(SQLServerDataType dataType) {
         this.dataType = dataType;
+        this.typeName = dataType.getTypeName();
     }
 
     @Override

@@ -14,33 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.sql;
+package org.jkiss.dbeaver.model.sql.parser.rules;
 
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBlockToggleToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
-public class PostgreDollarQuoteRule implements TPPredicateRule {
+public class SQLDollarQuoteRule implements TPPredicateRule {
 
     private final boolean partitionRule;
-    private final boolean ddPlainIsString;
-    private final boolean ddTagIsString;
     private final TPToken stringToken, delimiterToken;
 
-    public PostgreDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
+    public SQLDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
         this.partitionRule = partitionRule;
-        boolean ddPlainDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING);
-        boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);
-        ddPlainIsString = dataSource == null ?
-            ddPlainDefault :
-            CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING), ddPlainDefault);
-        ddTagIsString = dataSource == null ?
-            ddTagDefault :
-            CommonUtils.getBoolean(dataSource.getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_DD_TAG_STRING), ddTagDefault);
 
         this.stringToken = new TPTokenDefault(SQLTokenType.T_STRING);
         this.delimiterToken = new SQLBlockToggleToken();
@@ -69,7 +56,7 @@ public class PostgreDollarQuoteRule implements TPPredicateRule {
                 totalRead++;
                 if (c == '$') {
 
-                    if (charsRead <= 1 ? ddPlainIsString : ddTagIsString) {
+                    if (charsRead <= 1) {
                         // Here is a trick - dollar quote without preceding AS or DO and without tag is a string.
                         // Quote with tag is just a block toggle.
                         // I'm afraid we can't do more (#6608, #7183)
