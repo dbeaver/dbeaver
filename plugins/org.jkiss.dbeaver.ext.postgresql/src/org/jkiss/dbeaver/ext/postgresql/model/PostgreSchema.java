@@ -688,7 +688,7 @@ public class PostgreSchema implements
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreTableContainer container, PostgreTableBase forParent) throws SQLException {
             StringBuilder sql = new StringBuilder(
                 "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace,d.description" +
-                    (getDataSource().getServerType().supportsPGConstraintExpressionColumn() ? "" : ", case when c.contype='c' then \"substring\"(pg_get_constraintdef(c.oid), 7)::information_schema.character_data else null end consrc") +
+                    (getDataSource().getServerType().supportsPGConstraintExpressionColumn() ? "" : ", case when c.contype='c' then \"substring\"(pg_get_constraintdef(c.oid), 7) else null end consrc") +
                     "\nFROM pg_catalog.pg_constraint c" +
                     "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +
