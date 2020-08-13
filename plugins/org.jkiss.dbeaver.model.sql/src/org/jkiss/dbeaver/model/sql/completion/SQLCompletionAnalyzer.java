@@ -208,10 +208,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     String tableAlias = null;
                     if (ALL_COLUMNS_PATTERN.equals(wordPart)) {
                         if (!isPrevWordEmpty) {
-                            String prevWord = wordDetector.getPrevWords().get(0);
-                            if (prevWord.contains(sqlDialect.getCatalogSeparator())) {
-                                int divPos = prevWord.lastIndexOf(sqlDialect.getCatalogSeparator());
-                                tableAlias = prevWord.substring(0, divPos);
+                            if (!prevKeyWord.equalsIgnoreCase("INTO")) {
+                                String prevWord = wordDetector.getPrevWords().get(0);
+                                if (prevWord.contains(sqlDialect.getCatalogSeparator())) {
+                                    int divPos = prevWord.lastIndexOf(sqlDialect.getCatalogSeparator());
+                                    tableAlias = prevWord.substring(0, divPos);
+                                }
                             }
                         }
                     }
