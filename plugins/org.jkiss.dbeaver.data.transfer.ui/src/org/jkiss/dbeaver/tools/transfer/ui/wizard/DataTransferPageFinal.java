@@ -209,10 +209,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private void printSummary(Text text, DataTransferNodeDescriptor node, IDataTransferSettings settings, DataTransferProcessorDescriptor processor) {
         StringBuilder summary = new StringBuilder();
         if (settings != null) {
-            if (node != null) {
-                summary.append(node.getName()).append(" settings:\n");
+            String settingsSummary = settings.getSettingsSummary();
+            if (!CommonUtils.isEmpty(settingsSummary)) {
+                if (node != null) {
+                    summary.append(node.getName()).append(" settings:\n");
+                }
+                summary.append(CommonUtils.notEmpty(settingsSummary));
             }
-            summary.append(CommonUtils.notEmpty(settings.getSettingsSummary()));
         }
         if (processor != null) {
             DTUtils.addSummary(summary, processor, getWizard().getSettings().getProcessorProperties());
