@@ -355,6 +355,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         if (hasStatistics && !forceRefresh) {
             return;
         }
+        if (SQLServerUtils.isDriverAzure(getContainer().getDriver()) || isDataWarehouseServer(monitor)) {
+            hasStatistics = true;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
             try (JDBCStatement dbStat = session.createStatement()) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT database_id, SUM(size)\n" +
