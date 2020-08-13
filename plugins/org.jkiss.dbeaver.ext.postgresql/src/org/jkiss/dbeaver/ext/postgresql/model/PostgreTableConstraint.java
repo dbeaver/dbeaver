@@ -38,7 +38,12 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public PostgreTableConstraint(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, constraintType, resultSet);
-        this.source = JDBCUtils.safeGetString(resultSet, "consrc");
+        String sourceCopy = JDBCUtils.safeGetString(resultSet, "consrc_copy");
+        if (sourceCopy == null && getDataSource().getServerType().supportsPGConstraintExpressionColumn()) {
+            this.source = JDBCUtils.safeGetString(resultSet, "consrc");
+        } else {
+            this.source = sourceCopy;
+        }
     }
 
     public PostgreTableConstraint(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
