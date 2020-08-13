@@ -133,6 +133,7 @@
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
                         promoted="1"
@@ -158,6 +159,7 @@
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
                         categories="sql">
@@ -182,6 +184,7 @@
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
                         description="%driver.jTDS.description"
                         categories="sql">
@@ -274,6 +277,7 @@
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.old.description"
                         categories="sql">
@@ -305,6 +309,7 @@
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
                         description="jTDS SQL Server (MSSQL) driver"
                         categories="sql">
@@ -341,6 +346,7 @@
                         sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="http://jtds.sourceforge.net/"
                         description="Sybase jTDS driver"
                         categories="sql">
@@ -371,6 +377,7 @@
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
                         description="Sybase jConnect driver"
                         categories="sql">
@@ -401,6 +408,7 @@
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
                         description="SAP ASE jConnect driver"
                         categories="sql">
