@@ -367,7 +367,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
                 gc.setForeground(tree.getForeground());
                 int x = xWidth - textSize.x - 2;
+
+                Font oldFont = gc.getFont();
+                gc.setFont(tree.getFont());
                 gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
+                gc.setFont(oldFont);
             }
         }
     }
