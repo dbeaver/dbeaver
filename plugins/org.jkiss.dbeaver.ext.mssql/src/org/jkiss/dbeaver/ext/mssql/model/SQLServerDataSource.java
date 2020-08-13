@@ -371,7 +371,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException("Error reading table statistics", e);
+            throw new DBCException("Error reading database statistics", e);
         } finally {
             hasStatistics = true;
         }

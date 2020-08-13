@@ -450,7 +450,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     try {
                         if (!treeItem.isDisposed()) {
                             Object prevValue = treeItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
-                            if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) {
+                            /*if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) */{
                                 treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);
                                 treeItem.getParent().redraw();
                             }
