@@ -90,6 +90,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_label_class_name;
     public static String dialog_edit_driver_label_class_name_tip;
     public static String dialog_edit_driver_label_default_port;
+    public static String dialog_edit_driver_label_default_database;
+    public static String dialog_edit_driver_label_default_user;
     public static String dialog_edit_driver_label_description;
     public static String dialog_edit_driver_label_driver_class;
     public static String dialog_edit_driver_label_driver_name;
