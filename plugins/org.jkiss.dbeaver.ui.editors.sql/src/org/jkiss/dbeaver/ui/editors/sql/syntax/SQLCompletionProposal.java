@@ -93,8 +93,11 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
             if (getDataSource() != null) {
                 if (getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)) {
                     boolean insertTrailingSpace;
+                    boolean hasClosingParenthesis = document.getChar(replacementOffset + replacementLength) == ')';
                     if (getObject() instanceof DBSObjectContainer) {
                         // Do not append trailing space after schemas/catalogs/etc.
+                    } else if (hasClosingParenthesis) {
+                        // Do not append trailing space before closing parenthesis.
                     } else {
                         int docLen = document.getLength();
                         if (docLen <= replacementOffset + replacementLength + 2) {
