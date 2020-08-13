@@ -750,6 +750,11 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
                             schema.setSchemaTotalSize(bytes);
                         }
                     }
+                    for (DB2Schema schema : getSchemas(monitor)) {
+                        if (!schema.hasStatistics()) {
+                            schema.setSchemaTotalSize(0);
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
