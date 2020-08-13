@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore" application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="7.1.4.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore" application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="7.1.5.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>

@@ -71,8 +71,17 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             if (!CommonUtils.isEmpty(driver.getSampleURL())) {
                 xml.addAttribute(RegistryConstants.ATTR_URL, driver.getSampleURL());
             }
-            if (driver.getDefaultPort() != null) {
+            if (!CommonUtils.isEmpty(driver.getDefaultPort())) {
                 xml.addAttribute(RegistryConstants.ATTR_PORT, driver.getDefaultPort());
+            }
+            if (!CommonUtils.isEmpty(driver.getDefaultDatabase())) {
+                xml.addAttribute(RegistryConstants.ATTR_DEFAULT_DATABASE, driver.getDefaultDatabase());
+            }
+            if (!CommonUtils.isEmpty(driver.getDefaultServer())) {
+                xml.addAttribute(RegistryConstants.ATTR_DEFAULT_SERVER, driver.getDefaultServer());
+            }
+            if (!CommonUtils.isEmpty(driver.getDefaultUser())) {
+                xml.addAttribute(RegistryConstants.ATTR_DEFAULT_USER, driver.getDefaultUser());
             }
             xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.notEmpty(driver.getDescription()));
             if (driver.isCustomDriverLoader()) {
@@ -220,6 +229,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.setDriverClassName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
                         curDriver.setSampleURL(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
                         curDriver.setDriverDefaultPort(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
+                        curDriver.setDriverDefaultDatabase(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));
+                        curDriver.setDriverDefaultServer(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_SERVER), curDriver.getDefaultServer()));
+                        curDriver.setDriverDefaultUser(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_USER), curDriver.getDefaultUser()));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
                         curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
                         curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +48,7 @@ import java.sql.ResultSet;
  * @author Denis Forveille
  */
 public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
-    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject {
+    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBSTypedObjectExt4<DB2DataType> {
 
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
@@ -246,9 +247,10 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return dataType;
     }
 
+    @Override
     public void setDataType(DB2DataType dataType) {
         this.dataType = dataType;
-        this.setTypeName(dataType.getTypeName());
+        this.typeName = dataType.getTypeName();
     }
 
     @Override
