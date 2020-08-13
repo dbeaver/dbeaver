@@ -95,21 +95,26 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
         String prevKeyWord = wordDetector.getPrevKeyWord();
+        boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
                     // TODO: its an ugly hack. Need a better way
                     if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                         request.setQueryType(null);
-                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
-                        !CommonUtils.isEmpty(wordDetector.getPrevWords()) &&
+                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && !isPrevWordEmpty &&
                         ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
                     {
                         request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
+                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && !isPrevWordEmpty && ("*(".equals(wordDetector.getPrevDelimiter()))) {
+                        wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
+                        searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
+                        request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
+                    }
+                    else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
                         request.setQueryType(SQLCompletionRequest.QueryType.JOIN);
                     } else {
-                        if (!CommonUtils.isEmpty(wordDetector.getPrevWords()) && CommonUtils.isEmpty(wordDetector.getPrevDelimiter())) {
+                        if (!isPrevWordEmpty && CommonUtils.isEmpty(wordDetector.getPrevDelimiter())) {
                             // Seems to be table alias
                             return;
                         }
@@ -202,7 +207,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
                     String tableAlias = null;
                     if (ALL_COLUMNS_PATTERN.equals(wordPart)) {
-                        if (!CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                        if (!isPrevWordEmpty) {
                             String prevWord = wordDetector.getPrevWords().get(0);
                             if (prevWord.contains(sqlDialect.getCatalogSeparator())) {
                                 int divPos = prevWord.lastIndexOf(sqlDialect.getCatalogSeparator());
