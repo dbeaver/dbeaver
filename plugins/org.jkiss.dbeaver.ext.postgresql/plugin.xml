@@ -483,13 +483,11 @@
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
+                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
-                        <file type="lib" name="libintl-9.dll"/>
-                        <file type="lib" name="libwinpthread-1.dll"/>
-                        <file type="lib" name="ssleay32.dll"/>
+                        <file type="lib" name="libintl-8.dll"/>
                         <file type="lib" name="libpq.dll"/>
-                        <file type="lib" name="zlib1.dll"/>
-                        <file type="lib" name="libeay32.dll"/>
+                        <file type="lib" name="libssl-1_1-x64.dll"/>
                     </dist>
                 </client>
             </nativeClients>
