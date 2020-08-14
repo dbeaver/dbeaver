@@ -156,7 +156,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));//$NON-NLS-1$
         }
-        if (command.hasProperty("hasOids")) {//$NON-NLS-1$
+        if (command.hasProperty("hasOids") && table.getDataSource().getServerType().supportsHasOidsColumn()) {//$NON-NLS-1$
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));//$NON-NLS-1$ //$NON-NLS-2$
         }
         if (command.hasProperty("tablespace")) {//$NON-NLS-1$
