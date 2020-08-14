@@ -168,7 +168,7 @@ public class GreenplumTable extends PostgreTableRegular {
 
             ddl.append("\nDISTRIBUTED ");
             if (CommonUtils.isEmpty(distributionColumns)) {
-                ddl.append((supportsReplicatedDistribution && isDistributedByReplicated(monitor)) ? "REPLICATED" : "RANDOMLY");
+                ddl.append((supportsReplicatedDistribution && isPersisted() && isDistributedByReplicated(monitor)) ? "REPLICATED" : "RANDOMLY");
             } else {
                 ddl.append("BY (");
                 for (int i = 0; i < distributionColumns.size(); i++) {
@@ -178,7 +178,7 @@ public class GreenplumTable extends PostgreTableRegular {
                 ddl.append(")");
             }
 
-            String partitionData = getPartitionData(monitor);
+            String partitionData = isPersisted() ? getPartitionData(monitor) : null;
             if (partitionData != null) {
                 ddl.append("\n");
                 ddl.append(partitionData);

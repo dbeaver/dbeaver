@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.firebird;singleton:=true
-Bundle-Version: 1.0.138.qualifier
-Bundle-Release-Date: 20200720
+Bundle-Version: 1.0.140.qualifier
+Bundle-Release-Date: 20200817
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic

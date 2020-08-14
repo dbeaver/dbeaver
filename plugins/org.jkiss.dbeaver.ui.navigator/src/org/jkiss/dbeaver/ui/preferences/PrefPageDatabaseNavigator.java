@@ -59,6 +59,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button sortFoldersFirstCheck;
     private Button showConnectionHostCheck;
     private Button showStatisticsCheck;
+    private Button showNodeActionsCheck;
     private Button colorAllNodesCheck;
     private Button showResourceFolderPlaceholdersCheck;
     private Button groupByDriverCheck;
@@ -87,40 +88,49 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         {
             Group navigatorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
 
-            expandOnConnectCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
-
-            restoreStateDepthText = UIUtils.createLabelText(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_restore_state_depth, "", SWT.BORDER);
-            restoreStateDepthText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_restore_state_depth_tip);
-            restoreStateDepthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            showConnectionHostCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_host_name, UINavigatorMessages.pref_page_database_general_label_show_host_name_tip, false, 2);
+            showStatisticsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_statistics, UINavigatorMessages.pref_page_database_general_label_show_statistics_tip, false, 2);
+            showNodeActionsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_node_actions, UINavigatorMessages.pref_page_database_general_label_show_node_actions_tip, false, 2);
+            showResourceFolderPlaceholdersCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders_tip, false, 2);
+            sortFoldersFirstCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_folders_first, UINavigatorMessages.pref_page_database_general_label_folders_first_tip, false, 2);
+            groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
+            groupByDriverCheck.setEnabled(false);
 
             showObjectTipsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree_tip, false, 2);
             sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically, "", false, 2);
 
-            sortFoldersFirstCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_folders_first, UINavigatorMessages.pref_page_database_general_label_folders_first_tip, false, 2);
-            showConnectionHostCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_host_name, UINavigatorMessages.pref_page_database_general_label_show_host_name_tip, false, 2);
-            showStatisticsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_statistics, UINavigatorMessages.pref_page_database_general_label_show_statistics_tip, false, 2);
-            showResourceFolderPlaceholdersCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders, UINavigatorMessages.pref_page_database_general_label_show_folder_placeholders_tip, false, 2);
-            groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
-            groupByDriverCheck.setEnabled(false);
-
             colorAllNodesCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_color_all_nodes, UINavigatorMessages.pref_page_database_general_label_color_all_nodes_tip, false, 2);
+        }
 
-            longListFetchSizeText = UIUtils.createLabelText(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
-            longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);
-            longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+        {
+            Group behaviorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_behavior, 2, SWT.NONE, 0);
 
-            objDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
+            objDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
             objDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_node_open_properties, 0);
             objDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_node_expand_collapse, 1);
 
-            dsDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_connection, SWT.DROP_DOWN | SWT.READ_ONLY);
+            dsDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_connection, SWT.DROP_DOWN | SWT.READ_ONLY);
             dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_properties, NavigatorPreferences.DoubleClickBehavior.EDIT.ordinal());
             dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_conn_disconn, NavigatorPreferences.DoubleClickBehavior.CONNECT.ordinal());
             dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_sqleditor, NavigatorPreferences.DoubleClickBehavior.SQL_EDITOR.ordinal());
             dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_expand_collapse, NavigatorPreferences.DoubleClickBehavior.EXPAND.ordinal());
             dsDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_connection_open_new_sqleditor, NavigatorPreferences.DoubleClickBehavior.SQL_EDITOR_NEW.ordinal());
 
-            defaultEditorPageCombo = UIUtils.createLabelCombo(navigatorGroup, UINavigatorMessages.pref_page_navigator_default_editor_page_label, UINavigatorMessages.pref_page_navigator_default_editor_page_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            defaultEditorPageCombo = UIUtils.createLabelCombo(behaviorGroup, UINavigatorMessages.pref_page_navigator_default_editor_page_label, UINavigatorMessages.pref_page_navigator_default_editor_page_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+        }
+
+        {
+            Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, SWT.NONE, 0);
+
+            expandOnConnectCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
+
+            longListFetchSizeText = UIUtils.createLabelText(miscGroup, UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
+            longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);
+            longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+
+            restoreStateDepthText = UIUtils.createLabelText(miscGroup, UINavigatorMessages.pref_page_database_general_label_restore_state_depth, "", SWT.BORDER);
+            restoreStateDepthText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_restore_state_depth_tip);
+            restoreStateDepthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         }
 
         performDefaults();
@@ -140,6 +150,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         sortFoldersFirstCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         showConnectionHostCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME));
         showStatisticsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO));
+        showNodeActionsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS));
         colorAllNodesCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
         showResourceFolderPlaceholdersCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
         groupByDriverCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
@@ -177,6 +188,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO, showStatisticsCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS, showNodeActionsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, colorAllNodesCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, showResourceFolderPlaceholdersCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());

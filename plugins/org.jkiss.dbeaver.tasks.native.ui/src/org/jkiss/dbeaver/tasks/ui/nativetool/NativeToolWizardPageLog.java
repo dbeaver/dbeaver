@@ -46,7 +46,7 @@ public class NativeToolWizardPageLog extends WizardPage {
 
     private TextConsoleViewer consoleViewer;
     private String task;
-    private OutputStreamWriter writer;
+    private PrintStream writer;
     private MessageConsole console;
 
     public NativeToolWizardPageLog(String task)
@@ -74,12 +74,16 @@ public class NativeToolWizardPageLog extends WizardPage {
         consoleViewer = new LogConsoleViewer(composite);
         console.setWaterMarks(1024*1024*3, 1024*1024*4);
 
-        writer = new OutputStreamWriter(console.newMessageStream(), StandardCharsets.UTF_8);
+        try {
+            writer = new PrintStream(console.newMessageStream(), true, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            writer = new PrintStream(console.newMessageStream(), true);
+        }
 
         setControl(composite);
     }
 
-    public Writer getLogWriter() {
+    public PrintStream getLogWriter() {
         return writer;
     }
 
@@ -93,11 +97,7 @@ public class NativeToolWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        try {
-            writer.write(line);
-        } catch (IOException e) {
-            log.debug(e);
-        }
+        writer.print(line);
     }
 
     public void clearLog()

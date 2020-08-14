@@ -22,7 +22,6 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
@@ -46,7 +45,7 @@ public class JSONUtils {
 
     static {
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_ISO_TIMESTAMP_FORMAT);
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         dateFormat.setTimeZone(tz);
     }
 
@@ -67,7 +66,7 @@ public class JSONUtils {
     }
 
     public static String formatISODate(Date date) {
-        return "ISODate(\"" + formatDate(date) + "\")";  //$NON-NLS-1$//$NON-NLS-2$
+        return "ISODate('" + formatDate(date) + "')";  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     public static String escapeJsonString(String str) {

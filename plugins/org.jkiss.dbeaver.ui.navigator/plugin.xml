@@ -4,6 +4,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.navigator.nodeAction" name="%extension-point.org.jkiss.dbeaver.navigator.nodeAction.name" schema="schema/org.jkiss.dbeaver.navigator.nodeAction.exsd"/>
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
@@ -786,5 +787,18 @@
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.navigator.nodeAction">
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConfiguration" order="999">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceTunnel" order="200">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+    </extension>
+
 
 </plugin>

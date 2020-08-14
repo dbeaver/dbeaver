@@ -277,6 +277,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return supportsUnquotedMixedCase;
     }
 
+    public void setSupportsUnquotedMixedCase(boolean supportsUnquotedMixedCase) {
+        this.supportsUnquotedMixedCase = supportsUnquotedMixedCase;
+    }
+
     @Override
     public boolean supportsQuotedMixedCase() {
         return supportsQuotedMixedCase;

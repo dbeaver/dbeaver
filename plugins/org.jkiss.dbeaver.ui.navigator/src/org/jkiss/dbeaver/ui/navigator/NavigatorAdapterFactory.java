@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -78,11 +79,17 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             DBPDataSource dataSource = object.getDataSource();
             return dataSource == null ? null : adapterType.cast(dataSource.getContainer());
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
+            if (adaptableObject instanceof DBNDatabaseFolder) {
+                adaptableObject = ((DBNDatabaseFolder) adaptableObject).getParentObject();
+            }
             DBPObject object = null;
             if (adaptableObject instanceof DBSWrapper) {
                 object = ((DBSWrapper) adaptableObject).getObject();
             } else if (adaptableObject instanceof DBPObject) {
                 object = (DBPObject) adaptableObject;
+            }
+            if (object instanceof DBSObject) {
+                object = DBUtils.getPublicObject((DBSObject) object);
             }
             if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                 return adapterType.cast(object);

@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.sqlite.ui</artifactId>
-  <version>1.0.7-SNAPSHOT</version>
+  <version>1.0.9-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -60,7 +59,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
-import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -248,9 +246,16 @@ public class DBExecUtils {
     }
 
     public static void executeScript(DBRProgressMonitor monitor, DBCExecutionContext executionContext, String jobName, List<DBEPersistAction> persistActions) {
-        boolean ignoreErrors = false;
-        monitor.beginTask(jobName, persistActions.size());
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
+            executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
+        }
+    }
+
+    public static void executeScript(DBCSession session, DBEPersistAction[] persistActions) {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        boolean ignoreErrors = false;
+        monitor.beginTask(session.getTaskTitle(), persistActions.length);
+        try {
             for (DBEPersistAction action : persistActions) {
                 if (monitor.isCanceled()) {
                     break;
@@ -259,22 +264,14 @@ public class DBExecUtils {
                     monitor.subTask(action.getTitle());
                 }
                 try {
-                    if (action instanceof SQLDatabasePersistActionComment) {
-                        continue;
-                    }
-                    String script = action.getScript();
-                    if (!CommonUtils.isEmpty(script)) {
-                        try (final Statement statement = ((JDBCSession) session).createStatement()) {
-                            statement.execute(script);
-                        }
-                    }
+                    executePersistAction(session, action);
                 } catch (Exception e) {
                     log.debug("Error executing query", e);
                     if (ignoreErrors) {
                         continue;
                     }
                     boolean keepRunning = true;
-                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(jobName, e, true)) {
+                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(session.getTaskTitle(), e, true)) {
                         case STOP:
                             keepRunning = false;
                             break;
@@ -297,6 +294,28 @@ public class DBExecUtils {
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBCException {
+        if (action instanceof SQLDatabasePersistActionComment) {
+            return;
+        }
+        String script = action.getScript();
+        if (script == null) {
+            action.afterExecute(session, null);
+        } else {
+            DBCStatement dbStat = DBUtils.createStatement(session, script, false);
+            try {
+                action.beforeExecute(session);
+                dbStat.executeStatement();
+                action.afterExecute(session, null);
+            } catch (DBCException e) {
+                action.afterExecute(session, e);
+                throw e;
+            } finally {
+                dbStat.close();
+            }
         }
     }
 
@@ -389,11 +408,15 @@ public class DBExecUtils {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
                         try {
+                            monitor.beginTask("Switch to auto-commit mode", 1);
                             if (!transactionManager.isAutoCommit()) {
                                 transactionManager.setAutoCommit(monitor,true);
                             }
                         } catch (DBCException e) {
                             return GeneralUtils.makeExceptionStatus(e);
+                        }
+                        finally {
+                            monitor.done();
                         }
                         return Status.OK_STATUS;
                     }
@@ -427,7 +450,7 @@ public class DBExecUtils {
                             }
                             // Then search for unique index
                             for (DBSTableIndex index : indexes) {
-                                if (DBUtils.isIdentifierIndex(monitor, index)) {
+                                if (DBUtils.isIdentifierIndex(monitor, index) && !identifiers.contains(index)) {
                                     identifiers.add(index);
                                     break;
                                 }
@@ -456,30 +479,6 @@ public class DBExecUtils {
 
             }
         }
-        if (CommonUtils.isEmpty(identifiers)) {
-            // Check for pseudo attrs (ROWID)
-            // Do this after natural identifiers search (see #3829)
-            for (DBDAttributeBinding column : bindings) {
-                DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
-                if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                    identifiers.add(new DBDPseudoReferrer(table, column));
-                    break;
-                }
-            }
-        }
-
-//        if (CommonUtils.isEmpty(identifiers)) {
-//            if (nonIdentifyingConstraints != null) {
-//                identifiers.addAll(nonIdentifyingConstraints);
-//            }
-//        }
-
-        if (CommonUtils.isEmpty(identifiers)) {
-            // No physical identifiers or row ids
-            // Make new or use existing virtual identifier
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
-            identifiers.add(virtualEntity.getBestIdentifier());
-        }
 
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
@@ -500,10 +499,27 @@ public class DBExecUtils {
                     uniqueId = constraint;
                 }
             }
-            return uniqueId;
+            if (uniqueId != null) {
+                return uniqueId;
+            }
         }
 
-        return null;
+        {
+            // Check for pseudo attrs (ROWID)
+            // Do this after natural identifiers search (see #3829)
+            for (DBDAttributeBinding column : bindings) {
+                DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
+                if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
+                    identifiers.add(new DBDPseudoReferrer(table, column));
+                    break;
+                }
+            }
+        }
+
+        // No physical identifiers or row ids
+        // Make new or use existing virtual identifier
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
+        return virtualEntity.getBestIdentifier();
     }
 
     private static boolean isGoodReferrer(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings, DBSEntityReferrer referrer) throws DBException
@@ -516,10 +532,15 @@ public class DBExecUtils {
             return referrer instanceof DBVEntityConstraint;
         }
         for (DBSEntityAttributeRef ref : references) {
+            boolean refMatches = false;
             for (DBDAttributeBinding binding : bindings) {
                 if (binding.matches(ref.getAttribute(), false)) {
-                    return true;
+                    refMatches = true;
+                    break;
                 }
+            }
+            if (!refMatches) {
+                return false;
             }
         }
         return true;
@@ -672,10 +693,16 @@ public class DBExecUtils {
                         tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
 
-                    if (tableColumn != null && // Table column can be found from results metadata or from SQL query parser
+                    if (tableColumn != null &&
+                        // Table column can be found from results metadata or from SQL query parser
                         // If datasource supports table names in result metadata then table name must present in results metadata.
                         // Otherwise it is an expression.
-                        (bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().supportsDuplicateColumnsInResults()) &&
+
+                        // It is a real table columns if:
+                        //  - We use some explicit entity (e.g. table data editor)
+                        //  - Table metadata was specified for column
+                        //  - Database doesn't support column name collisions (default)
+                        (sourceEntity != null || bindingMeta.getMetaAttribute().getEntityMetaData() != null || !bindingMeta.getDataSource().getInfo().needsTableMetaForColumnResolution()) &&
                         bindingMeta.setEntityAttribute(
                             tableColumn,
                             ((sqlQuery == null || tableColumn.getTypeID() != attrMeta.getTypeID()) && rows != null)))
@@ -755,6 +782,40 @@ public class DBExecUtils {
         finally {
             monitor.done();
         }
+    }
+
+    public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
+        if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
+            return true;
+        }
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+            return true;
+        }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
+    }
+
+    public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
+        if (attribute == null || attribute.getMetaAttribute() == null) {
+            return "Null meta attribute";
+        }
+        if (attribute.getMetaAttribute().isReadOnly()) {
+            return "Attribute is read-only";
+        }
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+        if (rowIdentifier == null) {
+            String status = attribute.getRowIdentifierStatus();
+            return status != null ? status : "No row identifier found";
+        }
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+            return "Underlying entity doesn't support data modification";
+        }
+        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+            return "Underlying entity doesn't support data update";
+        }
+        return null;
     }
 
 }

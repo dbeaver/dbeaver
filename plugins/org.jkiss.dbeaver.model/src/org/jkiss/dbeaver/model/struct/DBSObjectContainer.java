@@ -67,14 +67,16 @@ public interface DBSObjectContainer extends DBSObject
     DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
-     * Gets type of child elements.
+     * Gets type of primary child elements.
+     * Usually it is some non-abstract table implementation.
      *
      * @param monitor progress monitor
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
+     * @see DBSEntityContainer
      */
     @NotNull
-    Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.

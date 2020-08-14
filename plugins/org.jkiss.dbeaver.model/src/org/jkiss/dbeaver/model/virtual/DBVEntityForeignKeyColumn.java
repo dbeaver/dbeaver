@@ -77,4 +77,8 @@ public class DBVEntityForeignKeyColumn implements DBSTableForeignKeyColumn {
         }
     }
 
+    @Override
+    public String toString() {
+        return attributeName + ":" + refAttributeName;
+    }
 }

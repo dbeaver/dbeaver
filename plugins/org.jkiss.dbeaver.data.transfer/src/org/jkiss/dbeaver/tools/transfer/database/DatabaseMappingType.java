@@ -20,8 +20,18 @@ package org.jkiss.dbeaver.tools.transfer.database;
 * Mapping type
 */
 public enum DatabaseMappingType {
-    unspecified,
-    existing,
-    create,
-    skip
+    unspecified(false),
+    existing(true),
+    create(true),
+    skip(false);
+
+    private final boolean isValid;
+
+    DatabaseMappingType(boolean isValid) {
+        this.isValid = isValid;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
 }

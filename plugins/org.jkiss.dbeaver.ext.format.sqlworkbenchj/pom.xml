@@ -10,6 +10,6 @@
   </parent>
   <groupId>org.jkiss.dbeaver</groupId>
   <artifactId>org.jkiss.dbeaver.ext.format.sqlworkbenchj</artifactId>
-  <version>1.0.44-SNAPSHOT</version>
+  <version>1.0.46-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

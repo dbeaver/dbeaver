@@ -116,8 +116,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Make initial connection to read database list
         final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
         StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.*" +
-                        "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
+                "SELECT db.oid,db.*,pg_database_size(db.oid) as db_size\n" +
+                        "FROM pg_catalog.pg_database db WHERE datallowconn ");
         if (!showTemplates) {
             catalogQuery.append(" AND NOT datistemplate ");
         }
@@ -165,7 +165,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
-                initSSL(props, sslConfig);
+                boolean useProxy = sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY);
+                if (useProxy) {
+                    initProxySSL(props, sslConfig);
+                } else {
+                    initServerSSL(props, sslConfig);
+                }
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
@@ -175,7 +180,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         props.put(PostgreConstants.PROP_SSL, "true");
 
         final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
@@ -202,20 +207,23 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
     }
 
+    private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        // No special config
+        //initServerSSL(props, sslConfig);
+    }
+
     @Override
     protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         if (initFrom != null) {
-            ((PostgreExecutionContext)context).setDefaultsFrom((PostgreExecutionContext) initFrom);
             final PostgreSchema activeSchema = ((PostgreExecutionContext)initFrom).getDefaultSchema();
-            if (activeSchema != null) {
+            if (activeSchema != null && activeSchema != ((PostgreExecutionContext) context).getDefaultSchema()) {
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
-        } else {
-            ((PostgreExecutionContext)context).refreshDefaults(monitor, true);
         }
     }
 
@@ -281,8 +289,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDatabase(childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return PostgreDatabase.class;

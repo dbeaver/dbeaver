@@ -88,6 +88,15 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             }
             return containerName + "  [" + dsName + "]";
         }
+
+        @Override
+        public String toString() {
+            return getFullName();
+        }
+
+        public boolean isSameNode(DBNDatabaseNode node) {
+            return containerPath.equals(node.getNodeItemPath());
+        }
     }
 
     protected ObjectContainerSelectorPanel(Composite parent, DBPProject project, String selectorId, String containerTitle, String containerHint) {
@@ -135,13 +144,15 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                     new Class[]{DBSObjectContainer.class},
                     new Class[] { DBSObjectContainer.class },
                     new Class[]{ DBSSchema.class });
-                try {
-                    checkValidContainerNode(node);
-                    setSelectedNode((DBNDatabaseNode) node);
-                    addNodeToHistory((DBNDatabaseNode) node);
-                    saveHistory();
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Bad container node", "Node '" + node.getName() + "' cannot be selected as table container", e);
+                if (node != null) {
+                    try {
+                        checkValidContainerNode(node);
+                        setSelectedNode((DBNDatabaseNode) node);
+                        addNodeToHistory((DBNDatabaseNode) node);
+                        saveHistory();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Bad container node", "Node '" + node.getName() + "' cannot be selected as table container", e);
+                    }
                 }
             }
         };
@@ -167,7 +178,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
             if (nodeObject instanceof DBSObjectContainer) {
                 try {
-                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getChildType(new VoidProgressMonitor());
+                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getPrimaryChildType(new VoidProgressMonitor());
                     if (childrenClass != null) {
                         if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
                             // Upper level of container
@@ -188,7 +199,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private HistoryItem addNodeToHistory(DBNDatabaseNode node) {
         for (int i = 0; i < historyItems.size(); i++) {
             HistoryItem item = historyItems.get(i);
-            if (item.containerPath.equals(node.getNodeItemPath())) {
+            if (item.isSameNode(node)) {
                 item.containerNode = node;
                 moveHistoryItemToBeginning(item);
                 return item;
@@ -201,14 +212,16 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             node
         );
         historyItems.add(0, newItem);
+        containerNameCombo.add(newItem.getFullName(), 0);
         return newItem;
     }
 
     private void moveHistoryItemToBeginning(HistoryItem item) {
+        int itemIndex = historyItems.indexOf(item);
         historyItems.remove(item);
         historyItems.add(0, item);
 
-        removeItemFromCombo(item);
+        containerNameCombo.remove(itemIndex);
         containerNameCombo.add(item.getFullName(), 0);
         containerNameCombo.select(0);
     }
@@ -293,9 +306,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         HistoryItem item = addNodeToHistory(node);
         containerIcon.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
 
-        removeItemFromCombo(item);
-        containerNameCombo.add(item.getFullName(), 0);
-        containerNameCombo.select(0);
+        moveHistoryItemToBeginning(item);
     }
 
     private void removeItemFromCombo(HistoryItem item) {

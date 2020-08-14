@@ -15,20 +15,15 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.navigator.database;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Tree;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 
 /**
- * Tree item renderer
+ * Result set execute processor
  */
-public interface DatabaseNavigatorItemRenderer {
+public interface IResultSetContainerExt {
 
-    void drawNodeBackground(DBNNode element, Tree tree, GC gc, Event event);
-
-    void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event);
+    void handleExecuteResult(DBCExecutionResult result);
 
 }

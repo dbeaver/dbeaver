@@ -55,6 +55,7 @@ public class HexEditControl extends Composite {
 
     private static final Log log = Log.getLog(HexEditControl.class);
 
+    public static final String CONTROL_ID = "org.jkiss.dbeaver.ui.hexEditor";
     public static final String DEFAULT_FONT_NAME = "Courier New"; //$NON-NLS-1$"
     public static final FontData DEFAULT_FONT_DATA = new FontData(DEFAULT_FONT_NAME, 10, SWT.NORMAL);
 
@@ -151,6 +152,45 @@ public class HexEditControl extends Composite {
     private Color colorCaretLine = null;
     private Color colorHighlightText = null;
 
+    public HexEditControl(final Composite parent, int style)
+    {
+        this(parent, style, 12, 16);
+    }
+
+    /**
+     * Create a binary text editor
+     *
+     * @param parent parent in the widget hierarchy
+     * @param style  not used for the moment
+     */
+    public HexEditControl(final Composite parent, int style, int charsForAddress, int bytesPerLine)
+    {
+        super(parent, style | SWT.V_SCROLL);
+
+        loadSettings();
+
+        this.readOnly = (style & SWT.READ_ONLY) != 0;
+        this.charsForAddress = charsForAddress;
+        this.bytesPerLine = bytesPerLine;
+
+        this.highlightRangesInScreen = new ArrayList<>();
+
+        this.myClipboard = new BinaryClipboard(parent.getDisplay());
+        this.longSelectionListeners = new ArrayList<>();
+        addDisposeListener(e -> {
+            try {
+                myClipboard.dispose();
+            } catch (IOException ex) {
+                log.warn("Can't cleanup clipboard temporary data");
+            }
+        });
+        initialize();
+        this.lastFocusedTextArea = 1;
+        this.previousLine = -1;
+
+        UIUtils.addFocusTracker(UIUtils.getActiveWorkbenchWindow(), CONTROL_ID, this);
+    }
+
     private void loadSettings() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         this.colorCaretLine = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.caret");
@@ -189,6 +229,25 @@ public class HexEditControl extends Composite {
 
         return tmp;
     }
+
+/*
+    private class EditableStyledText extends StyledText {
+
+        EditableStyledText(Composite parent, int style) {
+            super(parent, style);
+        }
+
+        @Override
+        public void copy() {
+            HexEditControl.this.copy();
+        }
+
+        @Override
+        public void paste() {
+            HexEditControl.this.paste();
+        }
+    }
+*/
 
     private class ControlKeyAdapter extends KeyAdapter {
         @Override
@@ -421,43 +480,6 @@ public class HexEditControl extends Composite {
         }
     }
 
-    public HexEditControl(final Composite parent, int style)
-    {
-        this(parent, style, 12, 16);      
-    }
-
-    /**
-     * Create a binary text editor
-     *
-     * @param parent parent in the widget hierarchy
-     * @param style  not used for the moment
-     */
-    public HexEditControl(final Composite parent, int style, int charsForAddress, int bytesPerLine)
-    {
-        super(parent, style | SWT.V_SCROLL);
-
-        loadSettings();
-
-        this.readOnly = (style & SWT.READ_ONLY) != 0;
-        this.charsForAddress = charsForAddress;
-        this.bytesPerLine = bytesPerLine;
-
-        this.highlightRangesInScreen = new ArrayList<>();
-
-        this.myClipboard = new BinaryClipboard(parent.getDisplay());
-        this.longSelectionListeners = new ArrayList<>();
-        addDisposeListener(e -> {
-            try {
-                myClipboard.dispose();
-            } catch (IOException ex) {
-                log.warn("Can't cleanup clipboard temporary data");
-            }
-        });
-        initialize();
-        this.lastFocusedTextArea = 1;
-        this.previousLine = -1;
-    }
-
     public BinaryTextFinder getFinder()
     {
         return finder;
@@ -678,6 +700,7 @@ public class HexEditControl extends Composite {
             nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
             nonDefaultCaret.setBounds(defaultCaret.getBounds());
             hexText.setCaret(nonDefaultCaret);
+            UIUtils.addFocusTracker(UIUtils.getActiveWorkbenchWindow(), CONTROL_ID, hexText);
         }
 
         {
@@ -731,6 +754,8 @@ public class HexEditControl extends Composite {
             previewText.setCaret(nonDefaultCaret);
             styledText2GC = new GC(previewText);
             setCharset(null);
+
+            UIUtils.addFocusTracker(UIUtils.getActiveWorkbenchWindow(), CONTROL_ID, previewText);
         }
 
         super.setFont(fontCurrent);

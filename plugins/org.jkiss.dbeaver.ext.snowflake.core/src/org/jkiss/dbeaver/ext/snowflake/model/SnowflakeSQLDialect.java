@@ -16,13 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class SnowflakeSQLDialect extends GenericSQLDialect {
+public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     public SnowflakeSQLDialect() {
         super("Snowflake");
@@ -36,4 +43,12 @@ public class SnowflakeSQLDialect extends GenericSQLDialect {
                         "ILIKE"
                 ));
     }
+
+    @Override
+    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
+        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
+            rules.add(new SQLDollarQuoteRule(dataSource, position == RulePosition.PARTITION));
+        }
+    }
+
 }

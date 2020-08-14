@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.WriterProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.PrintStreamProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
@@ -35,10 +35,12 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +54,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         @NotNull DBTTask task,
         @NotNull Locale locale,
         @NotNull Log log,
-        @NotNull Writer logStream,
+        @NotNull PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         SETTINGS settings = createToolSettings();
@@ -60,12 +62,12 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
     }
 
-    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, Writer logStream, @NotNull DBTTaskExecutionListener listener, SETTINGS settings) throws DBException {
+    private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, PrintStream logStream, @NotNull DBTTaskExecutionListener listener, SETTINGS settings) throws DBException {
         Throwable error = null;
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    executeTool(new WriterProgressMonitor(monitor, logStream), task, settings, log, logStream, listener);
+                    executeTool(new PrintStreamProgressMonitor(monitor, logStream), task, settings, log, logStream, listener);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
@@ -80,19 +82,18 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         }
     }
 
-    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, Writer logStream, DBTTaskExecutionListener listener) throws DBException, IOException {
-        PrintWriter outLog = new PrintWriter(logStream);
-
+    private void executeTool(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, PrintStream outLog, DBTTaskExecutionListener listener) throws DBException, IOException {
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
-        if(objectList.isEmpty()){
-            logStream.write("Object(s) for tool execution not found");
-            log.debug("Object(s) for tool execution not found");
-        }
 
         listener.taskStarted(settings);
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
+            List<Throwable> warnings = settings.getWarnings();
+            if (!warnings.isEmpty()) {
+                Throwable throwable = warnings.get(0);
+                throw new DBCException("Tool execution error: " + throwable.getMessage(), throwable);
+            }
             for (OBJECT_TYPE object : objectList) {
                 monitor.subTask("Process [" + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI) + "]");
                 try (DBCSession session = DBUtils.openUtilSession(monitor, object, "Execute " + task.getType().getName())) {
@@ -131,25 +132,29 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                         false)) {
                                         long execTime = System.currentTimeMillis() - startTime;
                                         statement.executeStatement();
-                                        if (listener instanceof SQLToolRunListener){
-                                            if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
-                                                List<? extends SQLToolStatistics> executeStatistics =
-                                                    ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
-                                                        object,
-                                                        settings,
-                                                        action,
-                                                        session,
-                                                        statement);
-                                                monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
-                                                if (!CommonUtils.isEmpty(executeStatistics)) {
-                                                    for (SQLToolStatistics stat : executeStatistics) {
-                                                        stat.setExecutionTime(execTime);
+                                        if (listener instanceof SQLToolRunListener) {
+                                            if (action.getType() != DBEPersistAction.ActionType.INITIALIZER && action.getType() != DBEPersistAction.ActionType.FINALIZER) {
+                                                SQLToolStatisticsSimple statisticsSimple = new SQLToolStatisticsSimple(object, false);
+                                                if (SQLToolExecuteHandler.this instanceof SQLToolRunStatisticsGenerator) {
+                                                    List<? extends SQLToolStatistics> executeStatistics =
+                                                            ((SQLToolRunStatisticsGenerator) SQLToolExecuteHandler.this).getExecuteStatistics(
+                                                                    object,
+                                                                    settings,
+                                                                    action,
+                                                                    session,
+                                                                    statement);
+                                                    monitor.subTask("\tFinished in " + RuntimeUtils.formatExecutionTime(execTime));
+                                                    if (!CommonUtils.isEmpty(executeStatistics)) {
+                                                        for (SQLToolStatistics stat : executeStatistics) {
+                                                            stat.setExecutionTime(execTime);
+                                                        }
+                                                        ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                                    } else {
+                                                        ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(statisticsSimple));
                                                     }
-                                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, executeStatistics);
+                                                } else {
+                                                    ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(statisticsSimple));
                                                 }
-                                            } else {
-                                                SQLToolStatisticsSimple stat = new SQLToolStatisticsSimple(object, false);
-                                                ((SQLToolRunListener) listener).handleActionStatistics(object, action, session, Collections.singletonList(stat));
                                             }
                                         }
                                     }
@@ -228,6 +233,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     }
 
     public boolean isOpenTargetObjectsOnFinish() {
+        return false;
+    }
+
+    public boolean needsRefreshOnFinish() {
         return false;
     }
 

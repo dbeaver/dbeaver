@@ -90,6 +90,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Text driverClassText;
     private Text driverURLText;
     private Text driverPortText;
+    private Text driverUserText;
+    private Text driverDatabaseText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private final List<DBPDriverLibrary> origLibList;
@@ -245,11 +247,18 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverURLText.addModifyListener(e -> onChangeProperty());
             driverURLText.setEnabled(driver == null || driver.isUseURL());
 
-            UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port);
-            driverPortText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort());
+            driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, CommonUtils.notEmpty(driver.getDefaultPort()), SWT.BORDER | advStyle);
             driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverPortText.addModifyListener(e -> onChangeProperty());
+
+            driverDatabaseText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_database, CommonUtils.notEmpty(driver.getDefaultDatabase()), SWT.BORDER | advStyle);
+            driverDatabaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverDatabaseText.addModifyListener(e -> onChangeProperty());
+
+            driverUserText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_user, CommonUtils.notEmpty(driver.getDefaultUser()), SWT.BORDER | advStyle);
+            driverUserText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverUserText.addModifyListener(e -> onChangeProperty());
+
             UIUtils.createEmptyLabel(propsGroup, 2, 1);
 
             Composite optionsPanel = new Composite(propsGroup, SWT.NONE);
@@ -393,7 +402,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
                         cell.setText(element.toString());
-                        cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        if (element instanceof DriverDescriptor.DriverFileInfo) {
+                            if (((DriverDescriptor.DriverFileInfo)element).getType() == DBPDriverLibrary.FileType.license) {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
+                            } else {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                            }
+                        } else {
+                            cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        }
                     }
                 }
 
@@ -728,13 +745,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void loadSettings(boolean original) {
-        driverNameText.setText(original ? CommonUtils.notEmpty(driver.getOrigName()) : CommonUtils.notEmpty(driver.getName()));
-        driverDescText.setText(original ? CommonUtils.notEmpty(driver.getOrigDescription()) : CommonUtils.notEmpty(driver.getDescription()));
-        driverClassText.setText(original ? CommonUtils.notEmpty(driver.getOrigClassName()) : CommonUtils.notEmpty(driver.getDriverClassName()));
-        driverURLText.setText(original ? CommonUtils.notEmpty(driver.getOrigSampleURL()) : CommonUtils.notEmpty(driver.getSampleURL()));
-        driverPortText.setText(original ?
-            (driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()) : //$NON-NLS-1$
-            (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
+        driverNameText.setText(CommonUtils.notEmpty(original ? driver.getOrigName() : driver.getName()));
+        driverDescText.setText(CommonUtils.notEmpty(original ? driver.getOrigDescription() : driver.getDescription()));
+        driverClassText.setText(CommonUtils.notEmpty(original ? driver.getOrigClassName() : driver.getDriverClassName()));
+        driverURLText.setText(CommonUtils.notEmpty(original ? driver.getOrigSampleURL() : driver.getSampleURL()));
+        driverPortText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultPort() : driver.getDefaultPort()));
+        driverDatabaseText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultDatabase() : driver.getDefaultDatabase()));
+        driverUserText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultUser() : driver.getDefaultUser()));
 
         embeddedDriverCheck.setSelection(original ? driver.isOrigEmbedded() : driver.isEmbedded());
         anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
@@ -793,6 +810,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(driverPortText.getText());
+        driver.setDriverDefaultDatabase(driverDatabaseText.getText());
+        driver.setDriverDefaultUser(driverUserText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
         driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());

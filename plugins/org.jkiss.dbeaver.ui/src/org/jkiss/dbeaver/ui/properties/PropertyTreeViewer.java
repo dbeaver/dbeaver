@@ -40,6 +40,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -491,7 +492,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         // The same empty string
                         return;
                     }
-                    if (!CommonUtils.equalObjects(oldValue, value)) {
+                    if (DBUtils.compareDataValues(oldValue, value) != 0) {
                         if (selectedColumn == 0) {
                             String newName = CommonUtils.toString(value);
                             String oldPropId = prop.property.getId();

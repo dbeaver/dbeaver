@@ -107,6 +107,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 txnLevel = dataSource.getContainer().getDefaultTransactionsIsolation();
             }
 
+            if (txnLevel != null) {
+                try {
+                    this.connection.setTransactionIsolation(txnLevel);
+                    this.transactionIsolationLevel = txnLevel;
+                } catch (Throwable e) {
+                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
+                }
+            }
+
             try {
                 connection.setAutoCommit(autoCommit);
                 this.autoCommit = autoCommit;
@@ -120,15 +129,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 } catch (Throwable e) {
                     log.debug("Can't check auto-commit state", e); //$NON-NLS-1$
                     this.autoCommit = false;
-                }
-            }
-
-            if (!this.autoCommit && txnLevel != null) {
-                try {
-                    this.connection.setTransactionIsolation(txnLevel);
-                    this.transactionIsolationLevel = txnLevel;
-                } catch (Throwable e) {
-                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
 
@@ -226,21 +226,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
-        boolean checkOk = false;//JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
-        closeOnFailure = true;
+        Boolean prevAutocommit = autoCommit;
+        Integer txnLevel = transactionIsolationLevel;
+        closeContext(false);
+        connect(monitor, prevAutocommit, txnLevel, this, false);
 
-        if (!checkOk) {
-            Boolean prevAutocommit = autoCommit;
-            Integer txnLevel = transactionIsolationLevel;
-            if (closeOnFailure) {
-                closeContext(false);
-            }
-            connect(monitor, prevAutocommit, txnLevel, this, false);
-
-            return InvalidateResult.RECONNECTED;
-        }
-        return InvalidateResult.ALIVE;
+        return InvalidateResult.RECONNECTED;
     }
 
     @Override

@@ -124,8 +124,9 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return DBUtils.findObject(procedures, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return GenericProcedure.class;
     }

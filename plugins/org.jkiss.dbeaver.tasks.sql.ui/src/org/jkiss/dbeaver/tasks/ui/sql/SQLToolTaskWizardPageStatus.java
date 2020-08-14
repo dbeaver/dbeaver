@@ -46,10 +46,10 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ObjectListControl;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,7 +60,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
 
     private static final Log log = Log.getLog(SQLToolTaskWizardPageStatus.class);
 
-    private OutputStreamWriter writer;
+    private PrintStream writer;
     private MessageConsole console;
     private ObjectListControl<SQLToolStatistics> statusTable;
     private AbstractJob statusUpdateJob;
@@ -116,12 +116,16 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
         LogConsoleViewer consoleViewer = new LogConsoleViewer(partDivider);
         console.setWaterMarks(1024 * 1024 * 3, 1024 * 1024 * 4);
 
-        writer = new OutputStreamWriter(console.newMessageStream());
+        try {
+            writer = new PrintStream(console.newMessageStream(), true, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            writer = new PrintStream(console.newMessageStream(), true);
+        }
 
         setControl(composite);
     }
 
-    Writer getLogWriter() {
+    PrintStream getLogWriter() {
         return writer;
     }
 
@@ -134,12 +138,8 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> {
         if (getShell().isDisposed()) {
             return;
         }
-        try {
-            writer.write(line + "\n");
-            writer.flush();
-        } catch (IOException e) {
-            log.debug(e);
-        }
+        writer.print(line + "\n");
+        writer.flush();
     }
 
     void addStatistics(DBPObject object, List<? extends SQLToolStatistics> statistics) {

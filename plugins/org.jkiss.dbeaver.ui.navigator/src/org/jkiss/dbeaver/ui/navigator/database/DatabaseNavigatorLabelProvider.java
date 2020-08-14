@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -45,6 +46,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     //private Font boldItalicFont;
     protected Color lockedForeground;
     protected Color transientForeground;
+    private ILabelDecorator labelDecorator;
 
     public DatabaseNavigatorLabelProvider(Viewer viewer)
     {
@@ -67,6 +69,14 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 //        UIUtils.dispose(boldItalicFont);
 //        boldItalicFont = null;
         super.dispose();
+    }
+
+    ILabelDecorator getLabelDecorator() {
+        return labelDecorator;
+    }
+
+    void setLabelDecorator(ILabelDecorator labelDecorator) {
+        this.labelDecorator = labelDecorator;
     }
 
     @Override
@@ -102,14 +112,17 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Image getImage(Object obj)
     {
+        Image image = null;
         if (obj instanceof ILabelProvider) {
-            return ((ILabelProvider)obj).getImage(obj);
+            image = ((ILabelProvider)obj).getImage(obj);
+        } else if (obj instanceof DBNNode) {
+            image = DBeaverIcons.getImage(((DBNNode) obj).getNodeIconDefault());
         }
-        if (obj instanceof DBNNode) {
-            return DBeaverIcons.getImage(((DBNNode) obj).getNodeIconDefault());
-        } else {
-            return null;
+
+        if (labelDecorator != null && obj instanceof DBNResource) {
+            image = labelDecorator.decorateImage(image, obj);
         }
+        return image;
     }
 
     @Override
@@ -225,5 +238,10 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public int getToolTipStyle(Object object) {
         return super.getToolTipStyle(object);
+    }
+
+    @Override
+    public boolean useNativeToolTip(Object object) {
+        return true;
     }
 }

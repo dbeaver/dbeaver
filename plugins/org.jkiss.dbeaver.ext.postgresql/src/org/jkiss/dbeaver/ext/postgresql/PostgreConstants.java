@@ -50,11 +50,8 @@ public class PostgreConstants {
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
+    public static final String PROP_SSL_PROXY = "sslProxyServer";
     public static final String PROP_SERVER_TYPE = "serverType";
-
-    public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
-    public static final String OPTION_DDL_SHOW_COLUMN_COMMENTS = "pg.ddl.show.column.comments";
-    public static final String OPTION_DDL_SHOW_FULL = "pg.ddl.show.full";
 
     public static final DBSObjectState STATE_UNAVAILABLE = new DBSObjectState("Unavailable", DBIcon.OVER_EXTERNAL);
     public static final DBSEntityConstraintType CONSTRAINT_TRIGGER = new DBSEntityConstraintType("trigger", "TRIGGER", "Trigger constraint", false, false, false, false); //$NON-NLS-1$

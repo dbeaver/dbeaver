@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,7 +31,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -51,6 +56,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferPageType;
 import org.jkiss.dbeaver.ui.DialogSettingsMap;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,57 +67,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
     private static final Log log = Log.getLog(DataTransferWizard.class);
 
-    public static void openWizard(
-        @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable Collection<IDataTransferProducer> producers,
-        @Nullable Collection<IDataTransferConsumer> consumers)
-    {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers);
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard);
-        dialog.open();
-    }
-
-    public static void openWizard(
-        @NotNull IWorkbenchWindow workbenchWindow,
-        @Nullable Collection<IDataTransferProducer> producers,
-        @Nullable Collection<IDataTransferConsumer> consumers,
-        @Nullable IStructuredSelection selection)
-    {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), producers, consumers);
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
-        dialog.open();
-    }
-
-    public static int openWizard(
-        @NotNull IWorkbenchWindow workbenchWindow,
-        @NotNull DBTTask task)
-    {
-        DataTransferWizard wizard = new DataTransferWizard(UIUtils.getDefaultRunnableContext(), task);
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, null);
-        return dialog.open();
-    }
-
-    static class NodePageSettings {
-        DataTransferNodeDescriptor sourceNode;
-        DataTransferNodeConfiguratorDescriptor nodeConfigurator;
-        IWizardPage[] pages;
-        IWizardPage settingsPage;
-
-        private NodePageSettings(IWizardPage[] existingPages, DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) {
-            this.sourceNode = sourceNode;
-            this.nodeConfigurator = nodeConfigurator;
-            this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, false);
-            IWizardPage[] sPages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, true);
-            // There can be only one settings page per node
-            this.settingsPage = sPages.length == 0 ? null : sPages[0];
-        }
-
-        @Override
-        public String toString() {
-            return sourceNode.getId();
-        }
-    }
-
     private DataTransferSettings settings;
     private Map<Class, NodePageSettings> nodeSettings = new LinkedHashMap<>();
 
@@ -121,28 +76,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             getWizardDialogSettings());
     }
 
-    @NotNull
-    public static IDialogSettings getWizardDialogSettings() {
-        return UIUtils.getSettingsSection(
-            DTUIActivator.getDefault().getDialogSettings(),
-            RS_EXPORT_WIZARD_DIALOG_SETTINGS);
-    }
-
-    public DataTransferWizard(@NotNull DBRRunnableContext runnableContext, DBTTask task) {
+    public DataTransferWizard(@Nullable DBTTask task, @NotNull DataTransferSettings settings, boolean initTaskVariables) {
         this(task);
-        this.settings = new DataTransferSettings(runnableContext, task, log, new DialogSettingsMap(getDialogSettings()));
-        loadSettings();
-    }
-
-    private DataTransferWizard(@NotNull DBRRunnableContext runnableContext, @Nullable Collection<IDataTransferProducer> producers, @Nullable Collection<IDataTransferConsumer> consumers) {
-        this(null);
-        this.settings = new DataTransferSettings(runnableContext, producers, consumers, new DialogSettingsMap(getDialogSettings()), true, CommonUtils.isEmpty(consumers));
-
+        this.settings = settings;
         loadSettings();
 
         // Initialize task variables from producers
-        if (producers != null) {
-            for (IDataTransferProducer producer : producers) {
+        if (initTaskVariables && settings.getInitProducers() != null) {
+            for (IDataTransferProducer producer : settings.getInitProducers()) {
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
 
@@ -157,6 +98,35 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                         saveTaskContext(((DBPContextProvider) databaseObject).getExecutionContext());
                     }
                 }
+            }
+        }
+    }
+
+    @NotNull
+    public static IDialogSettings getWizardDialogSettings() {
+        return UIUtils.getSettingsSection(
+            DTUIActivator.getDefault().getDialogSettings(),
+            RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+    }
+
+    @Override
+    public void createPageControls(Composite pageContainer) {
+        super.createPageControls(pageContainer);
+        if (settings.getState().hasErrors()) {
+            List<Throwable> loadErrors = settings.getState().getLoadErrors();
+            if (loadErrors.size() == 1) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error loading configuration",
+                    "Error loading data transfer configuration", loadErrors.get(0));
+            } else {
+                List<IStatus> childStatuses = new ArrayList<>();
+                for (Throwable error : loadErrors) {
+                    childStatuses.add(GeneralUtils.makeExceptionStatus(error));
+                }
+                MultiStatus status = new MultiStatus(DTUIActivator.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
+                DBWorkbench.getPlatformUI().showError(
+                    "Error loading configuration",
+                    status.getMessage(), status);
             }
         }
     }
@@ -228,7 +198,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     @Override
     public void addPages() {
         super.addPages();
-        if (settings.isConsumerOptional() || settings.isProducerOptional()) {
+        if ((!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional())) {
             addPage(new DataTransferPagePipes());
         }
         addWizardPages(this);
@@ -528,6 +498,27 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return config;
     }
 
+    static class NodePageSettings {
+        DataTransferNodeDescriptor sourceNode;
+        DataTransferNodeConfiguratorDescriptor nodeConfigurator;
+        IWizardPage[] pages;
+        IWizardPage settingsPage;
+
+        private NodePageSettings(IWizardPage[] existingPages, DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) {
+            this.sourceNode = sourceNode;
+            this.nodeConfigurator = nodeConfigurator;
+            this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, false);
+            IWizardPage[] sPages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, true);
+            // There can be only one settings page per node
+            this.settingsPage = sPages.length == 0 ? null : sPages[0];
+        }
+
+        @Override
+        public String toString() {
+            return sourceNode.getId();
+        }
+    }
+
     class DataTransferWizardExecutor extends TaskProcessorUI {
         private DataTransferSettings settings;
 
@@ -548,4 +539,67 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
 
     }
+
+    ////////////////////////////////////////////////////////
+    // Public methods
+
+    public static void openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers)
+    {
+        openWizard(workbenchWindow, producers, consumers, null);
+    }
+
+    public static void openWizard(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @Nullable Collection<IDataTransferProducer> producers,
+        @Nullable Collection<IDataTransferConsumer> consumers,
+        @Nullable IStructuredSelection selection)
+    {
+        try {
+            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) {
+                    result = new DataTransferSettings(
+                        monitor,
+                        producers,
+                        consumers,
+                        new DialogSettingsMap(getWizardDialogSettings()),
+                        new DataTransferState(),
+                        true,
+                        CommonUtils.isEmpty(consumers));
+                }
+            });
+
+            DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
+            TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
+            dialog.open();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Data transfer error", "Can not open data transfer wizard", e);
+        }
+    }
+
+    public static DataTransferWizard openWizard(@NotNull DBTTask task)
+    {
+        try {
+            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) {
+                    result = new DataTransferSettings(
+                        monitor,
+                        task,
+                        log,
+                        new DialogSettingsMap(getWizardDialogSettings()),
+                        new DataTransferState());
+                }
+            });
+
+            return new DataTransferWizard(task, settings, false);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Data transfer error", "Can not open data transfer wizard", e);
+            return null;
+        }
+    }
+
 }

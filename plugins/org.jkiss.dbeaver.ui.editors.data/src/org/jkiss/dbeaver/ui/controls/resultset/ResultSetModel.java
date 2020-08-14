@@ -477,7 +477,11 @@ public class ResultSetModel {
                 }
             }
             if (ownerValue != null) {
-                ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                try {
+                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                } catch (DBCException e) {
+                    e.printStackTrace();
+                }
             } else {
                 row.values[rootIndex] = value;
             }
@@ -601,15 +605,25 @@ public class ResultSetModel {
         this.clearData();
 
         {
+            boolean isDocumentBased = false;
+
             // Extract nested attributes from single top-level attribute
             if (attributes.length == 1 && attributes[0].getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
                 DBDAttributeBinding topAttr = attributes[0];
                 if (topAttr.getDataKind() == DBPDataKind.DOCUMENT) {
+                    isDocumentBased = true;
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
                         attributes = nested.toArray(new DBDAttributeBinding[0]);
                         fillVisibleAttributes();
                     }
+                }
+            }
+
+            if (isDocumentBased) {
+                DBSDataContainer dataContainer = getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    singleSourceEntity = (DBSEntity) dataContainer;
                 }
             }
         }
@@ -796,43 +810,6 @@ public class ResultSetModel {
 
     public boolean isDirty() {
         return changesCount != 0;
-    }
-
-    public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
-//        if (!isSingleSource()) {
-//            return true;
-//        }
-        if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
-            return true;
-        }
-        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
-            return true;
-        }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
-    }
-
-    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
-        if (attribute == null || attribute.getMetaAttribute() == null) {
-            return "Null meta attribute";
-        }
-        if (attribute.getMetaAttribute().isReadOnly()) {
-            return "Attribute is read-only";
-        }
-        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null) {
-            String status = attribute.getRowIdentifierStatus();
-            return status != null ? status : "No row identifier found";
-        }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
-            return "Underlying entity doesn't support data modification";
-        }
-        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
-            return "Underlying entity doesn't support data update";
-        }
-        return null;
     }
 
     public boolean isUpdateInProgress() {

@@ -230,8 +230,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public Collection<? extends SQLServerTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return tableCache.getAllObjects(monitor, this);
+    public List<SQLServerObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<SQLServerObject> result = new ArrayList<>();
+        result.addAll(tableCache.getAllObjects(monitor, this));
+        result.addAll(synonymCache.getAllObjects(monitor, this));
+        return result;
     }
 
     @Override
@@ -239,8 +242,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 
@@ -248,6 +252,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if ((scope & STRUCT_ENTITIES) == STRUCT_ENTITIES) {
             tableCache.getAllObjects(monitor, this);
+            synonymCache.getAllObjects(monitor, this);
         }
         if ((scope & STRUCT_ATTRIBUTES) == STRUCT_ATTRIBUTES) {
             tableCache.getChildren(monitor, this, null);

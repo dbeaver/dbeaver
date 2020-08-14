@@ -179,6 +179,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                     // String by default
                     return new JDBCContentChars(session.getDataSource(), (String) object);
             }
+        } else if (object instanceof Number) {
+            return new JDBCContentBytes(session.getDataSource(), object.toString());
         } else if (object instanceof Blob) {
             final JDBCContentBLOB blob = new JDBCContentBLOB(session.getDataSource(), (Blob) object);
             final DBPPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();

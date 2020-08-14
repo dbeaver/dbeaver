@@ -339,6 +339,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExplainPlan() {
         return true;
     }
@@ -395,6 +400,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         return withClauseBuilder.toString();
+    }
+
+    @Override
+    public boolean supportsPGConstraintExpressionColumn() {
+        return true;
     }
 
 }

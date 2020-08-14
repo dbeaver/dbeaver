@@ -26,7 +26,7 @@ import org.osgi.framework.BundleContext;
 public class MySQLUIActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.mysql";
+	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.mysql.ui";
 
 	// The shared instance
 	private static MySQLUIActivator plugin;

@@ -105,6 +105,7 @@ public class MySQLConstants {
     public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
     public static final String COL_NON_UNIQUE = "NON_UNIQUE";
     public static final String COL_COMMENT = "COMMENT";
+    public static final String COL_CHECK_CLAUSE = "CHECK_CLAUSE";
     
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";
@@ -156,8 +157,9 @@ public class MySQLConstants {
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
 
     public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
-    public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
-    public static final String CONSTRAINT_UNIQUE = "UNIQUE";
+    public static final String CONSTRAINT_PRIMARY_KEY_NAME = "PRIMARY";
+    public static final String CONSTRAINT_UNIQUE = "UNIQUE KEY";
+    public static final String CONSTRAINT_CHECK = "CHECK";
 
     public static final String INDEX_PRIMARY = "PRIMARY";
 

@@ -318,7 +318,7 @@ public final class DBUtils {
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogName)) {
-            Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
+            Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
                 // Datasource supports only schemas. Do not use catalog
                 catalogName = null;
@@ -589,11 +589,7 @@ public final class DBUtils {
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
             log.debug("Can't find datasource '" + names[0] + "' in project " + project.getName());
-            dataSourceContainer = findDataSource(names[0]);
-            if (dataSourceContainer == null) {
-                log.debug("Can't find datasource '" + names[0] + "' in any project");
-                return null;
-            }
+            return null;
         }
         if (names.length == 1) {
             return dataSourceContainer;
@@ -637,7 +633,7 @@ public final class DBUtils {
             DBSObject object = sc.getChild(monitor, objectName);
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
-                return null;
+                throw new DBException("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
             }
             return object;
         } else if (finalEntity != null) {

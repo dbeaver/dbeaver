@@ -256,4 +256,9 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();
     }
+
+    @Override
+    public String toString() {
+        return "VFK: " + entity.getName() + "->" + refEntityId + "." + refConstraintId + " (" + attributes + ")";
+    }
 }

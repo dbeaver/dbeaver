@@ -86,8 +86,8 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     @Override
     public boolean matchesParameters(String host, int port) {
-        if (host.equals(configuration.getStringProperty(SSHConstants.PROP_HOST))) {
-            int sshPort = configuration.getIntProperty(SSHConstants.PROP_PORT);
+        if (host.equals(configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST))) {
+            int sshPort = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
             return sshPort == port;
         }
         return false;
@@ -125,6 +125,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
         if (implementation != null) {
             RuntimeUtils.runTask(monitor1 -> {
+                monitor1.beginTask("Invalidate SSH tiunnel", 1);
                 try {
                     implementation.invalidateTunnel(monitor1);
                 } catch (Exception e) {
@@ -134,6 +135,8 @@ public class SSHTunnelImpl implements DBWTunnel {
                     } catch (Exception e1) {
                         log.error("Error closing broken tunnel", e1);
                     }
+                } finally {
+                    monitor.done();
                 }
             },
             "Ping SSH tunnel " + dataSource.getContainer().getName(),

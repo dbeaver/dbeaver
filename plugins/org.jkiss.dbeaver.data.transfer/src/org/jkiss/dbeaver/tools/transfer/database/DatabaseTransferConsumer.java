@@ -20,41 +20,30 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingCustom;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stream transfer consumer
@@ -64,10 +53,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
-    private static final boolean USE_STRUCT_DDL = false;
-
-    private DBSDataContainer sourceObject;
-    private DBSDataManipulator targetObject;
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -77,16 +62,26 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
+
     private List<DBSEntityAttribute> targetAttributes;
     private boolean useIsolatedConnection;
     private Boolean oldAutoCommit;
 
-    private static class ColumnMapping {
-        DBDAttributeBinding sourceAttr;
-        DatabaseMappingAttribute targetAttr;
-        DBDValueHandler sourceValueHandler;
-        DBDValueHandler targetValueHandler;
-        int targetIndex = -1;
+    // Used only for non-explicit import
+    // In this case consumer will be replaced with explicit consumers during configuration
+    private DBSObjectContainer targetObjectContainer;
+    // Used in deserialized or directly instantiated consumers
+    private DBSDataManipulator localTargetObject;
+
+    private boolean isPreview;
+    private List<Object[]> previewRows;
+
+    public static class ColumnMapping {
+        public DBDAttributeBinding sourceAttr;
+        public DatabaseMappingAttribute targetAttr;
+        public DBDValueHandler sourceValueHandler;
+        public DBDValueHandler targetValueHandler;
+        public int targetIndex = -1;
 
         private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
@@ -102,12 +97,39 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     public DatabaseTransferConsumer(DBSDataManipulator targetObject) {
-        this.targetObject = targetObject;
+        this.localTargetObject = targetObject;
+    }
+
+    public DatabaseTransferConsumer(DBSObjectContainer targetObjectContainer) {
+        this.targetObjectContainer = targetObjectContainer;
+    }
+
+    public DBSObjectContainer getTargetObjectContainer() {
+        return targetObjectContainer;
+    }
+
+    public ColumnMapping[] getColumnMappings() {
+        return columnMappings;
     }
 
     @Override
     public DBSObject getDatabaseObject() {
-        return targetObject;
+        if (targetObjectContainer != null) {
+            return targetObjectContainer;
+        }
+        return containerMapping == null ? localTargetObject : containerMapping.getTarget();
+    }
+
+    protected boolean isPreview() {
+        return isPreview;
+    }
+
+    protected void setPreview(boolean preview) {
+        isPreview = preview;
+    }
+
+    protected List<Object[]> getPreviewRows() {
+        return previewRows;
     }
 
     @Override
@@ -117,10 +139,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } catch (DBException e) {
             throw new DBCException("Error initializing exporter");
         }
+        if (containerMapping == null) {
+            throw new DBCException("Internal error: consumer mappings not set");
+        }
 
-        AbstractExecutionSource executionSource = new AbstractExecutionSource(sourceObject, targetContext, this);
+        AbstractExecutionSource executionSource = new AbstractExecutionSource(containerMapping.getSource(), targetContext, this);
 
-        if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        DBSDataManipulator targetObject = getTargetObject();
+        if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 targetObject.truncateData(
@@ -131,7 +157,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        DBDAttributeBinding[] rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
+        DBDAttributeBinding[] rsAttributes;
+        boolean dynamicTarget = targetContext.getDataSource().getInfo().isDynamicMetadata();
+        if (dynamicTarget) {
+            // Document-based datasource
+            rsAttributes = DBUtils.getAttributeBindings(session, getSourceObject(), resultSet.getMeta());
+        } else {
+            rsAttributes = DBUtils.makeLeafAttributeBindings(session, getSourceObject(), resultSet);
+        }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
         targetAttributes = new ArrayList<>(columnMappings.length);
@@ -158,10 +191,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
                 }
-            } else {
+            } else if (!dynamicTarget) {
                 columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
+                }
+            } else {
+                if (targetObject instanceof DBSDocumentContainer) {
+                    try {
+                        DBSEntityAttribute docAttribute = ((DBSDocumentContainer) targetObject).getDocumentAttribute(session.getProgressMonitor());
+                        columnMapping.targetAttr = new DatabaseMappingAttribute(containerMapping, columnMapping.sourceAttr);
+                        columnMapping.targetAttr.setTarget(docAttribute);
+                    } catch (DBException e) {
+                        throw new DBCException("");
+                    }
+                } else {
+                    throw new DBCException("Can not transfer data into dynamic database which doesn't support documents");
                 }
             }
             if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
@@ -177,7 +222,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
             }
             columnMapping.sourceValueHandler = columnMapping.sourceAttr.getValueHandler();
-            columnMapping.targetValueHandler = DBUtils.findValueHandler(targetSession.getDataSource(), targetAttr);
+            columnMapping.targetValueHandler = DBUtils.findValueHandler(targetContext.getDataSource(), targetAttr);
             columnMapping.targetIndex = targetAttributes.size();
 
             columnMappings[i] = columnMapping;
@@ -186,15 +231,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
 
-        if (targetObject instanceof DBSDataManipulatorExt) {
-            ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+        if (!isPreview) {
+            if (targetObject instanceof DBSDataManipulatorExt) {
+                ((DBSDataManipulatorExt) targetObject).beforeDataChange(targetSession, DBSManipulationType.INSERT, attributes, executionSource);
+            }
+            executeBatch = targetObject.insertData(
+                targetSession,
+                attributes,
+                null,
+                executionSource);
+        } else {
+            previewRows = new ArrayList<>();
+            executeBatch = new PreviewBatch();
         }
-
-        executeBatch = targetObject.insertData(
-            targetSession,
-            attributes,
-            null,
-            executionSource);
     }
 
     private boolean isSkipColumn(DBDAttributeBinding attr) {
@@ -222,12 +271,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // No value handler - get raw value
                 attrValue = resultSet.getAttributeValue(i);
             }
-            DatabaseMappingAttribute targetAttr = column.targetAttr;
-            rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
-                targetSession,
-                targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
-                attrValue,
-                false, false);
+            if (containerMapping != null && containerMapping.getTarget() instanceof DBSDocumentContainer) {
+                rowValues[column.targetIndex] = attrValue;
+            } else {
+                DatabaseMappingAttribute targetAttr = column.targetAttr;
+                rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
+                    targetSession,
+                    targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
+                    attrValue,
+                    false, false);
+            }
         }
         executeBatch.add(rowValues);
 
@@ -239,6 +292,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void insertBatch(boolean force) throws DBCException {
+        if (isPreview) {
+            return;
+        }
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (needCommit && executeBatch != null) {
             targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
@@ -251,7 +307,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
                         switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                                DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
+                            DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
                             case STOP:
                                 // just stop execution
                                 throw new DBCException("Can't insert row", e);
@@ -292,12 +348,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 executeBatch = null;
             }
         } finally {
-            if (targetObject instanceof DBSDataManipulatorExt) {
+            DBSDataManipulator targetObject = getTargetObject();
+            if (!isPreview && targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
                     targetSession,
                     DBSManipulationType.INSERT,
                     targetAttributes.toArray(new DBSAttributeBase[0]),
-                    new AbstractExecutionSource(sourceObject, targetContext, this));
+                    new AbstractExecutionSource(getSourceObject(), targetContext, this));
             }
         }
     }
@@ -316,7 +373,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         try {
-            useIsolatedConnection = settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
+            useIsolatedConnection = !isPreview && settings.isOpenNewConnections() && !dataSourceContainer.getDriver().isEmbedded();
             targetContext = useIsolatedConnection ?
                 DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer", null) : DBUtils.getDefaultContext(targetDB, false);
         } catch (DBException e) {
@@ -325,22 +382,25 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         targetSession.enableLogging(false);
 
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-        if (txnManager != null && txnManager.isSupportsTransactions()) {
-            oldAutoCommit = txnManager.isAutoCommit();
-            if (settings.isUseTransactions()) {
-                if (oldAutoCommit) {
-                    txnManager.setAutoCommit(monitor, false);
-                }
-            } else {
-                if (!oldAutoCommit) {
-                    txnManager.setAutoCommit(monitor, true);
+        if (!isPreview) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
+            if (txnManager != null && txnManager.isSupportsTransactions()) {
+                oldAutoCommit = txnManager.isAutoCommit();
+                if (settings.isUseTransactions()) {
+                    if (oldAutoCommit) {
+                        txnManager.setAutoCommit(monitor, false);
+                    }
+                } else {
+                    if (!oldAutoCommit) {
+                        txnManager.setAutoCommit(monitor, true);
+                    }
                 }
             }
         }
     }
 
-    private DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
+    DBSObject checkTargetContainer(DBRProgressMonitor monitor) throws DBException {
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject == null) {
             if (settings.getContainerNode() != null && settings.getContainerNode().getDataSource() == null) {
                 // Init connection
@@ -350,13 +410,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 throw new DBCException("Can't initialize database consumer. No target object and no target container");
             }
         }
-        containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
 
         return targetObject == null ? settings.getContainer() : targetObject;
     }
 
     private void closeExporter() {
-        if (targetSession != null && oldAutoCommit != null) {
+        if (!isPreview && targetSession != null && oldAutoCommit != null) {
             try {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
                 if (txnManager != null) {
@@ -383,8 +442,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<String, Object> processorProperties) {
-        this.sourceObject = (DBSDataContainer) sourceObject;
         this.settings = settings;
+        this.containerMapping = settings.getDataMapping((DBSDataContainer) sourceObject);
     }
 
     @Override
@@ -394,94 +453,67 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             DBSObject dbObject = checkTargetContainer(monitor);
 
-            boolean hasNewObjects = false;
-            if (containerMapping != null) {
+            if (!isPreview && containerMapping != null) {
                 DBSObjectContainer container = settings.getContainer();
                 if (container == null) {
                     throw new DBException("No target datasource - can't create target objects");
                 }
-                targetObject = containerMapping.getTarget();
 
-                try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
-                    // We may need to change active catalog to create target object in the proper location
-                    DBSCatalog oldCatalog = null;
-                    DBSSchema oldSchema = null;
-                    DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
-                    if (catalog != null) {
-                        DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
-                        if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
-                            oldCatalog = contextDefaults.getDefaultCatalog();
-                            try {
-                                contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
-                            } catch (DBCException e) {
-                                log.debug(e);
-                            }
-                        }
-                    }
-                    try {
-                        switch (containerMapping.getMappingType()) {
-                            case create:
-                                createTargetTable(session, containerMapping);
-                                hasNewObjects = true;
-                                break;
-                            case existing:
-                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                    if (attr.getMappingType() == DatabaseMappingType.create) {
-                                        createTargetAttribute(session, attr);
-                                        hasNewObjects = true;
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                    finally {
-                        if (oldCatalog != null) {
-                            // Revert to old catalog
-                            try {
-                                session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
-                            } catch (DBCException e) {
-                                log.debug(e);
-                            }
-                        }
-                    }
-                }
+                boolean hasNewObjects = createTargetDatabaseObjects(monitor, dbObject);
 
                 if (hasNewObjects) {
-                    if (!USE_STRUCT_DDL) {
-                        monitor.subTask("Refresh navigator model");
-                        settings.getContainerNode().refreshNode(monitor, this);
-                    }
-
-                    // Reflect database changes in mappings
-                    {
-                        switch (containerMapping.getMappingType()) {
-                            case create:
-                                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
-                                if (newTarget == null) {
-                                    throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                                } else if (!(newTarget instanceof DBSDataManipulator)) {
-                                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
-                                }
-                                containerMapping.setTarget((DBSDataManipulator) newTarget);
-                                containerMapping.setMappingType(DatabaseMappingType.existing);
-                                targetObject = (DBSDataManipulator) newTarget;
-                                // ! Fall down is ok here
-                            case existing:
-                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                    if (attr.getMappingType() == DatabaseMappingType.create) {
-                                        attr.updateMappingType(monitor);
-                                        if (attr.getTarget() == null) {
-                                            log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                    }
+                    DatabaseTransferUtils.refreshDatabaseModel(monitor, settings, containerMapping);
                 }
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private boolean createTargetDatabaseObjects(DBRProgressMonitor monitor, DBSObject dbObject) throws DBException {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
+            // We may need to change active catalog to create target object in the proper location
+            DBSCatalog oldCatalog = null;
+            DBSSchema oldSchema = null;
+            DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
+            if (catalog != null) {
+                DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
+                if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
+                    oldCatalog = contextDefaults.getDefaultCatalog();
+                    try {
+                        contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+            try {
+                switch (containerMapping.getMappingType()) {
+                    case create:
+                        createTargetTable(session, containerMapping);
+                        return true;
+                    case existing:
+                        boolean hasNewObjects = false;
+                        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                            if (attr.getMappingType() == DatabaseMappingType.create) {
+                                createTargetAttribute(session, attr);
+                                hasNewObjects = true;
+                            }
+                        }
+                        return hasNewObjects;
+                    default:
+                        return false;
+                }
+            } finally {
+                if (oldCatalog != null) {
+                    // Revert to old catalog
+                    try {
+                        session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
         }
     }
 
@@ -490,193 +522,24 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (schema == null) {
             throw new DBException("No target container selected");
         }
-        String sql = generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
-        try {
-            executeDDL(session, sql);
-        } catch (DBCException e) {
-            throw new DBCException("Can't create target table:\n" + sql, e);
-        }
-    }
-
-    public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
-        if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
-            return "";
-        }
-        monitor.subTask("Create table '" + containerMapping.getTargetName() + "'");
-        if (USE_STRUCT_DDL) {
-            String ddl = generateStructTableDDL(monitor, executionContext, schema, containerMapping);
-            if (ddl != null) {
-                return ddl;
-            }
-        }
-
-        // Struct doesn't work (no proper object managers?)
-        // Try plain SQL mode
-
-        DBPDataSource dataSource = executionContext.getDataSource();
-        StringBuilder sql = new StringBuilder(500);
-
-        String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
-        containerMapping.setTargetName(tableName);
-
-        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-            sql.append("CREATE TABLE ");
-            if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
-                sql.append(DBUtils.getQuotedIdentifier(schema));
-                sql.append(dataSource.getSQLDialect().getCatalogSeparator());
-            }
-            sql.append(DBUtils.getQuotedIdentifier(dataSource, tableName)).append("(\n");
-            Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
-            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                if (attr.getMappingType() != DatabaseMappingType.create) {
-                    continue;
-                }
-                if (!mappedAttrs.isEmpty()) sql.append(",\n");
-                sql.append("\t");
-                appendAttributeClause(dataSource, sql, attr);
-                mappedAttrs.put(attr.getSource(), attr);
-            }
-            if (containerMapping.getSource() instanceof DBSEntity) {
-                // Make primary key
-                Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
-                if (!CommonUtils.isEmpty(identifier)) {
-                    boolean idMapped = true;
-                    for (DBSEntityAttribute idAttr : identifier) {
-                        if (!mappedAttrs.containsKey(idAttr)) {
-                            idMapped = false;
-                            break;
-                        }
-                    }
-                    if (idMapped) {
-                        sql.append(",\n\tPRIMARY KEY (");
-                        boolean hasAttr = false;
-                        for (DBSEntityAttribute idAttr : identifier) {
-                            DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);
-                            if (hasAttr) sql.append(",");
-                            sql.append(DBUtils.getQuotedIdentifier(dataSource, mappedAttr.getTargetName()));
-                            hasAttr = true;
-                        }
-                        sql.append(")\n");
-                    }
-                }
-            }
-            sql.append(")");
+        if (session.getDataSource().getInfo().isDynamicMetadata()) {
+            DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
         } else {
-            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                if (attr.getMappingType() == DatabaseMappingType.create) {
-                    sql.append(generateTargetAttributeDDL(dataSource, attr)).append(";\n");
-                }
+            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            try {
+                DatabaseTransferUtils.executeDDL(session, actions);
+            } catch (DBCException e) {
+                throw new DBCException("Can't create target table:\n" + Arrays.toString(actions), e);
             }
-        }
-        return sql.toString();
-    }
-
-    private static String generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) {
-        final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
-
-        try {
-            Class<? extends DBSObject> tableClass = schema.getChildType(monitor);
-            if (!DBSEntity.class.isAssignableFrom(tableClass)) {
-                throw new DBException("Wrong table container child type: " + tableClass.getName());
-            }
-            SQLObjectEditor tableManager = editorsRegistry.getObjectManager(tableClass, SQLObjectEditor.class);
-            if (tableManager == null) {
-                throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
-            }
-            if (!(tableManager instanceof DBEStructEditor)) {
-                throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
-            }
-            Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
-            Class<? extends DBSEntityAttribute> attrClass = getChildType(childTypes, DBSEntityAttribute.class);
-            if (attrClass == null) {
-                throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
-            }
-
-            SQLObjectEditor attributeManager = editorsRegistry.getObjectManager(attrClass, SQLObjectEditor.class);
-
-            Map<String, Object> options = new HashMap<>();
-            options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
-
-            DBECommandContext commandContext = new TargetCommandContext(executionContext);
-
-            DBSEntity newTable = (DBSEntity) tableManager.createNewObject(monitor, commandContext, schema, null, options);
-            if (newTable instanceof DBPNamedObject2) {
-                ((DBPNamedObject2) newTable).setName(containerMapping.getTargetName());
-            } else {
-                throw new DBException("Table name cannot be set for " + tableClass.getName());
-            }
-
-            SQLStructEditor.StructCreateCommand command = (SQLStructEditor.StructCreateCommand) tableManager.makeCreateCommand(newTable, options);
-
-            for (DatabaseMappingAttribute attributeMapping : containerMapping.getAttributeMappings(monitor)) {
-                DBSEntityAttribute newAttribute = (DBSEntityAttribute) attributeManager.createNewObject(monitor, commandContext, newTable, null, options);
-                if (!(newAttribute instanceof DBPNamedObject2)) {
-                    throw new DBException("Table column name cannot be set for " + attrClass.getName());
-                }
-                ((DBPNamedObject2) newAttribute).setName(attributeMapping.getTargetName());
-                String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource());
-                try {
-                    BeanUtils.invokeObjectMethod(newAttribute, "setTypeName", new Class[]{String.class}, new Object[]{ targetAttrType} );
-                } catch (Throwable throwable) {
-                    throw new DBException("Table column data type cannot be set for " + newAttribute.getClass().getName());
-                }
-
-                SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
-                command.aggregateCommand(attrCreateCommand);
-            }
-
-            DBEPersistAction[] persistActions = command.getPersistActions(monitor, executionContext, options);
-            return SQLUtils.generateScript(executionContext.getDataSource(), persistActions, false);
-        } catch (DBException e) {
-            log.debug(e);
-            return null;
-        }
-    }
-
-    private static <T> Class<? extends T> getChildType(Class<?>[] types, Class<T> type) {
-        for (Class<?> childType : types) {
-            if (type.isAssignableFrom(childType)) {
-                return (Class<? extends T>) childType;
-            }
-        }
-        return null;
-    }
-
-    private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
-        sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
-        if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
-            if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
     }
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
-        String sql = generateTargetAttributeDDL(session.getDataSource(), attribute);
         try {
-            executeDDL(session, sql);
+            DatabaseTransferUtils.executeDDL(session, new DBEPersistAction[] { DatabaseTransferUtils.generateTargetAttributeDDL(session.getDataSource(), attribute) } );
         } catch (DBCException e) {
-            throw new DBCException("Can't create target column:\n" + sql, e);
-        }
-    }
-
-    @NotNull
-    private static String generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
-        StringBuilder sql = new StringBuilder(500);
-        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
-            .append(" ADD ");
-        appendAttributeClause(dataSource, sql, attribute);
-        return sql.toString();
-    }
-
-    private void executeDDL(DBCSession session, String sql)
-        throws DBCException {
-        try (DBCStatement dbStat = DBUtils.makeStatement(session, sql, false)) {
-            dbStat.executeStatement();
-        }
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-        if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-            // Commit DDL changes
-            txnManager.commit(session);
+            throw new DBCException("Can't create target column", e);
         }
     }
 
@@ -693,42 +556,52 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
-            if (targetObject != null) {
-                DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
+            if (getTargetObject() != null) {
+                DBWorkbench.getPlatformUI().openEntityEditor(getTargetObject());
             }
         }
     }
 
+    public DBSDataContainer getSourceObject() {
+        return containerMapping == null ? null : containerMapping.getSource();
+    }
+
     public DBSDataManipulator getTargetObject() {
-        return targetObject != null ? targetObject : containerMapping == null ? null : containerMapping.getTarget();
+        return containerMapping == null ? localTargetObject : containerMapping.getTarget();
+    }
+
+    public void setTargetObject(DBSDataManipulator targetObject) {
+        this.localTargetObject = targetObject;
     }
 
     @Override
     public String getObjectName() {
+        if (targetObjectContainer != null) {
+            return targetObjectContainer.getName();
+        }
+
+        DBSDataManipulator targetObject = getTargetObject();
+
         String targetName = null;
         if (targetObject != null) {
             targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
         }
-        if (settings == null) {
-            return targetName;
-        }
 
         if (targetName != null) {
-            return targetName;
+            return targetName + " [Existing]";
         }
 
-        DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
-        if (dataMapping == null) {
+        if (containerMapping == null) {
             return "?";
         }
 
-        targetName = dataMapping.getTargetName();
+        targetName = containerMapping.getTargetFullName();
 
-        switch (dataMapping.getMappingType()) {
+        switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
             case existing:
-                for (DatabaseMappingAttribute attr : dataMapping.getAttributeMappings(new VoidProgressMonitor())) {
+                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {
                         return targetName + " [Alter]";
                     }
@@ -737,12 +610,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             case skip:
                 return "[Skip]";
             default:
-                return "?";
+                return targetName + " [Existing]";
         }
     }
 
     @Override
     public DBPImage getObjectIcon() {
+        if (targetObjectContainer != null) {
+            return DBIcon.TREE_FOLDER_TABLE;
+        }
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject instanceof DBPImageProvider) {
             return DBValueFormatting.getObjectImage(targetObject);
         }
@@ -751,17 +628,27 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public String getObjectContainerName() {
+        if (targetObjectContainer != null) {
+            return DBUtils.getObjectFullName(targetObjectContainer, DBPEvaluationContext.UI);
+        }
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getName() : "?";
     }
 
     @Override
     public DBPImage getObjectContainerIcon() {
+        if (targetObjectContainer != null) {
+            return DBIcon.TREE_FOLDER_TABLE;
+        }
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getDriver().getIcon() : null;
     }
 
-    private DBPDataSourceContainer getDataSourceContainer() {
+    DBPDataSourceContainer getDataSourceContainer() {
+        if (targetObjectContainer != null) {
+            return targetObjectContainer.getDataSource().getContainer();
+        }
+        DBSDataManipulator targetObject = getTargetObject();
         if (targetObject != null) {
             return targetObject.getDataSource().getContainer();
         }
@@ -775,66 +662,29 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public boolean equals(Object obj) {
         return obj instanceof DatabaseTransferConsumer &&
-            CommonUtils.equalObjects(targetObject, ((DatabaseTransferConsumer) obj).targetObject);
+            CommonUtils.equalObjects(getTargetObject(), ((DatabaseTransferConsumer) obj).getTargetObject());
     }
 
-    public static class ObjectSerializer implements DBPObjectSerializer<DBTTask, DatabaseTransferConsumer> {
-
+    private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
         @Override
-        public void serializeObject(DBRRunnableContext runnableContext, DBTTask context, DatabaseTransferConsumer object, Map<String, Object> state) {
-            try {
-                DatabaseMappingContainer targetMapping = object.containerMapping;
-                DBPDataSourceContainer targetDS = object.getDataSourceContainer();
-                if (targetDS == null) {
-                    throw new DBException("Can't get target datasource container");
-                }
-                state.put("type", "mappings");
-                state.put("project", targetDS.getProject().getName());
-                state.put("dataSource", targetDS.getId());
+        public void add(@NotNull Object[] attributeValues) throws DBCException {
+            previewRows.add(attributeValues);
+        }
 
-                DBSDataContainer dataContainer = object.getTargetObject();
-                if (dataContainer instanceof DBSEntity) {
-                    state.put("entityId", DBUtils.getObjectFullId(dataContainer));
-                }
-            } catch (Exception e) {
-                log.error("Error initializing database consumer", e);
-            }
+        @NotNull
+        @Override
+        public DBCStatistics execute(@NotNull DBCSession session) throws DBCException {
+            return new DBCStatistics();
         }
 
         @Override
-        public DatabaseTransferConsumer deserializeObject(DBRRunnableContext runnableContext, DBTTask objectContext, Map<String, Object> state) throws DBCException {
-            DatabaseTransferConsumer consumer = new DatabaseTransferConsumer();
+        public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
 
-            String entityId = CommonUtils.toString(state.get("entityId"), null);
-            if (entityId != null) {
-                try {
-                    runnableContext.run(false, true, monitor -> {
-                        try {
-                            String projectName = CommonUtils.toString(state.get("project"));
-                            DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                            if (project == null) {
-                                throw new DBCException("Project '" + projectName + "' not found");
-                            }
-                            consumer.targetObject = (DBSDataManipulator) DBUtils.findObjectById(monitor, project, entityId);
-                        } catch (Exception e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    throw new DBCException("Error instantiating data consumer", e.getTargetException());
-                } catch (InterruptedException e) {
-                    throw new DBCException("Deserialization canceled", e);
-                }
-            }
+        }
 
-            return consumer;
+        @Override
+        public void close() {
+
         }
     }
-
-    private static class TargetCommandContext extends AbstractCommandContext {
-        TargetCommandContext(DBCExecutionContext executionContext) {
-            super(executionContext, true);
-        }
-    }
-
 }

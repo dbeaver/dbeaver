@@ -21,10 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -38,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -51,11 +49,15 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
-        MySQLTableUniqueKey.class,
-        MySQLTableCheckConstraint.class,
+        MySQLTableConstraint.class,
         MySQLTableForeignKey.class,
         MySQLTableIndex.class,
     };
+
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return super.getMakerOptions(dataSource) | FEATURE_SUPPORTS_COPY;
+    }
 
     @Nullable
     @Override
@@ -140,6 +142,11 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !((MySQLTableIndex)index).isUniqueKeyIndex(monitor) && super.isIncludeIndexInDDL(monitor, index);
+    }
+
+    @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final MySQLDataSource dataSource = command.getObject().getDataSource();
@@ -163,9 +170,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, MySQLTableBase object, Class<? extends DBSObject> childType) throws DBException {
         if (childType == MySQLTableColumn.class) {
             return object.getAttributes(monitor);
-        } else if (childType == MySQLTableUniqueKey.class) {
-            return object.getConstraints(monitor);
-        } else if (childType == MySQLTableCheckConstraint.class) {
+        } else if (childType == MySQLTableConstraint.class) {
             return object.getConstraints(monitor);
         } else if (childType == MySQLTableForeignKey.class) {
             return object.getAssociations(monitor);

@@ -13,6 +13,7 @@
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+<!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
         </node>
 
         <node type="consumer"
@@ -192,9 +193,11 @@
                     label="%dataTransfer.processor.source.code.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">
-                    <property id="language" label="%dataTransfer.processor.source.code.property.language.name" type="string" description="%dataTransfer.processor.source.code.property.language.description" defaultValue="php version less 5.4" validValues="php version less 5.4,php version at least 5.4" required="true"/>
+                    <property id="language" label="%dataTransfer.processor.source.code.property.language.name" type="string" description="%dataTransfer.processor.source.code.property.language.description" defaultValue="PHP &lt; 5.4" validValues="PHP &lt; 5.4,PHP 5.4+" required="true"/>
                     <property id="formatDateISOPHP" label="%dataTransfer.processor.source.code.property.formatDateISO.label" type="boolean" defaultValue="true"/>
                     <property id="extension" label="%dataTransfer.processor.source.code.property.extension.label" defaultValue="php"/>
+                    <property id="quoteChar" label="%dataTransfer.processor.source.code.property.quoteChar.name" type="string" description="%dataTransfer.processor.source.code.property.quoteChar.description" defaultValue="&quot;" validValues="&quot;,&#39;"/>
+                    <property id="rowDelimiter" label="%dataTransfer.processor.source.code.property.rowDelimiter.name" type="string" description="%dataTransfer.processor.source.code.property.rowDelimiter.description" defaultValue="default" validValues="default,\n,\r,\r\n,\n\r"/>
                 </propertyGroup>
             </processor>
         </node>
@@ -220,7 +223,7 @@
         <serializer id="databaseTransferProducer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
         <serializer id="streamTransferProducer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
 
-        <serializer id="databaseTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer$ObjectSerializer"/>
+        <serializer id="databaseTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
     </extension>
 </plugin>

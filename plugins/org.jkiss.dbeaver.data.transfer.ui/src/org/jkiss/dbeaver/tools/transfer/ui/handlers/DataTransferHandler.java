@@ -67,6 +67,8 @@ public abstract class DataTransferHandler extends AbstractHandler {
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error, DTUIMessages.data_transfer_handler_message_data_transfer_error, e);
             }
+        } else {
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error, "Can't perform data transfer: selected objects are not recognized as data producers or data consumers");
         }
 
         return null;

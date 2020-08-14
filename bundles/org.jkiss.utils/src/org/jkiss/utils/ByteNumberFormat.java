@@ -27,12 +27,12 @@ import java.text.ParsePosition;
 public class ByteNumberFormat extends NumberFormat {
     private static final long serialVersionUID = 1;
 
-    private static final String B = "b";
-    private static final String KB = "Kb";
-    private static final String MB = "Mb";
-    private static final String GB = "Gb";
-    private static final String TB = "Tb";
-    private static final String PB = "Pb";
+    private static final String B = "B";
+    private static final String KB = "K";
+    private static final String MB = "M";
+    private static final String GB = "G";
+    private static final String TB = "T";
+    private static final String PB = "P";
 
     public static final String[] BYTES = {
         B, KB, MB, GB, TB, PB

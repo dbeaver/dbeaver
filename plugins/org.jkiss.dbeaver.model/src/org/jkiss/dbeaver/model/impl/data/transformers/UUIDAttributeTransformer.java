@@ -29,11 +29,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Transforms binary attribute value into UUID.
@@ -63,8 +62,11 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                 bytes = ((JDBCContentBytes) value).getRawValue();
             }
             if (bytes != null) {
-                ByteBuffer bb = ByteBuffer.wrap(bytes);
-                return new UUID(bb.getLong(), bb.getLong()).toString();
+                try {
+                    return GeneralUtils.getUUIDFromBytes(bytes).toString();
+                } catch (Exception e) {
+                    return String.valueOf(value);
+                }
             }
             return super.getValueDisplayString(column, value, format);
         }
