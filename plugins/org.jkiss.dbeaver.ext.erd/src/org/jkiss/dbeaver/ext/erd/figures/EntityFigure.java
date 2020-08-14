@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -174,15 +174,15 @@ public class EntityFigure extends Figure {
     }
 
     private void changeHeaderColor(ColorRegistry colorRegistry) {
-        DBSSchema scheme = DBUtils.getParentOfType(DBSSchema.class, part.getEntity().getObject());
-        if (scheme != null) {
-            DBPDataSourceContainer container = DBUtils.getParentOfType(DBPDataSourceContainer.class, part.getEntity().getObject());
-            if (container != null) {
-                int schemeIndex = part.getDiagram().getSchemeIndex(container, scheme);
-                if (schemeIndex == 0) {
+        DBSObjectContainer container = DBUtils.getParentOfType(DBSObjectContainer.class, part.getEntity().getObject());
+        if (container != null) {
+            DBPDataSourceContainer dataSource = DBUtils.getParentOfType(DBPDataSourceContainer.class, part.getEntity().getObject());
+            if (dataSource != null) {
+                int containerIndex = part.getDiagram().getContainerIndex(dataSource, container);
+                if (containerIndex == 0) {
                     setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
                 } else {
-                    setBackgroundColor(ERDColors.getHeaderColor(schemeIndex - 1));
+                    setBackgroundColor(ERDColors.getHeaderColor(containerIndex - 1));
                 }
             } else {
                 setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
