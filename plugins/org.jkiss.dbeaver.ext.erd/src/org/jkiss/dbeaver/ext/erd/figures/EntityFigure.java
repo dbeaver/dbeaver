@@ -187,6 +187,8 @@ public class EntityFigure extends Figure {
             } else {
                 setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
             }
+        } else {
+            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
     }
 
