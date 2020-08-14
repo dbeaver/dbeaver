@@ -85,6 +85,9 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
         // Do it only for valid String mappings
         if (consumer instanceof DatabaseTransferConsumer) {
             for (DatabaseTransferConsumer.ColumnMapping cm : ((DatabaseTransferConsumer) consumer).getColumnMappings()) {
+                if (cm == null) {
+                    continue;
+                }
                 for (StreamDataImporterColumnInfo attributeMapping : resultSet.getAttributeMappings()) {
                     if (cm.targetAttr.getMappingType().isValid()) {
                         if (cm.sourceAttr.getDataKind() == DBPDataKind.STRING && cm.sourceAttr.getName().equals(attributeMapping.getName())) {
@@ -103,7 +106,7 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
                     }
                 }
             }
-                 Object targetObject = consumer.getTargetObject();
+            Object targetObject = consumer.getTargetObject();
             if (targetObject instanceof DBSEntity) {
 
             }
