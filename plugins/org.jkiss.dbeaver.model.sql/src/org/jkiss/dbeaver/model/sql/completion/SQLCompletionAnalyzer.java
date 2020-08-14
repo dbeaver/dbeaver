@@ -96,6 +96,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
+        String prevDelimiter = wordDetector.getPrevDelimiter();
         {
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
@@ -103,10 +104,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (SQLConstants.KEYWORD_DELETE.equals(prevKeyWord)) {
                         request.setQueryType(null);
                     } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && !isPrevWordEmpty &&
-                        ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
+                        ("(".equals(prevDelimiter) || ",".equals(prevDelimiter)))
                     {
                         request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && !isPrevWordEmpty && ("*(".equals(wordDetector.getPrevDelimiter()))) {
+                    } else if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) && !isPrevWordEmpty && ("*(".equals(prevDelimiter) ||
+                            "*{".equals(prevDelimiter) || "*[".equals(prevDelimiter))) {
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                         request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
@@ -114,7 +116,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
                         request.setQueryType(SQLCompletionRequest.QueryType.JOIN);
                     } else {
-                        if (!isPrevWordEmpty && CommonUtils.isEmpty(wordDetector.getPrevDelimiter())) {
+                        if (!isPrevWordEmpty && CommonUtils.isEmpty(prevDelimiter)) {
                             // Seems to be table alias
                             return;
                         }
@@ -122,7 +124,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
                     request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
-                    if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && wordDetector.getPrevDelimiter().equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
+                    if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && prevDelimiter.equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
                         wordDetector.shiftOffset(-SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN.length());
                         searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                     }
@@ -165,8 +167,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                     List<String> prevWords = wordDetector.getPrevWords();
                                     boolean waitsForValue = rootObject instanceof DBSEntity &&
                                         !CommonUtils.isEmpty(prevWords) &&
-                                        !CommonUtils.isEmpty(wordDetector.getPrevDelimiter()) &&
-                                        !wordDetector.getPrevDelimiter().endsWith(")");
+                                        !CommonUtils.isEmpty(prevDelimiter) &&
+                                        !prevDelimiter.endsWith(")");
                                     if (waitsForValue) {
                                         makeProposalsFromAttributeValues(dataSource, wordDetector, (DBSEntity) rootObject);
                                     }
