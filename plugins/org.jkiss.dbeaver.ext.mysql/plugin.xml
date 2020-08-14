@@ -39,16 +39,16 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
                                     <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
-                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true" visibleIf="object.constraintType!='CHECK'">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint" label="%tree.check.constraints.node.name" icon="#check_constraints" description="Table check constraints" visibleIf = "object.dataSource.supportsCheckConstraints()">
+                                <!--<folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint" label="%tree.check.constraints.node.name" icon="#check_constraints" description="Table check constraints" visibleIf = "object.dataSource.supportsCheckConstraints()">
                                     <items label="%tree.check.constraint.node.name" path="constraint" property="checkConstraints" icon="#constraint">
                                     </items>
-                                </folder>
+                                </folder>-->
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
@@ -163,6 +163,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
+                        defaultUser="root"
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 4.x+"
@@ -187,6 +188,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
+                        defaultUser="root"
                         webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
@@ -211,6 +213,7 @@
                     sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
                     useURL="false"
                     defaultPort="3306"
+                    defaultUser="root"
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                     description="Driver for MySQL NDB cluster"
@@ -232,6 +235,7 @@
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
+                    defaultUser="root"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     description="MariaDB JDBC driver"
@@ -263,8 +267,7 @@
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLDatabaseManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%manager.catalog.name"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>

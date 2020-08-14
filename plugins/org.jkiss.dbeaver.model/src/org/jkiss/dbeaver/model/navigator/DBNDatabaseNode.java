@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -420,7 +421,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             }
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
-                boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, reflect);
+                boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, showSystem, hideFolders, reflect);
                 if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                     // This may occur only if no child nodes was read
                     // Then we try to go on next DBX level
@@ -515,7 +516,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         final DBNDatabaseNode[] oldList,
         final List<DBNDatabaseNode> toList,
         Object source,
-        boolean showSystem, boolean reflect)
+        boolean showSystem,
+        boolean hideFolders,
+        boolean reflect)
         throws DBException {
         if (this.isDisposed()) {
             // Property reading can take really long time so this node can be disposed at this moment -
@@ -565,6 +568,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             }
             if (!showSystem && DBUtils.isSystemObject(childItem)) {
                 // Skip system objects
+                continue;
+            }
+            if (hideFolders && (childItem instanceof DBAObject || childItem instanceof DBPSystemInfoObject)) {
+                // Skip all DBA objects
                 continue;
             }
             if (filter != null && !filter.matches(((DBSObject) childItem).getName())) {
@@ -869,7 +876,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             if (ex.getTargetException() instanceof DBException) {
                 throw (DBException) ex.getTargetException();
             }
-            throw new DBException("Can't read " + propertyName, ex.getTargetException());
+            throw new DBException("Can't read " + propertyName + ": " + ex.getTargetException().getMessage(), ex.getTargetException());
         }
     }
 

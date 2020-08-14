@@ -85,7 +85,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
             monitor.beginTask("Read default objects", 1);
             currentDatabaseInstanceName = null;
 
-            Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
+            Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
             if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                 enabled = false;
             } else {
@@ -96,7 +96,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                     defObject = contextDefaults.getDefaultCatalog();
                 }
                 if (defObject != null) {
-                    Class<? extends DBSObject> catalogChildrenType = defObject.getChildType(monitor);
+                    Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
                     if (catalogChildrenType != null && DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
                         currentDatabaseInstanceName = defObject.getName();
                         if (contextDefaults.supportsSchemaChange()) {

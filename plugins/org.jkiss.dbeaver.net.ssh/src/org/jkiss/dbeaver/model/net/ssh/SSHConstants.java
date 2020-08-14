@@ -26,8 +26,6 @@ public class SSHConstants {
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
 
     public static final String PROP_IMPLEMENTATION = "implementation";
-    public static final String PROP_HOST = "host";
-    public static final String PROP_PORT = "port";
     public static final String PROP_AUTH_TYPE = "authType";
     public static final String PROP_KEY_PATH = "keyPath";
     public static final String PROP_ALIVE_INTERVAL = "aliveInterval";

@@ -197,7 +197,6 @@ public class DataSourceDescriptor
         this.connectionReadOnly = source.connectionReadOnly;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
-        this.formatterProfile = source.formatterProfile;
         this.clientHome = source.clientHome;
 
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
@@ -217,6 +216,13 @@ public class DataSourceDescriptor
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
+
+        if (source.formatterProfile == null || source.formatterProfile.getProfileName().equals(source.getId())) {
+            this.formatterProfile = null;
+        } else {
+            this.formatterProfile = new DataFormatterProfile(source.formatterProfile.getProfileName(), preferenceStore);
+        }
+
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 

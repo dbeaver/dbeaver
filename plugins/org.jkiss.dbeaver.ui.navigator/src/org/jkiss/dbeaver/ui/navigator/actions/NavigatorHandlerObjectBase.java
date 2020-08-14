@@ -20,7 +20,6 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -40,12 +39,9 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -202,6 +198,12 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                             SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
                                 persistActions,
                                 false));
+                        if (script.length() == 0) {
+                            script.append(
+                                SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
+                                    persistActions,
+                                    false));
+                        }
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -219,7 +221,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                     commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true, false) == IDialogConstants.PROCEED_ID;
             }
         } else {
-            return UIUtils.confirmAction(workbenchWindow.getShell(), dialogTitle, "Are you sure?");
+            return UIUtils.confirmAction(workbenchWindow.getShell(), dialogTitle, "No SQL script available.\nAre you sure you want to proceed?");
         }
 
         return false;

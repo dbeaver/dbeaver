@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
@@ -55,6 +56,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -255,6 +257,13 @@ public class ItemListControl extends NodeListControl
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
+
+                DBPDataSourceContainer ds = getDataSourceContainer();
+                // If we in folder-less mode then filter children by meta
+                if (ds != null && ds.getNavigatorSettings().isHideFolders()) {
+                    children = Arrays.stream(children).filter(n -> n instanceof DBNDatabaseNode && ((DBNDatabaseNode) n).getMeta().getParent() == metaNode).toArray(DBNNode[]::new);
+                }
+
                 // Cache statistics
                 while (parentNode instanceof DBNDatabaseFolder) {
                     parentNode = parentNode.getParentNode();

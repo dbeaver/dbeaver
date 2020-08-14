@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
-import org.jkiss.dbeaver.tools.transfer.stream.model.StreamTransferSession;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
@@ -32,8 +31,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stream producer result set
@@ -42,33 +41,27 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     private static final Log log = Log.getLog(StreamTransferResultSet.class);
 
-    private final StreamTransferSession session;
+    private final DBCSession session;
     private final DBCStatement statement;
-    private StreamProducerSettings.EntityMapping entityMapping;
-    private List<DBCAttributeMetaData> metaAttrs;
+    private final StreamEntityMapping entityMapping;
+    private final List<DBCAttributeMetaData> metaAttrs;
     // Stream row: values in source attributes order
     private Object[] streamRow;
-    private final List<StreamProducerSettings.AttributeMapping> attributeMappings;
-    // Maps target attributes indexes to source attributes indexes
-    // (not indexes in source data, it is controlled by AttributeMapping.sourceAttributeIndex)
-    private final int[] targetToSourceMap;
+    private final List<StreamDataImporterColumnInfo> attributeMappings;
     private DateTimeFormatter dateTimeFormat;
 
-    public StreamTransferResultSet(StreamTransferSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
+    public StreamTransferResultSet(DBCSession session, DBCStatement statement, StreamEntityMapping entityMapping) {
         this.session = session;
         this.statement = statement;
         this.entityMapping = entityMapping;
-        this.attributeMappings = this.entityMapping.getAttributeMappings();
-        this.metaAttrs = new ArrayList<>(attributeMappings.size());
-        this.targetToSourceMap = new int[this.entityMapping.getValuableAttributeMappings().size()];
-        int mapIndex = 0;
-        for (int i = 0; i < attributeMappings.size(); i++) {
-            StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
-            if (attr.isValuable()) {
-                metaAttrs.add(new LocalResultSetColumn(this, i, attr.getTargetAttributeName(), DBPDataKind.STRING));
-                this.targetToSourceMap[mapIndex++] = i;
-            }
-        }
+        this.attributeMappings = this.entityMapping.getStreamColumns();
+        this.metaAttrs = attributeMappings.stream()
+            .map(c -> new LocalResultSetColumn(this, c.getOrdinalPosition(), c.getName(), c))
+            .collect(Collectors.toList());
+    }
+
+    public List<StreamDataImporterColumnInfo> getAttributeMappings() {
+        return attributeMappings;
     }
 
     public void setStreamRow(Object[] streamRow) {
@@ -87,15 +80,10 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     @Override
     public Object getAttributeValue(int index) throws DBCException {
-        int sourceIndex = this.targetToSourceMap[index];
-        StreamProducerSettings.AttributeMapping attr = this.attributeMappings.get(sourceIndex);
+        StreamDataImporterColumnInfo attr = this.attributeMappings.get(index);
 
-        if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.DEFAULT_VALUE) {
-            return attr.getDefaultValue();
-        }
-
-        Object value = streamRow[attr.getSourceAttributeIndex()];
-        if (value != null && dateTimeFormat != null && attr.getTargetAttribute() != null && attr.getTargetAttribute().getDataKind() == DBPDataKind.DATETIME) {
+        Object value = streamRow[index];
+        if (value != null && dateTimeFormat != null && attr.getDataKind() == DBPDataKind.DATETIME) {
             // Convert string to timestamp
             try {
                 String strValue = CommonUtils.toString(value);
@@ -109,7 +97,7 @@ public class StreamTransferResultSet implements DBCResultSet {
                 } catch (Exception e) {
                     LocalDateTime localDT = LocalDateTime.from(ta);
                     if (localDT != null) {
-                        value = java.util.Date.from(localDT.atZone(ZoneId.systemDefault()).toInstant());
+                        value = java.util.Date.from(localDT.atZone(ZoneId.of("UTC")).toInstant());
                     }
                 }
             } catch (Exception e) {

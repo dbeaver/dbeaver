@@ -88,7 +88,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public String getObjectName() {
-        return dataContainer == null ? null : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        return dataContainer == null ? "?" : DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override
@@ -123,7 +123,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         @NotNull DBRProgressMonitor monitor1,
         @NotNull IDataTransferConsumer consumer,
         @Nullable IDataTransferProcessor processor,
-        @NotNull DatabaseProducerSettings settings, DBTTask task)
+        @NotNull DatabaseProducerSettings settings,
+        @Nullable DBTTask task)
         throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
@@ -175,7 +176,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             // other complex structures only in transactional mode
                             try {
                                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                                if (txnManager != null) {
+                                if (txnManager != null && txnManager.isSupportsTransactions()) {
                                     oldAutoCommit = txnManager.isAutoCommit();
                                     txnManager.setAutoCommit(monitor, false);
                                 }
@@ -234,7 +235,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     } finally {
                         if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                            if (txnManager != null) {
+                            if (txnManager != null && txnManager.isSupportsTransactions()) {
                                 try {
                                     txnManager.commit(session);
                                 } catch (Exception e) {
@@ -321,6 +322,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             case "entity": {
                                 String id = CommonUtils.toString(state.get("entityId"));
                                 producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                if (producer.dataContainer == null) {
+                                    throw new DBException("Can't find database object '" + id + "'");
+                                }
                                 break;
                             }
                             case "query": {
@@ -328,8 +332,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 String queryText = CommonUtils.toString(state.get("query"));
                                 DBPDataSourceContainer ds = project.getDataSourceRegistry().getDataSource(dsId);
                                 if (ds == null) {
-                                    log.debug("Can't find datasource "+ dsId);
-                                    return;
+                                    throw new DBCException("Can't find datasource "+ dsId);
                                 }
                                 if (!ds.isConnected()) {
                                     ds.connect(monitor, true, true);

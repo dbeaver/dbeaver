@@ -46,6 +46,7 @@ public abstract class AbstractJob extends Job
     private DBRProgressMonitor progressMonitor;
     private volatile boolean finished = false;
     private volatile boolean blockCanceled = false;
+    private volatile long cancelTimestamp = -1;
     private AbstractJob attachedJob = null;
 
     // Attached job may be used to "overwrite" current job.
@@ -134,10 +135,20 @@ public abstract class AbstractJob extends Job
 
     protected abstract IStatus run(DBRProgressMonitor monitor);
 
+    public boolean isCanceled() {
+        return cancelTimestamp > 0;
+    }
+
+    public long getCancelTimestamp() {
+        return cancelTimestamp;
+    }
 
     @Override
     protected void canceling()
     {
+        if (cancelTimestamp == -1) {
+            cancelTimestamp = System.currentTimeMillis();
+        }
         if (attachedJob != null) {
             attachedJob.canceling();
             return;

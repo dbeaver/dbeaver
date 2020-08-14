@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -60,12 +59,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -215,10 +209,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private void printSummary(Text text, DataTransferNodeDescriptor node, IDataTransferSettings settings, DataTransferProcessorDescriptor processor) {
         StringBuilder summary = new StringBuilder();
         if (settings != null) {
-            if (node != null) {
-                summary.append(node.getName()).append(" settings:\n");
+            String settingsSummary = settings.getSettingsSummary();
+            if (!CommonUtils.isEmpty(settingsSummary)) {
+                if (node != null) {
+                    summary.append(node.getName()).append(" settings:\n");
+                }
+                summary.append(CommonUtils.notEmpty(settingsSummary));
             }
-            summary.append(CommonUtils.notEmpty(settings.getSettingsSummary()));
         }
         if (processor != null) {
             DTUtils.addSummary(summary, processor, getWizard().getSettings().getProcessorProperties());

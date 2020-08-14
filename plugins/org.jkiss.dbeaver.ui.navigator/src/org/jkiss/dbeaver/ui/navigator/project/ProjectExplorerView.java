@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
-import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +42,7 @@ import java.util.Date;
 /**
  * ProjectExplorerView
  */
-public class ProjectExplorerView extends NavigatorViewBase implements DBPProjectListener {
+public class ProjectExplorerView extends DecoratedProjectView implements DBPProjectListener {
 
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
@@ -106,7 +105,11 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 
             @Override
             public Image getImage(Object element) {
-                return mainLabelProvider.getImage(element);
+                Image image = mainLabelProvider.getImage(element);
+                if (element instanceof DBNResource) {
+                    image = labelDecorator.decorateImage(image, element);
+                }
+                return image;
             }
 
             @Override

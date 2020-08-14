@@ -116,7 +116,7 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public boolean supportsDuplicateColumnsInResults() {
+    public boolean needsTableMetaForColumnResolution() {
         return false;
     }
 

@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * MySQL informational object
  */
-public abstract class MySQLInformation implements DBSObject {
+public abstract class MySQLInformation implements DBSObject, DBPSystemInfoObject {
 
     private MySQLDataSource dataSource;
 

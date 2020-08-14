@@ -14,26 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.sql;
+package org.jkiss.dbeaver.ext.clickhouse.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
-import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
-
-import java.util.List;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
-* Oracle dialect rules
-*/
-class PostgreDialectRules implements TPRuleProvider {
+ * ClickhouseView
+ */
+public class ClickhouseView extends GenericView
+{
+    private static final Log log = Log.getLog(ClickhouseView.class);
 
-    @Override
-    public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {
-            rules.add(new PostgreDollarQuoteRule(dataSource, position == RulePosition.PARTITION));
-        }
+    public ClickhouseView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        super(container, tableName, tableType, dbResult);
     }
 
 }

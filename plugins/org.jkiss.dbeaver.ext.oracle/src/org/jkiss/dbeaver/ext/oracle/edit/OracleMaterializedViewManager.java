@@ -66,7 +66,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     public DBSObjectCache<? extends DBSObject, OracleMaterializedView> getObjectsCache(OracleMaterializedView object)
     {
-        return object.getSchema().mviewCache;
+        return (DBSObjectCache) object.getSchema().tableCache;
     }
 
     @Override

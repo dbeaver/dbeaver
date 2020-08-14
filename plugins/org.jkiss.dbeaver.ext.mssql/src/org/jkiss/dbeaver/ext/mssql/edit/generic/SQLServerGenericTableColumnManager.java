@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+
+import java.util.Map;
 
 /**
- * DBSTypedObjectEditor1
+ * SQLServerGenericTableColumnManager
  */
-public interface DBSTypedObjectEditor1 extends DBPObject {
-    /**
-     * Database specific type name
-     */
-    void setTypeName(String typeName);
+public class SQLServerGenericTableColumnManager extends GenericTableColumnManager
+{
+    @Override
+    protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
+        return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NullNotNullModifier};
+    }
 
 }

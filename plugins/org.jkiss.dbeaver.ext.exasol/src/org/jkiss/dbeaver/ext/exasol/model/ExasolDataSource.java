@@ -474,8 +474,9 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	// Manage Children: ExasolSchema
 	// --------------------------
 
-	@Override
-	public Class<? extends ExasolSchema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	@NotNull
+    @Override
+	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}
@@ -942,7 +943,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     }
     
     @Override
-    public ErrorType discoverErrorType(Throwable error) {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
     	// exasol has no sqlstates 
     	String errorMessage = error.getMessage();
     	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )

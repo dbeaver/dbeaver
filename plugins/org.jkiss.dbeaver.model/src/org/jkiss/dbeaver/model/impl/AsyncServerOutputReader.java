@@ -20,9 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -36,9 +36,9 @@ public class AsyncServerOutputReader extends DefaultServerOutputReader {
         }
 
         @Override
-        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, SQLQueryResult queryResult, DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, DBCExecutionResult executionResult, DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
             if (statement == null) {
-                super.readServerOutput(monitor, context, queryResult, null, output);
+                super.readServerOutput(monitor, context, executionResult, null, output);
             } else {
                 // Do not read from connection warnings as it blocks statements cancelation and other connection-level stuff.
                 // See #7885

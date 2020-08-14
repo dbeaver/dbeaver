@@ -1786,7 +1786,7 @@ public class ResultSetViewer extends Viewer
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return model.getAttributeReadOnlyStatus(attr);
+            return DBExecUtils.getAttributeReadOnlyStatus(attr);
         }
         return null;
     }
@@ -2272,6 +2272,7 @@ public class ResultSetViewer extends Viewer
             popup.setLocation(location);
         }
 
+        popup.setModeless(true);
         if (popup.open() == IDialogConstants.OK_ID) {
             Object value = popup.getValue();
 
@@ -3562,153 +3563,16 @@ public class ResultSetViewer extends Viewer
             progressControl = (Composite) activePresentation.getControl();
         }
 
-        final Object presentationState = savePresentationState();
-        ResultSetJobDataRead dataPumpJob = new ResultSetJobDataRead(
+        ResultSetJobDataRead dataPumpJob = new ResultSetDataPumpJob(
             dataContainer,
             useDataFilter,
-            this,
             executionContext,
-            progressControl)
-        {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                synchronized (dataPumpJobQueue) {
-                    if (dataPumpRunning.get()) {
-                        log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
-                        return Status.CANCEL_STATUS;
-                    }
-                    dataPumpRunning.set(true);
-                }
-                beforeDataRead();
-                try {
-                    IStatus status = super.run(monitor);
-                    afterDataRead();
-                    return status;
-                } finally {
-                    synchronized (dataPumpJobQueue) {
-                        if (!dataPumpRunning.get()) {
-                            log.debug("Internal error: data read status is empty");
-                        }
-                        dataPumpRunning.set(false);
-                    }
-                }
-            }
-
-            private void beforeDataRead() {
-                dataReceiver.setFocusRow(focusRow);
-                // Set explicit target container
-                dataReceiver.setTargetDataContainer(dataContainer);
-
-                model.setUpdateInProgress(true);
-                model.setStatistics(null);
-                model.releaseAllData();
-                if (filtersPanel != null) {
-                    UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
-                }
-            }
-
-            private void afterDataRead() {
-                final Throwable error = getError();
-                if (getStatistics() != null) {
-                    model.setStatistics(getStatistics());
-                }
-                UIUtils.syncExec(() -> {
-                    try {
-                        final Control control1 = getControl();
-                        if (control1.isDisposed()) {
-                            return;
-                        }
-                        model.setUpdateInProgress(false);
-
-                        // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
-                        if (saveHistory && error == null) {
-                            setNewState(dataContainer, useDataFilter);
-                        }
-
-                        final boolean metadataChanged = !scroll && model.isMetadataChanged();
-                        if (error != null) {
-                            String errorMessage = error.getMessage();
-                            setStatus(errorMessage, DBPMessageType.ERROR);
-
-                            String sqlText;
-                            if (error instanceof DBSQLException) {
-                                sqlText = ((DBSQLException) error).getSqlQuery();
-                            } else if (dataContainer instanceof SQLQueryContainer) {
-                                SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
-                                sqlText = query == null ? getActiveQueryText() : query.getText();
-                            } else {
-                                sqlText = getActiveQueryText();
-                            }
-
-                            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
-                                DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
-                            } else {
-                                if (CommonUtils.isEmpty(errorMessage)) {
-                                    if (error.getCause() instanceof InterruptedException) {
-                                        errorMessage = "Query execution was interrupted";
-                                    } else {
-                                        errorMessage = "Error executing query";
-                                    }
-                                }
-                                showErrorPresentation(sqlText, errorMessage, error);
-                                log.error(errorMessage, error);
-                            }
-                        } else {
-                            if (!metadataChanged) {
-                                // Seems to be refresh
-                                // Restore original position
-                                restorePresentationState(presentationState);
-                            }
-                            if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
-                                if (getCurrentRow() == null) {
-                                    setCurrentRow(getModel().getRow(focusRow));
-                                }
-                                if (getActivePresentation().getCurrentAttribute() == null) {
-                                    getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
-                                }
-                            }
-                        }
-                        activePresentation.updateValueView();
-
-                        if (!scroll) {
-                            if (dataFilter != null) {
-                                boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
-                                model.updateDataFilter(dataFilter, true);
-                                // New data filter may have different columns visibility
-                                redrawData(visibilityChanged, false);
-                            }
-                        }
-                        updatePanelsContent(true);
-                        if (getStatistics() == null || !getStatistics().isEmpty()) {
-                            if (error == null) {
-                                // Update status (update execution statistics)
-                                updateStatusMessage();
-                            }
-                            try {
-                                fireResultSetLoad();
-                            } catch (Throwable e) {
-                                log.debug("Error handling resulset load", e);
-                            }
-                        }
-                        UIUtils.asyncExec(() -> {
-                            updateFiltersText(true);
-                            updateToolbar();
-                        });
-
-                        // auto-refresh
-                        autoRefreshControl.scheduleAutoRefresh(error != null);
-                    } finally {
-                        if (finalizer != null) {
-                            try {
-                                finalizer.run();
-                            } catch (Throwable e) {
-                                log.error(e);
-                            }
-                        }
-                    }
-                });
-            }
-        };
+            progressControl,
+            focusRow,
+            saveHistory,
+            scroll,
+            dataFilter,
+            finalizer);
         dataPumpJob.setOffset(offset);
         dataPumpJob.setMaxRows(maxRows);
         dataPumpJob.setRefresh(refresh);
@@ -3755,6 +3619,16 @@ public class ResultSetViewer extends Viewer
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
+
+    void removeDataPump(ResultSetJobDataRead dataPumpJob) {
+        synchronized (dataPumpJobQueue) {
+            dataPumpJobQueue.remove(dataPumpJob);
+            if (!dataPumpRunning.get()) {
+                log.debug("Internal error: data read status is empty");
+            }
+            dataPumpRunning.set(false);
+        }
     }
 
     public void clearData()
@@ -4453,4 +4327,172 @@ public class ResultSetViewer extends Viewer
         boolean verticalLayout;
     }
 
+    private class ResultSetDataPumpJob extends ResultSetJobDataRead {
+        private final DBDDataFilter useDataFilter;
+        private final int focusRow;
+        private final boolean saveHistory;
+        private final boolean scroll;
+        private final Object presentationState;
+        private final DBDDataFilter dataFilter;
+        private final Runnable finalizer;
+
+        ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter useDataFilter, DBCExecutionContext executionContext, Composite progressControl, int focusRow, boolean saveHistory, boolean scroll, DBDDataFilter dataFilter, Runnable finalizer) {
+            super(dataContainer, useDataFilter, ResultSetViewer.this, executionContext, progressControl);
+            this.useDataFilter = useDataFilter;
+            this.focusRow = focusRow;
+            this.saveHistory = saveHistory;
+            this.scroll = scroll;
+            this.dataFilter = dataFilter;
+            this.finalizer = finalizer;
+            this.presentationState = savePresentationState();
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            synchronized (dataPumpJobQueue) {
+                if (dataPumpRunning.get()) {
+                    log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
+                    return Status.CANCEL_STATUS;
+                }
+                dataPumpRunning.set(true);
+            }
+            beforeDataRead();
+            try {
+                IStatus status = super.run(monitor);
+                afterDataRead();
+                return status;
+            } finally {
+                synchronized (dataPumpJobQueue) {
+                    if (!dataPumpRunning.get()) {
+                        log.debug("Internal error: data read status is empty");
+                    }
+                    dataPumpRunning.set(false);
+                }
+            }
+        }
+
+        @Override
+        public void forceDataReadCancel(Throwable error) {
+            setError(error);
+            afterDataRead();
+            if (dataContainer instanceof IQueryExecuteController) {
+                ((IQueryExecuteController) dataContainer).forceDataReadCancel(error);
+            }
+        }
+
+        private void beforeDataRead() {
+            dataReceiver.setFocusRow(focusRow);
+            // Set explicit target container
+            dataReceiver.setTargetDataContainer(dataContainer);
+
+            model.setUpdateInProgress(true);
+            model.setStatistics(null);
+            model.releaseAllData();
+            if (filtersPanel != null) {
+                UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
+            }
+        }
+
+        private void afterDataRead() {
+            final Throwable error = getError();
+            if (getStatistics() != null) {
+                model.setStatistics(getStatistics());
+            }
+            UIUtils.syncExec(() -> {
+                try {
+                    final Control control1 = getControl();
+                    if (control1.isDisposed()) {
+                        return;
+                    }
+                    model.setUpdateInProgress(false);
+
+                    // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
+                    if (saveHistory && error == null) {
+                        setNewState(dataContainer, useDataFilter);
+                    }
+
+                    final boolean metadataChanged = !scroll && model.isMetadataChanged();
+                    if (error != null) {
+                        String errorMessage = error.getMessage();
+                        setStatus(errorMessage, DBPMessageType.ERROR);
+
+                        String sqlText;
+                        if (error instanceof DBSQLException) {
+                            sqlText = ((DBSQLException) error).getSqlQuery();
+                        } else if (dataContainer instanceof SQLQueryContainer) {
+                            SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
+                            sqlText = query == null ? getActiveQueryText() : query.getText();
+                        } else {
+                            sqlText = getActiveQueryText();
+                        }
+
+                        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
+                            DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
+                        } else {
+                            if (CommonUtils.isEmpty(errorMessage)) {
+                                if (error.getCause() instanceof InterruptedException) {
+                                    errorMessage = "Query execution was interrupted";
+                                } else {
+                                    errorMessage = "Error executing query";
+                                }
+                            }
+                            showErrorPresentation(sqlText, errorMessage, error);
+                            log.error(errorMessage, error);
+                        }
+                    } else {
+                        if (!metadataChanged) {
+                            // Seems to be refresh
+                            // Restore original position
+                            restorePresentationState(presentationState);
+                        }
+                        if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                            if (getCurrentRow() == null) {
+                                setCurrentRow(getModel().getRow(focusRow));
+                            }
+                            if (getActivePresentation().getCurrentAttribute() == null) {
+                                getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
+                            }
+                        }
+                    }
+                    activePresentation.updateValueView();
+
+                    if (!scroll) {
+                        if (dataFilter != null) {
+                            boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
+                            model.updateDataFilter(dataFilter, true);
+                            // New data filter may have different columns visibility
+                            redrawData(visibilityChanged, false);
+                        }
+                    }
+                    updatePanelsContent(true);
+                    if (getStatistics() == null || !getStatistics().isEmpty()) {
+                        if (error == null) {
+                            // Update status (update execution statistics)
+                            updateStatusMessage();
+                        }
+                        try {
+                            fireResultSetLoad();
+                        } catch (Throwable e) {
+                            log.debug("Error handling resulset load", e);
+                        }
+                    }
+                    UIUtils.asyncExec(() -> {
+                        updateFiltersText(true);
+                        updateToolbar();
+                    });
+
+                    // auto-refresh
+                    autoRefreshControl.scheduleAutoRefresh(error != null);
+                } finally {
+                    if (finalizer != null) {
+                        try {
+                            finalizer.run();
+                        } catch (Throwable e) {
+                            log.error(e);
+                        }
+                    }
+                }
+            });
+        }
+    }
 }

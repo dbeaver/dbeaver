@@ -19,13 +19,14 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
-public class PostgreAvailableExtension implements PostgreObject{
+public class PostgreAvailableExtension implements PostgreObject, DBPSystemInfoObject {
     
     private final PostgreDatabase database;
     private final String name;

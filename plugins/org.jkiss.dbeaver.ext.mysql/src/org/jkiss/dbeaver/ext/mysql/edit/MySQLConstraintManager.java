@@ -19,10 +19,14 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableUniqueKey;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -33,21 +37,25 @@ import java.util.Map;
 /**
  * MySQL constraint manager
  */
-public class MySQLUniqueKeyManager extends SQLConstraintManager<MySQLTableUniqueKey, MySQLTable> {
+public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConstraint, MySQLTable> {
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLCatalog, MySQLTableUniqueKey> getObjectsCache(MySQLTableUniqueKey object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
     {
-        return object.getTable().getContainer().getConstraintCache();
+        if (object.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return object.getTable().getContainer().getCheckConstraintCache();
+        } else {
+            return object.getTable().getContainer().getUniqueKeyCache();
+        }
     }
 
     @Override
-    protected MySQLTableUniqueKey createDatabaseObject(
+    protected MySQLTableConstraint createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
-        return new MySQLTableUniqueKey(
+        return new MySQLTableConstraint(
             (MySQLTable) container,
             "NewConstraint",
             null,
@@ -57,20 +65,34 @@ public class MySQLUniqueKeyManager extends SQLConstraintManager<MySQLTableUnique
 
     @NotNull
     @Override
-    protected String getAddConstraintTypeClause(MySQLTableUniqueKey constraint) {
+    protected String getAddConstraintTypeClause(MySQLTableConstraint constraint) {
         if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
-            return "UNIQUE KEY"; //$NON-NLS-1$
+            return MySQLConstants.CONSTRAINT_UNIQUE; //$NON-NLS-1$
+        } else if (constraint.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return MySQLConstants.CONSTRAINT_CHECK; //$NON-NLS-1$
         }
         return super.getAddConstraintTypeClause(constraint);
     }
 
     @Override
-    protected String getDropConstraintPattern(MySQLTableUniqueKey constraint)
+    protected String getDropConstraintPattern(MySQLTableConstraint constraint)
     {
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP PRIMARY KEY"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        } else if (constraint.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint);
         } else {
             return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        }
+    }
+
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(" (").append((command.getObject()).getCheckClause()).append(")");
+        } else {
+            super.appendConstraintDefinition(decl, command);
         }
     }
 }

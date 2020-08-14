@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -60,7 +61,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         DBPNamedObject2,
         PostgreObject,
         DBPDataTypeProvider,
-        DBSInstanceLazy {
+        DBSInstanceLazy,
+        DBPObjectStatistics{
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -80,6 +82,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private int connectionLimit;
     private long tablespaceId;
     private String description;
+    private long dbTotalSize;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -149,8 +152,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
-                "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*,pg_database_size(db.oid) as db_size\n" +
+                "FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
@@ -213,6 +216,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
+
+        this.dbTotalSize = JDBCUtils.safeGetLong(dbResult, "db_size");
     }
 
     @NotNull
@@ -592,8 +597,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return getSchema(monitor, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
@@ -753,6 +759,25 @@ public class PostgreDatabase extends JDBCRemoteInstance
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
             return null;
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Stats
+
+    @Override
+    public boolean hasStatistics() {
+        return true;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return dbTotalSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
     }
 
     @Override
@@ -961,13 +986,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return session.prepareStatement(
                   "SELECT \n" +
                   " e.oid,\n" +
-                  " a.rolname oname,\n" +
                   " cfg.tbls,\n" +
                   "  n.nspname as schema_name,\n" +
                   " e.* \n" +
                   "FROM \n" +
                   " pg_catalog.pg_extension e \n" +
-                  " join pg_authid a on a.oid = e.extowner\n" +
                   " join pg_namespace n on n.oid =e.extnamespace\n" +
                   " left join  (\n" +
                   "         select\n" +

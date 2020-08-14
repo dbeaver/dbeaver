@@ -133,8 +133,9 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {

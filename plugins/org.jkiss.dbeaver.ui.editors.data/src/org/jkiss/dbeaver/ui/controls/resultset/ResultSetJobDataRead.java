@@ -20,21 +20,26 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.lang.reflect.InvocationTargetException;
 
-class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<Object> {
+abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<Object>, IQueryExecuteController {
+
+    private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
     private DBDDataFilter dataFilter;
     private Composite progressControl;
@@ -64,9 +69,12 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         this.refresh = refresh;
     }
 
-    public Throwable getError()
-    {
+    public Throwable getError() {
         return error;
+    }
+
+    void setError(Throwable error) {
+        this.error = error;
     }
 
     DBCStatistics getStatistics()
@@ -87,7 +95,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             fetchFlags |= DBSDataContainer.FLAG_FETCH_SEGMENT;
         }
 
-        if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+        if (offset > 0 && getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
             if (maxRows > 0) {
                 maxRows += offset;
             }
@@ -101,6 +109,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
+        progressMonitor.beginTask("Read data", 1);
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,
             purpose,
@@ -125,6 +134,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             error = e;
         } finally {
             visualizer.completeLoading(null);
+            progressMonitor.done();
         }
 
         return Status.OK_STATUS;
@@ -146,8 +156,6 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         return getExecutionController();
     }
 
-    private static final int PROGRESS_VISUALIZE_PERIOD = 100;
-
     private class PumpVisualizer extends UIJob {
 
         private ProgressLoaderVisualizer<Object> visualizer;
@@ -160,6 +168,37 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
+            ResultSetJobDataRead loadService = (ResultSetJobDataRead) visualizer.getLoadService();
+            if (loadService != null && loadService.isCanceled()) {
+                long cancelTimestamp = loadService.getCancelTimestamp();
+                long cancelTimeout = controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
+                if (cancelTimeout > 0 && System.currentTimeMillis() - cancelTimestamp > cancelTimeout) {
+                    // Job was canceled but didn't end.
+
+                    // Let's ask user about cancel force
+                    if (UIUtils.confirmAction(
+                        getDisplay().getActiveShell(),
+                        "Database not responding",
+                        "Database driver is not responding.\nDo you want to cancel request and close connection?",
+                        SWT.ICON_WARNING))
+                    {
+                        // Run datasource invalidation
+                        DBPDataSource dataSource = dataContainer.getDataSource();
+                        if (dataSource != null) {
+                            new DisconnectJob(dataSource.getContainer()).schedule();
+                        }
+
+                        // So let's just ignore active job (remove from queue and stop visualizing)
+                        controller.removeDataPump(loadService);
+                        loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
+
+                        visualizer.completeLoading(null);
+                        visualizer.visualizeLoading();
+
+                        return Status.OK_STATUS;
+                    }
+                }
+            }
             if (!controller.getDataReceiver().isDataReceivePaused()) {
                 visualizer.visualizeLoading();
             } else {
@@ -170,7 +209,6 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             }
             return Status.OK_STATUS;
         }
-
     }
 
 }

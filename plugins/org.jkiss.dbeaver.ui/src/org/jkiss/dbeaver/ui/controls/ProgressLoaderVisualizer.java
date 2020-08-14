@@ -92,6 +92,10 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
         this.loadStartTime = System.currentTimeMillis();
     }
 
+    public ILoadService<RESULT> getLoadService() {
+        return loadService;
+    }
+
     @Override
     public boolean isCompleted() {
         return finished;

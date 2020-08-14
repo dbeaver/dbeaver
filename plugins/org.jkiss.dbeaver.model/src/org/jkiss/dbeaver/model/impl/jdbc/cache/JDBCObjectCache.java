@@ -132,6 +132,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                 }
             } catch (SQLException ex) {
                 throw new DBException(ex, dataSource);
+            } catch (DBException ex) {
+                throw ex;
             } catch (Exception ex) {
                 throw new DBException("Internal driver error", ex);
             }

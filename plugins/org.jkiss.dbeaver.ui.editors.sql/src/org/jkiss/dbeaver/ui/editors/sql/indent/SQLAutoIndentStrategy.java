@@ -17,13 +17,16 @@
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -36,6 +39,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private static final boolean KEYWORD_INDENT_ENABLED = false;
 
     private String partitioning;
+    private ISourceViewer sourceViewer;
     private SQLSyntaxManager syntaxManager;
 
     private Map<Integer, String> autoCompletionMap = new HashMap<>();
@@ -50,9 +54,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(String partitioning, SQLSyntaxManager syntaxManager)
+    public SQLAutoIndentStrategy(String partitioning, ISourceViewer sourceViewer, SQLSyntaxManager syntaxManager)
     {
         this.partitioning = partitioning;
+        this.sourceViewer = sourceViewer;
         this.syntaxManager = syntaxManager;
     }
 
@@ -70,7 +75,18 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         if (command.text != null && command.text.length() > MINIMUM_SOUCE_CODE_LENGTH) {
             if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
-                transformSourceCode(document, command);
+                if (transformSourceCode(document, command)) {
+                    DBeaverNotifications.showNotification(
+                        "sql.sourceCode.transform",
+                        "SQL transformation (click to undo)",
+                        "SQL query was extracted from the source code",
+                        DBPMessageType.INFORMATION,
+                        () -> {
+                            if (sourceViewer instanceof ITextOperationTarget) {
+                                ((ITextOperationTarget) sourceViewer).doOperation(ITextOperationTarget.UNDO);
+                            }
+                        });
+                }
             }
         } else if (command.length == 0 && command.text != null) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);

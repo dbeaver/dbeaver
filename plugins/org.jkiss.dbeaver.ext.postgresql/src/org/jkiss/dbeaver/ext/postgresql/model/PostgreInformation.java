@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * PostgreSQL informational object
  */
-public abstract class PostgreInformation implements DBSObject, PostgreObject {
+public abstract class PostgreInformation implements DBSObject, DBPSystemInfoObject, PostgreObject {
 
     private PostgreDatabase database;
 

@@ -291,7 +291,9 @@ public class HANAMetaModel extends GenericMetaModel
             dbStat = session.prepareStatement("SELECT"
                     + " TABLE_NAME, COLUMN_NAME, POSITION AS KEY_SEQ, CONSTRAINT_NAME AS PK_NAME, IS_PRIMARY_KEY" 
                     + " FROM SYS.CONSTRAINTS"
-                    + " ORDER BY PK_NAME");
+                    + " WHERE SCHEMA_NAME=? "
+                    + " ORDER BY TABLE_NAME,PK_NAME");
+            dbStat.setString(1, owner.getName());
         }
         return dbStat;
     }

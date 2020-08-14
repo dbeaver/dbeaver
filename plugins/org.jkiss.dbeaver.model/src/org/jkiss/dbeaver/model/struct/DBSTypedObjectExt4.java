@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * DBSTypedObjectEditor2
+ * DBSTypedObjectExt4
  */
-public interface DBSTypedObjectEditor2 extends DBPObject {
+public interface DBSTypedObjectExt4<DATA_TYPE extends DBSDataType> extends DBPObject {
     /**
-     * Database specific full type name (with modifiers). E.g. VARCHAR(120) or NUMBER(20,3)
+     * Data type. Can be obtained from DBPDataTypeProvider.
      */
-    void setFullTypeName(String typeName);
+    void setDataType(DATA_TYPE dataType);
 
 }

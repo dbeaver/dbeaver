@@ -165,6 +165,18 @@ public class DBDDataFilter {
         return false;
     }
 
+    public boolean isDirty() {
+        if (!CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where)) {
+            return true;
+        }
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.isDirty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<DBDAttributeConstraint> getOrderConstraints() {
         List<DBDAttributeConstraint> result = null;
         for (DBDAttributeConstraint constraint : constraints) {

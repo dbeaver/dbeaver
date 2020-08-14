@@ -68,7 +68,8 @@ public class PostgreSchema implements
     DBPObjectStatisticsCollector,
     PostgreObject,
     PostgreScriptObject,
-    PostgrePrivilegeOwner
+    PostgrePrivilegeOwner,
+    DBPScriptObjectExt2
 {
 
     private static final Log log = Log.getLog(PostgreSchema.class);
@@ -311,10 +312,10 @@ public class PostgreSchema implements
         return getTableCache().getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        return PostgreTableBase.class;
+    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return PostgreTableRegular.class;
     }
 
     @Override
@@ -396,13 +397,13 @@ public class PostgreSchema implements
             sql.append(" AUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
         }
         sql.append(";\n");
-        if (!CommonUtils.isEmpty(getDescription())) {
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
                 .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
             sql.append(";\n");
         }
 
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
             // Show DDL for all schema objects (do not include CREATE EXTENSION)
             monitor.beginTask("Cache schema", 1);
             cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
@@ -512,6 +513,12 @@ public class PostgreSchema implements
         }
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option)
+               || DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
+    }
+
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
 
         @NotNull
@@ -521,13 +528,11 @@ public class PostgreSchema implements
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT \n" + 
                     " e.oid,\n" + 
-                    " a.rolname oname,\n" + 
-                    " cfg.tbls,\n" + 
+                    " cfg.tbls,\n" +
                     " e.* \n" + 
                     "FROM \n" + 
                     " pg_catalog.pg_extension e \n" + 
-                    " join pg_authid a on a.oid = e.extowner\n" + 
-                    " join pg_namespace n on n.oid =e.extnamespace\n" + 
+                    " join pg_namespace n on n.oid =e.extnamespace\n" +
                     " left join  (\n" + 
                     "         select\n" + 
                     "            ARRAY_AGG(ns.nspname || '.' ||  cls.relname) tbls, oid_ext\n" + 
@@ -597,7 +602,7 @@ public class PostgreSchema implements
             }
             sql.append("\nFROM pg_catalog.pg_class c\n")
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n")
-                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','c')")
+                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','I','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, getObjectId());
@@ -683,6 +688,7 @@ public class PostgreSchema implements
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreTableContainer container, PostgreTableBase forParent) throws SQLException {
             StringBuilder sql = new StringBuilder(
                 "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace,d.description" +
+                    (getDataSource().getServerType().supportsPGConstraintExpressionColumn() ? ", null as consrc_copy" : ", case when c.contype='c' then \"substring\"(pg_get_constraintdef(c.oid), 7) else null end consrc_copy") +
                     "\nFROM pg_catalog.pg_constraint c" +
                     "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +

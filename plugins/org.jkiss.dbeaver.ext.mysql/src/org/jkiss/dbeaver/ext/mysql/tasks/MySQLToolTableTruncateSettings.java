@@ -17,7 +17,34 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 
+import java.util.Map;
+
 public class MySQLToolTableTruncateSettings extends SQLToolExecuteSettings<MySQLTableBase> {
+    private boolean isForce;
+
+    @Property(viewable = true, editable = true, updatable = true)
+    public boolean isForce() {
+        return isForce;
+    }
+
+    public void setForce(boolean force) {
+        isForce = force;
+    }
+
+    @Override
+    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+        super.loadConfiguration(runnableContext, config);
+        isForce = JSONUtils.getBoolean(config, "force");
+    }
+
+    @Override
+    public void saveConfiguration(Map<String, Object> config) {
+        super.saveConfiguration(config);
+        config.put("force", isForce);
+    }
 }

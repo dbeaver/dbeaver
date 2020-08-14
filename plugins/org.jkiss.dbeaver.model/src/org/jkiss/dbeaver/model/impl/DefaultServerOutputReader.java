@@ -18,12 +18,8 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -47,9 +43,9 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
     }
 
     @Override
-    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable SQLQueryResult queryResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
-        if (queryResult != null) {
-            dumpWarnings(output, queryResult.getWarnings());
+    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable DBCExecutionResult executionResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        if (executionResult != null) {
+            dumpWarnings(output, executionResult.getWarnings());
         }
     }
 

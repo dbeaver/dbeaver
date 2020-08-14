@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -878,6 +875,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            monitor = new ProxyProgressMonitor(monitor) {
+                @Override
+                public boolean isCanceled() {
+                    // It is never canceled because we call DisconnectTask on shutdown when all tasks are canceled
+                    return false;
+                }
+            };
             List<DataSourceDescriptor> dsSnapshot;
             synchronized (dataSources) {
                 dsSnapshot = CommonUtils.copyList(dataSources.values());

@@ -20,7 +20,10 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -28,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -53,6 +57,8 @@ public class ObjectBrowserDialog extends Dialog {
     private List<DBNNode> selectedObjects = new ArrayList<>();
     private TreeNodeSpecial specialNode;
     private DatabaseNavigatorTree navigatorTree;
+
+    private static boolean showConnected;
 
     private ObjectBrowserDialog(
         Shell parentShell,
@@ -118,6 +124,14 @@ public class ObjectBrowserDialog extends Dialog {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
+                if (showConnected) {
+                    if (element instanceof DBNDataSource) {
+                        return ((DBNDataSource) element).getDataSource() != null;
+                    }
+                    if (element instanceof DBNLocalFolder) {
+                        return ((DBNLocalFolder) element).hasConnected();
+                    }
+                }
                 if (element instanceof TreeNodeSpecial || element instanceof DBNLocalFolder) {
                     return true;
                 }
@@ -173,6 +187,25 @@ public class ObjectBrowserDialog extends Dialog {
             }
         });
         treeViewer.getTree().setFocus();
+
+        final Button showConnectedCheck = new Button(group, SWT.CHECK);
+        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+        showConnectedCheck.setSelection(showConnected);
+        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showConnected = showConnectedCheck.getSelection();
+                treeViewer.getControl().setRedraw(false);
+                try {
+                    treeViewer.refresh();
+                    if (showConnected) {
+                        treeViewer.expandAll();
+                    }
+                } finally {
+                    treeViewer.getControl().setRedraw(true);
+                }
+            }
+        });
 
         return group;
     }

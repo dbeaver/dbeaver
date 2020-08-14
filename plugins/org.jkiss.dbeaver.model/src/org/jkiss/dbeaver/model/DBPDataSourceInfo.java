@@ -172,5 +172,5 @@ public interface DBPDataSourceInfo
 
     DBSObjectType[] getSupportedObjectTypes();
 
-    boolean supportsDuplicateColumnsInResults();
+    boolean needsTableMetaForColumnResolution();
 }
