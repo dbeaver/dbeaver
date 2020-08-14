@@ -255,7 +255,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             }
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Collect tables", 1);
                 try {
+                    monitor.subTask("Collect tables to dump");
                     final List<PostgreTableBase> objects = new ArrayList<>();
                     for (JDBCTable table : curSchema.getTables(monitor)) {
                         if (table instanceof PostgreTableBase) {
@@ -278,6 +280,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                     });
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Table list", "Can't read table list", e);
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }
