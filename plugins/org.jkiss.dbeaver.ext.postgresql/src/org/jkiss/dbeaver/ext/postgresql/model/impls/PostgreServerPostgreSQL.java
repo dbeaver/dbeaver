@@ -38,5 +38,10 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public String getServerTypeName() {
         return "PostgreSQL";
     }
+
+    @Override
+    public boolean supportsPGConstraintExpressionColumn() {
+        return !dataSource.isServerVersionAtLeast(12, 0);
+    }
 }
 
