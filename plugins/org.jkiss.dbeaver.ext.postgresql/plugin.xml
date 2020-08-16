@@ -488,6 +488,8 @@
                         <file type="lib" name="libintl-8.dll"/>
                         <file type="lib" name="libpq.dll"/>
                         <file type="lib" name="libssl-1_1-x64.dll"/>
+                        <file type="lib" name="libwinpthread-1.dll"/>
+                        <file type="lib" name="zlib1.dll"/>
                     </dist>
                 </client>
             </nativeClients>
