@@ -69,6 +69,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final int PERCENT_FILL_WIDTH = 50;
     //public static final String ITEM_WIDTH_ATTR = "item.width";
 
+    private static final RGB HOST_NAME_FG_DARK = new RGB(140,140,140);
+    private static final RGB HOST_NAME_FG_LIGHT = new RGB(105,105,105);
+
     private final INavigatorModelView view;
 
     private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
@@ -212,9 +215,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             DBPDataSourceContainer ds = element.getDataSourceContainer();
             Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
 
-            Color hostNameColor = tree.getDisplay().getSystemColor(
+            Color hostNameColor = UIUtils.getSharedColor(
                 (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
-                    SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
+                    HOST_NAME_FG_DARK : HOST_NAME_FG_LIGHT);
             gc.setForeground(hostNameColor);
             Font hostNameFont = getFontItalic(tree);
             gc.setFont(hostNameFont);
