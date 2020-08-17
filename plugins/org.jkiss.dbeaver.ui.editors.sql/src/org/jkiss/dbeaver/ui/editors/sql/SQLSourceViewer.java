@@ -101,10 +101,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                 options.put(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
-                options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS));
+                options.put(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS,  getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
-                options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS));
+                options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS,  getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS));
             }
         }
         return options;
@@ -133,20 +133,17 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
                         new SQLActionCheckBox("Show full DDL", "Show DDL for all schema objects",
-                                DBIcon.TREE_TABLE_EXTERNAL, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS),
-                                DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS), true));
+                                DBIcon.TREE_TABLE_EXTERNAL, DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS), true));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
                         new SQLActionCheckBox("Show permissions", "Shows object permission grants",
-                                DBIcon.TREE_PERMISSIONS, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS),
-                                DBPScriptObject.OPTION_INCLUDE_PERMISSIONS), true));
+                                DBIcon.TREE_PERMISSIONS, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS), true));
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
                         new SQLActionCheckBox("Show comments", "Show column comments in table definition",
-                                DBIcon.TYPE_TEXT, getPreferenceStore().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS),
-                                DBPScriptObject.OPTION_INCLUDE_COMMENTS), true));
+                                DBIcon.TYPE_TEXT, DBPScriptObject.OPTION_INCLUDE_COMMENTS), true));
             }
         }
     }
@@ -154,12 +151,11 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     private class SQLActionCheckBox extends Action {
         private final String option;
 
-        public SQLActionCheckBox(String text, String toolTipText, DBPImage image,
-                                 boolean checked, String option) {
+        public SQLActionCheckBox(String text, String toolTipText, DBPImage image, String option) {
             super(text, Action.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
             setToolTipText(toolTipText);
-            setChecked(checked);
+            setChecked(getPreferenceStore().getBoolean(option));
             this.option = option;
         }
 
