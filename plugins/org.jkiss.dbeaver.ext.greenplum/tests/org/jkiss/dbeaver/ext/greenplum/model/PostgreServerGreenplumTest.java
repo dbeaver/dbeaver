@@ -40,6 +40,7 @@ public class PostgreServerGreenplumTest {
     public void setup() throws SQLException {
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
+        Mockito.when(mockDataSource.getServerType()).thenReturn(server);
         Mockito.when(mockResults.getString("fmttype")).thenReturn("c");
         Mockito.when(mockResults.getString("urilocation")).thenReturn("gpfdist://filehost:8081/*.txt");
     }
