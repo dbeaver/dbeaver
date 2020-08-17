@@ -41,6 +41,9 @@ public class GreenplumExternalTableTest {
     @Mock
     PostgreSchema.TableCache mockTableCache;
 
+    @Mock
+    private PostgreServerGreenplum mockServerGreenplum;
+
     private final String exampleDatabaseName = "sampleDatabase";
     private final String exampleSchemaName = "sampleSchema";
     private final String exampleTableName = "sampleTable";
@@ -61,6 +64,7 @@ public class GreenplumExternalTableTest {
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
+        Mockito.when(mockDataSource.getServerType()).thenReturn(mockServerGreenplum);
         Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
