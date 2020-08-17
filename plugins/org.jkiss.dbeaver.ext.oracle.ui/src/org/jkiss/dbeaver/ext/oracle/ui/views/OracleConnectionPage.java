@@ -335,16 +335,22 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
 
         switch (connectionType) {
             case BASIC:
-                hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    hostText.setText("localhost");
+                } else {
+                    hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+                }
                 if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(connectionInfo.getHostPort());
-                } else if (site.getDriver().getDefaultPort() != null) {
-                    portText.setText(site.getDriver().getDefaultPort());
                 } else {
-                    portText.setText("");
+                    portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
                 }
 
-                serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    serviceNameCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
+                } else {
+                    serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                }
                 break;
             case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));

@@ -139,16 +139,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         DBPDriver driver = getSite().getDriver();
 
-        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectionInfo.setUserName(MySQLConstants.DEFAULT_USER);
-        }
-
         super.loadSettings();
 
         {
             // We set image only once at activation
             // There is a bug in Eclipse which leads to SWTException after wizard image change
-            if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+            if (driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
                 setImageDescriptor(LOGO_MARIADB);
             } else {
                 setImageDescriptor(LOG_MYSQL);
@@ -173,7 +169,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
             }
         }
         if (dbText != null) {
-            dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+            dbText.setText(CommonUtils.toString(connectionInfo.getDatabaseName(), CommonUtils.notEmpty(site.getDriver().getDefaultDatabase())));
         }
         if (serverTimezoneCombo != null) {
             String tzProp = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);

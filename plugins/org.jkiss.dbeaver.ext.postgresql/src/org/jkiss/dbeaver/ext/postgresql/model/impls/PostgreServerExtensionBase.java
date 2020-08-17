@@ -402,5 +402,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return withClauseBuilder.toString();
     }
 
+    @Override
+    public boolean supportsPGConstraintExpressionColumn() {
+        return true;
+    }
+
 }
 

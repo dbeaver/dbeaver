@@ -27,12 +27,16 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -41,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +57,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
+public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics {
 
     private static final List<String> SYSTEM_SCHEMA = Arrays.asList(
         "SYS",
@@ -110,6 +115,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private String auditPolicyName;
     private Boolean dataCapture;
     private String remarks;
+    private volatile Long schemaTotalSize;
+    private volatile boolean hasTableStatistics;
 
     // ------------
     // Constructors
@@ -242,6 +249,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         associationCache.clearCache();
         referenceCache.clearCache();
         checkCache.clearCache();
+
+        schemaTotalSize = null;
+        hasTableStatistics = false;
 
         return this;
     }
@@ -620,6 +630,66 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DBSObjectCache<DB2Schema, DB2Routine> getMethodCache()
     {
         return methodCache;
+    }
+
+    // -------------------------
+    // Stats
+    // -------------------------
+
+    @Override
+    public boolean hasStatistics() {
+        return schemaTotalSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return schemaTotalSize == null ? 0 : schemaTotalSize;
+    }
+
+    void setSchemaTotalSize(long schemaTotalSize) {
+        this.schemaTotalSize = schemaTotalSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasTableStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasTableStatistics && !forceRefresh) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
+                "    TABNAME,\n" +
+                "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
+                "FROM SYSIBMADM.ADMINTABINFO\n" +
+                "WHERE TABSCHEMA=?\n" +
+                "GROUP BY TABNAME")) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                        long bytes = dbResult.getLong(2) * 1024;
+                        DB2TableBase table = getTable(monitor, tableName);
+                        if (table != null) {
+                            table.setTableTotalSize(bytes);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        } finally {
+            hasTableStatistics = true;
+        }
     }
 
 }
