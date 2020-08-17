@@ -808,11 +808,11 @@ public class DBExecUtils {
             String status = attribute.getRowIdentifierStatus();
             return status != null ? status : "No row identifier found";
         }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        if (!(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+        DBSEntity dataContainer = rowIdentifier.getEntity();
+        if (!(dataContainer instanceof DBSDataManipulator)) {
             return "Underlying entity doesn't support data modification";
         }
-        if ((dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+        if ((((DBSDataManipulator) dataContainer).getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
             return "Underlying entity doesn't support data update";
         }
         return null;
