@@ -84,6 +84,6 @@ public class GreenplumWithClauseBuilderTest {
         when(serverExtension.supportsOids()).thenReturn(supportOids);
         when(dataSource.getServerType()).thenReturn(serverExtension);
         when(table.getDataSource()).thenReturn(dataSource);
-        when(table.isHasOids()).thenReturn(hasOids);
+        when(table.isHasOids() && dataSource.getServerType().supportsHasOidsColumn()).thenReturn(hasOids);
     }
 }

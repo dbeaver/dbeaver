@@ -146,7 +146,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return false;
     }
 
-    @Property(editable = true, updatable = true, order = 40, visibleIf = PostgreVersionBefore12Validator.class)
+    @Property(editable = true, updatable = true, order = 40, visibleIf = PostgreColumnHasOidsValidator.class)
     public boolean isHasOids() {
         return hasOids;
     }
@@ -424,7 +424,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return super.refreshObject(monitor);
     }
 
-    public static class PostgreVersionBefore12Validator implements IPropertyValueValidator<PostgreTable, Object> {
+    public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
 
         @Override
         public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
