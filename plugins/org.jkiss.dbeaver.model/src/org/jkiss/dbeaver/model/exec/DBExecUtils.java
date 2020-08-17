@@ -428,6 +428,9 @@ public class DBExecUtils {
     public static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings, boolean readMetaData)
         throws DBException
     {
+        if (table instanceof DBSDocumentContainer) {
+            return new DBSDocumentConstraint((DBSDocumentContainer) table);
+        }
         List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
         //List<DBSEntityConstraint> nonIdentifyingConstraints = null;
 
