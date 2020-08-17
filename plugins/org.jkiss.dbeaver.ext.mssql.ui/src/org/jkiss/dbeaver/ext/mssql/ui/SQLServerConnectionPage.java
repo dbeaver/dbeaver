@@ -244,15 +244,17 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
-            if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = getSite().isNew() ?
-                    (isDriverAzure ? SQLServerConstants.DEFAULT_DATABASE_AZURE : SQLServerConstants.DEFAULT_DATABASE) :
-                    "";
+            if (getSite().isNew() && CommonUtils.isEmpty(databaseName)) {
+                databaseName = CommonUtils.notEmpty(site.getDriver().getDefaultDatabase());
             }
             dbText.setText(databaseName);
         }
         if (userNameText != null) {
-            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                userNameText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultUser()));
+            } else {
+                userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            }
         }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
