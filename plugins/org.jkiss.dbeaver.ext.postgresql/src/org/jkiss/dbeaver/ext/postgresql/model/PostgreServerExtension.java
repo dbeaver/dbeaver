@@ -129,4 +129,6 @@ public interface PostgreServerExtension
     boolean supportsPGConstraintExpressionColumn();
 
     boolean supportsHasOidsColumn();
+
+    boolean supportsDatabaseSize();
 }

@@ -411,5 +411,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsHasOidsColumn() {
         return true;
     }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return false;
+    }
 }
 

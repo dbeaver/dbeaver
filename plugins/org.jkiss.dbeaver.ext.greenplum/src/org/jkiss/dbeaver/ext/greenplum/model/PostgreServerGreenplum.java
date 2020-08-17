@@ -123,4 +123,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsHasOidsColumn() {
         return true;
     }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return true;
+    }
 }
