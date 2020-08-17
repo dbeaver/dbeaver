@@ -47,6 +47,9 @@ public class GreenplumTableTest {
     @Mock
     PostgreSchema.ConstraintCache mockConstraintCache;
 
+    @Mock
+    private PostgreServerGreenplum mockServerGreenplum;
+
     private GreenplumTable table;
 
     private final String exampleDatabaseName = "sampleDatabase";
@@ -65,6 +68,7 @@ public class GreenplumTableTest {
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
+        Mockito.when(mockDataSource.getServerType()).thenReturn(mockServerGreenplum);
 
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
         Mockito.when(mockDatabase.getDefaultContext(Mockito.anyObject(), Mockito.anyBoolean())).thenReturn(mockContext);
