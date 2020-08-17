@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, IAdaptable, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
 
@@ -69,6 +69,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     private String serverVersion;
+
+    private volatile boolean hasStatistics;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -116,8 +118,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Make initial connection to read database list
         final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
         StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.*" + (getServerType().supportsDatabaseSize() ? ",pg_database_size(db.oid) as db_size\n" : "") +
-                        "FROM pg_catalog.pg_database db WHERE datallowconn ");
+                "SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datallowconn ");
         if (!showTemplates) {
             catalogQuery.append(" AND NOT datistemplate ");
         }
@@ -493,6 +494,47 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean supportsRoles() {
         return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities();
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        hasStatistics = true;
+        if (!getServerType().supportsDatabaseSize()) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            Collection<PostgreDatabase> databases = getDatabases();
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT db.datname,pg_database_size(db.oid) FROM pg_catalog.pg_database db " +
+                    (databases.size() == 1 ? "WHERE db.oid=?" : "")))
+            {
+                if (databases.size() == 1) {
+                    dbStat.setLong(1, databases.iterator().next().getObjectId());
+                }
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String dbName = JDBCUtils.safeGetString(dbResult, 1);
+                        long dbSize = dbResult.getLong(2);
+                        PostgreDatabase database = getDatabase(dbName);
+                        if (database != null) {
+                            database.setDbTotalSize(dbSize);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
