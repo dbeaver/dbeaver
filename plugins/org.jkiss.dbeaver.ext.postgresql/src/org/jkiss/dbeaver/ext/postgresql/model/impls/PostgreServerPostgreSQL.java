@@ -48,5 +48,10 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsHasOidsColumn() {
         return !dataSource.isServerVersionAtLeast(12, 0);
     }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return true;
+    }
 }
 
