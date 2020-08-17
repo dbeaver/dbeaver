@@ -1188,7 +1188,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public boolean isEntityContainer(DBSObjectContainer object) {
         try {
-            Class<? extends DBSObject> childType = object.getChildType(new VoidProgressMonitor());
+            Class<? extends DBSObject> childType = object.getPrimaryChildType(new VoidProgressMonitor());
             return childType != null && DBSTable.class.isAssignableFrom(childType);
         } catch (DBException e) {
             log.error(e);

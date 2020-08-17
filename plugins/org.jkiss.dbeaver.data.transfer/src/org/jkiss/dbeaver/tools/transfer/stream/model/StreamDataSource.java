@@ -99,7 +99,7 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return DBSObject.class;
     }
 

@@ -178,9 +178,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 }
                 try {
                     final int exitCode = process.exitValue();
-                    if (exitCode != 0) {
-                        throw new IOException("Process failed (exit code = " + exitCode + "). See error log.");
-                    }
+                    validateErrorCode(exitCode);
                 } catch (IllegalThreadStateException e) {
                     // Still running
                     continue;
@@ -196,6 +194,12 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         }
 
         return true;
+    }
+
+    public void validateErrorCode(int exitCode) throws IOException {
+        if (exitCode != 0) {
+            throw new IOException("Process failed (exit code = " + exitCode + "). See error log.");
+        }
     }
 
     protected void notifyToolFinish(String toolName, long workTime) {

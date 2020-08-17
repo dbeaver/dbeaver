@@ -26,22 +26,19 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -71,6 +68,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
     private static final int PERCENT_FILL_WIDTH = 50;
     //public static final String ITEM_WIDTH_ATTR = "item.width";
+
+    private static final RGB HOST_NAME_FG_DARK = new RGB(140,140,140);
+    private static final RGB HOST_NAME_FG_LIGHT = new RGB(105,105,105);
 
     private final INavigatorModelView view;
 
@@ -143,7 +143,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     }
                 }
                 if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return getDataSourceHostText(((DBNDataSource) element).getDataSourceContainer().getConnectionConfiguration());
+                    return DataSourceUtils.getDataSourceAddressText(((DBNDataSource) element).getDataSourceContainer());
                 }
                 return null;
             }
@@ -207,19 +207,17 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private void renderDataSourceHostName(DBNDataSource element, Tree tree, GC gc, Event event, int widthOccupied) {
         DBPDataSourceContainer dataSourceContainer = element.getDataSourceContainer();
-        DBPConnectionConfiguration configuration = dataSourceContainer.getConnectionConfiguration();
-        if (!CommonUtils.isEmpty(configuration.getHostName())) {
+
+        String hostText = DataSourceUtils.getDataSourceAddressText(dataSourceContainer);
+        if (!CommonUtils.isEmpty(hostText)) {
             Font oldFont = gc.getFont();
-            String hostText = getDataSourceHostText(configuration);
-            if (CommonUtils.isEmpty(hostText)) {
-                return;
-            }
+
             DBPDataSourceContainer ds = element.getDataSourceContainer();
             Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
 
-            Color hostNameColor = tree.getDisplay().getSystemColor(
+            Color hostNameColor = UIUtils.getSharedColor(
                 (bgColor == null ? UIStyles.isDarkTheme() : UIUtils.isDark(bgColor.getRGB())) ?
-                    SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
+                    HOST_NAME_FG_DARK : HOST_NAME_FG_LIGHT);
             gc.setForeground(hostNameColor);
             Font hostNameFont = getFontItalic(tree);
             gc.setFont(hostNameFont);
@@ -240,24 +238,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 true);
             gc.setFont(oldFont);
         }
-    }
-
-    @NotNull
-    private String getDataSourceHostText(DBPConnectionConfiguration configuration) {
-        String hostText = configuration.getHostName();
-        // For localhost ry to get real host name from tunnel configuration
-        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
-            for (DBWHandlerConfiguration hc : configuration.getHandlers()) {
-                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
-                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
-                    if (!CommonUtils.isEmpty(tunnelHost)) {
-                        hostText = tunnelHost;
-                        break;
-                    }
-                }
-            }
-        }
-        return hostText;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -390,7 +370,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
                 gc.setForeground(tree.getForeground());
                 int x = xWidth - textSize.x - 2;
+
+                Font oldFont = gc.getFont();
+                gc.setFont(tree.getFont());
                 gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
+                gc.setFont(oldFont);
             }
         }
     }
@@ -469,7 +453,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     try {
                         if (!treeItem.isDisposed()) {
                             Object prevValue = treeItem.getData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE);
-                            if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) {
+                            /*if (!CommonUtils.equalObjects(finalMaxStatSize, prevValue)) */{
                                 treeItem.setData(DatabaseNavigatorTree.TREE_DATA_STAT_MAX_SIZE, finalMaxStatSize);
                                 treeItem.getParent().redraw();
                             }

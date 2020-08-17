@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -138,6 +139,11 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
                 log.error(e);
             }
         }
+    }
+
+    @Override
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !((MySQLTableIndex)index).isUniqueKeyIndex(monitor) && super.isIncludeIndexInDDL(monitor, index);
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +43,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 
 public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
-    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2, JDBCColumnKeyType {
+    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2, JDBCColumnKeyType, DBSTypedObjectExt4<ExasolDataType> {
 
     private ExasolDataType dataType;
     private Boolean identity;
@@ -141,6 +142,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         return dataType;
     }
 
+    @Override
     public void setDataType(ExasolDataType dataType) {
         if (!this.dataType.getTypeName().equals(dataType.getTypeName()))
             this.changed = true;

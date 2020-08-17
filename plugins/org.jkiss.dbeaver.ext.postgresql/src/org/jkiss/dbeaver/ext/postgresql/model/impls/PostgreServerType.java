@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -28,26 +26,20 @@ import org.jkiss.utils.CommonUtils;
 
 public class PostgreServerType extends AbstractDescriptor {
 
-    private static final Log log = Log.getLog(PostgreServerTypeRegistry.class);
-
     private final ObjectType type;
     private final String id;
     private final String name;
     private final DBPImage icon;
 
-    private final String defaultDatabase;
-    private final String defaultUser;
     private final boolean supportsCustomConnectionURL;
 
-    protected PostgreServerType(IConfigurationElement config) {
+    PostgreServerType(IConfigurationElement config) {
         super(config);
         type = new ObjectType(config.getAttribute("class"));
         id = config.getAttribute("id");
         name = config.getAttribute("name");
         icon = iconToImage(config.getAttribute("logo"));
 
-        defaultDatabase = config.getAttribute("defaultDatabase");
-        defaultUser = CommonUtils.notNull(config.getAttribute("defaultUser"), PostgreConstants.DEFAULT_USER);
         supportsCustomConnectionURL = CommonUtils.getBoolean(config.getAttribute("customURL"), false);
     }
 
@@ -61,14 +53,6 @@ public class PostgreServerType extends AbstractDescriptor {
 
     public DBPImage getIcon() {
         return icon;
-    }
-
-    public String getDefaultDatabase() {
-        return defaultDatabase;
-    }
-
-    public String getDefaultUser() {
-        return defaultUser;
     }
 
     public PostgreServerExtension createServerExtension(PostgreDataSource dataSource) throws DBException {

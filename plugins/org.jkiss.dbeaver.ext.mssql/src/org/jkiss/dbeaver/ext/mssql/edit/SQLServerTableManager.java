@@ -115,8 +115,8 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
-        return !index.isPrimary() && super.isIncludeIndexInDDL(index);
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !index.isPrimary() && super.isIncludeIndexInDDL(monitor, index);
     }
 
     protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {

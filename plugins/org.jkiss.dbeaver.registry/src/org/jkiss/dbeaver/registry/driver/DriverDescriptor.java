@@ -114,12 +114,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final String origName;
     private final String origDescription;
     private final String origClassName;
-    private final String origDefaultPort;
+    private final String origDefaultPort, origDefaultDatabase, origDefaultServer, origDefaultUser;
     private final String origSampleURL;
     private String name;
     private String description;
     private String driverClassName;
     private String driverDefaultPort;
+    private String driverDefaultDatabase;
+    private String driverDefaultServer;
+    private String driverDefaultUser;
     private String sampleURL;
 
     private String webURL;
@@ -194,6 +197,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origDescription = null;
         this.origClassName = null;
         this.origDefaultPort = null;
+        this.origDefaultDatabase = null;
+        this.origDefaultServer = null;
+        this.origDefaultUser = null;
+
         this.origSampleURL = null;
 
         this.iconPlain = providerDescriptor.getIcon();
@@ -211,6 +218,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.description = copyFrom.description;
             this.driverClassName = copyFrom.driverClassName;
             this.driverDefaultPort = copyFrom.driverDefaultPort;
+            this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
+            this.driverDefaultServer = copyFrom.driverDefaultServer;
+            this.driverDefaultUser = copyFrom.driverDefaultUser;
             this.sampleURL = copyFrom.sampleURL;
 
             this.webURL = copyFrom.webURL;
@@ -259,11 +269,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        if (!CommonUtils.isEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT))) {
-            this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
-        } else {
-            this.origDefaultPort = this.driverDefaultPort = null;
-        }
+        this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
+        this.origDefaultDatabase = this.driverDefaultDatabase = config.getAttribute(RegistryConstants.ATTR_DEFAULT_DATABASE);
+        this.origDefaultServer = this.driverDefaultServer = config.getAttribute(RegistryConstants.ATTR_DEFAULT_SERVER);
+        this.origDefaultUser = this.driverDefaultUser = config.getAttribute(RegistryConstants.ATTR_DEFAULT_USER);
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
@@ -466,6 +475,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.category = category;
     }
 
+    @NotNull
     @Override
     public List<String> getCategories() {
         return new ArrayList<>(categories);
@@ -527,6 +537,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    @NotNull
     @Override
     public DBPImage getIconBig() {
         return iconBig;
@@ -614,6 +625,36 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setDriverDefaultPort(String driverDefaultPort) {
         this.driverDefaultPort = driverDefaultPort;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultDatabase() {
+        return driverDefaultDatabase;
+    }
+
+    public void setDriverDefaultDatabase(String driverDefaultDatabase) {
+        this.driverDefaultDatabase = driverDefaultDatabase;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultServer() {
+        return driverDefaultServer;
+    }
+
+    public void setDriverDefaultServer(String driverDefaultServer) {
+        this.driverDefaultServer = driverDefaultServer;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultUser() {
+        return driverDefaultUser;
+    }
+
+    public void setDriverDefaultUser(String driverDefaultUser) {
+        this.driverDefaultUser = driverDefaultUser;
     }
 
     @Nullable
@@ -1220,6 +1261,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public String getOrigDefaultPort() {
         return origDefaultPort;
+    }
+
+    public String getOrigDefaultDatabase() {
+        return origDefaultDatabase;
+    }
+
+    public String getOrigDefaultServer() {
+        return origDefaultServer;
+    }
+
+    public String getOrigDefaultUser() {
+        return origDefaultUser;
     }
 
     public String getOrigSampleURL() {

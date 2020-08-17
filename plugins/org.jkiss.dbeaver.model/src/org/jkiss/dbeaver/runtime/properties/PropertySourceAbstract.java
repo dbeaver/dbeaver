@@ -312,7 +312,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter, locale);
             for (final ObjectPropertyDescriptor desc : annoProps) {
-                addProperty(desc);
+                if (desc.isPropertyVisible(editableValue, editableValue)) {
+                    addProperty(desc);
+                }
             }
             if (editableValue instanceof DBPPropertySource) {
                 DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;

@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.tools.transfer.ui.handlers;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -35,6 +39,8 @@ import java.util.Locale;
 
 public class DataImportHandler extends DataTransferHandler {
 
+    private static final Log log = Log.getLog(DataImportHandler.class);
+
     @Override
     protected IDataTransferNode adaptTransferNode(Object object)
     {
@@ -46,8 +52,20 @@ public class DataImportHandler extends DataTransferHandler {
             if (file != null) {
                 return getNodeByFile(file);
             }
-            final DBSObjectContainer objectContainer = RuntimeUtils.getObjectAdapter(object, DBSObjectContainer.class);
-            if (objectContainer != null && DataTransferPropertyTester.isObjectContainerSupportsImport(objectContainer)) {
+            DBSObjectContainer objectContainer = RuntimeUtils.getObjectAdapter(object, DBSObjectContainer.class);
+            if (objectContainer == null) {
+                if (object instanceof DBSWrapper) {
+                    object = ((DBSWrapper) object).getObject();
+                }
+                if (object instanceof DBPObject) {
+                    object = DBUtils.getPublicObject((DBSObject) object);
+                }
+                if (object instanceof DBSObjectContainer) {
+                    objectContainer = (DBSObjectContainer) object;
+                }
+            }
+
+            if (objectContainer != null && isObjectContainerSupportsImport(objectContainer)) {
                 return new DatabaseTransferConsumer(objectContainer);
             }
             return null;
@@ -84,6 +102,16 @@ public class DataImportHandler extends DataTransferHandler {
             }
         }
         return null;
+    }
+
+    public static boolean isObjectContainerSupportsImport(DBSObjectContainer object) {
+        try {
+            Class<? extends DBSObject> childType = object.getPrimaryChildType(new VoidProgressMonitor());
+            return DBSDataContainer.class.isAssignableFrom(childType);
+        } catch (DBException e) {
+            log.error(e);
+        }
+        return false;
     }
 
 }

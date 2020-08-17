@@ -116,8 +116,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         // Make initial connection to read database list
         final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
         StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.*" +
-                        "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
+                "SELECT db.oid,db.*,pg_database_size(db.oid) as db_size\n" +
+                        "FROM pg_catalog.pg_database db WHERE datallowconn ");
         if (!showTemplates) {
             catalogQuery.append(" AND NOT datistemplate ");
         }
@@ -289,8 +289,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDatabase(childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return PostgreDatabase.class;

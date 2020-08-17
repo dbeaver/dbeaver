@@ -110,7 +110,7 @@ public class DiagramObjectCollector {
         container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
         final Collection<? extends DBSObject> children = container.getChildren(monitor);
         if (!CommonUtils.isEmpty(children)) {
-            Class<? extends DBSObject> childType = container.getChildType(monitor);
+            Class<? extends DBSObject> childType = container.getPrimaryChildType(monitor);
             DBSObjectFilter objectFilter = container.getDataSource().getContainer().getObjectFilter(childType, container, true);
             for (DBSObject entity : children) {
                 if (monitor.isCanceled()) {

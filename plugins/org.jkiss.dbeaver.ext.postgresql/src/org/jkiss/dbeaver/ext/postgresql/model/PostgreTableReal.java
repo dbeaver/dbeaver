@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,6 +74,11 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     // Copy constructor
     public PostgreTableReal(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTableReal source, boolean persisted) throws DBException {
         super(monitor, container, source, persisted);
+
+        for (PostgreTableConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+            PostgreTableConstraint constr = new PostgreTableConstraint(monitor, this, srcConstr);
+            getSchema().getConstraintCache().cacheObject(constr);
+        }
     }
 
     public TriggerCache getTriggerCache() {
