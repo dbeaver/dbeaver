@@ -44,6 +44,7 @@ import java.util.Map;
 public class ERDExportGraphML implements ERDExportFormatHandler
 {
     private static final Log log = Log.getLog(ERDExportGraphML.class);
+    private final int fontSize = 12;
 
     @Override
     public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException
@@ -55,9 +56,13 @@ public class ERDExportGraphML implements ERDExportFormatHandler
 
                 xml.startElement("graphml");
                 xml.addAttribute("xmlns", "http://graphml.graphdrawing.org/xmlns");
+                xml.addAttribute("xmlns:java", "http://www.yworks.com/xml/yfiles-common/1.0/java");
+                xml.addAttribute("xmlns:sys", "http://www.yworks.com/xml/yfiles-common/markup/primitives/2.0");
+                xml.addAttribute("xmlns:x", "http://www.yworks.com/xml/yfiles-common/markup/2.0");
                 xml.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                xml.addAttribute("xsi:schemaLocation", "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd");
                 xml.addAttribute("xmlns:y", "http://www.yworks.com/xml/graphml");
+                xml.addAttribute("xmlns:yed", "http://www.yworks.com/xml/yed/3");
+                xml.addAttribute("xsi:schemaLocation", "http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd");
 
                 xml.startElement("key");
                 xml.addAttribute("for", "node");
@@ -98,10 +103,24 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                             xml.startElement("y:GenericNode");
                             xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
 
+                            int maxLength = 0;
+                            for (ERDEntityAttribute attr : entity.getAttributes()) {
+                                int attributeLength = (ERDUtils.getFullAttributeLabel(diagram, attr, true)).length();
+                                if (attributeLength > maxLength) {
+                                    maxLength = attributeLength;
+                                }
+                            }
+                            if (entity.getName().length() > maxLength){
+                                maxLength = entity.getName().length();
+                            }
+                            if (maxLength < 18) { // basic table size is enough
+                                maxLength = 0;
+                            }
+
                             // Geometry
                             xml.startElement("y:Geometry");
-                            xml.addAttribute("height", partBounds.height());
-                            xml.addAttribute("width", partBounds.width);
+                            xml.addAttribute("height", partBounds.height);
+                            xml.addAttribute("width", partBounds.width + maxLength * (fontSize * 0.12));
                             xml.addAttribute("x", partBounds.x());
                             xml.addAttribute("y", partBounds.y());
                             xml.endElement();
@@ -129,7 +148,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("autoSizePolicy", "content");
                                 xml.addAttribute("configuration", "com.yworks.entityRelationship.label.name");
                                 xml.addAttribute("fontFamily", "Courier");
-                                xml.addAttribute("fontSize", "12");
+                                xml.addAttribute("fontSize", fontSize);
                                 xml.addAttribute("fontStyle", "plain");
                                 xml.addAttribute("hasLineColor", "false");
                                 xml.addAttribute("modelName", "internal");
@@ -137,11 +156,12 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("backgroundColor", getHtmlColor(entityFigure.getNameLabel().getBackgroundColor()));
                                 xml.addAttribute("textColor", getHtmlColor(entityFigure.getNameLabel().getForegroundColor()));
                                 xml.addAttribute("visible", "true");
-
-                                xml.addAttribute("height", nameBounds.height());
+                                xml.addAttribute("horizontalTextPosition", "center");
+                                xml.addAttribute("iconTextGap", "4");
+                                xml.addAttribute("height", nameBounds.height);
                                 xml.addAttribute("width", nameBounds.width);
-                                xml.addAttribute("x", nameBounds.x());
-                                xml.addAttribute("y", nameBounds.y());
+                                xml.addAttribute("x", 0);
+                                xml.addAttribute("y", 4);
 
                                 xml.addText(entity.getName());
 
@@ -158,7 +178,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("autoSizePolicy", "content");
                                 xml.addAttribute("configuration", "com.yworks.entityRelationship.label.attributes");
                                 xml.addAttribute("fontFamily", "Courier");
-                                xml.addAttribute("fontSize", "12");
+                                xml.addAttribute("fontSize", fontSize);
                                 xml.addAttribute("fontStyle", "plain");
                                 xml.addAttribute("hasLineColor", "false");
                                 xml.addAttribute("modelName", "custom");
@@ -166,11 +186,13 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("backgroundColor", getHtmlColor(columnsFigure.getBackgroundColor()));
                                 xml.addAttribute("textColor", getHtmlColor(columnsFigure.getForegroundColor()));
                                 xml.addAttribute("visible", "true");
+                                xml.addAttribute("horizontalTextPosition", "center");
+                                xml.addAttribute("iconTextGap", "4");
 
-                                xml.addAttribute("height", attrsBounds.height());
+                                xml.addAttribute("height", attrsBounds.height);
                                 xml.addAttribute("width", attrsBounds.width);
-                                xml.addAttribute("x", attrsBounds.x());
-                                xml.addAttribute("y", attrsBounds.y());
+                                xml.addAttribute("x", 2); //numbers from yEd Graph Editor
+                                xml.addAttribute("y", 31.66796875);
 
                                 StringBuilder attrsString = new StringBuilder();
                                 for (ERDEntityAttribute attr : entity.getAttributes()) {
@@ -225,11 +247,15 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                         xml.startElement("data");
                         xml.addAttribute("key", "edgegraph");
                         xml.startElement("y:PolyLineEdge");
-                        xml.startElement("y:Path");// sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+                        xml.startElement("y:Path"); // sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+                        xml.addAttribute("sx",0.0);
+                        xml.addAttribute("sy",0.0);
+                        xml.addAttribute("tx",0.0);
+                        xml.addAttribute("ty",0.0);
                         for (Bendpoint bp : associationPart.getBendpoints()) {
                             xml.startElement("y:Point");
                             xml.addAttribute("x", bp.getLocation().x);
-                            xml.addAttribute("y", bp.getLocation().x);
+                            xml.addAttribute("y", bp.getLocation().y);
                             xml.endElement();
                         }
                         xml.endElement();
