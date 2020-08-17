@@ -635,7 +635,7 @@ public class ResultSetModel {
 
         this.visibleAttributes.sort(POSITION_SORTER);
 
-        {
+        if (singleSourceEntity == null) {
             // Check single source flag
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding attribute : visibleAttributes) {
