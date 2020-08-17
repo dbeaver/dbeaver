@@ -394,7 +394,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
-        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn()) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
             withClauseBuilder.append("\n)");
         }
@@ -407,5 +407,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;
     }
 
+    @Override
+    public boolean supportsHasOidsColumn() {
+        return true;
+    }
 }
 

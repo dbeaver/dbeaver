@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -78,7 +78,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     {
         super(container, dbResult);
 
-        this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        if (getDataSource().getServerType().supportsHasOidsColumn()) {
+            this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        }
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
         this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
 
@@ -144,7 +146,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return false;
     }
 
-    @Property(editable = true, updatable = true, order = 40)
+    @Property(editable = true, updatable = true, order = 40, visibleIf = PostgreColumnHasOidsValidator.class)
     public boolean isHasOids() {
         return hasOids;
     }
@@ -420,5 +422,13 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         superTables = null;
         subTables = null;
         return super.refreshObject(monitor);
+    }
+
+    public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsHasOidsColumn();
+        }
     }
 }
