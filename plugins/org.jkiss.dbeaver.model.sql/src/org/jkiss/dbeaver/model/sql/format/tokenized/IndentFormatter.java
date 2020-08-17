@@ -73,7 +73,7 @@ class IndentFormatter {
             case ",":
                 if (!isCompact) {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
-                    if(bracketsDepth <= 0 || functionBracket.size() == 0 || ("SELECT".equals(getPrevDMLKeyword(argList, index)) && bracketsDepth > 0 && bracketsDepth == indent))
+                    if(bracketsDepth <= 0 || functionBracket.size() == 0 || ("SELECT".equalsIgnoreCase(getPrevDMLKeyword(argList, index)) && bracketsDepth > 0 && bracketsDepth == indent))
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(
@@ -449,7 +449,7 @@ class IndentFormatter {
         for (int i = index - 1; i >= 0; i--) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.KEYWORD) {
-                if (ArrayUtils.contains(DML_KEYWORD, token.getString())) {
+                if (ArrayUtils.contains(DML_KEYWORD, token.getString().toUpperCase(Locale.ENGLISH))) {
                     return token.getString();
                 }
             }
