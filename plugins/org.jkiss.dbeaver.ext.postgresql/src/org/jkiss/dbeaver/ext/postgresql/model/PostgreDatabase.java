@@ -62,7 +62,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreObject,
         DBPDataTypeProvider,
         DBSInstanceLazy,
-        DBPObjectStatistics{
+        DBPObjectStatistics {
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -152,9 +152,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
-                (getDataSource().getServerType().supportsDatabaseSize() ? ",pg_database_size(db.oid) as db_size\n" : "") + "\n" +
-                "FROM pg_catalog.pg_database db WHERE datname=?")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
@@ -217,12 +215,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
-
-        if (getDataSource().getServerType().supportsDatabaseSize()) {
-            this.dbTotalSize = JDBCUtils.safeGetLong(dbResult, "db_size");
-        } else {
-            this.dbTotalSize = 0;
-        }
     }
 
     @NotNull
@@ -777,6 +769,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public long getStatObjectSize() {
         return dbTotalSize;
+    }
+
+    public void setDbTotalSize(long dbTotalSize) {
+        this.dbTotalSize = dbTotalSize;
     }
 
     @Nullable
