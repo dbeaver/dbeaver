@@ -140,7 +140,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("modelName", "internal");
                                 xml.addAttribute("modelPosition", "t");
                                 xml.addAttribute("backgroundColor", getHtmlColor(entityFigure.getNameLabel().getBackgroundColor()));
-                                xml.addAttribute("textColor", getHtmlColor(entityFigure.getNameLabel().getForegroundColor()));
+                                xml.addAttribute("textColor", "#FFFFFF");
                                 xml.addAttribute("visible", "true");
                                 xml.addAttribute("horizontalTextPosition", "center");
                                 xml.addAttribute("iconTextGap", "4");
