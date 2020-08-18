@@ -103,24 +103,10 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                             xml.startElement("y:GenericNode");
                             xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
 
-                            int maxLength = 0;
-                            for (ERDEntityAttribute attr : entity.getAttributes()) {
-                                int attributeLength = (ERDUtils.getFullAttributeLabel(diagram, attr, true)).length();
-                                if (attributeLength > maxLength) {
-                                    maxLength = attributeLength;
-                                }
-                            }
-                            if (entity.getName().length() > maxLength){
-                                maxLength = entity.getName().length();
-                            }
-                            if (maxLength < 18) { // basic table size is enough
-                                maxLength = 0;
-                            }
-
                             // Geometry
                             xml.startElement("y:Geometry");
                             xml.addAttribute("height", partBounds.height);
-                            xml.addAttribute("width", partBounds.width + maxLength * (fontSize * 0.12));
+                            xml.addAttribute("width", partBounds.width + getExtraTableLength(diagram, entity));
                             xml.addAttribute("x", partBounds.x());
                             xml.addAttribute("y", partBounds.y());
                             xml.endElement();
@@ -293,6 +279,23 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as GraphML", null, e);
         }
+    }
+
+    private double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
+        int maxLength = 0;
+        for (ERDEntityAttribute attr : entity.getAttributes()) {
+            int attributeLength = (ERDUtils.getFullAttributeLabel(diagram, attr, true)).length();
+            if (attributeLength > maxLength) {
+                maxLength = attributeLength;
+            }
+        }
+        if (entity.getName().length() > maxLength){
+            maxLength = entity.getName().length();
+        }
+        if (maxLength < 18) { // basic table size is enough
+            maxLength = 0;
+        }
+        return (maxLength * (fontSize * 0.12));
     }
 
     private String getHtmlColor(Color color) {
