@@ -34,4 +34,9 @@ class MySQLDataSourceInfo extends JDBCDataSourceInfo {
         return true;
     }
 
+    @Override
+    public boolean needsTableMetaForColumnResolution() {
+        return true;
+    }
+
 }
