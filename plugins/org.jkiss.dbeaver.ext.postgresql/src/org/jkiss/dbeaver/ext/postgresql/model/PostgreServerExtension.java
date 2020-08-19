@@ -131,4 +131,6 @@ public interface PostgreServerExtension
     boolean supportsHasOidsColumn();
 
     boolean supportsDatabaseSize();
+
+    boolean isAlterTableAtomic();
 }

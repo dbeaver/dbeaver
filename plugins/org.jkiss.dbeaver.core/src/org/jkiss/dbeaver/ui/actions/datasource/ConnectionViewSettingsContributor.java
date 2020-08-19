@@ -67,6 +67,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         menuItems.add(new Separator());
         menuItems.add(new ActionContributionItem(new ShowHostNameAction(dsContainer)));
         menuItems.add(new ActionContributionItem(new ShowStatisticsAction(dsContainer)));
+        menuItems.add(new ActionContributionItem(new ShowStatusIconsAction(dsContainer)));
     }
 
     private abstract static class SettingsAction extends Action {
@@ -179,6 +180,20 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         @Override
         public void run() {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO, isChecked());
+            refreshNavigator();
+        }
+    }
+
+    private static class ShowStatusIconsAction extends SettingsAction {
+        ShowStatusIconsAction(DBPDataSourceContainer container) {
+            super(container, UINavigatorMessages.pref_page_database_general_label_show_node_actions, AS_CHECK_BOX);
+            setToolTipText(UINavigatorMessages.pref_page_database_general_label_show_node_actions_tip);
+            setChecked(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS));
+        }
+
+        @Override
+        public void run() {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS, isChecked());
             refreshNavigator();
         }
     }

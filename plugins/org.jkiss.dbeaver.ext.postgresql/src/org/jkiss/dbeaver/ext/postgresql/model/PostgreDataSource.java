@@ -76,6 +76,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         throws DBException
     {
         super(monitor, container, new PostgreDialect());
+
+        hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
     }
 
     @Override

@@ -130,6 +130,8 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                         continue;
                     }
                     fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
+                    // We need just one not-null attribute to build binding
+                    break;
                 }
             }
             nestedBinding.lateBinding(session, fakeRows);

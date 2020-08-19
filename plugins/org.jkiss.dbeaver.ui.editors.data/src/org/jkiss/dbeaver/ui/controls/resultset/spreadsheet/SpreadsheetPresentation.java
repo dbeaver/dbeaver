@@ -1628,6 +1628,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
+                    case ANY:
                         return ElementState.EXPANDED;
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
