@@ -196,7 +196,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant<PostgreExe
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT DISTINCT x.oid,x.* FROM pg_catalog.pg_proc x " +
+            "SELECT x.oid,x.* FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
                 "AND x.proname NOT LIKE '\\_%'" + // Exclude procedures starting with underscore
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
