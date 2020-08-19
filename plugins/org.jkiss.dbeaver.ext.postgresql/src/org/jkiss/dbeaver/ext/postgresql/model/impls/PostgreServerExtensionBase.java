@@ -416,5 +416,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsDatabaseSize() {
         return false;
     }
+
+    @Override
+    public boolean isAlterTableAtomic() {
+        return false;
+    }
+
 }
 
