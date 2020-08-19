@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -92,8 +93,9 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
-                String[] params = line.split(":");
-                if (params.length < 5) {
+                // Escape colons
+                String[] params = splitPassLine(line);
+                if (params == null) {
                     continue;
                 }
                 String host = params[0];
@@ -119,6 +121,20 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         }
 
         throw new DBException("No matches in pgpass");
+    }
+
+    @Nullable
+    private static String[] splitPassLine(String line) {
+        line = line.replace("\\\\", "@BSESC@").replace("\\:", "@CESC@");
+        String[] params = line.split(":");
+        if (params.length < 5) {
+            return null;
+        }
+        // Unescape colons
+        for (int i = 0; i < params.length; i++) {
+            params[i] = params[i].replace("@CESC@", ":").replace("@BSESC@", "\\");
+        }
+        return params;
     }
 
     private static boolean matchParam(String cfgParam, String passParam) {
