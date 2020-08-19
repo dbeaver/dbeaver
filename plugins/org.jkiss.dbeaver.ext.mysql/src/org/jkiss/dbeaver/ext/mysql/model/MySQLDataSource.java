@@ -86,6 +86,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         throws DBException {
         super(monitor, container, new MySQLDialect());
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
+        hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
     }
 
     @Override

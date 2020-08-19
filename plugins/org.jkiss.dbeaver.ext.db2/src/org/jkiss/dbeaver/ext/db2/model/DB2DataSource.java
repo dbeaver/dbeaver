@@ -126,6 +126,8 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     public DB2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException
     {
         super(monitor, container, new DB2SQLDialect());
+
+        this.hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
     }
 
     @Override
