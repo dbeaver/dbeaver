@@ -68,7 +68,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         SQLServerTableCheckConstraint object = command.getObject();
         if (object.getConstraintType() == DBSEntityConstraintType.CHECK && CommonUtils.isEmpty(object.getDefinition())) {
             throw new DBException("CHECK constraint definition is empty");
