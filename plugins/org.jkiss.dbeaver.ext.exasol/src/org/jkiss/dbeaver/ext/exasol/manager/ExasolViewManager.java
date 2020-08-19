@@ -48,7 +48,7 @@ public class ExasolViewManager
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException {
         ExasolTableBase object = command.getObject();
         if (CommonUtils.isEmpty(object.getName())) {
