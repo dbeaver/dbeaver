@@ -102,7 +102,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                     } else if (!Character.isWhitespace(ch)) {
                         delimiterOffset = prevOffset;
                     }
-                    prevPiece.append(ch);
+                    prevPiece.insert(0, ch);
                     prevOffset--;
                 }
                 if (prevDelimiter == null) {

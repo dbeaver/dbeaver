@@ -175,6 +175,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                 String statusMessage = CommonUtils.truncateString(
                     progressMessage.replaceAll("\\s", " "), 64);
                 String status = statusMessage + " - " + elapsedString + "s";
+                e.gc.setFont(cancelButton.getFont());
                 Point statusSize = e.gc.textExtent(status);
 
                 int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
