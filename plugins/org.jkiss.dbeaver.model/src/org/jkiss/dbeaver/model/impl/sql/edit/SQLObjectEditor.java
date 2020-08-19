@@ -202,7 +202,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     }
 
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
 
     }
 
@@ -299,7 +299,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Override
         public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-            validateObjectProperties(this, options);
+            validateObjectProperties(monitor, this, options);
         }
 
         @Override
