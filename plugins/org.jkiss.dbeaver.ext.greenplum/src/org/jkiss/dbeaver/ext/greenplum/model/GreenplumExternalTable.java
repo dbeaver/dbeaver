@@ -111,7 +111,7 @@ public class GreenplumExternalTable extends PostgreTable {
         this.uriLocationsHandler = new GreenplumExternalTableUriLocationsHandler(
                 JDBCUtils.safeGetStringTrimmed(dbResult, "urilocation"), ',');
         this.execLocation = JDBCUtils.safeGetString(dbResult, "execlocation");
-        this.formatType = FormatType.fromValue(JDBCUtils.safeGetString(dbResult, "fmttype"));
+        this.formatType = CommonUtils.valueOf(FormatType.class, JDBCUtils.safeGetString(dbResult, "fmttype"), FormatType.b);
         this.formatOptions = JDBCUtils.safeGetString(dbResult, "fmtopts");
         this.encoding = JDBCUtils.safeGetString(dbResult, "encoding");
 
