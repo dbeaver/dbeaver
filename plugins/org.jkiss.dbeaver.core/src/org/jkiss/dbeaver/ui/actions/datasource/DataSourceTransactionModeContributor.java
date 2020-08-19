@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -81,11 +82,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
                     new TransactionAutoCommitAction(executionContext, false, !autoCommit, txnLevelCurrent),
                     true));
             ISmartTransactionManager smartTransactionManager = DBUtils.getAdapter(ISmartTransactionManager.class, activePart);
-            if (smartTransactionManager != null) {
-                menuItems.add(ActionUtils.makeActionContribution(
-                        new SmartAutoCommitAction(smartTransactionManager),
-                        true));
-            }
+            menuItems.add(ActionUtils.makeActionContribution(
+                    new SmartAutoCommitAction(dataSource, smartTransactionManager),
+                    true));
 
             menuItems.add(new Separator());
 
@@ -105,7 +104,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         private final boolean autoCommit;
         private final DBPTransactionIsolation isolation;
 
-        public TransactionAutoCommitAction(DBCExecutionContext executionContext, boolean autoCommit, boolean enabled, DBPTransactionIsolation isolation) {
+        TransactionAutoCommitAction(DBCExecutionContext executionContext, boolean autoCommit, boolean enabled, DBPTransactionIsolation isolation) {
             this.executionContext = executionContext;
             this.autoCommit = autoCommit;
             this.isolation = isolation;
@@ -158,9 +157,13 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
     private static class SmartAutoCommitAction extends Action {
         private final ISmartTransactionManager smartTransactionManager;
 
-        public SmartAutoCommitAction(ISmartTransactionManager smartTransactionManager) {
+         SmartAutoCommitAction(DBPDataSource dataSource, ISmartTransactionManager smartTransactionManager) {
             this.smartTransactionManager = smartTransactionManager;
-            setChecked(smartTransactionManager.isSmartAutoCommit());
+            setEnabled(smartTransactionManager != null);
+
+            setChecked(smartTransactionManager != null ?
+                smartTransactionManager.isSmartAutoCommit() :
+                dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT));
         }
 
         @Override
@@ -193,7 +196,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         private final DBCExecutionContext executionContext;
         private final DBPTransactionIsolation level;
 
-        public TransactionIsolationAction(DBCExecutionContext executionContext, DBPTransactionIsolation level, boolean checked) {
+        TransactionIsolationAction(DBCExecutionContext executionContext, DBPTransactionIsolation level, boolean checked) {
             this.executionContext = executionContext;
             this.level = level;
             setChecked(checked);
