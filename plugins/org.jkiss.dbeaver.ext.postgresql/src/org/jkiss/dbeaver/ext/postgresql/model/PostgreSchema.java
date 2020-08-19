@@ -482,6 +482,10 @@ public class PostgreSchema implements
         return hasStatistics || !getDataSource().getServerType().supportsTableStatistics();
     }
 
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
