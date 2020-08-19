@@ -204,6 +204,10 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.diskSpace != null) {
+            // Re-read statistics on the next try
+            getSchema().resetStatistics();
+        }
         this.rowCount = null;
         this.diskSpace = null;
         this.tableRelSize = 0;
