@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,8 +55,8 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     protected transient volatile Long rowCount;
     protected transient volatile Long diskSpace;
     protected transient volatile long tableRelSize;
-    final TriggerCache triggerCache = new TriggerCache();
-    final RuleCache ruleCache = new RuleCache();
+    private final TriggerCache triggerCache = new TriggerCache();
+    private final RuleCache ruleCache = new RuleCache();
 
     protected PostgreTableReal(PostgreTableContainer container)
     {
@@ -199,6 +200,15 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         throws DBException
     {
         return getSchema().getConstraintCache().getObject(monitor, getSchema(), this, ukName);
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.rowCount = null;
+        this.diskSpace = null;
+        this.tableRelSize = 0;
+
+        return super.refreshObject(monitor);
     }
 
     @Nullable
