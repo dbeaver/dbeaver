@@ -89,7 +89,7 @@ public class PostgreRefCursor implements DBDCursor {
             if (cursorStatement != null) {
                 cursorStatement.close();
             }
-            JDBCUtils.executeStatement(this.session, "MOVE FIRST IN \"" + cursorName + "\"");
+            JDBCUtils.executeStatement(this.session, "MOVE ABSOLUTE 0 IN \"" + cursorName + "\"");
             cursorStatement = this.session.createStatement();
             return cursorStatement.executeQuery("FETCH ALL IN \"" + cursorName + "\"");
         } catch (SQLException e) {
