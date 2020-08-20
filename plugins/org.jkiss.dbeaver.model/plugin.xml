@@ -125,7 +125,7 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer"
                 id="org.jkiss.dbeaver.core.ComplexTypeAttributeTransformer"
                 name="Complex type"
-                description="Shows complex type attributes as separate columns"
+                description="%ComplexTypeTransformer.general.description"
                 applyByDefault="true">
             <type kind="STRUCT"/>
             <type kind="DOCUMENT"/>
@@ -135,7 +135,7 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.MapAttributeTransformer"
                 id="org.jkiss.dbeaver.core.MapAttributeTransformer"
                 name="Map"
-                description="Evaluate structure/map as a set of separate columns"
+                description="%MapTransformer.general.description"
                 applyByDefault="true">
             <type kind="STRUCT"/>
             <type kind="DOCUMENT"/>
@@ -146,7 +146,7 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.ArrayAttributeTransformer"
                 id="org.jkiss.dbeaver.core.ArrayAttributeTransformer"
                 name="Array"
-                description="Evaluate complex array elements as a set of separate columns"
+                description="%ArrayTransformer.general.description"
                 applyByDefault="true">
             <type kind="ARRAY"/>
         </transformer>
@@ -156,19 +156,19 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.EpochTimeAttributeTransformer"
                 id="org.jkiss.dbeaver.core.EpochTimeAttributeTransformer"
                 name="Epoch Time"
-                description="Represents integer value as timestamp in Epoch (C, Unix, POSIX, Java, etc) time - the number of seconds that have elapsed since 1970/01/01 00:00:00 (UTC)"
+                description="%EpochTimeTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="NUMERIC"/>
             <propertyGroup label="Properties">
-                <property id="unit" label="Unit" type="string" description="Measure unit - seconds, milliseconds, etc" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,nanoseconds"/>
+                <property id="unit" label="Unit" type="string" description="%EpochTimeTransformer.property.unit.description" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,nanoseconds"/>
             </propertyGroup>
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.RadixAttributeTransformer"
                 id="org.jkiss.dbeaver.core.RadixAttributeTransformer"
                 name="Number Radix"
-                description="Represents numbers in a specified radix"
+                description="%RadixTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="NUMERIC"/>
@@ -182,20 +182,20 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.URLAttributeTransformer"
                 id="org.jkiss.dbeaver.core.URLAttributeTransformer"
                 name="URL"
-                description="Represents value as URL. Provides preview panel with inline web browser."
+                description="%URLTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="NUMERIC"/>
             <type kind="STRING"/>
             <propertyGroup label="Properties">
-                <property id="pattern" label="URL pattern" type="string" description="URL pattern. Variable ${value} will be replaced with real value." defaultValue="http://${value}" required="false"/>
+                <property id="pattern" label="%URLTransformer.property.pattern.label" type="string" description="%URLTransformer.property.pattern.description" defaultValue="http://${value}" required="false"/>
             </propertyGroup>
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.BooleanAttributeTransformer"
                 id="boolean"
                 name="Boolean"
-                description="Represents numbers as booleans"
+                description="%BooleanTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="NUMERIC"/>
@@ -204,33 +204,27 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDAttributeTransformer"
                 id="org.jkiss.dbeaver.core.UUIDAttributeTransformer"
                 name="UUID"
-                description="Represents binary value as UUID."
+                description="%UUIDTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
-        </transformer>
-        <transformer
-                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDOrderedAttributeTransformer"
-                id="org.jkiss.dbeaver.core.UUIDOrderedAttributeTransformer"
-                name="UUID (Ordered)"
-                description="Represents binary(16) value as UUID if optimized storage is used."
-                applyByDefault="false"
-                custom="true">
-            <type kind="BINARY"/>
-            <type kind="CONTENT"/>
+            <propertyGroup label="Properties">
+                <property id="type" label="%UUIDTransformer.property.type.label" type="string" description="%UUIDTransformer.property.type.description" defaultValue="Version1" required="true" validValues="Version1,Version2,Ordered"/>
+                <property id="case" label="%UUIDTransformer.property.case.label" type="string" description="%UUIDTransformer.property.case.description" defaultValue="Lower case" required="true" validValues="Lower case,Upper case"/>
+            </propertyGroup>
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
                 id="org.jkiss.dbeaver.core.BinaryAttributeTransformer"
                 name="Binary"
-                description="Represents string value as binary data."
+                description="%BinaryTransformer.general.description"
                 applyByDefault="false"
                 custom="true">
             <type kind="STRING"/>
             <propertyGroup label="Properties">
-                <property id="format" label="Binary format" type="string" description="Binary value format." defaultValue="Hex" required="false" validValues="hex,native,base64,string"/>
-                <property id="encoding" label="Character encoding" type="string" description="Character encoding used to decode string value into bytes." defaultValue="utf-8" required="false"/>
+                <property id="format" label="%BinaryTransformer.property.format.label" type="string" description="%BinaryTransformer.property.format.description" defaultValue="Hex" required="false" validValues="hex,native,base64,string"/>
+                <property id="encoding" label="%BinaryTransformer.property.encoding.label" type="string" description="%BinaryTransformer.property.encoding.description" defaultValue="utf-8" required="false"/>
             </propertyGroup>
         </transformer>
 
