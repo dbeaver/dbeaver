@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -46,38 +47,38 @@ import java.util.UUID;
 public class UUIDAttributeTransformer implements DBDAttributeTransformer {
     private static final String PROP_TYPE = "type";
     private static final String PROP_CASE = "case";
-    private static final String PROP_ORDERED = "Ordered";
-    private static final String PROP_MIXED_ENDIAN = "Mixed-Endian";
     private static final String PROP_UPPER_CASE = "Upper case";
+
+    enum UUIDVersion {
+        Version1,
+        Version2,
+        Ordered
+    }
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
-        boolean isOrdered = false;
-        boolean isMixedEndian = false;
         boolean isUpperCase = false;
-        if (options.get(PROP_TYPE).equals(PROP_ORDERED)) {
-            isOrdered = true;
-        } else if (options.get(PROP_TYPE).equals(PROP_MIXED_ENDIAN)) {
-            isMixedEndian = true;
-        }
+        UUIDVersion uuidVersion = getUUIDVersion(options);
         if (options.get(PROP_CASE).equals(PROP_UPPER_CASE)) {
             isUpperCase = true;
         }
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "UUID", -1, DBPDataKind.BINARY));
 
-        attribute.setTransformHandler(new UUIDValueHandler(attribute.getValueHandler(), isOrdered, isMixedEndian, isUpperCase));
+        attribute.setTransformHandler(new UUIDValueHandler(attribute.getValueHandler(), uuidVersion, isUpperCase));
+    }
+
+    private UUIDVersion getUUIDVersion(Map<String, Object> options) {
+        return CommonUtils.valueOf(UUIDVersion.class, CommonUtils.toString(options.get(PROP_TYPE)), UUIDVersion.Version1);
     }
 
     private class UUIDValueHandler extends ProxyValueHandler {
-        private boolean isOrdered;
-        private boolean isMixedEndian;
+        private UUIDVersion uuidVersion;
         private boolean isUpperCase;
 
-        public UUIDValueHandler(DBDValueHandler target, boolean isOrdered, boolean isMixedEndian, boolean isUpperCase) {
+        public UUIDValueHandler(DBDValueHandler target, UUIDVersion uuidVersion, boolean isUpperCase) {
             super(target);
-            this.isOrdered = isOrdered;
-            this.isMixedEndian = isMixedEndian;
+            this.uuidVersion = uuidVersion;
             this.isUpperCase = isUpperCase;
         }
 
@@ -94,7 +95,7 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                 if (bytes.length < 16) {
                     throw new IllegalArgumentException("UUID length must be at least 16 bytes (actual length = " + bytes.length + ")");
                 }
-                if (isOrdered) {
+                if (uuidVersion == UUIDVersion.Ordered) {
                     // byte shift operations from Ebean ORM project pull request #1308
                     long mostSigBits = ((long)bytes[4] << 56) // XXXXXXXX-____-____-...
                             + ((long)(bytes[5] & 255) << 48)
@@ -116,7 +117,7 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                         return new UUID(mostSigBits, leastSigBits).toString().toUpperCase(Locale.ENGLISH);
                     }
                     return new UUID(mostSigBits, leastSigBits).toString();
-                } else if (isMixedEndian) {
+                } else if (uuidVersion == UUIDVersion.Version2) {
                     try {
                         if (isUpperCase) {
                             return GeneralUtils.getMixedEndianUUIDFromBytes(bytes).toString().toUpperCase(Locale.ENGLISH);
