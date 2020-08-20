@@ -209,16 +209,10 @@
                 custom="true">
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
-        </transformer>
-        <transformer
-                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDOrderedAttributeTransformer"
-                id="org.jkiss.dbeaver.core.UUIDOrderedAttributeTransformer"
-                name="UUID (Ordered)"
-                description="Represents binary(16) value as UUID if optimized storage is used."
-                applyByDefault="false"
-                custom="true">
-            <type kind="BINARY"/>
-            <type kind="CONTENT"/>
+            <propertyGroup label="Properties">
+                <property id="type" label="UUID type" type="string" description="Uou can choose standard (big endian), ordered (if optimized storage is used) ore (GUID) mixed-Endian UUID type" defaultValue="Standard" required="true" validValues="Standard,Ordered,Mixed-Endian"/>
+                <property id="case" label="Case characters" type="string" description="Lower or upper case characters" defaultValue="Lower case" required="true" validValues="Lower case,Upper case"/>
+            </propertyGroup>
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
