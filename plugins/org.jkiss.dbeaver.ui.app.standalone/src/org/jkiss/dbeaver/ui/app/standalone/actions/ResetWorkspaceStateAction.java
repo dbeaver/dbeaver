@@ -16,21 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.actions;
 
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.action.Action;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.utils.CommonUtils;
 
-public class ResetUISettingsAction extends Action
+public class ResetWorkspaceStateAction extends Action
 {
     private IWorkbenchWindow window;
 
-    public ResetUISettingsAction(IWorkbenchWindow window) {
-        super(CoreApplicationMessages.actions_menu_reset_ui_settings_title);
+    public ResetWorkspaceStateAction(IWorkbenchWindow window) {
+        super(CoreApplicationMessages.actions_menu_reset_workspace_state_title);
         this.window = window;
     }
 
@@ -39,12 +44,26 @@ public class ResetUISettingsAction extends Action
     {
         if (UIUtils.confirmAction(
             window == null ? null : window.getShell(),
-            CoreApplicationMessages.actions_menu_reset_ui_settings_title,
-            CoreApplicationMessages.actions_menu_reset_ui_settings_message,
+            CoreApplicationMessages.actions_menu_reset_workspace_state_title,
+            CoreApplicationMessages.actions_menu_reset_workspace_state_message,
             SWT.ICON_WARNING))
         {
-            DBeaverApplication.getInstance().setResetUIOnRestart(true);
+            DBeaverApplication.getInstance().setResetWorkspaceOnRestart(true);
             IWorkbench workbench = PlatformUI.getWorkbench();
+            Location instanceLoc = Platform.getInstanceLocation();
+
+            String resetStateParameter = "-" + org.eclipse.e4.ui.workbench.IWorkbench.CLEAR_PERSISTED_STATE;
+            String eclicpseCommands = System.getProperty("eclipse.commands");
+            if (CommonUtils.isEmpty(eclicpseCommands)) {
+                eclicpseCommands = resetStateParameter;
+            } else {
+                eclicpseCommands = eclicpseCommands.trim() + "\n" + resetStateParameter;
+            }
+            System.setProperty("eclipse.commands", eclicpseCommands);
+
+            if (!IApplication.EXIT_RELAUNCH.equals(Workbench.setRestartArguments(instanceLoc.getURL().toString()))) {
+                return;
+            }
             workbench.restart(true);
         }
     }

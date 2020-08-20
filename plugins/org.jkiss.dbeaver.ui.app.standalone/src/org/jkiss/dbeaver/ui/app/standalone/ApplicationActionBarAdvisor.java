@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
+import org.jkiss.dbeaver.ui.app.standalone.actions.ResetWorkspaceStateAction;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -235,6 +236,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
             fileMenu.add(new Separator());
             fileMenu.add(new ResetUISettingsAction(workbenchWindow));
+            fileMenu.add(new ResetWorkspaceStateAction(workbenchWindow));
             fileMenu.add(new EmergentExitAction(workbenchWindow));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
