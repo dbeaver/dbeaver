@@ -67,6 +67,7 @@ public class DataSourceUtils {
 
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
+    private static final String PREFIX_AUTH_PROP = "authProp.";
 
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
@@ -91,6 +92,7 @@ public class DataSourceUtils {
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
+        Map<String, String> authProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null;
 
@@ -174,6 +176,10 @@ public class DataSourceUtils {
                     if (paramName.length() > PREFIX_PROP.length() && paramName.startsWith(PREFIX_PROP)) {
                         paramName = paramName.substring(PREFIX_PROP.length());
                         conProperties.put(paramName, paramValue);
+                        handled = true;
+                    } else if (paramName.length() > PREFIX_AUTH_PROP.length() && paramName.startsWith(PREFIX_AUTH_PROP)) {
+                        paramName = paramName.substring(PREFIX_AUTH_PROP.length());
+                        authProperties.put(paramName, paramValue);
                         handled = true;
                     } else if (paramName.length() > PREFIX_HANDLER.length() && paramName.startsWith(PREFIX_HANDLER)) {
                         // network handler prop
@@ -306,6 +312,9 @@ public class DataSourceUtils {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
+        if (!CommonUtils.isEmpty(authProperties)) {
+            connConfig.setAuthProperties(authProperties);
+        }
         if (!CommonUtils.isEmpty(authModelId)) {
             connConfig.setAuthModelId(authModelId);
         }
