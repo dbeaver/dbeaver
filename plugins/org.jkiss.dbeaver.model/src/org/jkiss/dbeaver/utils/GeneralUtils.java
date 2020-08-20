@@ -39,6 +39,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -753,6 +754,19 @@ public class GeneralUtils {
         }
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
+    }
+
+    public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
+        ByteBuffer source = ByteBuffer.wrap(bytes);
+        ByteBuffer target = ByteBuffer.allocate(16).
+                order(ByteOrder.LITTLE_ENDIAN).
+                putInt(source.getInt()).
+                putShort(source.getShort()).
+                putShort(source.getShort()).
+                order(ByteOrder.BIG_ENDIAN).
+                putLong(source.getLong());
+        target.rewind();
+        return new UUID(target.getLong(), target.getLong());
     }
 
 }
