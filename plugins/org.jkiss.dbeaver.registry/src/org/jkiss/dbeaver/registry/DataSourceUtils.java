@@ -55,6 +55,7 @@ public class DataSourceUtils {
 
     private static final String PARAM_PASSWORD = "password";
     private static final String PARAM_SAVE_PASSWORD = "savePassword";
+    private static final String PARAM_AUTH_MODEL = "auth";
     private static final String PARAM_SHOW_SYSTEM_OBJECTS = "showSystemObjects";
     private static final String PARAM_SHOW_UTILITY_OBJECTS = "showUtilityObjects";
     private static final String PARAM_SHOW_ONLY_ENTITIES = "showOnlyEntities";
@@ -76,7 +77,9 @@ public class DataSourceUtils {
         boolean searchByParameters,
         boolean createNewDataSource)
     {
-        String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
+        String driverName = null, url = null, host = null, port = null,
+            server = null, database = null,
+            user = null, password = null, authModelId = null;
         boolean
             showSystemObjects = false,
             showUtilityObjects = false,
@@ -135,6 +138,9 @@ public class DataSourceUtils {
                     break;
                 case PARAM_PASSWORD:
                     password = paramValue;
+                    break;
+                case PARAM_AUTH_MODEL:
+                    authModelId = paramValue;
                     break;
                 case PARAM_SAVE_PASSWORD:
                     savePassword = CommonUtils.toBoolean(paramValue);
@@ -300,6 +306,9 @@ public class DataSourceUtils {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
+        if (!CommonUtils.isEmpty(authModelId)) {
+            connConfig.setAuthModelId(authModelId);
+        }
 
         if (autoCommit != null) {
             connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
