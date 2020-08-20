@@ -51,7 +51,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     public AuthModelPgPassCredentials loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
         AuthModelPgPassCredentials credentials = super.loadCredentials(dataSource, configuration);
         try {
-            loadPasswordFromPgPass(credentials, configuration);
+            loadPasswordFromPgPass(credentials, dataSource, configuration);
             credentials.setParseError(null);
         } catch (DBException e) {
             credentials.setParseError(e);
@@ -67,7 +67,16 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         super.initAuthentication(monitor, dataSource, credentials, configuration, connectProps);
     }
 
-    private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPConnectionConfiguration configuration) throws DBException {
+    private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
+        String conHostName = configuration.getHostName();
+        String conHostPort = configuration.getHostPort();
+        String conDatabaseName = configuration.getDatabaseName();
+        String conUserName = configuration.getUserName();
+
+        if (CommonUtils.isEmpty(conHostPort)) {
+            conHostPort = dataSource.getDriver().getDefaultPort();
+        }
+
         String pgPassPath = System.getenv(PGPASSFILE_ENV_VARIABLE);
         if (CommonUtils.isEmpty(pgPassPath)) {
             if (RuntimeUtils.isPlatformWindows()) {
@@ -104,10 +113,10 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
                 String user = params[3];
                 String password = params[4];
 
-                if (matchParam(configuration.getHostName(), host) &&
-                    matchParam(configuration.getHostPort(), port) &&
-                    matchParam(configuration.getDatabaseName(), database) &&
-                    matchParam(configuration.getUserName(), user))
+                if (matchParam(conHostName, host) &&
+                    matchParam(conHostPort, port) &&
+                    matchParam(conDatabaseName, database) &&
+                    matchParam(conUserName, user))
                 {
                     if (!user.equals("*")) {
                         configuration.setUserName(user);
