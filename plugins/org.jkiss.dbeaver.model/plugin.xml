@@ -210,7 +210,7 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
             <propertyGroup label="Properties">
-                <property id="type" label="%UUIDTransformer.property.type.label" type="string" description="%UUIDTransformer.property.type.description" defaultValue="Standard" required="true" validValues="Standard,Ordered,Mixed-Endian"/>
+                <property id="type" label="%UUIDTransformer.property.type.label" type="string" description="%UUIDTransformer.property.type.description" defaultValue="Version1" required="true" validValues="Version1,Version2,Ordered"/>
                 <property id="case" label="%UUIDTransformer.property.case.label" type="string" description="%UUIDTransformer.property.case.description" defaultValue="Lower case" required="true" validValues="Lower case,Upper case"/>
             </propertyGroup>
         </transformer>
