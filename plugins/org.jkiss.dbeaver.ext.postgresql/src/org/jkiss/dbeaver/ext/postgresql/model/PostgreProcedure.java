@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
@@ -392,15 +391,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
                 } else {
-                    try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
-                        body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
-                    } catch (SQLException e) {
-                        if (!CommonUtils.isEmpty(this.procSrc)) {
-                            log.debug("Error reading procedure body", e);
-                            // At least we have it
-                            body = this.procSrc;
-                        } else {
-                            throw new DBException("Error reading procedure body", e);
+                    if (isAggregate) {
+                        body = "-- Aggregate function";
+                    } else {
+                        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
+                            body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+                        } catch (SQLException e) {
+                            if (!CommonUtils.isEmpty(this.procSrc)) {
+                                log.debug("Error reading procedure body", e);
+                                // At least we have it
+                                body = this.procSrc;
+                            } else {
+                                throw new DBException("Error reading procedure body", e);
+                            }
                         }
                     }
                 }
