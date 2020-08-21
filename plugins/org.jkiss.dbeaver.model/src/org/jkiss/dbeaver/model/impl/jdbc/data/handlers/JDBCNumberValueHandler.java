@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Date;
 
 /**
  * JDBC number value handler
@@ -349,6 +350,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             return DBValueFormatting.convertStringToNumber(strValue, getNumberType(type), getFormatter(type), validateValue);
         } else if (object instanceof Boolean) {
             return (Boolean) object ? 1 : 0;
+        } else if (object instanceof Date) {
+            return DBValueFormatting.convertDateToNumber(((Date) object), getNumberType(type), getFormatter(type), validateValue);
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;

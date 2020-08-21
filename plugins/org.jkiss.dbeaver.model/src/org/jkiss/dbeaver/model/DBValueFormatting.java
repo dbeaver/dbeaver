@@ -39,6 +39,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -257,6 +258,41 @@ public final class DBValueFormatting {
             log.debug("Error converting number to string: " + e.getMessage());
         }
         return value.toString();
+    }
+
+    @Nullable
+    public static Object convertDateToNumber(Date date, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
+    {
+        if (date == null) {
+            return null;
+        }
+        try {
+            if (hintType == Long.class) {
+                try {
+                    return date.getTime();
+                } catch (NumberFormatException e) {
+                    return (int) (date.getTime()/1000);
+                }
+            } else if (hintType == Integer.class) {
+                return (int) (date.getTime()/1000);
+            } else if (hintType == Float.class) {
+                return Long.valueOf(date.getTime()).floatValue();
+            } else if (hintType == Double.class) {
+                return Long.valueOf(date.getTime()).doubleValue();
+            } else {
+                return new BigDecimal(date.getTime());
+            }
+        } catch (NumberFormatException e) {
+            try {
+                return formatter.parseValue(date.toString(), hintType);
+            } catch (ParseException e1) {
+                if (validateValue) {
+                    throw new DBCException("Can't parse numeric value [" + date.toString() + "] using formatter", e);
+                }
+                log.debug("Can't parse numeric value [" + date.toString() + "] using formatter: " + e.getMessage());
+                return date;
+            }
+        }
     }
 
     public static String getBooleanString(boolean propertyValue) {
