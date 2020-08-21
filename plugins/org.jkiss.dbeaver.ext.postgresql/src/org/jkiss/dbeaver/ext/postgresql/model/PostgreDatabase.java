@@ -468,7 +468,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public Collection<PostgreDataType> getLocalDataTypes() {
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
-            return schema.dataTypeCache.getCachedObjects();
+            return schema.getDataTypeCache().getCachedObjects();
         }
         return null;
     }
@@ -688,7 +688,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return dataType;
         }
         for (PostgreSchema schema : schemaCache.getCachedObjects()) {
-            dataType = schema.dataTypeCache.getDataType(typeId);
+            dataType = schema.getDataTypeCache().getDataType(typeId);
             if (dataType != null) {
                 dataTypeCache.put(typeId, dataType);
                 return dataType;
@@ -697,7 +697,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // Type not found. Let's resolve it
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
-            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -714,7 +714,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             // First check system catalog
             final PostgreSchema schema = getCatalogSchema();
             if (schema != null) {
-                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
                 if (dataType != null) {
                     return dataType;
                 }
@@ -726,7 +726,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
-                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
                 if (dataType != null) {
                     return dataType;
                 }
@@ -737,7 +737,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             if (searchPath.contains(schema.getName())) {
                 continue;
             }
-            final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+            final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
             if (dataType != null) {
                 return dataType;
             }
@@ -750,7 +750,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // Type not found. Let's resolve it
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
-            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");

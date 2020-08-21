@@ -46,7 +46,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     @Override
     public DBSObjectCache<PostgreTableContainer, PostgreIndex> getObjectsCache(PostgreIndex object)
     {
-        return object.getTable().getContainer().getSchema().indexCache;
+        return object.getTable().getContainer().getSchema().getIndexCache();
     }
 
     @Override
@@ -116,7 +116,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         }
     }
 
-    static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
+    private static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
         actions.add(new SQLDatabasePersistAction(
             "Comment index",
             "COMMENT ON INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) +

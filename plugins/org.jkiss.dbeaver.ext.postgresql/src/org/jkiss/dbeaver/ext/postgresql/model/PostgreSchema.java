@@ -82,26 +82,52 @@ public class PostgreSchema implements
     private Object schemaAcl;
     protected boolean persisted;
 
-    public final ExtensionCache extensionCache = new ExtensionCache();
-    public final AggregateCache aggregateCache = new AggregateCache();
-    public final TableCache tableCache = new TableCache();
-    public final ConstraintCache constraintCache = new ConstraintCache();
-    private final ProceduresCache proceduresCache = new ProceduresCache();
-    public final IndexCache indexCache = new IndexCache();
-    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
+    private final ExtensionCache extensionCache;
+    private final AggregateCache aggregateCache;
+    private final TableCache tableCache;
+    private final ConstraintCache constraintCache;
+    private final ProceduresCache proceduresCache;
+    private final IndexCache indexCache;
+    private final PostgreDataTypeCache dataTypeCache;
     protected volatile boolean hasStatistics;
+
+    private PostgreSchema(PostgreDatabase database, String name) {
+        this.database = database;
+        this.name = name;
+
+        extensionCache = new ExtensionCache();
+        aggregateCache = new AggregateCache();
+        tableCache = createTableCache();
+        constraintCache = createConstraintCache();
+        indexCache = new IndexCache();
+        proceduresCache = createProceduresCache();
+        dataTypeCache = new PostgreDataTypeCache();
+    }
+
+    @NotNull
+    protected TableCache createTableCache() {
+        return new TableCache();
+    }
+
+    @NotNull
+    protected ConstraintCache createConstraintCache() {
+        return new ConstraintCache();
+    }
+
+    @NotNull
+    protected ProceduresCache createProceduresCache() {
+        return new ProceduresCache();
+    }
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException {
-        this.database = database;
-        this.name = name;
+        this(database, name);
 
         this.loadInfo(dbResult);
     }
 
     public PostgreSchema(PostgreDatabase database, String name, PostgreRole owner) {
-        this.database = database;
-        this.name = name;
+        this(database, name);
         this.ownerId = owner == null ? 0 : owner.getObjectId();
     }
 
@@ -246,6 +272,14 @@ public class PostgreSchema implements
         return this.proceduresCache;
     }
 
+    public IndexCache getIndexCache() {
+        return indexCache;
+    }
+
+    public PostgreDataTypeCache getDataTypeCache() {
+        return dataTypeCache;
+    }
+
     @Association
     public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
@@ -282,17 +316,17 @@ public class PostgreSchema implements
     @Association
     public Collection<PostgreProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException {
-        return proceduresCache.getAllObjects(monitor, this);
+        return getProceduresCache().getAllObjects(monitor, this);
     }
 
     public PostgreProcedure getProcedure(DBRProgressMonitor monitor, String procName)
         throws DBException {
-        return proceduresCache.getObject(monitor, this, procName);
+        return getProceduresCache().getObject(monitor, this, procName);
     }
 
     public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long oid)
         throws DBException {
-        for (PostgreProcedure proc : proceduresCache.getAllObjects(monitor, this)) {
+        for (PostgreProcedure proc : getProceduresCache().getAllObjects(monitor, this)) {
             if (proc.getObjectId() == oid) {
                 return proc;
             }
@@ -684,7 +718,7 @@ public class PostgreSchema implements
      */
     public class ConstraintCache extends JDBCCompositeCache<PostgreTableContainer, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
         protected ConstraintCache() {
-            super(tableCache, PostgreTableBase.class, "tabrelname", "conname");
+            super(getTableCache(), PostgreTableBase.class, "tabrelname", "conname");
         }
 
         @NotNull
@@ -838,7 +872,7 @@ public class PostgreSchema implements
      */
     class IndexCache extends JDBCCompositeCache<PostgreTableContainer, PostgreTableBase, PostgreIndex, PostgreIndexColumn> {
         protected IndexCache() {
-            super(tableCache, PostgreTableBase.class, "tabrelname", "relname");
+            super(getTableCache(), PostgreTableBase.class, "tabrelname", "relname");
         }
 
         @NotNull

@@ -60,7 +60,7 @@ public class PostgreMaterializedView extends PostgreViewBase
     @Override
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
-        return getSchema().indexCache.getObjects(monitor, getSchema(), this);
+        return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override

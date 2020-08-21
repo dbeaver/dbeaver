@@ -101,7 +101,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                 continue;
             }
             PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
-            getSchema().indexCache.cacheObject(constr);
+            getSchema().getIndexCache().cacheObject(constr);
         }
 
 /*
@@ -195,7 +195,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Override
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-        return getSchema().indexCache.getObjects(monitor, getSchema(), this);
+        return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override
@@ -237,7 +237,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         // This is dummy implementation
         // Get references from this schema only
         final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().getSchema().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
+            getContainer().getSchema().getConstraintCache().getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
         for (PostgreTableForeignKey constraint : allForeignKeys) {
             if (constraint.getAssociatedEntity() == this) {
                 refs.add(constraint);
@@ -248,7 +248,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Association
     public Collection<PostgreTableForeignKey> getForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+        return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
     @Nullable
