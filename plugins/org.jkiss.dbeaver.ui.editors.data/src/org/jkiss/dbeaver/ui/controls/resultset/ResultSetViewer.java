@@ -2494,6 +2494,12 @@ public class ResultSetViewer extends Viewer
             viewMenu.add(new TransformerSettingsAction());
         }
         viewMenu.add(new TransformComplexTypesToggleAction());
+        if (attr.getDataKind() == DBPDataKind.BINARY || attr.getDataKind() == DBPDataKind.CONTENT) {
+            MenuManager binaryFormatMenu = new MenuManager("Binary format");
+            binaryFormatMenu.setRemoveAllWhenShown(true);
+            binaryFormatMenu.addMenuListener(manager12 -> fillBinaryFormatMenu(manager12, attr));
+            viewMenu.add(binaryFormatMenu);
+        }
         viewMenu.add(new Separator());
         if (model.getDocumentAttribute() == null) {
             if (valueController != null) {
@@ -2737,6 +2743,52 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class BinaryFormatAction extends Action {
+        private final String prefValue;
+        private final DBDAttributeBinding attribute;
+        BinaryFormatAction(DBDBinaryFormatter formatter, DBDAttributeBinding attr) {
+            super(formatter.getTitle(), IAction.AS_RADIO_BUTTON);
+            this.prefValue = formatter.getTitle();
+            this.attribute = attr;
+        }
+
+        @Override
+        public boolean isChecked()
+        {
+            return getPreferenceStore().getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION).equalsIgnoreCase(prefValue);
+        }
+
+        @Override
+        public void run()
+        {
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            DBPPreferenceStore preferenceStore = getActionPreferenceStore();
+            String prefId = ModelPreferences.RESULT_SET_BINARY_PRESENTATION;
+            preferenceStore.setValue(
+                    prefId,
+                    prefValue.toLowerCase());
+            getTransformSettings().setCustomTransformer(prefId);
+            attribute.getDataSource().getContainer().persistConfiguration();
+            refreshData(null);
+        }
+
+        @NotNull
+        DBVTransformSettings getTransformSettings() {
+            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attribute, true);
+            if (settings == null) {
+                throw new IllegalStateException("Can't get/create transformer settings for '" + attribute.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
+            }
+            return settings;
+        }
+
+        DBPPreferenceStore getActionPreferenceStore() {
+            return ResultSetViewer.this.getPreferenceStore();
+        }
+    }
+
     private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
@@ -2833,6 +2885,15 @@ public class ResultSetViewer extends Viewer
                         saveTransformerSettings();
                     }
                 });
+            }
+        }
+    }
+
+    private void fillBinaryFormatMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attribute) {
+        if (attribute != null) {
+            manager.add(new Separator());
+            for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
+                manager.add(new BinaryFormatAction(formatter, attribute));
             }
         }
     }
