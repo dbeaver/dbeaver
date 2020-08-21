@@ -293,6 +293,21 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return superTables == null || superTables.isEmpty() ? null : superTables;
     }
 
+    void addSuperTableInheritance(PostgreTableBase superTable, int seqNum) {
+        PostgreTableInheritance inheritance = new PostgreTableInheritance(this, superTable, seqNum, true);
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+        superTables.add(inheritance);
+    }
+
+    void nullifyEmptySuperTableInheritance() {
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+    }
+
+
     private List<PostgreTableInheritance> initSuperTables(DBRProgressMonitor monitor) throws DBException {
         List<PostgreTableInheritance> inheritanceList = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
