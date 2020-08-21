@@ -1809,7 +1809,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript, final boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
+    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript, boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -1819,6 +1819,7 @@ public class SQLEditor extends SQLEditorBase implements
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
             try {
+                boolean finalNewTab = newTab;
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
                         DBWorkbench.getPlatformUI().showError(
@@ -1828,7 +1829,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     updateExecutionContext(() -> UIUtils.syncExec(() ->
-                        processQueries(queries, forceScript, newTab, export, false, queryListener)));
+                        processQueries(queries, forceScript, finalNewTab, export, false, queryListener)));
                 };
                 if (!checkSession(connectListener)) {
                     return false;
@@ -1909,6 +1910,8 @@ public class SQLEditor extends SQLEditorBase implements
                 int tabsClosed = closeExtraResultTabs(null, true);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
+                } else if (tabsClosed == IDialogConstants.NO_ID) {
+                    newTab = true;
                 }
                 extraTabsClosed = tabsClosed == IDialogConstants.YES_ID;
             }
