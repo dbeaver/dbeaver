@@ -2014,7 +2014,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (tabsToClose.size() > 1) {
+        if (tabsToClose.size() > 0) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
                 confirmResult = ConfirmationDialog.showConfirmDialog(
@@ -2034,7 +2034,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
             return confirmResult;
         }
-        return IDialogConstants.NO_ID;
+        // No need to close anything
+        return IDialogConstants.IGNORE_ID;
     }
 
     public boolean transformQueryWithParameters(SQLQuery query) {
