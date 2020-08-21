@@ -2744,12 +2744,10 @@ public class ResultSetViewer extends Viewer
     }
 
     private class BinaryFormatAction extends Action {
-        private final String prefId;
         private final String prefValue;
         private final DBDAttributeBinding attribute;
-        BinaryFormatAction(String prefId, DBDBinaryFormatter formatter, DBDAttributeBinding attr) {
+        BinaryFormatAction(DBDBinaryFormatter formatter, DBDAttributeBinding attr) {
             super(formatter.getTitle(), IAction.AS_RADIO_BUTTON);
-            this.prefId = prefId;
             this.prefValue = formatter.getTitle();
             this.attribute = attr;
         }
@@ -2768,6 +2766,7 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             DBPPreferenceStore preferenceStore = getActionPreferenceStore();
+            String prefId = ModelPreferences.RESULT_SET_BINARY_PRESENTATION;
             preferenceStore.setValue(
                     prefId,
                     prefValue.toLowerCase());
@@ -2893,9 +2892,8 @@ public class ResultSetViewer extends Viewer
     private void fillBinaryFormatMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attribute) {
         if (attribute != null) {
             manager.add(new Separator());
-            String preferenceId = ModelPreferences.RESULT_SET_BINARY_PRESENTATION;
             for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
-                manager.add(new BinaryFormatAction(preferenceId, formatter, attribute));
+                manager.add(new BinaryFormatAction(formatter, attribute));
             }
         }
     }
