@@ -16,14 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
@@ -42,11 +39,7 @@ public class DashboardOpenTool implements IUserInterfaceTool {
         if (dataSourceContainer == null) {
             return;
         }
-        try {
-            window.getActivePage().showView(DashboardView.VIEW_ID, dataSourceContainer.getId(), IWorkbenchPage.VIEW_ACTIVATE);
-        } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard view", e);
-        }
+        DashboardView.openView(window, dataSourceContainer);
     }
 
 }
