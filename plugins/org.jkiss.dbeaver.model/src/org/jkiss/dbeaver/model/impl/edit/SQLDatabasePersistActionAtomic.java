@@ -34,7 +34,7 @@ public class SQLDatabasePersistActionAtomic extends SQLDatabasePersistAction {
     }
 
     public SQLDatabasePersistActionAtomic(String title, String script, boolean makeAtomic) {
-        super(title, script, true);
+        super(title, script, false);
         this.makeAtomic = makeAtomic;
     }
 
