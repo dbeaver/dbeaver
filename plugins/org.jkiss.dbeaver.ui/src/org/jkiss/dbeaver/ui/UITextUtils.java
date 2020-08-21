@@ -99,7 +99,7 @@ public class UITextUtils {
         if (width <= 1) {
             return ""; //$NON-NLS-1$
         }
-        double avgCharWidth = fontMetrics.getAverageCharacterWidth();
+        double avgCharWidth = fontMetrics.getAverageCharWidth();
         double length = t.length();
         if (width < length * avgCharWidth) {
             length = (float) width / avgCharWidth;
