@@ -119,7 +119,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
         // Make index name unique
         int postfix = 1;
-        while (owner.getSchema().indexCache.getObject(monitor, owner.getSchema(), getName()) != null) {
+        while (owner.getSchema().getIndexCache().getObject(monitor, owner.getSchema(), getName()) != null) {
             setName(srcIndex.getName() + "_" + postfix);
             postfix++;
         }

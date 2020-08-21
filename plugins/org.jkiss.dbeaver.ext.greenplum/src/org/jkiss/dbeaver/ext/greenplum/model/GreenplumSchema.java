@@ -35,14 +35,23 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class GreenplumSchema extends PostgreSchema {
-    private GreenplumTableCache greenplumTableCache = new GreenplumTableCache();
-    private GreenplumFunctionsCache greenplumFunctionsCache = new GreenplumFunctionsCache();
 
     public GreenplumSchema(PostgreDatabase owner, String name, JDBCResultSet resultSet) throws SQLException {
         super(owner, name, resultSet);
+    }
+
+    @NotNull
+    @Override
+    protected ProceduresCache createProceduresCache() {
+        return new GreenplumFunctionsCache();
+    }
+
+    @NotNull
+    @Override
+    protected TableCache createTableCache() {
+        return new GreenplumTableCache();
     }
 
     @NotNull
@@ -51,60 +60,13 @@ public class GreenplumSchema extends PostgreSchema {
         return (GreenplumDataSource) super.getDataSource();
     }
 
-    @Override
-    public Collection<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return greenplumTableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
-    }
-
-    @Override
-    public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return greenplumTableCache.getObject(monitor, this, childName);
-    }
-
-    @Override
-    public Collection<GreenplumTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
-                .stream()
-                .filter(table -> !table.isPartition())
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    public Collection<? extends JDBCTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
-        return new ArrayList<>(greenplumTableCache.getTypedObjects(monitor, this, GreenplumExternalTable.class));
-    }
-
-    @Override
-    public TableCache getTableCache() {
-        return this.greenplumTableCache;
-    }
-
     @Association
-    public Collection<PostgreProcedure> getProcedures(DBRProgressMonitor monitor)
-            throws DBException {
-        return greenplumFunctionsCache.getAllObjects(monitor, this);
-    }
-
-    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, String procName)
-            throws DBException {
-        return greenplumFunctionsCache.getObject(monitor, this, procName);
-    }
-
-    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long oid)
-            throws DBException {
-        for (PostgreProcedure proc : greenplumFunctionsCache.getAllObjects(monitor, this)) {
-            if (proc.getObjectId() == oid) {
-                return proc;
-            }
-        }
-        return null;
-    }
-
-    public GreenplumFunctionsCache getGreenplumFunctionsCache() {
-        return this.greenplumFunctionsCache;
+    public Collection<? extends JDBCTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
+        return new ArrayList<>(getTableCache().getTypedObjects(monitor, this, GreenplumExternalTable.class));
     }
 
     public class GreenplumTableCache extends TableCache {
-        protected GreenplumTableCache() {
+        GreenplumTableCache() {
             super();
         }
 

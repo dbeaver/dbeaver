@@ -47,7 +47,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
     private static final Log log = Log.getLog(RedshiftExternalSchema.class);
 
     private String esOptions;
-    public final ExternalTableCache externalTableCache = new ExternalTableCache();
+    private final ExternalTableCache externalTableCache = new ExternalTableCache();
 
     public RedshiftExternalSchema(PostgreDatabase database, String name, String esOptions, ResultSet dbResult) throws SQLException {
         super(database, name, dbResult);
@@ -56,6 +56,10 @@ public class RedshiftExternalSchema extends PostgreSchema {
 
     public RedshiftExternalSchema(PostgreDatabase database, String name, PostgreRole owner) {
         super(database, name, owner);
+    }
+
+    public ExternalTableCache getExternalTableCache() {
+        return externalTableCache;
     }
 
     @Override
