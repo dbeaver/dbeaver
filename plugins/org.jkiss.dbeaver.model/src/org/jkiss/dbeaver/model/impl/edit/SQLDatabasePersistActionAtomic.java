@@ -30,11 +30,11 @@ public class SQLDatabasePersistActionAtomic extends SQLDatabasePersistAction {
     private boolean wasTransactional = false;
 
     public SQLDatabasePersistActionAtomic(String title, String script) {
-        super(title, script, true);
+        this(title, script, true);
     }
 
     public SQLDatabasePersistActionAtomic(String title, String script, boolean makeAtomic) {
-        super(title, script);
+        super(title, script, true);
         this.makeAtomic = makeAtomic;
     }
 
