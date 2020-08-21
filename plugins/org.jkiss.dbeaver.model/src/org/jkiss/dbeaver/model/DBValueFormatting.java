@@ -274,7 +274,7 @@ public final class DBValueFormatting {
                     return (int) (date.getTime()/1000);
                 }
             } else if (hintType == Integer.class) {
-                return (int) (new Date().getTime()/1000);
+                return (int) (date.getTime()/1000);
             } else if (hintType == Float.class) {
                 return Long.valueOf(date.getTime()).floatValue();
             } else if (hintType == Double.class) {
@@ -290,7 +290,7 @@ public final class DBValueFormatting {
                     throw new DBCException("Can't parse numeric value [" + date.toString() + "] using formatter", e);
                 }
                 log.debug("Can't parse numeric value [" + date.toString() + "] using formatter: " + e.getMessage());
-                return 0;
+                return date;
             }
         }
     }
