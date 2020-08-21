@@ -31,6 +31,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,7 +84,7 @@ public class StreamTransferResultSet implements DBCResultSet {
         StreamDataImporterColumnInfo attr = this.attributeMappings.get(index);
 
         Object value = streamRow[index];
-        if (value != null && dateTimeFormat != null && attr.getDataKind() == DBPDataKind.DATETIME) {
+        if (value != null && dateTimeFormat != null && attr.getDataKind() == DBPDataKind.DATETIME && !(value instanceof Date)) {
             // Convert string to timestamp
             try {
                 String strValue = CommonUtils.toString(value);
