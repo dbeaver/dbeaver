@@ -30,11 +30,13 @@ import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
+
 
 import java.util.ArrayList;
 
@@ -49,7 +51,7 @@ public class DashboardAddDialog extends BaseDialog {
     private DashboardDescriptor selectedDashboard;
 
     public DashboardAddDialog(Shell parentShell, DashboardViewConfiguration viewConfiguration) {
-        super(parentShell, "Add Dashboard", null);
+        super(parentShell, UIDashboardMessages.dialog_dashboard_add_title, null);
 
         this.viewConfiguration = viewConfiguration;
     }
@@ -74,8 +76,8 @@ public class DashboardAddDialog extends BaseDialog {
         gd.heightHint = 200;
         table.setLayoutData(gd);
         table.setHeaderVisible(true);
-        UIUtils.createTableColumn(table, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Description");
+        UIUtils.createTableColumn(table, SWT.LEFT, UIDashboardMessages.dialog_dashboard_add_name);
+        UIUtils.createTableColumn(table, SWT.LEFT, UIDashboardMessages.dialog_dashboard_add_description);
 
         dashboardTable.setLabelProvider(new CellLabelProvider() {
             @Override
@@ -103,7 +105,7 @@ public class DashboardAddDialog extends BaseDialog {
         });
         table.addPaintListener(e -> {
             if (table.getItemCount() == 0) {
-                UIUtils.drawMessageOverControl(table, e, "No more dashboards for " + viewConfiguration.getDataSourceContainer().getDriver().getName(), 0);
+                UIUtils.drawMessageOverControl(table, e, UIDashboardMessages.dialog_dashboard_add_no_more_dashbord + viewConfiguration.getDataSourceContainer().getDriver().getName(), 0);
             }
         });
         dashboardTable.setContentProvider(new ListContentProvider());
@@ -122,7 +124,7 @@ public class DashboardAddDialog extends BaseDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         ((GridData)parent.getLayoutData()).grabExcessHorizontalSpace = true;
 
-        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, "Manage ...", false);
+        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_add_button_manage, false);
         ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
         ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
         managerButton.addSelectionListener(new SelectionAdapter() {
@@ -132,7 +134,7 @@ public class DashboardAddDialog extends BaseDialog {
             }
         });
 
-        createButton(parent, IDialogConstants.OK_ID, "Add", true).setEnabled(false);
+        createButton(parent, IDialogConstants.OK_ID, UIDashboardMessages.dialog_dashboard_add_button_add, true).setEnabled(false);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
