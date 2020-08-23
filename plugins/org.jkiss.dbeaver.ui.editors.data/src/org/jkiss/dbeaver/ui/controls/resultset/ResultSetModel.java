@@ -800,6 +800,7 @@ public class ResultSetModel {
         // Refresh all rows
         this.curRows = new ArrayList<>();
         this.totalRowCount = null;
+        this.singleSourceEntity = null;
 
         this.hasData = false;
     }
