@@ -1466,8 +1466,6 @@ public class ResultSetViewer extends Viewer
 
     public void updateEditControls()
     {
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
         fireResultSetChange();
         updateToolbar();
         if (presentationSwitchFolder != null) {
