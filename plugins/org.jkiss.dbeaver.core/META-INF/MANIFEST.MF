@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 7.1.5.qualifier
-Bundle-Release-Date: 20200817
+Bundle-Version: 7.2.0.qualifier
+Bundle-Release-Date: 20200831
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
