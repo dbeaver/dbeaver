@@ -287,7 +287,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
-        if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
+        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted()) {
             superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
@@ -372,7 +372,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
+        if (isPersisted() && subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 String sql = "SELECT i.*,c.relnamespace " +
