@@ -196,7 +196,7 @@ public class GisTransformUtils {
                 return (DBGeometry) convertedValue;
             }
         } catch (DBCException e) {
-            log.debug("Error trandforming geometry value", e);
+            log.debug("Error transforming geometry value", e);
         }
 
         return null;
