@@ -122,7 +122,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public void setPrecision(Integer precision) {
         super.setPrecision(precision);
         if (getDataKind() == DBPDataKind.STRING) {
-            this.maxLength = precision;
+            this.maxLength = CommonUtils.toInt(precision);
         }
     }
 
