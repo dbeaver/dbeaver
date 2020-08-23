@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.phoenix;singleton:=true
-Bundle-Version: 1.0.108.qualifier
-Bundle-Release-Date: 20200817
+Bundle-Version: 1.0.109.qualifier
+Bundle-Release-Date: 20200831
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
