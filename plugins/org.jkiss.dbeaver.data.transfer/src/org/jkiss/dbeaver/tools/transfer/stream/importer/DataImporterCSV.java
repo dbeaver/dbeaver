@@ -54,7 +54,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
     enum HeaderPosition {
         none,
         top,
-        both
     }
 
     public DataImporterCSV() {
