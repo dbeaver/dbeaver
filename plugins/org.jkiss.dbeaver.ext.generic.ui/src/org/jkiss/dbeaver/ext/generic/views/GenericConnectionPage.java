@@ -343,7 +343,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
             if (portText != null) {
                 if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
-                } else {
+                } else if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(connectionInfo.getHostPort());
                 }
             }
