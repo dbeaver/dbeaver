@@ -906,7 +906,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
         }
 
-
+        boolean newMappings = false;
         {
             // Load columns model. Update it only if mapping have different set of source columns
             // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
@@ -943,11 +943,17 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                 }
                 model.add(mapping);
+                newMappings = mapping.getMappingType() == DatabaseMappingType.unspecified;
             }
+
             mappingViewer.setInput(model);
             if (!model.isEmpty()) {
                 // Select first element
                 mappingViewer.setSelection(new StructuredSelection(model.get(0)));
+            }
+
+            if (newMappings) {
+                autoAssignMappings();
             }
 
             Tree table = mappingViewer.getTree();
