@@ -618,7 +618,8 @@ public final class SQLUtils {
         }
         SQLDialect sqlDialect = dataSource.getSQLDialect();
 
-        switch (attribute.getDataKind()) {
+        DBPDataKind dataKind = attribute.getDataKind();
+        switch (dataKind) {
             case BOOLEAN:
             case NUMERIC:
                 if (sqlDialect != null) {
@@ -638,7 +639,7 @@ public final class SQLUtils {
                 if (sqlDialect != null) {
                     strValue = sqlDialect.escapeString(strValue);
                 }
-                if (!(strValue.startsWith("'") && strValue.endsWith("'"))) {
+                if (dataKind == DBPDataKind.STRING || !(strValue.startsWith("'") && strValue.endsWith("'"))) {
                     strValue = '\'' + strValue + '\'';
                 }
                 return sqlDialect.getTypeCastClause(attribute, strValue);
