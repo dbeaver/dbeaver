@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Data source provider
  */
-public interface DBPDataSourceProvider extends DBPObject
+public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObject
 {
     long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
@@ -58,14 +58,6 @@ public interface DBPDataSourceProvider extends DBPObject
         DBPDriver driver,
         DBPConnectionConfiguration connectionInfo)
         throws DBException;
-
-    /**
-     * Constructs connection URL
-     * @param driver driver descriptor
-     * @param connectionInfo connection info
-     * @return valid connection URL or null (if URLs not supported by driver)
-     */
-    String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo);
 
     /**
      * Opens new data source
