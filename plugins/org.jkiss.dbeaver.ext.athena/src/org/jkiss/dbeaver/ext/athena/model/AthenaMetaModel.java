@@ -46,6 +46,8 @@ import java.util.regex.Pattern;
 public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" line ([0-9]+)\\:([0-9]+)");
+    private static final String TABLE_DDL = "SHOW CREATE TABLE ";
+    private static final String VIEW_DDL = "SHOW CREATE VIEW ";
 
     public AthenaMetaModel() {
     }
@@ -61,20 +63,7 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Athena object DDL")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE TABLE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1)).append("\n");
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
-        }
+        return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
     }
 
     @Override
@@ -84,7 +73,7 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        return getTableDDL(monitor, sourceObject, options);
+        return getObjectDDL(monitor, sourceObject, options, VIEW_DDL);
     }
 
     @Override
@@ -100,5 +89,22 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
             }
         }
         return null;
+    }
+
+    private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Athena object DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                ddlStatement + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1)).append("\n");
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, sourceObject.getDataSource());
+        }
     }
 }
