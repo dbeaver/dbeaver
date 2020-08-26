@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
@@ -32,7 +33,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     public DashboardViewConfigDialog(Shell shell, DashboardViewConfiguration viewConfiguration)
     {
-        super(shell, "Dashboard [" + viewConfiguration.getDataSourceContainer().getName() + " / " + viewConfiguration.getViewId() + "]", null);
+        super(shell, UIDashboardMessages.dashboard_view_config_dialog_title + " [" + viewConfiguration.getDataSourceContainer().getName() + " / " + viewConfiguration.getViewId() + "]", null);
 
         this.viewConfiguration = viewConfiguration;
     }
@@ -49,9 +50,14 @@ public class DashboardViewConfigDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
 
         {
-            Group viewGroup = UIUtils.createControlGroup(composite, "View configuration", 2, GridData.FILL_HORIZONTAL, 0);
+            Group viewGroup = UIUtils.createControlGroup(
+            		composite,
+            		UIDashboardMessages.dashboard_view_config_dialog_group_configuration_title, 2, GridData.FILL_HORIZONTAL, 0);
 
-            Button connectOnActivationCheck = UIUtils.createCheckbox(viewGroup, "Connect to database on activation", "Open database connection on view activation", viewConfiguration.isOpenConnectionOnActivate(), 2);
+            Button connectOnActivationCheck = UIUtils.createCheckbox(
+            		viewGroup,
+            		UIDashboardMessages.dashboard_view_config_dialog_group_configuration_connect_on_activation_checkbox,
+            		UIDashboardMessages.dashboard_view_config_dialog_group_configuration_connect_on_activation_checkbox_description, viewConfiguration.isOpenConnectionOnActivate(), 2);
             connectOnActivationCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -60,7 +66,10 @@ public class DashboardViewConfigDialog extends BaseDialog {
                     }
                 });
             //connectOnActivationCheck.setEnabled(false);
-            Button separateConnectionCheck = UIUtils.createCheckbox(viewGroup, "Use separate connection", "Open special connection for charts data reading. Otherwise use main datasource connection", viewConfiguration.isUseSeparateConnection(), 2);
+            Button separateConnectionCheck = UIUtils.createCheckbox(
+            		viewGroup,
+            		UIDashboardMessages.dashboard_view_config_dialog_group_configuration_separate_connection_checkbox,
+            		UIDashboardMessages.dashboard_view_config_dialog_group_configuration_separate_connection_checkbox_description, viewConfiguration.isUseSeparateConnection(), 2);
             separateConnectionCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -83,7 +92,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, "Manage ...", false);
+        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dashboard_view_config_dialog_manage_button, false);
         ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
         ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
         managerButton.addSelectionListener(new SelectionAdapter() {

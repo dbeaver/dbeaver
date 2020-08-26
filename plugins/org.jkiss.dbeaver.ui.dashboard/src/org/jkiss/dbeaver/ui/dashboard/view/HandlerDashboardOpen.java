@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 public class HandlerDashboardOpen extends AbstractDataSourceHandler {
@@ -34,7 +35,9 @@ public class HandlerDashboardOpen extends AbstractDataSourceHandler {
             dataSourceContainer = getActiveDataSourceContainer(event, true);
         }
         if (dataSourceContainer == null) {
-            DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard - no database connection selected");
+            DBWorkbench.getPlatformUI().showError(
+            		UIDashboardMessages.handler_dashboard_open_exception_title,
+            		UIDashboardMessages.handler_dashboard_open_exception_message);
             return null;
         }
         DashboardView.openView(workbenchWindow, dataSourceContainer);

@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
@@ -40,7 +41,7 @@ public class DashboardItemViewDialog extends BaseDialog {
     private final DashboardItem sourceItem;
 
     public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
-        super(parentPart.getSite().getShell(), "View Dashboard", null);
+        super(parentPart.getSite().getShell(), UIDashboardMessages.dashboard_item_view_dialog_title, null);
 
         this.parentPart = parentPart;
         this.sourceItem = sourceItem;

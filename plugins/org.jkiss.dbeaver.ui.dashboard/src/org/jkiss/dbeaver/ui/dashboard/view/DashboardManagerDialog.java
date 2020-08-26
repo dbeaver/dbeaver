@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -57,7 +58,7 @@ public class DashboardManagerDialog extends BaseDialog {
     private TreeViewer treeViewer;
 
     public DashboardManagerDialog(Shell shell) {
-        super(shell, "Manage dashboards", null);
+        super(shell, UIDashboardMessages.dashboard_manager_dialog_title, null);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class DashboardManagerDialog extends BaseDialog {
             gd.widthHint = 300;
             treeViewer.getControl().setLayoutData(gd);
             treeViewer.getTree().setHeaderVisible(true);
-            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, "Name");
+            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, UIDashboardMessages.dashboard_manager_dialog_table_name_column);
             //UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, "Description");
 
             treeViewer.setContentProvider(new TreeContentProvider() {
@@ -172,7 +173,7 @@ public class DashboardManagerDialog extends BaseDialog {
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             buttonBar.setLayoutData(gd);
 
-            newButton = UIUtils.createPushButton(buttonBar, "New Dashboard ...", null, new SelectionAdapter() {
+            newButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dashboard_manager_dialog_new_button, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     createDashboard();
@@ -180,7 +181,7 @@ public class DashboardManagerDialog extends BaseDialog {
             });
             newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            copyButton = UIUtils.createPushButton(buttonBar, "Copy", null, new SelectionAdapter() {
+            copyButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dashboard_manager_dialog_copy_button, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     copyDashboard();
@@ -188,7 +189,7 @@ public class DashboardManagerDialog extends BaseDialog {
             });
             copyButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            editButton = UIUtils.createPushButton(buttonBar, "Edit ...", null, new SelectionAdapter() {
+            editButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dashboard_manager_dialog_edit_button, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     editDashboard();
@@ -196,7 +197,7 @@ public class DashboardManagerDialog extends BaseDialog {
             });
             editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            deleteButton = UIUtils.createPushButton(buttonBar, "Delete", null, new SelectionAdapter() {
+            deleteButton = UIUtils.createPushButton(buttonBar, UIDashboardMessages.dashboard_manager_dialog_delete_button, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     deleteDashboard();
@@ -205,7 +206,7 @@ public class DashboardManagerDialog extends BaseDialog {
             deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
-        UIUtils.createInfoLabel(dialogArea, "Predefined dashboards are read-only. But you can copy them.");
+        UIUtils.createInfoLabel(dialogArea, UIDashboardMessages.dashboard_manager_dialog_info_label);
 
         this.updateButtons();
         return group;
@@ -276,8 +277,8 @@ public class DashboardManagerDialog extends BaseDialog {
         }
         if (UIUtils.confirmAction(
             getShell(),
-            "Delete dashboard",
-            "Are you sure you want to delete dashboard '" + selectedDashboard.getName() + "'?"))
+            UIDashboardMessages.dashboard_manager_dialog_delete_button_dialog_title,
+            UIDashboardMessages.dashboard_manager_dialog_delete_button_dialog_message + " '" + selectedDashboard.getName() + "'?"))
         {
             DashboardRegistry.getInstance().removeDashboard(selectedDashboard);
             selectedDashboard = null;
