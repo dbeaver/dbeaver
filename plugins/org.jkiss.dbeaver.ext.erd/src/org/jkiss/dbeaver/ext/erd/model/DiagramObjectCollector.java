@@ -191,6 +191,7 @@ public class DiagramObjectCollector {
 
         try {
             UIUtils.runInProgressService(monitor -> {
+                monitor.beginTask("Collect diagram objects", 1);
                 DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
                 collector.setShowViews(forceShowViews);
                 //boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
@@ -201,6 +202,7 @@ public class DiagramObjectCollector {
                     throw new InvocationTargetException(e);
                 }
                 entities.addAll(collector.getDiagramEntities());
+                monitor.done();
             });
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
