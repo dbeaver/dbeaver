@@ -32,7 +32,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     public DashboardViewConfigDialog(Shell shell, DashboardViewConfiguration viewConfiguration)
     {
-        super(shell, "Dashboard [" + viewConfiguration.getDataSourceContainer().getName() + " / " + viewConfiguration.getViewId() + "]", null);
+        super(shell, "Dashboard [" + viewConfiguration.getDataSourceContainer().getName() + "]", null);
 
         this.viewConfiguration = viewConfiguration;
     }
