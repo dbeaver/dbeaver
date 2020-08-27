@@ -56,10 +56,6 @@ public class DashboardViewConfiguration {
         loadSettings();
     }
 
-    public String getViewId() {
-        return viewId;
-    }
-
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
@@ -197,7 +193,7 @@ public class DashboardViewConfiguration {
                 log.error("Can't create view config folder " + viewConfigFolder.getAbsolutePath());
             }
         }
-        return new File(viewConfigFolder, "view-" + viewId + ".xml");
+        return new File(viewConfigFolder, "view-" + viewId.replace("/", "_") + ".xml");
     }
 
 
