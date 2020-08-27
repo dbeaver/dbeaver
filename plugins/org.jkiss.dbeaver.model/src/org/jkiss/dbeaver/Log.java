@@ -24,9 +24,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -214,6 +216,20 @@ public class Log
             debugWriter.flush();
             for (Listener listener : listeners) {
                 listener.loggedMessage(message, t);
+            }
+        }
+        if (t != null) {
+            // Log nested exceptions
+            for (Throwable ex = t; ex != null; ex = ex.getCause()) {
+                if (ex instanceof SQLException) {
+                    // Log all chained SQL exceptions
+                    for (SQLException error = ((SQLException) ex).getNextException(); error != null; error = error.getNextException()) {
+                        String chainedMessage = error.getMessage();
+                        if (!CommonUtils.isEmpty(chainedMessage)) {
+                            debug(chainedMessage.trim());
+                        }
+                    }
+                }
             }
         }
     }
