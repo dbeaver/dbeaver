@@ -37,10 +37,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -322,8 +319,10 @@ public class ResultSetViewer extends Viewer
                 });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
-                this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
+                Composite trControl = new Composite(panelFolder, SWT.NONE);
+                trControl.setLayout(new FillLayout());
+                ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
+                this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -3208,21 +3207,21 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelActions() {
-        panelToolBar.getControl().setRedraw(false);
+        ToolBar toolBar = panelToolBar.getControl();
+        toolBar.setRedraw(false);
         IResultSetPanel visiblePanel = getVisiblePanel();
         panelToolBar.removeAll();
         if (visiblePanel != null) {
             visiblePanel.contributeActions(panelToolBar);
         }
         addDefaultPanelActions();
-        panelToolBar.update(true);
+        panelToolBar.update(false);
 
         if (this.panelFolder != null) {
-            ToolBar toolBar = panelToolBar.getControl();
-            Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            Point toolBarSize = toolBar.getParent().computeSize(SWT.DEFAULT, SWT.DEFAULT);
             this.panelFolder.setTabHeight(toolBarSize.y);
         }
-        panelToolBar.getControl().setRedraw(true);
+        toolBar.setRedraw(true);
     }
 
     @Override
