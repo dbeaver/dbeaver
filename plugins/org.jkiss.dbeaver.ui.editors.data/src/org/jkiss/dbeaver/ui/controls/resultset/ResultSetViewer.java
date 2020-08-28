@@ -3208,6 +3208,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelActions() {
+        panelToolBar.getControl().setRedraw(false);
         IResultSetPanel visiblePanel = getVisiblePanel();
         panelToolBar.removeAll();
         if (visiblePanel != null) {
@@ -3221,6 +3222,7 @@ public class ResultSetViewer extends Viewer
             Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
             this.panelFolder.setTabHeight(toolBarSize.y);
         }
+        panelToolBar.getControl().setRedraw(true);
     }
 
     @Override
