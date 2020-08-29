@@ -115,14 +115,6 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         try {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
-            // Commit changes
-            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
-                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
-                    txnManager.commit(session);
-                } catch (DBCException e1) {
-                    log.warn("Can't commit script transaction", e1);
-                }
-            }
             // Clear commands. We can't undo after save
             clearCommandQueues();
         } catch (Throwable e) {
