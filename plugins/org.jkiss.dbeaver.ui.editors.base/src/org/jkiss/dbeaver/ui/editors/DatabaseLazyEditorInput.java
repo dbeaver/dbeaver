@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -203,9 +202,6 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
         // Get the node path.
         if (project != null) {
             dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
-        }
-        if (dataSourceContainer == null) {
-            dataSourceContainer = DBUtils.findDataSource(dataSourceId);
         }
         if (dataSourceContainer == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
