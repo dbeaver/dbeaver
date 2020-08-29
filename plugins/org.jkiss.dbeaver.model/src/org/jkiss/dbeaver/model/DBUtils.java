@@ -1982,8 +1982,10 @@ public final class DBUtils {
     }
 
     /**
-     * Find data source in all available registries
+     * Find data source in all available registries.
+     * Deprecated. Triggering all projects open may cause issues (especially when they are secured)
      */
+    @Deprecated
     public static DBPDataSourceContainer findDataSource(String dataSourceId) {
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         for (DBPProject project : workspace.getProjects()) {

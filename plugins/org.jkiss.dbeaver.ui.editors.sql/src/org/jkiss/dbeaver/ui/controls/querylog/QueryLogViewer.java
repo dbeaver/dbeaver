@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -907,8 +908,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
-                    String containerId = stmtExec.getStatement().getSession().getContainerId();
-                    dsContainer = DBUtils.findDataSource(containerId);
+                    QMMSessionInfo session = stmtExec.getStatement().getSession();
+                    DBPProject project = session.getProject();
+                    String containerId = session.getContainerId();
+                    if (project != null) {
+                        dsContainer = project.getDataSourceRegistry().getDataSource(containerId);
+                    } else {
+                        dsContainer = DBUtils.findDataSource(containerId);
+                    }
                 }
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {

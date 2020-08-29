@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -27,6 +28,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class QMMSessionInfo extends QMMObject {
 
+    private final DBPProject project;
     private final String containerId;
     private final String driverId;
     private String containerName;
@@ -43,8 +45,8 @@ public class QMMSessionInfo extends QMMObject {
     private QMMTransactionInfo transaction;
     //private Throwable stack;
 
-    public QMMSessionInfo(DBCExecutionContext context, boolean transactional)
-    {
+    public QMMSessionInfo(DBCExecutionContext context, boolean transactional) {
+        this.project = context.getDataSource().getContainer().getProject();
         this.containerId = context.getDataSource().getContainer().getId();
         this.driverId = context.getDataSource().getContainer().getDriver().getId();
 
@@ -65,6 +67,7 @@ public class QMMSessionInfo extends QMMObject {
 
     public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String instanceID, String contextName, boolean transactional) {
         super(openTime, closeTime);
+        this.project = null;
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
@@ -239,8 +242,11 @@ public class QMMSessionInfo extends QMMObject {
         return exec;
     }
 
-    public String getContainerId()
-    {
+    public DBPProject getProject() {
+        return project;
+    }
+
+    public String getContainerId() {
         return containerId;
     }
 
