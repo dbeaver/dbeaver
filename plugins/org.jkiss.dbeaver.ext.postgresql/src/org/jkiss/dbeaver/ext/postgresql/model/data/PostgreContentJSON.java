@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
@@ -36,9 +36,9 @@ import java.sql.Types;
  */
 public class PostgreContentJSON extends JDBCContentChars {
 
-    public PostgreContentJSON(DBPDataSource dataSource, String json)
+    public PostgreContentJSON(DBCExecutionContext executionContext, String json)
     {
-        super(dataSource, json);
+        super(executionContext, json);
     }
 
     private PostgreContentJSON(PostgreContentJSON copyFrom) {

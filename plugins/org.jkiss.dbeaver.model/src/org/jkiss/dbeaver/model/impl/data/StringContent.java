@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -39,8 +39,8 @@ public class StringContent extends AbstractContent {
 
     private StringContentStorage storage;
 
-    public StringContent(DBPDataSource dataSource, String data) {
-        super(dataSource);
+    public StringContent(DBCExecutionContext executionContext, String data) {
+        super(executionContext);
         this.storage = new StringContentStorage(data);
     }
 
