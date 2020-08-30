@@ -225,9 +225,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
             new AbstractJob("Load reference keys") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
+                    monitor.beginTask("Load references", allEntities.size());
                     try {
                         List<ReferenceKey> refs = new ArrayList<>();
                         for (DBSEntity entity : allEntities) {
+                            monitor.subTask(entity.getName());
                             if (entity instanceof DBVEntity) {
                                 // Skip virtual entities
                                 continue;
@@ -257,6 +259,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                     }
                                 }
                             }
+                            monitor.worked(1);
                         }
                         synchronized (referenceKeys) {
                             referenceKeys.clear();
@@ -284,6 +287,8 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     } catch (DBException e) {
                         log.debug("Error reading references", e);
                         // Do not show errors. References or FKs may be unsupported by current database
+                    } finally {
+                        monitor.done();
                     }
                     return Status.OK_STATUS;
                 }
