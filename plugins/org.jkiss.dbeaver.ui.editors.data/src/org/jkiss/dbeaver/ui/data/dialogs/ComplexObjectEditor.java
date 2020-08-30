@@ -652,10 +652,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                        monitor.beginTask("Read object reference", 1);
                         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value")) {
                             result = reference.getReferencedObject(session);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
                         }
                     }
                 };

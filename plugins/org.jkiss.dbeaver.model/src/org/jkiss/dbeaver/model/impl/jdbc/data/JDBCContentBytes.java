@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,19 +48,19 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     private byte[] originalData;
     private byte[] data;
 
-    public JDBCContentBytes(DBPDataSource dataSource) {
-        super(dataSource);
+    public JDBCContentBytes(DBCExecutionContext executionContext) {
+        super(executionContext);
         this.data = this.originalData = null;
     }
 
-    public JDBCContentBytes(DBPDataSource dataSource, byte[] data) {
-        super(dataSource);
+    public JDBCContentBytes(DBCExecutionContext executionContext, byte[] data) {
+        super(executionContext);
         this.data = this.originalData = data;
     }
 
-    public JDBCContentBytes(DBPDataSource dataSource, String data) {
-        super(dataSource);
-        this.data = this.originalData = DBValueFormatting.getBinaryPresentation(dataSource).toBytes(data);
+    public JDBCContentBytes(DBCExecutionContext executionContext, String data) {
+        super(executionContext);
+        this.data = this.originalData = DBValueFormatting.getBinaryPresentation(executionContext.getDataSource()).toBytes(data);
     }
 
     private JDBCContentBytes(JDBCContentBytes copyFrom) {
@@ -99,7 +99,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public String getCharset()
     {
-        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
+        return DBValueFormatting.getDefaultBinaryFileEncoding(executionContext.getDataSource());
     }
 
     @Override
@@ -208,7 +208,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         if (data == null) {
             return null;
         }
-        return DBValueFormatting.formatBinaryString(dataSource, data, format);
+        return DBValueFormatting.formatBinaryString(executionContext.getDataSource(), data, format);
     }
 
     @Override

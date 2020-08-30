@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
 
-    protected JDBCContentLOB(DBPDataSource dataSource)
+    protected JDBCContentLOB(DBCExecutionContext dataSource)
     {
         super(dataSource);
     }

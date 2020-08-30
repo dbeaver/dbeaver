@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * AbstractContent
@@ -28,22 +29,22 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
  */
 public abstract class AbstractContent implements DBDContent {
 
-    protected final DBPDataSource dataSource;
+    protected final DBCExecutionContext executionContext;
     protected boolean modified = false;
 
-    protected AbstractContent(DBPDataSource dataSource)
+    protected AbstractContent(DBCExecutionContext executionContext)
     {
-        this.dataSource = dataSource;
+        this.executionContext = executionContext;
     }
 
     public AbstractContent(AbstractContent copyFrom) {
-        this.dataSource = copyFrom.dataSource;
+        this.executionContext = copyFrom.executionContext;
         this.modified = copyFrom.modified;
     }
 
     @Override
     public DBPDataSource getDataSource() {
-        return dataSource;
+        return executionContext.getDataSource();
     }
 
     @Override
