@@ -2206,7 +2206,7 @@ public class ResultSetViewer extends Viewer
     {
         return
             getReadOnlyStatus() == null &&
-            model.isSingleSource() &&
+            model.getSingleSource() instanceof DBSDataManipulator &&
             model.getVisibleAttributeCount() > 0;
     }
 
