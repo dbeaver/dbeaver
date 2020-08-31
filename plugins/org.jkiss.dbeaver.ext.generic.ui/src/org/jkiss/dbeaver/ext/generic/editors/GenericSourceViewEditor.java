@@ -17,21 +17,23 @@
 
 package org.jkiss.dbeaver.ext.generic.editors;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
 /**
  * GenericSourceViewEditor
  */
-public class GenericSourceViewEditor extends SQLSourceViewer<GenericTableBase> {
+public class GenericSourceViewEditor<T extends DBPScriptObject & DBSObject> extends SQLSourceViewer<T> {
 
     public GenericSourceViewEditor() {
     }
 
     @Override
     protected boolean isReadOnly() {
-        return false;
+        return !(getSourceObject() instanceof DBSObjectWithScript);
     }
 
     @Override
