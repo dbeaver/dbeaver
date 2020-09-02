@@ -47,6 +47,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
     private boolean transformed;
+    private boolean disableTransformers;
 
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
@@ -162,6 +163,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public boolean isTransformed() {
         return transformed;
+    }
+
+    public void disableTransformers(boolean disableTransformers) {
+        this.disableTransformers = disableTransformers;
     }
 
     @NotNull
@@ -299,6 +304,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
+        if (disableTransformers) {
+            return;
+        }
         DBSAttributeBase attribute = getAttribute();
         final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
