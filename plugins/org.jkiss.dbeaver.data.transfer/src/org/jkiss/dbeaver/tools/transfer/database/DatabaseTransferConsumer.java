@@ -159,11 +159,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         DBDAttributeBinding[] rsAttributes;
         boolean dynamicTarget = targetContext.getDataSource().getInfo().isDynamicMetadata();
+        DBSDataContainer sourceObject = getSourceObject();
         if (dynamicTarget) {
             // Document-based datasource
-            rsAttributes = DBUtils.getAttributeBindings(session, getSourceObject(), resultSet.getMeta());
+            rsAttributes = DBUtils.getAttributeBindings(session, sourceObject, resultSet.getMeta());
         } else {
-            rsAttributes = DBUtils.makeLeafAttributeBindings(session, getSourceObject(), resultSet);
+            rsAttributes = DBUtils.makeLeafAttributeBindings(session, sourceObject, resultSet);
         }
         columnMappings = new ColumnMapping[rsAttributes.length];
         sourceBindings = rsAttributes;
@@ -191,7 +192,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
                 }
-            } else if (targetObject == null || !dynamicTarget) {
+            } else if (targetObject == null || !dynamicTarget || !(sourceObject instanceof DBSDocumentContainer)) {
                 columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
@@ -203,7 +204,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         columnMapping.targetAttr = new DatabaseMappingAttribute(containerMapping, columnMapping.sourceAttr);
                         columnMapping.targetAttr.setTarget(docAttribute);
                     } catch (DBException e) {
-                        throw new DBCException("");
+                        throw new DBCException("Error getting target document attribute", e);
                     }
                 } else {
                     throw new DBCException("Can not transfer data into dynamic database which doesn't support documents");
@@ -494,10 +495,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         return true;
                     case existing:
                         boolean hasNewObjects = false;
-                        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                            if (attr.getMappingType() == DatabaseMappingType.create) {
-                                createTargetAttribute(session, attr);
-                                hasNewObjects = true;
+                        if (!(containerMapping.getTarget() instanceof DBSDocumentContainer)) {
+                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                                if (attr.getMappingType() == DatabaseMappingType.create) {
+                                    createTargetAttribute(session, attr);
+                                    hasNewObjects = true;
+                                }
                             }
                         }
                         return hasNewObjects;

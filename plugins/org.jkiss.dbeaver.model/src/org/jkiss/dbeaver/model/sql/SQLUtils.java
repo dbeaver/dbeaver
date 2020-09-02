@@ -973,7 +973,7 @@ public final class SQLUtils {
             return name.split(Pattern.quote(nameSeparator));
         }
         if (!name.contains(nameSeparator)) {
-            return new String[] { name };
+            return new String[] { DBUtils.getUnQuotedIdentifier(name, quoteStrings) };
         }
         List<String> nameList = new ArrayList<>();
         while (!name.isEmpty()) {
@@ -988,7 +988,12 @@ public final class SQLUtils {
                         String partName = keepQuotes ?
                             name.substring(0, endPos + endQuote.length()) :
                             name.substring(startQuote.length(), endPos);
-                        nameList.add(partName);
+                        while (partName.endsWith(nameSeparator)) {
+                            partName = partName.substring(0, partName.length() - 1);
+                        }
+                        if (!partName.isEmpty()) {
+                            nameList.add(partName);
+                        }
                         name = name.substring(endPos + endQuote.length()).trim();
                         hadQuotedPart = true;
                         break;
@@ -1009,7 +1014,7 @@ public final class SQLUtils {
                 name = name.substring(nameSeparator.length()).trim();
             }
         }
-        return nameList.toArray(new String[nameList.size()]);
+        return nameList.toArray(new String[0]);
     }
 
     public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
