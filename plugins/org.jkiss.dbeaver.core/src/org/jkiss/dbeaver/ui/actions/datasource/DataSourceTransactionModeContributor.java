@@ -183,7 +183,10 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
 
         @Override
         public boolean isChecked() {
-            return smartTransactionManager.isSmartAutoCommit();
+             if (smartTransactionManager != null) {
+                 return smartTransactionManager.isSmartAutoCommit();
+             }
+             return false;
         }
 
         @Override
