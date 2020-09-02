@@ -191,7 +191,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
                 }
-            } else if (!dynamicTarget) {
+            } else if (targetObject == null || !dynamicTarget) {
                 columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
