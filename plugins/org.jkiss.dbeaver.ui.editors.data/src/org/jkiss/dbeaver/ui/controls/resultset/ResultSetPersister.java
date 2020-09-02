@@ -1015,6 +1015,7 @@ class ResultSetPersister {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Refresh updated rows", 1);
             try {
                 final Object[][] refreshValues = new Object[rows.size()][];
 
@@ -1080,6 +1081,8 @@ class ResultSetPersister {
                         log.warn("Error rolling back after data refresh failure", ex);
                     }
                 }
+            } finally {
+                monitor.done();
             }
             return Status.OK_STATUS;
         }
