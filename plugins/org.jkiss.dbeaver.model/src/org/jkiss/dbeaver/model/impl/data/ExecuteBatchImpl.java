@@ -72,9 +72,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     @NotNull
     @Override
-    public DBCStatistics execute(@NotNull DBCSession session) throws DBCException
+    public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException
     {
-        return processBatch(session, null, Collections.emptyMap());
+        return processBatch(session, null, options);
     }
 
     @NotNull
@@ -104,7 +104,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             }
         }
 
-        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement;
+        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && Boolean.FALSE.equals(options.get(DBSDataManipulator.OPTION_DISABLE_IMPORT_BATCHES));
         if (values.size() <= 1) {
             useBatch = false;
         }
@@ -206,6 +206,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         } finally {
             if (reuseStatement && statement != null) {
                 statement.close();
+            }
+            if (!useBatch && !values.isEmpty()) {
+                values.clear();
             }
         }
 
