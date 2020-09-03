@@ -306,24 +306,29 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     executeBatch.execute(targetSession, options);
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
-                    if (!ignoreErrors) {
-                        switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                            DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, disableUsingBatches)) {
-                            case STOP:
-                                // just stop execution
-                                throw new DBCException("Can't insert row", e);
-                            case RETRY:
-                                // do it again
-                                retryInsert = true;
-                                break;
-                            case IGNORE:
-                                // Just do nothing and go to the next row
-                                retryInsert = false;
-                                break;
-                            case IGNORE_ALL:
-                                ignoreErrors = true;
-                                retryInsert = false;
-                                break;
+                    if (!disableUsingBatches) {
+                        DBWorkbench.getPlatformUI().showError("Error inserting row", "Import canceled. Use setting \"Disable batches usage\" to import row by row and see all import errors", e);
+                        throw new DBCException("Can't insert row", e);
+                    } else {
+                        if (!ignoreErrors) {
+                            switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
+                                    DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, disableUsingBatches)) {
+                                case STOP:
+                                    // just stop execution
+                                    throw new DBCException("Can't insert row", e);
+                                case RETRY:
+                                    // do it again
+                                    retryInsert = true;
+                                    break;
+                                case IGNORE:
+                                    // Just do nothing and go to the next row
+                                    retryInsert = false;
+                                    break;
+                                case IGNORE_ALL:
+                                    ignoreErrors = true;
+                                    retryInsert = false;
+                                    break;
+                            }
                         }
                     }
                 }
