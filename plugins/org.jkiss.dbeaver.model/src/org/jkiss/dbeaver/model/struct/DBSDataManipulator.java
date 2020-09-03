@@ -40,11 +40,13 @@ public interface DBSDataManipulator extends DBSDataContainer {
     int DATA_DELETE         = 1 << 18;
     int DATA_TRUNCATE       = 1 << 19;
 
+    String OPTION_DISABLE_IMPORT_BATCHES = "import.disableBatches";//$NON-NLS-1$
+
     interface ExecuteBatch extends AutoCloseable {
         void add(@NotNull Object[] attributeValues) throws DBCException;
 
         @NotNull
-        DBCStatistics execute(@NotNull DBCSession session) throws DBCException;
+        DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException;
 
         void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException;
 

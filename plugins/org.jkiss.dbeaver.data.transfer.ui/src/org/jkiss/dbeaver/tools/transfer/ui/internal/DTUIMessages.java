@@ -49,6 +49,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_final_message_checkbox_label;
 	public static String database_consumer_wizard_truncate_checkbox_title;
 	public static String database_consumer_wizard_truncate_checkbox_question;
+	public static String database_consumer_wizard_disable_import_batches_label;
+	public static String database_consumer_wizard_disable_import_batches_description;
 	
 	public static String columns_mapping_dialog_shell_text;
 	public static String columns_mapping_dialog_composite_label_text_source_container;
