@@ -590,7 +590,7 @@ public abstract class LightGrid extends Canvas {
                         int normalWidth = 0;
                         List<GridColumn> fatColumns = new ArrayList<>();
                         for (GridColumn curColumn : columns) {
-                            if (curColumn.getWidth() > maxColumnDefWidth) {
+                            if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumn.getWidth() > maxColumnDefWidth) {
                                 fatColumns.add(curColumn);
                             } else {
                                 normalWidth += curColumn.getWidth();

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -56,6 +57,9 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 DBDCollection collection = (DBDCollection) value;
                 if (collection.getItemCount() > 0) {
                     value = collection.getItem(0);
+                } else {
+                    // Skip empty collections - we can't get any info out of them
+                    continue;
                 }
             }
 
@@ -136,6 +140,11 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 nestedBinding.lateBinding(session, fakeRows);
             }
         }
+
+        // Remove empty collection attributes from nested bindings
+        // They can't be used anyway
+        nestedBindings.removeIf(
+            attribute -> attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings()));
 
         if (!nestedBindings.isEmpty()) {
             topAttribute.setNestedBindings(nestedBindings);
