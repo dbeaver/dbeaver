@@ -283,7 +283,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         executeBatch.add(rowValues);
 
         rowsExported++;
-        // No need. mnitor is incremented in data reader
+        // No need. monitor is incremented in data reader
         //session.getProgressMonitor().worked(1);
 
         insertBatch(false);
@@ -296,7 +296,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         Map<String, Object> options = new HashMap<>();
         boolean disableUsingBatches = settings.isDisableUsingBatches();
-        options.put(DBSDataManipulator.OPTION_DISABLE_IMPORT_BATCHES, disableUsingBatches);
+        options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
         if ((needCommit || disableUsingBatches) && executeBatch != null) {
             targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
             boolean retryInsert;
@@ -307,12 +307,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
                     if (!disableUsingBatches) {
-                        DBWorkbench.getPlatformUI().showError("Error inserting row", "Import canceled. Use setting \"Disable batches usage\" to import row by row and see all import errors", e);
+                        DBWorkbench.getPlatformUI().showError("Error inserting row", "Data transfer failed during batch insert\n" +
+                                "(you can disable batch insert in order to skip particular rows).", e);
                         throw new DBCException("Can't insert row", e);
                     } else {
                         if (!ignoreErrors) {
                             switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                                    DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, disableUsingBatches)) {
+                                    DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
                                 case STOP:
                                     // just stop execution
                                     throw new DBCException("Can't insert row", e);
