@@ -98,11 +98,12 @@ public class JDBCRemoteInstance implements DBSInstance {
             return this.metaContext;
         }
         if (!dataSource.getContainer().getDriver().isEmbedded() && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
-            synchronized (allContexts) {
+        	// FIXME: do not sync expensive operations
+            //synchronized (allContexts) {
                 this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
                 this.metaContext.connect(monitor, true, null, null, true);
                 return this.metaContext;
-            }
+            //}
         } else {
             return this.executionContext;
         }
