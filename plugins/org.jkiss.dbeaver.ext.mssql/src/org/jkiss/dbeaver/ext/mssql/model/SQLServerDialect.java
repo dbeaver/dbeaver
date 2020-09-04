@@ -66,6 +66,27 @@ public class SQLServerDialect extends JDBCSQLDialect {
         SQLServerConstants.TYPE_IMAGE,
     };
 
+    private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
+            "CURRENT_TIMEZONE",
+            "DATEPART",
+            "DATEADD",
+            "DATEDIFF",
+            "DATEDIFF_BIG",
+            "DATEFROMPARTS",
+            "DATENAME",
+            "DATETIMEFROMPARTS",
+            "EOMONTH",
+            "GETDATE",
+            "GETUTCDATE",
+            "ISDATE",
+            "SYSDATETIMEOFFSET",
+            "SYSUTCDATETIME",
+            "SMALLDATETIMEFROMPARTS",
+            "SWITCHOFFSET",
+            "TIMEFROMPARTS",
+            "TODATETIMEOFFSET"
+    };
+
     private JDBCDataSource dataSource;
     private boolean isSqlServer;
 
@@ -78,6 +99,8 @@ public class SQLServerDialect extends JDBCSQLDialect {
         super.addSQLKeywords(Arrays.asList(SQLSERVER_EXTRA_KEYWORDS));
         this.dataSource = dataSource;
         this.isSqlServer = SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
+
+        addFunctions(Arrays.asList(SQLSERVER_FUNCTIONS_DATETIME));
     }
 
     @NotNull
