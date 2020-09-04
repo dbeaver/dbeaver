@@ -2412,8 +2412,8 @@ public abstract class LightGrid extends Canvas {
                 startY += headerHeight - 1;
                 height -= headerHeight;
             }
-            startX -= hScrollSelectionInPixels;
-            width += hScrollSelectionInPixels;
+            //startX -= hScrollSelectionInPixels;
+            //width += hScrollSelectionInPixels;
 
             // Draw horizontal lines
             y = startY;
@@ -2423,9 +2423,18 @@ public abstract class LightGrid extends Canvas {
             }
 
             // Vertical lines
+            int leftSpan = getPinnedColumnsWidth();
+            if (rowHeaderVisible) {
+                leftSpan += rowHeaderWidth;
+            }
             int x = startX;
+            x -= hScrollSelectionInPixels;
+
             for (int k = 0, columnsSize = columns.size(); k < columnsSize; k++) {
                 x += columns.get(k).getWidth();
+                if (x < leftSpan) {
+                    continue;
+                }
                 gc.drawLine(
                     x,
                     startY,
