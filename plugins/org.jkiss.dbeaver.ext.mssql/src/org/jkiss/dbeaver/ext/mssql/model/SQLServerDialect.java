@@ -66,7 +66,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
         SQLServerConstants.TYPE_IMAGE,
     };
 
-    public static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
+    private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
             "CURRENT_TIMEZONE",
             "DATEPART",
             "DATEADD",
