@@ -43,9 +43,16 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     private Map<String, OBJECT> objectMap;
     protected volatile boolean fullCache = false;
     protected volatile boolean caseSensitive = true;
-    protected Comparator<OBJECT> listOrderComparator;
+
+    private Comparator<OBJECT> listOrderComparator;
+    // Use this monitor to void entire cache object locking
+    private final Object cacheSync = new Object();
 
     protected AbstractObjectCache() {
+    }
+
+    public Object getCacheSync() {
+        return cacheSync;
     }
 
     public void setCaseSensitive(boolean caseSensitive)
@@ -67,7 +74,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public List<OBJECT> getCachedObjects()
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
         }
     }
@@ -88,13 +95,13 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public OBJECT getCachedObject(@NotNull String name)
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
         }
     }
 
     public int getCacheSize() {
-        synchronized (this) {
+        synchronized (cacheSync) {
             return objectList == null ? 0 : objectList.size();
         }
     }
@@ -102,7 +109,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public void cacheObject(@NotNull OBJECT object)
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             if (this.objectList == null) {
                 this.objectList = new ArrayList<>();
             }
@@ -119,7 +126,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public void removeObject(@NotNull OBJECT object, boolean resetFullCache)
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             if (this.objectList != null) {
                 detectCaseSensitivity(object);
                 this.objectList.remove(object);
@@ -135,7 +142,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     @Override
     public void renameObject(@NotNull OBJECT object, @NotNull String oldName, @NotNull String newName) {
-        synchronized (this) {
+        synchronized (cacheSync) {
             if (this.objectMap != null) {
                 if (!caseSensitive) {
                     oldName = oldName.toUpperCase(Locale.ENGLISH);
@@ -164,7 +171,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public void clearCache()
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             this.objectList = null;
             this.objectMap = null;
             this.fullCache = false;
@@ -173,7 +180,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     public void setCache(List<OBJECT> objects)
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             this.objectList = objects;
             this.objectMap = null;
             this.fullCache = true;
@@ -196,7 +203,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
      */
     protected void mergeCache(List<OBJECT> objects)
     {
-        synchronized (this) {
+        synchronized (cacheSync) {
             if (this.objectList != null) {
                 // Merge lists
                 objects = new ArrayList<>(objects);
@@ -217,17 +224,19 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         setCache(objects);
     }
 
-    private synchronized Map<String, OBJECT> getObjectMap()
+    private Map<String, OBJECT> getObjectMap()
     {
-        if (this.objectMap == null) {
-            this.objectMap = new HashMap<>();
-            for (OBJECT object : objectList) {
-                String name = getObjectName(object);
-                checkDuplicateName(name, object);
-                this.objectMap.put(name, object);
+        synchronized (cacheSync) {
+            if (this.objectMap == null) {
+                this.objectMap = new HashMap<>();
+                for (OBJECT object : objectList) {
+                    String name = getObjectName(object);
+                    checkDuplicateName(name, object);
+                    this.objectMap.put(name, object);
+                }
             }
+            return this.objectMap;
         }
-        return this.objectMap;
     }
 
     private void checkDuplicateName(String name, OBJECT object) {
@@ -256,7 +265,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     public void clearChildrenOf(DBSObject parent) {
-        synchronized (this) {
+        synchronized (cacheSync) {
             if (objectList == null) {
                 return;
             }

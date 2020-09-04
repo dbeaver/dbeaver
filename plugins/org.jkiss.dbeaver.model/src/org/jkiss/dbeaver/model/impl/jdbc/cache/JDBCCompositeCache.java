@@ -222,8 +222,8 @@ public abstract class JDBCCompositeCache<
     {
         synchronized (objectCache) {
             this.objectCache.clear();
-            super.clearCache();
         }
+        super.clearCache();
     }
 
     @Override
