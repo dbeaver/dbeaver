@@ -109,6 +109,14 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 }
             });
             commitAfterEdit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+
+            final Button useBatchCheck = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_disable_import_batches_label, DTUIMessages.database_consumer_wizard_disable_import_batches_description, settings.isDisableUsingBatches(), 4);
+            useBatchCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setDisableUsingBatches(useBatchCheck.getSelection());
+                }
+            });
         }
 
         {

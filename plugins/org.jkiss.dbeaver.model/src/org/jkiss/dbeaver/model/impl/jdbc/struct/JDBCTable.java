@@ -837,7 +837,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (!isTruncateSupported()) {
             try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
                 batch.add(new Object[0]);
-                return batch.execute(session);
+                return batch.execute(session, Collections.emptyMap());
             }
         } else {
             DBCStatistics statistics = new DBCStatistics();
