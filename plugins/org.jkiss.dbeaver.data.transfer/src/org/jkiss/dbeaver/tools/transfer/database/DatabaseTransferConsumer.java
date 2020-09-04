@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer consumer
@@ -286,7 +283,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         executeBatch.add(rowValues);
 
         rowsExported++;
-        // No need. mnitor is incremented in data reader
+        // No need. monitor is incremented in data reader
         //session.getProgressMonitor().worked(1);
 
         insertBatch(false);
@@ -297,33 +294,42 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return;
         }
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
-        if (needCommit && executeBatch != null) {
+        Map<String, Object> options = new HashMap<>();
+        boolean disableUsingBatches = settings.isDisableUsingBatches();
+        options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
+        if ((needCommit || disableUsingBatches) && executeBatch != null) {
             targetSession.getProgressMonitor().subTask("Insert rows (" + rowsExported + ")");
             boolean retryInsert;
             do {
                 retryInsert = false;
                 try {
-                    executeBatch.execute(targetSession);
+                    executeBatch.execute(targetSession, options);
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
-                    if (!ignoreErrors) {
-                        switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
-                            DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
-                            case STOP:
-                                // just stop execution
-                                throw new DBCException("Can't insert row", e);
-                            case RETRY:
-                                // do it again
-                                retryInsert = true;
-                                break;
-                            case IGNORE:
-                                // Just do nothing and go to the next row
-                                retryInsert = false;
-                                break;
-                            case IGNORE_ALL:
-                                ignoreErrors = true;
-                                retryInsert = false;
-                                break;
+                    if (!disableUsingBatches) {
+                        DBWorkbench.getPlatformUI().showError("Error inserting row", "Data transfer failed during batch insert\n" +
+                                "(you can disable batch insert in order to skip particular rows).", e);
+                        throw new DBCException("Can't insert row", e);
+                    } else {
+                        if (!ignoreErrors) {
+                            switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(
+                                    DTMessages.database_transfer_consumer_task_error_occurred_during_data_load, e, true)) {
+                                case STOP:
+                                    // just stop execution
+                                    throw new DBCException("Can't insert row", e);
+                                case RETRY:
+                                    // do it again
+                                    retryInsert = true;
+                                    break;
+                                case IGNORE:
+                                    // Just do nothing and go to the next row
+                                    retryInsert = false;
+                                    break;
+                                case IGNORE_ALL:
+                                    ignoreErrors = true;
+                                    retryInsert = false;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -676,7 +682,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         @NotNull
         @Override
-        public DBCStatistics execute(@NotNull DBCSession session) throws DBCException {
+        public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException {
             return new DBCStatistics();
         }
 
