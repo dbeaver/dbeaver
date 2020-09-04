@@ -115,6 +115,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             purpose,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
+            progressMonitor.subTask("Read data from container");
             DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
