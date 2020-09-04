@@ -730,7 +730,7 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                DBCStatistics bs = batch.execute(session);
+                                DBCStatistics bs = batch.execute(session, options);
                                 // Notify rsv container about statement execute
                                 this.notifyContainer(bs);
 
@@ -757,7 +757,7 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                DBCStatistics bs = batch.execute(session);
+                                DBCStatistics bs = batch.execute(session, options);
                                 // Notify rsv container about statement execute
                                 this.notifyContainer(bs);
 
@@ -794,7 +794,7 @@ class ResultSetPersister {
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
-                                DBCStatistics bs = batch.execute(session);
+                                DBCStatistics bs = batch.execute(session, options);
                                 // Notify rsv container about statement execute
                                 this.notifyContainer(bs);
 

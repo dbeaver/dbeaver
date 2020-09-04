@@ -109,6 +109,7 @@ public class DTMessages extends NLS {
 	public static String sql_script_task_page_settings_option_auto_commit;
 	public static String database_consumer_settings_option_use_transactions;
 	public static String database_consumer_settings_option_commit_after;
+	public static String database_consumer_settings_option_disable_batches;
 	public static String database_consumer_settings_option_transfer_auto_generated_columns;
 	public static String database_consumer_settings_option_truncate_before_load;
 
