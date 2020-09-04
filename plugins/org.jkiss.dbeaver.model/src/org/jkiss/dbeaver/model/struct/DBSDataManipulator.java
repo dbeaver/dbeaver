@@ -40,7 +40,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
     int DATA_DELETE         = 1 << 18;
     int DATA_TRUNCATE       = 1 << 19;
 
-    String OPTION_DISABLE_IMPORT_BATCHES = "import.disableBatches";//$NON-NLS-1$
+    String OPTION_DISABLE_BATCHES = "import.disableBatches";//$NON-NLS-1$
 
     interface ExecuteBatch extends AutoCloseable {
         void add(@NotNull Object[] attributeValues) throws DBCException;
