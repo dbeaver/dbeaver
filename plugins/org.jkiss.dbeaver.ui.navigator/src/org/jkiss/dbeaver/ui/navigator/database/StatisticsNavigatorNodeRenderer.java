@@ -103,12 +103,16 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         super.paintNodeDetails(node, tree, gc, event);
 
+        ScrollBar hSB = tree.getHorizontalBar();
+        boolean scrollEnabled = (hSB != null && hSB.isVisible());
+
+
         Object element = event.item.getData();
 
         if (element instanceof DBNDatabaseNode) {
             if (element instanceof DBNDataSource) {
                 int widthOccupied = 0;
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
                     widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
                 }
                 if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
@@ -116,7 +120,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 }
             }
 
-            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
+            if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
                 renderObjectStatistics((DBNDatabaseNode) element, tree, gc, event);
             }
         }
@@ -224,7 +228,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             Point hostTextSize = gc.stringExtent(hostText);
 
             int xOffset = isLinux ? 16 : 2;
-            int treeWidth = getTreeWidth(tree);
+            int treeWidth = tree.getClientArea().width;
 
             gc.setClipping(
                 event.x + event.width + xOffset,
@@ -236,6 +240,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 event.x + event.width + xOffset,
                 event.y + ((event.height - hostTextSize.y) / 2),
                 true);
+            gc.setClipping((Rectangle) null);
             gc.setFont(oldFont);
         }
     }
