@@ -560,7 +560,12 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                            <test property="org.jkiss.dbeaver.core.global.standalone"/>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
