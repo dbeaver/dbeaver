@@ -81,11 +81,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
     private Font fontItalic;
-    private boolean isLinux;
+    private boolean isLinux, isMac;
 
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
-        this.isLinux = !GeneralUtils.isWindows() && !GeneralUtils.isMacOS();
+        this.isMac = GeneralUtils.isMacOS();
+        this.isLinux = !GeneralUtils.isWindows() && !isMac;
     }
 
     public INavigatorModelView getView() {
@@ -105,7 +106,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         ScrollBar hSB = tree.getHorizontalBar();
         boolean scrollEnabled = (hSB != null && hSB.isVisible());
-
 
         Object element = event.item.getData();
 
@@ -228,19 +228,27 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             Point hostTextSize = gc.stringExtent(hostText);
 
             int xOffset = isLinux ? 16 : 2;
-            int treeWidth = tree.getClientArea().width;
+            ScrollBar hSB = tree.getHorizontalBar();
+            boolean scrollEnabled = (hSB != null && hSB.isVisible());
 
-            gc.setClipping(
-                event.x + event.width + xOffset,
-                event.y + ((event.height - hostTextSize.y) / 2),
-                treeWidth - (event.x + event.width + xOffset + widthOccupied),
-                event.height
-            );
+            if (!scrollEnabled) {
+                // In case of visible scrollbar it must respect full scrollable area size
+                int treeWidth = tree.getClientArea().width;
+
+                gc.setClipping(
+                    event.x + event.width + xOffset,
+                    event.y + ((event.height - hostTextSize.y) / 2),
+                    treeWidth - (event.x + event.width + xOffset + widthOccupied),
+                    event.height
+                );
+            }
             gc.drawText(" - " + hostText,
                 event.x + event.width + xOffset,
                 event.y + ((event.height - hostTextSize.y) / 2),
                 true);
-            gc.setClipping((Rectangle) null);
+            if (!scrollEnabled) {
+                gc.setClipping((Rectangle) null);
+            }
             gc.setFont(oldFont);
         }
     }
