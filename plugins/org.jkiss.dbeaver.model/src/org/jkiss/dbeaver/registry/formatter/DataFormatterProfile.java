@@ -186,7 +186,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
 
     @Override
     public DBDDataFormatter createFormatter(String typeId, DBSTypedObject type)
-        throws IllegalAccessException, InstantiationException, IllegalArgumentException
+        throws ReflectiveOperationException
     {
         DataFormatterDescriptor descriptor = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         if (descriptor == null) {

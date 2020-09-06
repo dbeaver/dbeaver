@@ -83,13 +83,13 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return properties;
     }
 
-    public DBDDataFormatter createFormatter() throws IllegalAccessException, InstantiationException
+    public DBDDataFormatter createFormatter() throws ReflectiveOperationException
     {
         Class<? extends DBDDataFormatter> clazz = formatterType.getObjectClass(DBDDataFormatter.class);
         if (clazz == null) {
             return null;
         }
-        return clazz.newInstance();
+        return clazz.getConstructor().newInstance();
     }
 
 }

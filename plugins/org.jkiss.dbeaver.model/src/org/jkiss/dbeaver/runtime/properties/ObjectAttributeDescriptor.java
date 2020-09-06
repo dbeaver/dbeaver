@@ -80,7 +80,7 @@ public abstract class ObjectAttributeDescriptor {
             final LazyProperty lazyInfo = getter.getAnnotation(LazyProperty.class);
             if (lazyInfo != null) {
                 try {
-                    cacheValidator = lazyInfo.cacheValidator().newInstance();
+                    cacheValidator = lazyInfo.cacheValidator().getConstructor().newInstance();
                 } catch (Exception e) {
                     log.warn("Can't instantiate lazy cache validator '" + lazyInfo.cacheValidator().getName() + "'", e);
                 }

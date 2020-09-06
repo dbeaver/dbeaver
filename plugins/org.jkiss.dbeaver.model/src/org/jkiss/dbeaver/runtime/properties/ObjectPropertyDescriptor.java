@@ -322,7 +322,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             Class<? extends Format> formatClass = propInfo.formatter();
             if (formatClass != Format.class) {
                 try {
-                    displayFormat = formatClass.newInstance();
+                    displayFormat = formatClass.getConstructor().newInstance();
                 } catch (Throwable e) {
                     log.error(e);
                 }
@@ -479,7 +479,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
             // List
             try {
-                return propInfo.listProvider().newInstance().allowCustomValue();
+                return propInfo.listProvider().getConstructor().newInstance().allowCustomValue();
             } catch (Exception e) {
                 log.error(e);
             }

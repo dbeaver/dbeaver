@@ -49,6 +49,6 @@ public interface DBDDataFormatterProfile {
 
     void saveProfile() throws IOException;
 
-    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws IllegalAccessException, InstantiationException, IllegalArgumentException;
+    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws ReflectiveOperationException;
 
 }
