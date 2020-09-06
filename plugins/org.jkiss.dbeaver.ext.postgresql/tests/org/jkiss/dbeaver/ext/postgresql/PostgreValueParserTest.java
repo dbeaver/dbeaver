@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -85,7 +84,7 @@ public class PostgreValueParserTest {
     private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", new TestPreferenceStore());
 
     @Before
-    public void setUp() throws DBException, IllegalAccessException, InstantiationException {
+    public void setUp() throws Exception {
         numberDataFormatter.init(doubleItemType, Locale.ENGLISH, new HashMap<>());
         setupGeneralWhenMocks();
     }
