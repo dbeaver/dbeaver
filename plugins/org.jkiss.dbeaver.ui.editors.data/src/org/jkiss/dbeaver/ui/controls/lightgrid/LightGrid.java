@@ -873,7 +873,7 @@ public abstract class LightGrid extends Canvas {
         }
 
         int pinnedColumnsWidth = getPinnedColumnsWidth();
-        if (pinnedColumnsWidth > 0 && point.x <= pinnedColumnsWidth) {
+        if (pinnedColumnsWidth > 0 && point.x <= pinnedColumnsWidth + rowHeaderWidth) {
             return getColumnWithOffset(point, x2, true);
         }
 
