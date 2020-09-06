@@ -209,7 +209,7 @@ public class PostgreValueParserTest {
 
     }
 
-    private void setupGeneralWhenMocks() throws DBException, InstantiationException, IllegalAccessException {
+    private void setupGeneralWhenMocks() throws Exception {
         Mockito.when(session.getProgressMonitor()).thenReturn(new VoidProgressMonitor());
 
         Mockito.when(intItemType.getFullTypeName()).thenReturn("test_intItemType");
