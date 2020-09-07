@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
 import org.eclipse.swt.widgets.Event;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
@@ -40,7 +40,7 @@ public class NNAHDataSourceReadOnly extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
-        return DBIcon.OVER_LOCK;
+        return UIIcon.BUTTON_READ_ONLY;
     }
 
     @Override
