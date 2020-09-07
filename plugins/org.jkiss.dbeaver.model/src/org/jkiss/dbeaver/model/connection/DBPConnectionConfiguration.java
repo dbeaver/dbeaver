@@ -349,6 +349,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     ///////////////////////////////////////////////////////////
     // Authentication
 
+    @Nullable
     public String getAuthModelId() {
         return authModelId;
     }
