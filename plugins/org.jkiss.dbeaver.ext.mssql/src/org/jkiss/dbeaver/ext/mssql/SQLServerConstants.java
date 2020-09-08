@@ -54,6 +54,22 @@ public class SQLServerConstants {
     public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_TIMESTAMP = "timestamp";
     public static final String TYPE_IMAGE = "image";
+    public static final String TYPE_TINYINT = "tinyint";
+    public static final String TYPE_SMALLINT = "smallint";
+    public static final String TYPE_INT = "int";
+    public static final String TYPE_REAL = "real";
+    public static final String TYPE_MONEY = "money";
+    public static final String TYPE_FLOAT = "float";
+    public static final String TYPE_SQL_VARIANT = "sql_variant";
+    public static final String TYPE_BIT = "bit";
+    public static final String TYPE_DECIMAL = "decimal";
+    public static final String TYPE_NUMERIC = "numeric";
+    public static final String TYPE_SMALLMONEY = "smallmoney";
+    public static final String TYPE_BIGINT = "bigint";
+    public static final String TYPE_VARBINARY = "varbinary";
+    public static final String TYPE_BINARY = "binary";
+    public static final String TYPE_HIERARCHYID = "hierarchyid";
+    public static final String TYPE_XML = "xml";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";

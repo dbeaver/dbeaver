@@ -203,7 +203,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 return dt;
             }
         }
-        log.debug("System data type " + systemTypeId + " not found");
+        if (systemTypeId != 243) { // 243 - ID of user defined types
+            log.debug("System data type " + systemTypeId + " not found");
+        }
         SQLServerDataType sdt = new SQLServerDataType(this, String.valueOf(systemTypeId), systemTypeId, DBPDataKind.OBJECT, java.sql.Types.OTHER);
         dataTypeCache.cacheObject(sdt);
         return sdt;
