@@ -120,7 +120,7 @@ class MySQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeString(String string) {
-        return string.replace("'", "''").replace("\\", "\\\\");
+        return string.replace("'", "''").replace("\\^[_%?]", "\\\\");
     }
 
     @NotNull

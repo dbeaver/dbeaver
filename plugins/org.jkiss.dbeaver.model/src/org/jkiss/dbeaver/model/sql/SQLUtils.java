@@ -165,13 +165,27 @@ public final class SQLUtils {
     public static String makeLikePattern(String like)
     {
         StringBuilder result = new StringBuilder();
+
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
             if (c == '*') result.append(".*");
             else if (c == '?' || c == '_') result.append(".");
             else if (c == '%') result.append(".*");
             else if (Character.isLetterOrDigit(c)) result.append(c);
-            else result.append("\\").append(c);
+            else if (c == '\\') {
+                if (i < like.length() - 1) {
+                    char nc = like.charAt(i + 1);
+                    if (nc == '_' || nc == '*' || nc == '?' || nc == '.') {
+                        result.append("\\").append(nc);
+                        i++;
+                    } else {
+                        result.append("\\");
+                    }
+                }
+            }
+            else {
+                result.append(c);
+            }
         }
         return result.toString();
     }
