@@ -997,15 +997,6 @@
             </enabledWhen>
         </page>
 
-        <!--<page category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" id="org.jkiss.dbeaver.preferences.main.entityeditor" name="%page.org.jkiss.dbeaver.preferences.main.entityeditor.name">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-                </or>
-            </enabledWhen>
-        </page>-->
-
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain" name="%page.org.jkiss.dbeaver.preferences.main.resultset.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>

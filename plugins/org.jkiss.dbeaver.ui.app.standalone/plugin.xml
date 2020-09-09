@@ -349,10 +349,6 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <!--<page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.entityeditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" name="%pref.page.name.entity.editor">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>-->
         <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
