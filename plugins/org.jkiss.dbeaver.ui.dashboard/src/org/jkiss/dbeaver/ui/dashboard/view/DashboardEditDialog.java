@@ -237,12 +237,12 @@ public class DashboardEditDialog extends BaseDialog {
     private void updateButtons() {
         Button okButton = getButton(IDialogConstants.OK_ID);
         okButton.setEnabled(
-                dashboardDescriptor.isCustom() &&
-                        !idText.getText().isEmpty() &&
-                        !nameText.getText().isEmpty() &&
-                        !queryText.getText().isEmpty() &&
-                        viewTypeCombo.getSelectionIndex() >= 0 &&
-                        targetDatabase != null
+            dashboardDescriptor.isCustom() &&
+            !idText.getText().isEmpty() &&
+            !nameText.getText().isEmpty() &&
+            !queryText.getText().isEmpty() &&
+            viewTypeCombo.getSelectionIndex() >= 0 &&
+            targetDatabase != null
         );
     }
 

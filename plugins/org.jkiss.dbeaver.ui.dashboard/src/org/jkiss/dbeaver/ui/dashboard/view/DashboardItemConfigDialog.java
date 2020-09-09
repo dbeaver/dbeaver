@@ -75,7 +75,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
 
             //UIUtils.createLabelText(infoGroup, "ID", dashboardConfig.getDashboardDescriptor().getId(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_name, dashboardConfig.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
-                    .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 
             UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo_labels_description).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
@@ -105,11 +105,11 @@ public class DashboardItemConfigDialog extends BaseDialog {
                         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                         if (serviceSQL != null) {
                             serviceSQL.openSQLViewer(
-                                    DBUtils.getDefaultContext(dashboardContainer.getDataSourceContainer().getDataSource(), true),
-                                    UIDashboardMessages.dialog_dashboard_item_config_buttons_sqlqueries_dash,
-                                    UIIcon.SQL_SCRIPT,
-                                    sql.toString(),
-                                    false, false);
+                                DBUtils.getDefaultContext(dashboardContainer.getDataSourceContainer().getDataSource(), true),
+                                UIDashboardMessages.dialog_dashboard_item_config_buttons_sqlqueries_dash,
+                                UIIcon.SQL_SCRIPT,
+                                sql.toString(),
+                                false, false);
                         }
                     }
                 });
@@ -156,33 +156,33 @@ public class DashboardItemConfigDialog extends BaseDialog {
             }
 
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_legend_tooltip, dashboardConfig.isLegendVisible(), 2)
-                    .addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
-                        }
-                    });
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
+                    }
+                });
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_grid_tooltip, dashboardConfig.isGridVisible(), 2)
-                    .addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            dashboardConfig.setGridVisible(((Button)e.widget).getSelection());
-                        }
-                    });
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setGridVisible(((Button)e.widget).getSelection());
+                    }
+                });
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_domainaxis_tooltip, dashboardConfig.isDomainTicksVisible(), 2)
-                    .addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
-                        }
-                    });
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
+                    }
+                });
             UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis_tooltip, dashboardConfig.isDomainTicksVisible(), 2)
-                    .addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
-                        }
-                    });
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
+                    }
+                });
 /*
             Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             widthRatioText.addModifyListener(e -> {
