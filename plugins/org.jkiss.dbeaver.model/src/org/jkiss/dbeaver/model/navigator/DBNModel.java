@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * DBNModel.
@@ -80,6 +81,7 @@ public class DBNModel implements IResourceChangeListener {
     private transient INavigatorListener[] listenersCopy = null;
     private final transient List<DBNEvent> eventCache = new ArrayList<>();
     private final Map<DBSObject, Object> nodeMap = new HashMap<>();
+    private final List<Function<DBNNode, Boolean>> nodeFilters = new ArrayList<>();
 
     /**
      * Creates navigator model.
@@ -650,6 +652,21 @@ public class DBNModel implements IResourceChangeListener {
         if (projectNode != null) {
             projectNode.getDatabases();
         }
+    }
+
+    public void addFilter(Function<DBNNode, Boolean> filter) {
+        nodeFilters.add(filter);
+    }
+
+    boolean isNodeVisible(DBNNode node) {
+        if (!nodeFilters.isEmpty()) {
+            for (Function<DBNNode, Boolean> f : nodeFilters) {
+                if (!f.apply(node)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private class EventProcessingJob extends Job {
