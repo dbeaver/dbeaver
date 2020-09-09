@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
 public class ERDActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.erd";
+	public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
 
 	// The shared instance
 	private static ERDActivator plugin;
