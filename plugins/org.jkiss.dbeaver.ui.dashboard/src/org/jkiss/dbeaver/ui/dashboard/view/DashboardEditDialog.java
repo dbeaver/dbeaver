@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
@@ -62,9 +64,8 @@ public class DashboardEditDialog extends BaseDialog {
 
     private DBPNamedObject targetDatabase;
 
-    public DashboardEditDialog(Shell shell, DashboardDescriptor dashboardDescriptor)
-    {
-        super(shell, "Dashboard [" + dashboardDescriptor.getName() + "]", null);
+    public DashboardEditDialog(Shell shell, DashboardDescriptor dashboardDescriptor) {
+        super(shell, NLS.bind(UIDashboardMessages.dialog_edit_dashboard_title, dashboardDescriptor.getName()), null);
 
         this.dashboardDescriptor = dashboardDescriptor;
 
@@ -89,21 +90,21 @@ public class DashboardEditDialog extends BaseDialog {
         int baseStyle = !readOnly ? SWT.NONE : SWT.READ_ONLY;
 
         if (readOnly) {
-            UIUtils.createInfoLabel(composite, "Predefined dashboards are read-only. But you can copy them.");
+            UIUtils.createInfoLabel(composite, UIDashboardMessages.dialog_edit_dashboard_infolabels_predifined_dashboard);
         }
 
         {
-            Group infoGroup = UIUtils.createControlGroup(composite, "Main info", 4, GridData.FILL_HORIZONTAL, 0);
+            Group infoGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_maininfo, 4, GridData.FILL_HORIZONTAL, 0);
 
-            idText = UIUtils.createLabelText(infoGroup, "ID", dashboardDescriptor.getId(), SWT.BORDER | baseStyle);
+            idText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_id, dashboardDescriptor.getId(), SWT.BORDER | baseStyle);
             idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             idText.addModifyListener(e -> updateButtons());
-            nameText = UIUtils.createLabelText(infoGroup, "Name", dashboardDescriptor.getName(), SWT.BORDER | baseStyle);
+            nameText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_name, dashboardDescriptor.getName(), SWT.BORDER | baseStyle);
             nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             nameText.addModifyListener(e -> updateButtons());
 
             {
-                UIUtils.createControlLabel(infoGroup, "Database");
+                UIUtils.createControlLabel(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_db);
                 Composite dbSelectorPanel = UIUtils.createComposite(infoGroup, 2);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.horizontalSpan = 3;
@@ -113,7 +114,7 @@ public class DashboardEditDialog extends BaseDialog {
                 if (targetDatabase != null) {
                     dbSelectorText.setText(targetDatabase.getName());
                 }
-                UIUtils.createPushButton(dbSelectorPanel, "Select", null, new SelectionAdapter() {
+                UIUtils.createPushButton(dbSelectorPanel, UIDashboardMessages.dialog_edit_dashboard_maininfo_buttons_select, null, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DashboardDatabaseSelectDialog selectDialog = new DashboardDatabaseSelectDialog(getShell());
@@ -129,35 +130,35 @@ public class DashboardEditDialog extends BaseDialog {
 
 //            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardDescriptor.getGroup()), SWT.BORDER | baseStyle)
 //                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            dataTypeCombo = UIUtils.createLabelCombo(infoGroup, "Data type", "Type of data for this dashboard", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            dataTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardDataType ddt : DashboardDataType.values()) {
                 dataTypeCombo.add(ddt.name());
             }
             dataTypeCombo.setText(dashboardDescriptor.getDataType().name());
             dataTypeCombo.setEnabled(!readOnly);
 
-            calcTypeCombo = UIUtils.createLabelCombo(infoGroup, "Calc type", "Value calculation type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            calcTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_calctype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardCalcType dct : DashboardCalcType.values()) {
                 calcTypeCombo.add(dct.name());
             }
             calcTypeCombo.setText(dashboardDescriptor.getCalcType().name());
             calcTypeCombo.setEnabled(!readOnly);
 
-            valueTypeCombo = UIUtils.createLabelCombo(infoGroup, "Value type", "Type of values", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            valueTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_valuetype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardValueType dvt : DashboardValueType.values()) {
                 valueTypeCombo.add(dvt.name());
             }
             valueTypeCombo.setText(dashboardDescriptor.getValueType().name());
             valueTypeCombo.setEnabled(!readOnly);
 
-            intervalCombo = UIUtils.createLabelCombo(infoGroup, "Interval", "Values interval", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            intervalCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_interval_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardInterval dvt : DashboardInterval.values()) {
                 intervalCombo.add(dvt.name());
             }
             intervalCombo.setText(dashboardDescriptor.getInterval().name());
             intervalCombo.setEnabled(!readOnly);
 
-            fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, "Fetch type", "Values fetch type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_fetchtype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardFetchType dft : DashboardFetchType.values()) {
                 fetchTypeCombo.add(dft.name());
             }
@@ -166,20 +167,20 @@ public class DashboardEditDialog extends BaseDialog {
 
             UIUtils.createEmptyLabel(infoGroup, 2, 1);
 
-            descriptionText = UIUtils.createLabelText(infoGroup, "Description", CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+            descriptionText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_description, CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
             ((GridData) descriptionText.getLayoutData()).heightHint = 30;
             ((GridData) descriptionText.getLayoutData()).widthHint = 300;
             ((GridData) descriptionText.getLayoutData()).horizontalSpan = 3;
         }
 
         {
-            Group sqlGroup = UIUtils.createControlGroup(composite, "Queries", 1, GridData.FILL_BOTH, 0);
+            Group sqlGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_queries, 1, GridData.FILL_BOTH, 0);
             queryText = new Text(sqlGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | baseStyle);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 100;
             gd.widthHint = 400;
             queryText.setLayoutData(gd);
-            UIUtils.createInfoLabel(sqlGroup, "Use blank line as query separator");
+            UIUtils.createInfoLabel(sqlGroup, UIDashboardMessages.dialog_edit_dashboard_queries_infolabels_separator);
 
             String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
@@ -190,19 +191,19 @@ public class DashboardEditDialog extends BaseDialog {
             if (dashboardDescriptor.getMapQuery() != null) {
                 sql.append(dashboardDescriptor.getMapQuery().getQueryText()).append(lineSeparator).append(lineSeparator);
                 if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapKeys())) {
-                    sql.append("Map keys: ").append(Arrays.toString(dashboardDescriptor.getMapKeys())).append(lineSeparator);
+                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_keys).append(" ").append(Arrays.toString(dashboardDescriptor.getMapKeys())).append(lineSeparator);
                 }
                 if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapLabels())) {
-                    sql.append("Map labels: ").append(Arrays.toString(dashboardDescriptor.getMapLabels())).append(lineSeparator);
+                    sql.append(UIDashboardMessages.dialog_edit_dashboard_queries_labels).append(" ").append(Arrays.toString(dashboardDescriptor.getMapLabels())).append(lineSeparator);
                 }
             }
             queryText.setText(sql.toString().trim());
         }
 
         {
-            Group updateGroup = UIUtils.createControlGroup(composite, "Rendering", 2, GridData.FILL_HORIZONTAL, 0);
+            Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_rendering, 2, GridData.FILL_HORIZONTAL, 0);
 
-            viewTypeCombo = UIUtils.createLabelCombo(updateGroup, "Default view", "Dashboard view", SWT.BORDER | SWT.READ_ONLY);
+            viewTypeCombo = UIUtils.createLabelCombo(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview, UIDashboardMessages.dialog_edit_dashboard_rendering_combos_defaultview_tooltip, SWT.BORDER | SWT.READ_ONLY);
             viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
                 viewTypes = DashboardRegistry.getInstance().getAllViewTypes();
@@ -216,8 +217,8 @@ public class DashboardEditDialog extends BaseDialog {
             }
             viewTypeCombo.setEnabled(!readOnly);
 
-            updatePeriodText = UIUtils.createLabelText(updateGroup, "Update period (ms)", String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-            maxItemsText = UIUtils.createLabelText(updateGroup, "Maximum items", String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+            updatePeriodText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_updateperiod, String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+            maxItemsText = UIUtils.createLabelText(updateGroup, UIDashboardMessages.dialog_edit_dashboard_rendering_labels_maxitems, String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
             //maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
         }
 
