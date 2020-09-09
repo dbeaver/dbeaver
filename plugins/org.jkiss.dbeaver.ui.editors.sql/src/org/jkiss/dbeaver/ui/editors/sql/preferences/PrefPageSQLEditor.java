@@ -138,7 +138,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             new PreferenceLinkArea(composite, SWT.NONE,
                 PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
-                "<a>''{0}''</a>" + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
+                "<a>''{0}''</a> " + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
         }
