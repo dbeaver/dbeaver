@@ -189,7 +189,12 @@ class PreviewMappingDialog extends BaseProgressDialog {
                     }
                     Object srcValue = row[attr.targetIndex];
                     Object value = attr.sourceValueHandler.getValueFromObject(session, attr.sourceAttr, srcValue, false, true);
-                    String valueStr = attr.targetValueHandler.getValueDisplayString(attr.targetAttr.getTarget(), value, DBDDisplayFormat.UI);
+                    DBSAttributeBase attrTarget = attr.targetAttr.getTarget();
+                    if (attrTarget == null) {
+                        // New column - it is ok for preview only
+                        attrTarget = attr.sourceAttr;
+                    }
+                    String valueStr = attr.targetValueHandler.getValueDisplayString(attrTarget, value, DBDDisplayFormat.UI);
                     strRow[attr.targetIndex] = valueStr;
                 }
                 strRows.add(strRow);
