@@ -64,6 +64,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button advUseFetchSize;
 
+    private Button ignoreColumnLabelCheck;
+
     public PrefPageResultSetMain()
     {
         super();
@@ -88,7 +90,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
-            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
+                    store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
             ;
     }
 
@@ -139,6 +142,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         {
             Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
+            ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 1);
             advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
         }
 
@@ -190,6 +194,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
 
             advUseFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
+            ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
 
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
 
@@ -220,6 +225,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
 
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, advUseFetchSize.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
 
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
         } catch (Exception e) {
@@ -248,6 +254,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
 
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
+        store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
 
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
 

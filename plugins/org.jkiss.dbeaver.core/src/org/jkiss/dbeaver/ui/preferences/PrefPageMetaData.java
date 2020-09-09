@@ -41,8 +41,6 @@ public class PrefPageMetaData extends TargetPrefPage
     private Button caseSensitiveNamesCheck;
     private Button serverSideFiltersCheck;
 
-    private Button ignoreColumnLabelCheck;
-
     public PrefPageMetaData()
     {
         super();
@@ -56,9 +54,7 @@ public class PrefPageMetaData extends TargetPrefPage
             store.contains(ModelPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
             store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
-            store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS) ||
-
-            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
+            store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)
             ;
     }
 
@@ -81,12 +77,6 @@ public class PrefPageMetaData extends TargetPrefPage
             serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_server_side_object_filters, CoreMessages.pref_page_database_general_server_side_object_filters_tip, false, 1);
         }
 
-        {
-            Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_query_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            ignoreColumnLabelCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_general_use_column_names, CoreMessages.pref_page_database_general_use_column_names_tip, false, 1);
-        }
-
         return composite;
     }
 
@@ -99,7 +89,6 @@ public class PrefPageMetaData extends TargetPrefPage
             caseSensitiveNamesCheck.setSelection(store.getBoolean(ModelPreferences.META_CASE_SENSITIVE));
             serverSideFiltersCheck.setSelection(store.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
 
-            ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -114,7 +103,6 @@ public class PrefPageMetaData extends TargetPrefPage
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
             store.setValue(ModelPreferences.META_USE_SERVER_SIDE_FILTERS, serverSideFiltersCheck.getSelection());
 
-            store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -129,7 +117,6 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(ModelPreferences.META_CASE_SENSITIVE);
         store.setToDefault(ModelPreferences.META_USE_SERVER_SIDE_FILTERS);
 
-        store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
     }
 
     @Override
