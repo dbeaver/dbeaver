@@ -10,8 +10,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
  org.eclipse.gef,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.erd,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.erd.ui,
  org.jkiss.bundle.apache.batik
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
