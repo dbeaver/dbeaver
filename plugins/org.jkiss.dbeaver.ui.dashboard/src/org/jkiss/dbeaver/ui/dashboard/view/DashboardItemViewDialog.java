@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardList;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -40,7 +41,7 @@ public class DashboardItemViewDialog extends BaseDialog {
     private final DashboardItem sourceItem;
 
     public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
-        super(parentPart.getSite().getShell(), "View Dashboard", null);
+        super(parentPart.getSite().getShell(), UIDashboardMessages.dialog_dashboard_item_view_title, null);
 
         this.parentPart = parentPart;
         this.sourceItem = sourceItem;

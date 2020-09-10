@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.apache.commons.jexl3.JexlExpression;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
@@ -104,7 +106,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
+            errorLabel.setText(NLS.bind(UIDashboardMessages.dashboard_item_errorlabel_text, dashboardConfig.getDashboardDescriptor().getName(), e.getMessage()));
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 

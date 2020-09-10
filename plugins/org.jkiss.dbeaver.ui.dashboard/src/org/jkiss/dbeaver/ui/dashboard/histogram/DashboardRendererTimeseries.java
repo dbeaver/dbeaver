@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.charts.BaseChartDrawingSupplier;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
@@ -62,8 +63,8 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         JFreeChart histogramChart = ChartFactory.createXYLineChart(
             null,
-            "Time",
-            "Value",
+            UIDashboardMessages.histogram_timeseries_x_axis_label,
+            UIDashboardMessages.histogram_timeseries_y_axis_label,
             dataset,
             PlotOrientation.VERTICAL,
             true,
@@ -94,7 +95,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 //        renderer.setSeriesOutlineStroke(0, new BasicStroke(0.5f));
 
         {
-            DateAxis domainAxis = new DateAxis("Time");
+            DateAxis domainAxis = new DateAxis(UIDashboardMessages.histogram_timeseries_date_axis_label);
             domainAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
             domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
             domainAxis.setAutoRange(true);

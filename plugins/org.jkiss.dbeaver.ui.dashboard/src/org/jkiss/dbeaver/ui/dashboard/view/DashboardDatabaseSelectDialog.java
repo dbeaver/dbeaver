@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.NamedObjectPatternFilter;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +53,7 @@ public class DashboardDatabaseSelectDialog extends BaseDialog {
     private TreeViewer treeViewer;
 
     public DashboardDatabaseSelectDialog(Shell shell) {
-        super(shell, "Select dashboard database", null);
+        super(shell, UIDashboardMessages.dialog_dashboard_database_select_title, null);
     }
 
     @Override
@@ -71,8 +72,8 @@ public class DashboardDatabaseSelectDialog extends BaseDialog {
             gd.widthHint = 300;
             treeViewer.getControl().setLayoutData(gd);
             treeViewer.getTree().setHeaderVisible(true);
-            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, "Name");
-            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, "Description");
+            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, UIDashboardMessages.dialog_dashboard_database_select_column_name);
+            UIUtils.createTreeColumn(treeViewer.getTree(), SWT.LEFT, UIDashboardMessages.dialog_dashboard_database_select_column_description);
 
             treeViewer.setContentProvider(new TreeContentProvider() {
                 @Override
