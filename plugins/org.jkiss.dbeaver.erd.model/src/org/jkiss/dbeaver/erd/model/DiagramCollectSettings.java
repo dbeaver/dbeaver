@@ -23,9 +23,6 @@ public interface DiagramCollectSettings {
 
     boolean isShowViews();
 
-    void setShowViews(boolean showViews);
-
     boolean isShowPartitions();
 
-    void setShowPartitions(boolean showPartitions);
 }

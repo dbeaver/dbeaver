@@ -30,18 +30,8 @@ public class DiagramCollectSettingsDefault implements DiagramCollectSettings {
     }
 
     @Override
-    public void setShowViews(boolean showViews) {
-        ERDUIActivator.getDefault().getPreferenceStore().setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, showViews);
-    }
-
-    @Override
     public boolean isShowPartitions() {
         return ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS);
-    }
-
-    @Override
-    public void setShowPartitions(boolean showPartitions) {
-        ERDUIActivator.getDefault().getPreferenceStore().setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, showPartitions);
     }
 
 }

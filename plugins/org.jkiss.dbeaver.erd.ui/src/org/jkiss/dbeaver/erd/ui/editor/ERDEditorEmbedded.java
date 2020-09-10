@@ -24,23 +24,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.action.DiagramTogglePersistAction;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -53,8 +50,8 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Embedded ERD editor
@@ -203,7 +200,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
                 monitor,
-                collectDatabaseTables(monitor, dbObject, diagram),
+                ERDUtils.collectDatabaseTables(
+                    monitor,
+                    dbObject,
+                    diagram,
+                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
+                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
                 dbObject);
 
             boolean hasPersistedState = false;
@@ -229,127 +231,6 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         }
 
         return diagram;
-    }
-
-    private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root, EntityDiagram diagram) throws DBException
-    {
-        Set<DBSEntity> result = new LinkedHashSet<>();
-
-        // Cache structure
-        if (root instanceof DBSObjectContainer) {
-            monitor.beginTask("Load '" + root.getName() + "' content", 3);
-            DBSObjectContainer objectContainer = (DBSObjectContainer) root;
-            try {
-                DBExecUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param -> {
-                    try {
-                        objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
-            }
-            boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
-            Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
-            if (entities != null) {
-                Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
-                DBSObjectFilter objectFilter = objectContainer.getDataSource().getContainer().getObjectFilter(childType, objectContainer, true);
-
-                for (DBSObject entity : entities) {
-                    if (entity instanceof DBSEntity) {
-                        if (objectFilter != null && objectFilter.isEnabled() && !objectFilter.matches(entity.getName())) {
-                            continue;
-                        }
-
-                        final DBSEntity entity1 = (DBSEntity) entity;
-
-                        if (entity1.getEntityType() == DBSEntityType.TABLE ||
-                            entity1.getEntityType() == DBSEntityType.CLASS ||
-                            entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY ||
-                            (showViews && DBUtils.isView(entity1))
-                            )
-
-                        {
-                            result.add(entity1);
-                        }
-                    }
-                }
-            }
-            monitor.done();
-
-        } else if (root instanceof DBSEntity) {
-            monitor.beginTask("Load '" + root.getName() + "' relations", 3);
-            DBSEntity rootTable = (DBSEntity) root;
-            result.add(rootTable);
-            try {
-                monitor.subTask("Read foreign keys");
-                Collection<? extends DBSEntityAssociation> fks = DBVUtils.getAllAssociations(monitor, rootTable);
-                if (fks != null) {
-                    for (DBSEntityAssociation fk : fks) {
-                        DBSEntity associatedEntity = fk.getAssociatedEntity();
-                        if (associatedEntity != null) {
-                            result.add(DBVUtils.getRealEntity(monitor, associatedEntity));
-                        }
-                    }
-                }
-                monitor.worked(1);
-            } catch (DBException e) {
-                log.warn("Can't load table foreign keys", e);
-            }
-            if (monitor.isCanceled()) {
-                return result;
-            }
-            try {
-                monitor.subTask("Read references");
-                Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, rootTable);
-                if (refs != null) {
-                    for (DBSEntityAssociation ref : refs) {
-                        result.add(ref.getParentObject());
-                    }
-                }
-                monitor.worked(1);
-            } catch (DBException e) {
-                log.warn("Can't load table references", e);
-            }
-            if (monitor.isCanceled()) {
-                return result;
-            }
-            try {
-                monitor.subTask("Read associations");
-                List<DBSEntity> secondLevelEntities = new ArrayList<>();
-                for (DBSEntity entity : result) {
-                    if (entity != rootTable && entity.getEntityType() == DBSEntityType.ASSOCIATION) {
-                        // Read all association's associations
-                        Collection<? extends DBSEntityAssociation> fks = entity.getAssociations(monitor);
-                        if (fks != null) {
-                            for (DBSEntityAssociation association : fks) {
-                                if (association.getConstraintType() != DBSEntityConstraintType.INHERITANCE) {
-                                    secondLevelEntities.add(association.getAssociatedEntity());
-                                }
-                            }
-                        }
-                    }
-                }
-                result.addAll(secondLevelEntities);
-                monitor.worked(1);
-            } catch (DBException e) {
-                log.warn("Can't load table references", e);
-            }
-
-            monitor.done();
-        }
-
-        // Remove entities already loaded in the diagram
-        for (ERDEntity diagramEntity : diagram.getEntities()) {
-            result.remove(diagramEntity.getObject());
-        }
-
-        if (!ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)) {
-            result.removeIf(entity -> entity instanceof DBSTablePartition);
-        }
-
-        return result;
     }
 
     @Override
