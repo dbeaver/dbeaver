@@ -20,9 +20,9 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -35,15 +35,15 @@ public class DiagramToggleGridAction extends Action
 {
 	public DiagramToggleGridAction()
 	{
-		super(ERDMessages.erd_editor_control_action_toggle_grid, ERDActivator.getImageDescriptor("icons/layer_grid.png"));
+		super(ERDUIMessages.erd_editor_control_action_toggle_grid, ERDUIActivator.getImageDescriptor("icons/layer_grid.png"));
 	}
 
 	@Override
     public void run()
 	{
-        final DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
-        final boolean gridEnabled = store.getBoolean(ERDConstants.PREF_GRID_ENABLED);
-        store.setValue(ERDConstants.PREF_GRID_ENABLED, !gridEnabled);
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        final boolean gridEnabled = store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED);
+        store.setValue(ERDUIConstants.PREF_GRID_ENABLED, !gridEnabled);
         PrefUtils.savePreferenceStore(store);
     }
 

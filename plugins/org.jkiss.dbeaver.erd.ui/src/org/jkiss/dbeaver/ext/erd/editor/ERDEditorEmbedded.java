@@ -24,11 +24,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramTogglePersistAction;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -250,7 +250,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
             }
-            boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
+            boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             if (entities != null) {
                 Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
@@ -345,7 +345,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             result.remove(diagramEntity.getObject());
         }
 
-        if (!ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS)) {
+        if (!ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)) {
             result.removeIf(entity -> entity instanceof DBSTablePartition);
         }
 

@@ -14,40 +14,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Logical primary key
+ * Logical foreign key
  */
-public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferrer {
+public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityReferrer {
 
-    private Object entity;
+    private ERDElement entity;
     private String name;
     private String description;
-    private List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
+    private ERDLogicalPrimaryKey pk;
 
-    public ERDLogicalPrimaryKey(ERDElement entity, String name, String description)
+    public ERDLogicalAssociation(ERDElement entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
-        this.entity = entity.getObject();
+        this.entity = entity;
         this.name = name;
         this.description = description;
+        this.pk = pk;
+    }
+
+    @Nullable
+    @Override
+    public DBSEntityConstraint getReferencedConstraint()
+    {
+        return pk;
+    }
+
+    @Override
+    public DBSEntity getAssociatedEntity()
+    {
+        return pk.getParentObject();
     }
 
     @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
-        return entity instanceof DBSObject ? ((DBSObject) entity).getDataSource() : null;
+        return entity instanceof ERDEntity ? ((ERDEntity) entity).getDataSource() : null;
     }
 
     @Nullable
@@ -57,17 +70,18 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         return description;
     }
 
+    @NotNull
     @Override
     public DBSEntity getParentObject()
     {
-        return entity instanceof DBSEntity ? (DBSEntity) entity : null;
+        return entity instanceof ERDEntity ? ((ERDEntity)entity).getObject() : null;
     }
 
     @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {
-        return DBSEntityConstraintType.PRIMARY_KEY;
+        return ERDConstants.CONSTRAINT_LOGICAL_FK;
     }
 
     @NotNull
@@ -86,6 +100,6 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
     @Override
     public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return columns;
+        return Collections.emptyList();
     }
 }

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
-import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;

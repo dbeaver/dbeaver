@@ -20,11 +20,11 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDObject;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
@@ -55,7 +55,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
     public EntityDiagram(DBSObject container, String name, ERDContentProvider contentProvider, ERDDecorator decorator) {
         super(container, name, contentProvider);
         this.decorator = decorator;
-        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
+        DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
     }
@@ -74,7 +74,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         } else {
             attributeStyles = ArrayUtils.remove(ERDViewStyle.class, attributeStyles, style);
         }
-        ERDViewStyle.setDefaultStyles(ERDActivator.getDefault().getPreferences(), attributeStyles);
+        ERDViewStyle.setDefaultStyles(ERDUIActivator.getDefault().getPreferences(), attributeStyles);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility) {
         this.attributeVisibility = attributeVisibility;
-        ERDAttributeVisibility.setDefaultVisibility(ERDActivator.getDefault().getPreferences(), attributeVisibility);
+        ERDAttributeVisibility.setDefaultVisibility(ERDUIActivator.getDefault().getPreferences(), attributeVisibility);
     }
 
     /**

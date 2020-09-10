@@ -38,7 +38,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
@@ -98,7 +98,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
         if (control != null) {
             ERDEditorAdapter.mapControl(control, editor);
-            UIUtils.addFocusTracker(editor.getSite(), ERDConstants.ERD_CONTROL_ID, control);
+            UIUtils.addFocusTracker(editor.getSite(), ERDUIConstants.ERD_CONTROL_ID, control);
             applyThemeSettings();
         }
     }
@@ -143,7 +143,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
-            || event.getProperty().equals(ERDConstants.PROP_DIAGRAM_FONT))
+            || event.getProperty().equals(ERDUIConstants.PROP_DIAGRAM_FONT))
         {
             applyThemeSettings();
         }
@@ -152,7 +152,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     private void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
-        Font erdFont = currentTheme.getFontRegistry().get(ERDConstants.PROP_DIAGRAM_FONT);
+        Font erdFont = currentTheme.getFontRegistry().get(ERDUIConstants.PROP_DIAGRAM_FONT);
         if (erdFont != null) {
             this.getControl().setFont(erdFont);
         }

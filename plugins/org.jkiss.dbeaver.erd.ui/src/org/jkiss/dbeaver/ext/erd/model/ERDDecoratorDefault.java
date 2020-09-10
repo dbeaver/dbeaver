@@ -23,7 +23,8 @@ import org.eclipse.gef.palette.*;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditPartFactory;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,11 +46,6 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
     @Override
     public boolean showCheckboxes() {
-        return false;
-    }
-
-    @Override
-    public boolean allowEntityDuplicates() {
         return false;
     }
 
@@ -87,19 +83,19 @@ public class ERDDecoratorDefault implements ERDDecorator {
             controls.add(separator);
 
             controls.add(new ConnectionCreationToolEntry(
-                ERDMessages.erd_tool_create_connection,
-                ERDMessages.erd_tool_create_connection_tip,
+                ERDUIMessages.erd_tool_create_connection,
+                ERDUIMessages.erd_tool_create_connection_tip,
                 null,
                 CONNECT_IMAGE,
                 CONNECT_IMAGE));
             controls.add(new CreationToolEntry(
-                ERDMessages.erd_tool_create_note,
-                ERDMessages.erd_tool_create_note_tip,
+                ERDUIMessages.erd_tool_create_note,
+                ERDUIMessages.erd_tool_create_note_tip,
                 new CreationFactory() {
                     @Override
                     public Object getNewObject()
                     {
-                        return new ERDNote(ERDMessages.erd_tool_create_default);
+                        return new ERDNote(ERDUIMessages.erd_tool_create_default);
                     }
                     @Override
                     public Object getObjectType()

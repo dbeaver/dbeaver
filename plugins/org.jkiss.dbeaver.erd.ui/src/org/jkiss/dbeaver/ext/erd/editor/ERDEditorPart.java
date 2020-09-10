@@ -37,7 +37,6 @@ import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -55,9 +54,10 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramToggleGridAction;
@@ -71,13 +71,17 @@ import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartSettingsAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
-import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.model.ERDContentProviderDecorated;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -167,7 +171,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected ERDContentProvider createContentProvider() {
-        return new ERDContentProviderDefault();
+        return new ERDContentProviderDecorated();
     }
 
     protected ERDDecorator createDecorator() {
@@ -195,7 +199,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
 
         configPropertyListener = new ConfigPropertyListener();
-        ERDActivator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
+        ERDUIActivator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
     }
 
     @Override
@@ -244,7 +248,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void dispose()
     {
-        ERDActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
+        ERDUIActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
 
         if (diagramLoadingJob != null) {
             diagramLoadingJob.cancel();
@@ -422,7 +426,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.createControl(parent);
 
         // configure the viewer
-        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
@@ -443,7 +447,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void configureGraphicalViewer()
     {
         super.configureGraphicalViewer();
-        this.getGraphicalViewer().getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        this.getGraphicalViewer().getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 
         GraphicalViewer graphicalViewer = getGraphicalViewer();
 
@@ -453,13 +457,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         getEditorSite().registerContextMenu(getClass().getName() + ".EditorContext", manager, graphicalViewer, true); //$NON-NLS-1$
 */
 
-        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
+        DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
 
-        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
-        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
+        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
+        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
-            store.getInt(ERDConstants.PREF_GRID_WIDTH),
-            store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
+            store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
+            store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)));
 
         // initialize actions
         createActions();
@@ -618,7 +622,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
             this.getPalettePreferences());
-        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
         return paletteComposite;
     }
 
@@ -697,7 +701,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
-        MenuManager asMenu = new MenuManager(ERDMessages.menu_view_style);
+        MenuManager asMenu = new MenuManager(ERDUIMessages.menu_view_style);
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ICONS));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.TYPES));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
@@ -706,8 +710,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         menu.add(asMenu);
 
         if (getDiagram().getDecorator().supportsAttributeVisibility()) {
-            MenuManager avMenu = new MenuManager(ERDMessages.menu_attribute_visibility);
-            avMenu.add(new EmptyAction(ERDMessages.menu_attribute_visibility_default));
+            MenuManager avMenu = new MenuManager(ERDUIMessages.menu_attribute_visibility);
+            avMenu.add(new EmptyAction(ERDUIMessages.menu_attribute_visibility_default));
             avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.ALL));
             avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.KEYS));
             avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.PRIMARY));
@@ -724,7 +728,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
                 if (totalEntities > 0) {
                     avMenu.add(new Separator());
-                    String avaTitle = ERDMessages.menu_attribute_visibility_entity;
+                    String avaTitle = ERDUIMessages.menu_attribute_visibility_entity;
                     if (((IStructuredSelection) selection).size() == 1) {
                         avaTitle += " (" + ((IStructuredSelection) selection).getFirstElement() + ")";
                     } else {
@@ -783,13 +787,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
 
                 // Set print preferences
-                IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
-                printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
+                DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+                printOp.setPrintMode(store.getInt(ERDUIConstants.PREF_PRINT_PAGE_MODE));
                 printOp.setPrintMargin(new Insets(
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM),
-                    store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT)
+                    store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_TOP),
+                    store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_LEFT),
+                    store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_BOTTOM),
+                    store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_RIGHT)
                 ));
                 // Run print
                 printOp.run("Print ER diagram");
@@ -894,13 +898,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(ActionUtils.makeCommandContribution(
                 getSite(),
                 IWorkbenchCommandConstants.FILE_PRINT,
-                ERDMessages.erd_editor_control_action_print_diagram,
+                ERDUIMessages.erd_editor_control_action_print_diagram,
                 UIIcon.PRINT));
 
             toolBarManager.add(ActionUtils.makeCommandContribution(
                 getSite(),
                 IWorkbenchCommandConstants.FILE_SAVE_AS,
-                ERDMessages.erd_editor_control_action_save_external_format,
+                ERDUIMessages.erd_editor_control_action_save_external_format,
                 UIIcon.PICTURE_SAVE));
 
             toolBarManager.add(ActionUtils.makeCommandContribution(
@@ -911,7 +915,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
         toolBarManager.add(new Separator());
         {
-            Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
+            Action configAction = new Action(ERDUIMessages.erd_editor_control_action_configuration) {
                 @Override
                 public void run()
                 {
@@ -943,7 +947,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public boolean isChecked()
         {
             return ArrayUtils.contains(
-                ERDViewStyle.getDefaultStyles(ERDActivator.getDefault().getPreferenceStore()),
+                ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()),
                 style);
         }
 
@@ -1022,15 +1026,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             if (graphicalViewer == null) {
                 return;
             }
-            if (ERDConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
+            if (ERDUIConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
                 Boolean enabled = Boolean.valueOf(event.getNewValue().toString());
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
-            } else if (ERDConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
-                final IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
+            } else if (ERDUIConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDUIConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
+                final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
-                    store.getInt(ERDConstants.PREF_GRID_WIDTH),
-                    store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
+                    store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
+                    store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)));
             } else if (ERDConstants.PREF_ATTR_VISIBILITY.equals(event.getProperty())) {
                 EntityDiagram diagram = getDiagram();
                 ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(ERDAttributeVisibility.class, CommonUtils.toString(event.getNewValue()));
@@ -1043,7 +1047,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 UIUtils.asyncExec(() -> graphicalViewer.setContents(diagram));
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
                 refreshDiagram(true, false);
-            } else if (ERDConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
+            } else if (ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS.equals(event.getProperty()) || ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS.equals(event.getProperty())) {
                 refreshDiagram(true, true);
             }
         }
@@ -1071,7 +1075,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
-            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+            getGraphicalControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
             return new LoadVisualizer();
         }
 
@@ -1101,7 +1105,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (graphicalControl == null) {
                     return;
                 }
-                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
                 isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {
@@ -1114,9 +1118,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         // log.debug(message);
                         List<Status> messageStatuses = new ArrayList<>(errorMessages.size());
                         for (String error : errorMessages) {
-                            messageStatuses.add(new Status(Status.ERROR, ERDActivator.PLUGIN_ID, error));
+                            messageStatuses.add(new Status(Status.ERROR, ERDUIActivator.PLUGIN_ID, error));
                         }
-                        MultiStatus status = new MultiStatus(ERDActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
+                        MultiStatus status = new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
 
                         DBWorkbench.getPlatformUI().showError(
                                 "Diagram loading errors",

@@ -33,7 +33,8 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -666,20 +667,20 @@ public class DiagramLoader
             }
             Color bgColor = nodePart.getCustomBackgroundColor();
             if (bgColor != null) {
-                Color defBgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDConstants.COLOR_ERD_NOTE_BACKGROUND : ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
+                Color defBgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND : ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
                 if (!CommonUtils.equalObjects(bgColor, defBgColor)) {
                     xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(bgColor.getRGB()));
                 }
             }
             Color fgColor = nodePart.getCustomForegroundColor();
             if (fgColor != null) {
-                Color defFgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDConstants.COLOR_ERD_NOTE_FOREGROUND : ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
+                Color defFgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND : ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
                 if (!CommonUtils.equalObjects(fgColor, defFgColor)) {
                     xml.addAttribute(ATTR_COLOR_FG, StringConverter.asString(fgColor.getRGB()));
                 }
             }
             int borderWidth = nodePart.getCustomBorderWidth();
-            int defBorderWidth = nodePart instanceof NotePart ? ERDConstants.DEFAULT_NOTE_BORDER_WIDTH : ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH;
+            int defBorderWidth = nodePart instanceof NotePart ? ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH : ERDUIConstants.DEFAULT_ENTITY_BORDER_WIDTH;
             if (borderWidth != defBorderWidth) {
                 xml.addAttribute(ATTR_BORDER_WIDTH, borderWidth);
             }

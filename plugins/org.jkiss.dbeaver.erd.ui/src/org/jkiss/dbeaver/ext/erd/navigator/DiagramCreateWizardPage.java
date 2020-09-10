@@ -28,7 +28,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -55,12 +55,12 @@ class DiagramCreateWizardPage extends WizardPage {
 
     protected DiagramCreateWizardPage(EntityDiagram diagram, IStructuredSelection entitySelection)
     {
-        super(ERDMessages.wizard_page_diagram_create_name);
+        super(ERDUIMessages.wizard_page_diagram_create_name);
         this.diagram = diagram;
         this.entitySelection = entitySelection;
 
-        setTitle(ERDMessages.wizard_page_diagram_create_title);
-        setDescription(ERDMessages.wizard_page_diagram_create_description);
+        setTitle(ERDUIMessages.wizard_page_diagram_create_title);
+        setDescription(ERDUIMessages.wizard_page_diagram_create_description);
     }
 
     @Override
@@ -82,7 +82,7 @@ class DiagramCreateWizardPage extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDMessages.wizard_page_diagram_create_group_settings, 2, GridData.FILL_BOTH, 0);
+        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDUIMessages.wizard_page_diagram_create_group_settings, 2, GridData.FILL_BOTH, 0);
 
         final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         projectNameText.addModifyListener(new ModifyListener() {
@@ -94,7 +94,7 @@ class DiagramCreateWizardPage extends WizardPage {
             }
         });
 
-        Label contentLabel = UIUtils.createControlLabel(configGroup, ERDMessages.wizard_page_diagram_create_label_init_content);
+        Label contentLabel = UIUtils.createControlLabel(configGroup, ERDUIMessages.wizard_page_diagram_create_label_init_content);
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);

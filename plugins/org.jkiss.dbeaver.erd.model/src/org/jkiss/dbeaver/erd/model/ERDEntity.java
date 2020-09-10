@@ -17,7 +17,7 @@
 /*
  * Created on Jul 13, 2004
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -132,7 +132,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         return result;
     }
 
-    public void reloadAttributes(EntityDiagram diagram) {
+    public void reloadAttributes(ERDDiagram diagram) {
         if (!CommonUtils.isEmpty(attributes)) {
             attributes.clear();
         }

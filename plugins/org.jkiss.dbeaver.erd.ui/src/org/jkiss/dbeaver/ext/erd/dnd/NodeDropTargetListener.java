@@ -25,12 +25,20 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.dnd.AbstractTransferDropTargetListener;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
-import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Provides a listener for dropping nodes onto the editor drawing
@@ -61,10 +69,26 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     return null;
                 }
 
-                return DiagramObjectCollector.generateEntityList(
-                    ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram(),
-                    objects,
-                    true);
+                DBRRunnableWithResult<List<ERDEntity>> collector = new DBRRunnableWithResult<List<ERDEntity>>() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) {
+                        result = DiagramObjectCollector.generateEntityList(
+                            monitor,
+                            ((DiagramPart) getViewer().getRootEditPart().getContents()).getDiagram(),
+                            objects,
+                            new DiagramCollectSettingsDefault(),
+                            true);
+                    }
+                };
+                try {
+                    UIUtils.runInProgressService(collector);
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError("Entity collect error", "Error during diagram entities collect", e);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+
+                return collector.getResult();
             }
 
             @Override

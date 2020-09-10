@@ -20,6 +20,8 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.erd.model.ERDContainer;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 

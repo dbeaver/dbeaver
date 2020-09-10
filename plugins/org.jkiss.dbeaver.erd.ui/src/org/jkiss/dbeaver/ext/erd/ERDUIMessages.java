@@ -20,12 +20,12 @@ package org.jkiss.dbeaver.ext.erd;
 
 import org.eclipse.osgi.util.NLS;
 
-public class ERDMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.erd.ERDResources"; //$NON-NLS-1$
+public class ERDUIMessages extends NLS {
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.erd.ERDUIMessages"; //$NON-NLS-1$
 
     static {
 		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, ERDMessages.class);
+		NLS.initializeMessages(BUNDLE_NAME, ERDUIMessages.class);
 	}
 
     public static String action_diagram_layout_name;
@@ -56,10 +56,6 @@ public class ERDMessages extends NLS {
 	public static String wizard_page_diagram_create_name;
 	public static String wizard_page_diagram_create_title;
 
-	public static String erd_attribute_visibility_selection_item_all;
-	public static String erd_attribute_visibility_selection_item_any_keys;
-	public static String erd_attribute_visibility_selection_item_none;
-	public static String erd_attribute_visibility_selection_item_primary_key;
 	//ERD editor action item control
 	public static String erd_editor_control_action_toggle_grid;
 	public static String erd_editor_control_action_refresh_diagram;
@@ -98,6 +94,6 @@ public class ERDMessages extends NLS {
 	public static String menu_attribute_visibility_default;
 	public static String menu_attribute_visibility_entity;
 
-	private ERDMessages() {
+	private ERDUIMessages() {
 	}
 }

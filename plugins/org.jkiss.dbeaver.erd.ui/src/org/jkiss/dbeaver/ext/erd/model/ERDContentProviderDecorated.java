@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.erd.model.ERDContentProviderDefault;
+import org.jkiss.dbeaver.erd.model.ERDDiagram;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;

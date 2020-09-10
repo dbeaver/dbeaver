@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
-import org.jkiss.dbeaver.ext.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.erd.model.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,11 +28,11 @@ import org.jkiss.utils.CommonUtils;
  */
 public enum ERDViewStyle
 {
-    ICONS(1, ERDMessages.erd_view_style_selection_item_icons),
-    TYPES(2, ERDMessages.erd_view_style_selection_item_data_types),
-    NULLABILITY(4, ERDMessages.erd_view_style_selection_item_nullability),
-    COMMENTS(8, ERDMessages.erd_view_style_selection_item_comments),
-    ENTITY_FQN(16, ERDMessages.erd_view_style_selection_item_fully_qualified_names)
+    ICONS(1, ERDUIMessages.erd_view_style_selection_item_icons),
+    TYPES(2, ERDUIMessages.erd_view_style_selection_item_data_types),
+    NULLABILITY(4, ERDUIMessages.erd_view_style_selection_item_nullability),
+    COMMENTS(8, ERDUIMessages.erd_view_style_selection_item_comments),
+    ENTITY_FQN(16, ERDUIMessages.erd_view_style_selection_item_fully_qualified_names)
     ;
 
     private final int value;
@@ -54,7 +53,7 @@ public enum ERDViewStyle
         return title;
     }
 
-    public static ERDViewStyle[] getDefaultStyles(IPreferenceStore store)
+    public static ERDViewStyle[] getDefaultStyles(DBPPreferenceStore store)
     {
         String attrString = store.getString(ERDConstants.PREF_ATTR_STYLES);
         if (!CommonUtils.isEmpty(attrString)) {

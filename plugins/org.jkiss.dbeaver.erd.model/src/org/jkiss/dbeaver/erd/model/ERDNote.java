@@ -14,30 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.EditPartFactory;
-import org.eclipse.gef.palette.PaletteRoot;
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.CommonUtils;
 
 /**
- * ERD object adapter
+ * Simple text note
  */
-public interface ERDDecorator {
+public class ERDNote extends ERDElement<String> {
 
-    boolean showCheckboxes();
-
-    boolean supportsAttributeVisibility();
-
-    /**
-     * Margin around entity figure. This affects diagram connections layout
-     */
-    Insets getDefaultEntityInsets();
+    public ERDNote(String text) {
+        super(CommonUtils.notEmpty(text));
+    }
 
     @NotNull
-    EditPartFactory createPartFactory();
+    @Override
+    public String getName() {
+        return getObject();
+    }
 
-    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
-
+    @Override
+    public void setObject(String object) {
+        super.setObject(CommonUtils.notEmpty(object));
+    }
 }

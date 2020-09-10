@@ -17,14 +17,12 @@
 /*
  * Created on Jul 13, 2004
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDObject;
-import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -276,7 +274,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
                 continue;
             }
             monitor.subTask("Load " + table.getName());
-            ERDEntity erdEntity = ERDUIUtils.makeEntityFromObject(monitor, this, entityCache, table, null);
+            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, entityCache, table, null);
             erdEntity.setPrimary(table == dbObject);
 
             addEntity(erdEntity, false);

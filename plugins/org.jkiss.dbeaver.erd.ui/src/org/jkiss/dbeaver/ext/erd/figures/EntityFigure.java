@@ -21,11 +21,11 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.ERDColors;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -100,7 +100,7 @@ public class EntityFigure extends Figure {
         //layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
-        LineBorder border = new LineBorder(getBorderColor(), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
+        LineBorder border = new LineBorder(getBorderColor(), ERDUIConstants.DEFAULT_ENTITY_BORDER_WIDTH);
 
         setBorder(border);
         setOpaque(true);
@@ -144,9 +144,9 @@ public class EntityFigure extends Figure {
 
     protected Color getBorderColor() {
         int dsIndex = getPart().getDiagram().getDataSourceIndex(part.getEntity().getDataSource().getContainer());
-        boolean changeBorderColors = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS);
+        boolean changeBorderColors = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS);
         if (dsIndex == 0 || !changeBorderColors) {
-            return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
+            return UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND);
         }
         return ERDColors.getBorderColor(dsIndex - 1);
     }
@@ -158,17 +158,17 @@ public class EntityFigure extends Figure {
     public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
-        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+        setForegroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
         if (part.getEntity().isPrimary()) {
-            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
+            setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
         } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
-            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
+            setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
-            boolean changeHeaderColors = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS);
+            boolean changeHeaderColors = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS);
             if (changeHeaderColors) {
                 changeHeaderColor(colorRegistry);
             } else {
-                setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+                setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
             }
         }
     }
@@ -180,15 +180,15 @@ public class EntityFigure extends Figure {
             if (dataSource != null) {
                 int containerIndex = part.getDiagram().getContainerIndex(dataSource, container);
                 if (containerIndex == 0) {
-                    setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+                    setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
                 } else {
                     setBackgroundColor(ERDColors.getHeaderColor(containerIndex - 1));
                 }
             } else {
-                setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+                setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
             }
         } else {
-            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+            setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
         }
     }
 
@@ -197,7 +197,7 @@ public class EntityFigure extends Figure {
         Color bgColor = getBackgroundColor();
         
         if(bgColor == null)
-        	nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+        	nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
         else
 	        nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
     }
@@ -243,8 +243,8 @@ public class EntityFigure extends Figure {
     public void add(IFigure figure, Object constraint, int index) {
         if (figure instanceof AttributeItemFigure) {
             ColorRegistry colorRegistry = UIUtils.getColorRegistry();
-            figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
-            figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
+            figure.setForegroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
+            figure.setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ATTR_BACKGROUND));
 
             IFigure attrExtra = createRightPanel();
 

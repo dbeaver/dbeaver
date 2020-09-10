@@ -24,16 +24,20 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
-import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
@@ -65,10 +69,22 @@ public class ERDHandlerPaste extends AbstractHandler {
             if (editor != null && !editor.isReadOnly()) {
                 final Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
                 if (!CommonUtils.isEmpty(objects)) {
-                    final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(editor.getDiagram(), objects, true);
-                    if (!CommonUtils.isEmpty(erdEntities)) {
-                        Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
-                        editor.getCommandStack().execute(command);
+                    try {
+                        UIUtils.runInProgressService(monitor -> {
+                            final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(
+                                monitor,
+                                editor.getDiagram(),
+                                objects,
+                                new DiagramCollectSettingsDefault(), true);
+                            if (!CommonUtils.isEmpty(erdEntities)) {
+                                Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
+                                editor.getCommandStack().execute(command);
+                            }
+                        });
+                    } catch (InvocationTargetException e) {
+                        DBWorkbench.getPlatformUI().showError("Entity collect error", "Error during diagram entities collect", e);
+                    } catch (InterruptedException e) {
+                        // ignore
                     }
                 }
             }

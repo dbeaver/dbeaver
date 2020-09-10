@@ -28,13 +28,13 @@ import java.util.ResourceBundle;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ERDActivator extends AbstractUIPlugin {
+public class ERDUIActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.jkiss.dbeaver.erd.ui";
 
 	// The shared instance
-	private static ERDActivator plugin;
+	private static ERDUIActivator plugin;
 	
     private static ResourceBundle resourceBundle;
 
@@ -43,7 +43,7 @@ public class ERDActivator extends AbstractUIPlugin {
     /**
      * The constructor
      */
-	public ERDActivator() {
+	public ERDUIActivator() {
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class ERDActivator extends AbstractUIPlugin {
         preferences = new BundlePreferenceStore(getBundle());
 
         try {
-            resourceBundle = ResourceBundle.getBundle(ERDMessages.BUNDLE_NAME);
+            resourceBundle = ResourceBundle.getBundle(ERDUIMessages.BUNDLE_NAME);
         } catch (MissingResourceException x) {
             resourceBundle = null;
         }
@@ -74,7 +74,7 @@ public class ERDActivator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static ERDActivator getDefault() {
+	public static ERDUIActivator getDefault() {
 		return plugin;
 	}
 

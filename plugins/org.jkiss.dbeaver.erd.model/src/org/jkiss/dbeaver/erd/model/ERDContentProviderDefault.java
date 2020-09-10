@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +38,11 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     private static final Log log = Log.getLog(ERDContentProviderDefault.class);
 
     public ERDContentProviderDefault() {
+    }
+
+    @Override
+    public boolean allowEntityDuplicates() {
+        return false;
     }
 
     @Override

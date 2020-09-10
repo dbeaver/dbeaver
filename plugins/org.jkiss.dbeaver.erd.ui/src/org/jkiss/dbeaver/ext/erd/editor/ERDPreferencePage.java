@@ -19,17 +19,16 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2d.PrintFigureOperation;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
-import org.jkiss.dbeaver.ext.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -68,7 +67,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected Control createContents(Composite parent)
     {
-        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
+        DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
 
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
@@ -83,26 +82,26 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         return composite;
     }
 
-    private void createContentsGroup(IPreferenceStore store, Composite composite)
+    private void createContentsGroup(DBPPreferenceStore store, Composite composite)
     {
-        Group contentsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
-        contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
-        contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
+        contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
     }
 
-    private void createColorPrefGroup(IPreferenceStore store, Composite composite) {
-        Group contentsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_color_pref, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+    private void createColorPrefGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_color_pref, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
-        changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_change_border_colors, store.getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
-        changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_change_header_colors, store.getBoolean(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_border_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+        changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_header_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
     }
 
-    private void createVisibilityGroup(IPreferenceStore store, Composite composite)
+    private void createVisibilityGroup(DBPPreferenceStore store, Composite composite)
     {
         ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
 
-        Group elemsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_attributes_visibility, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attributes_visibility, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
             Button radio = new Button(elemsGroup, SWT.RADIO);
             radio.setData(visibility);
@@ -114,11 +113,11 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
-    private void createStyleGroup(IPreferenceStore store, Composite composite)
+    private void createStyleGroup(DBPPreferenceStore store, Composite composite)
     {
         ERDViewStyle[] enabledStyles = ERDViewStyle.getDefaultStyles(store);
 
-        Group elemsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_attribute_style, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_attribute_style, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         for (ERDViewStyle style : ERDViewStyle.values()) {
             Button check = new Button(elemsGroup, SWT.CHECK);
             check.setData(style);
@@ -130,36 +129,36 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
-    private void createGridGroup(IPreferenceStore store, Composite composite)
+    private void createGridGroup(DBPPreferenceStore store, Composite composite)
     {
-        Group gridGroup = UIUtils.createControlGroup(composite, ERDMessages.pref_page_erd_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        gridCheck = UIUtils.createCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_grid_enabled, null, store.getBoolean(ERDConstants.PREF_GRID_ENABLED), 2);
-        snapCheck = UIUtils.createCheckbox(gridGroup, ERDMessages.pref_page_erd_checkbox_snap_to_grid, null, store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED), 2);
+        Group gridGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        gridCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_grid_enabled, null, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED), 2);
+        snapCheck = UIUtils.createCheckbox(gridGroup, ERDUIMessages.pref_page_erd_checkbox_snap_to_grid, null, store.getBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED), 2);
 
-        spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, ERDMessages.pref_page_erd_spinner_grid_width, store.getInt(ERDConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
-        spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, ERDMessages.pref_page_erd_spinner_grid_height, store.getInt(ERDConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
+        spinnerGridWidth = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_width, store.getInt(ERDUIConstants.PREF_GRID_WIDTH), 5, Short.MAX_VALUE);
+        spinnerGridHeight = UIUtils.createLabelSpinner(gridGroup, ERDUIMessages.pref_page_erd_spinner_grid_height, store.getInt(ERDUIConstants.PREF_GRID_HEIGHT), 5, Short.MAX_VALUE);
     }
 
-    private void createPrintGroup(IPreferenceStore store, Composite composite)
+    private void createPrintGroup(DBPPreferenceStore store, Composite composite)
     {
-        Group printGroup = UIUtils.createControlGroup(composite, ERDMessages.pref_page_erd_group_print, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        modeCombo = UIUtils.createLabelCombo(printGroup, ERDMessages.pref_page_erd_combo_page_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
-        modeCombo.add(ERDMessages.pref_page_erd_item_tile);
-        modeCombo.add(ERDMessages.pref_page_erd_item_fit_page);
-        modeCombo.add(ERDMessages.pref_page_erd_item_fit_width);
-        modeCombo.add(ERDMessages.pref_page_erd_item_fit_height);
+        Group printGroup = UIUtils.createControlGroup(composite, ERDUIMessages.pref_page_erd_group_print, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        modeCombo = UIUtils.createLabelCombo(printGroup, ERDUIMessages.pref_page_erd_combo_page_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
+        modeCombo.add(ERDUIMessages.pref_page_erd_item_tile);
+        modeCombo.add(ERDUIMessages.pref_page_erd_item_fit_page);
+        modeCombo.add(ERDUIMessages.pref_page_erd_item_fit_width);
+        modeCombo.add(ERDUIMessages.pref_page_erd_item_fit_height);
         int modeIndex = 0;
-        switch (store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE)) {
+        switch (store.getInt(ERDUIConstants.PREF_PRINT_PAGE_MODE)) {
             case PrintFigureOperation.FIT_PAGE: modeIndex = 1; break;
             case PrintFigureOperation.FIT_WIDTH: modeIndex = 2; break;
             case PrintFigureOperation.FIT_HEIGHT: modeIndex = 3; break;
         }
         modeCombo.select(modeIndex);
 
-        spinnerMarginTop = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_top, store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP), 0, Short.MAX_VALUE);
-        spinnerMarginBottom = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_bottom, store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM), 0, Short.MAX_VALUE);
-        spinnerMarginLeft = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_left, store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT), 0, Short.MAX_VALUE);
-        spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_right, store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
+        spinnerMarginTop = UIUtils.createLabelSpinner(printGroup, ERDUIMessages.pref_page_erd_spinner_margin_top, store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_TOP), 0, Short.MAX_VALUE);
+        spinnerMarginBottom = UIUtils.createLabelSpinner(printGroup, ERDUIMessages.pref_page_erd_spinner_margin_bottom, store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_BOTTOM), 0, Short.MAX_VALUE);
+        spinnerMarginLeft = UIUtils.createLabelSpinner(printGroup, ERDUIMessages.pref_page_erd_spinner_margin_left, store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_LEFT), 0, Short.MAX_VALUE);
+        spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, ERDUIMessages.pref_page_erd_spinner_margin_right, store.getInt(ERDUIConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
     }
 
     @Override
@@ -176,18 +175,18 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
+        DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
 
-        store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
-        store.setValue(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
-        store.setValue(ERDConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
-        store.setValue(ERDConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
+        store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
+        store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
+        store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
+        store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
 
 
-        store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
-        store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
-        store.setValue(ERDConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());
-        store.setValue(ERDConstants.PREF_GRID_HEIGHT, spinnerGridHeight.getSelection());
+        store.setValue(ERDUIConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
+        store.setValue(ERDUIConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
+        store.setValue(ERDUIConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());
+        store.setValue(ERDUIConstants.PREF_GRID_HEIGHT, spinnerGridHeight.getSelection());
 
         int pageMode;
         switch (modeCombo.getSelectionIndex()) {
@@ -196,12 +195,12 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             case 3: pageMode = PrintFigureOperation.FIT_HEIGHT; break;
             default: pageMode = PrintFigureOperation.TILE; break;
         }
-        store.setValue(ERDConstants.PREF_PRINT_PAGE_MODE, pageMode);
+        store.setValue(ERDUIConstants.PREF_PRINT_PAGE_MODE, pageMode);
 
-        store.setValue(ERDConstants.PREF_PRINT_MARGIN_TOP, spinnerMarginTop.getSelection());
-        store.setValue(ERDConstants.PREF_PRINT_MARGIN_BOTTOM, spinnerMarginBottom.getSelection());
-        store.setValue(ERDConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
-        store.setValue(ERDConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
+        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_TOP, spinnerMarginTop.getSelection());
+        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_BOTTOM, spinnerMarginBottom.getSelection());
+        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
+        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
 
         for (Button radio : visibilityButtons) {
             if (radio.getSelection()) {
