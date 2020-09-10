@@ -19,7 +19,7 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.ext.erd.export.format" name="%extension-point.org.jkiss.dbeaver.ext.erd.export.format.name" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.erd.ui.export.format.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -31,8 +31,8 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
-            id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
-            class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
+            id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
+            class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
             main="false"
             label="%editor.erd.name"
             description="%editor.erd.description"
@@ -44,14 +44,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="er-diagrams" class="org.jkiss.dbeaver.ext.erd.navigator.ERDResourceHandler" name="ER diagrams" managable="true" icon="icons/erd_folder.png">
+        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="ER diagrams" managable="true" icon="icons/erd_folder.png">
             <root folder="Diagrams"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </handler>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.ext.erd.model.ERDObjectAdapter">
+        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
@@ -59,13 +59,13 @@
             <adapter type="org.jkiss.dbeaver.model.preferences.DBPPropertySource"/>
             <adapter type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         </factory>
-        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
-           <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorAdapter">
+           <adapter type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
         </factory>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerCopy">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerCopy">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
@@ -78,7 +78,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPaste">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPaste">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
@@ -86,14 +86,14 @@
             </activeWhen>
             <enabledWhen>
                 <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ext.erd.editor.editable"/>
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.editable"/>
                     </adapt>
                 </with>
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerDelete">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerDelete">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
@@ -102,8 +102,8 @@
             <enabledWhen>
                 <and>
                     <with variable="activeFocusControl">
-                        <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
-                            <test property="org.jkiss.dbeaver.ext.erd.editor.canDelete"/>
+                        <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.erd.ui.editor.canDelete"/>
                         </adapt>
                     </with>
                     <with variable="selection">
@@ -112,28 +112,14 @@
                 </and>
             </enabledWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerSelectAll">
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerSelectAll">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerUndo">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
-                </with>
-            </activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ext.erd.editor.canUndo"/>
-                    </adapt>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerRedo">
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerUndo">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
@@ -141,20 +127,34 @@
             </activeWhen>
             <enabledWhen>
                 <with variable="activeFocusControl">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
-                        <test property="org.jkiss.dbeaver.ext.erd.editor.canRedo"/>
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.canUndo"/>
                     </adapt>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPrint">
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerRedo">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.canRedo"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPrint">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerRefresh">
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerRefresh">
             <activeWhen>
                 <with variable="activeFocusControlId">
                     <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
@@ -166,11 +166,11 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
-             class="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
-             id="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
-             namespace="org.jkiss.dbeaver.ext.erd.editor"
+             class="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
+             id="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
+             namespace="org.jkiss.dbeaver.erd.ui.editor"
              properties="canUndo,canRedo,canDelete,editable"
-             type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+             type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
        </propertyTester>
     </extension>
 
@@ -364,19 +364,19 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="org.jkiss.dbeaver.ext.erd.ERDPreferencesInitializer"/>
+        <initializer class="org.jkiss.dbeaver.erd.ui.ERDPreferencesInitializer"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%pref.page.name.erd.editor">
+        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.erd.ui.editor.ERDPreferencePage" name="%pref.page.name.erd.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
+        <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.erd.ui.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
            <enabledWhen>
-              <instanceof value="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+              <instanceof value="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
            </enabledWhen>
         </page>
     </extension>
@@ -392,12 +392,12 @@
     </extension>
 
     <extension point="org.eclipse.ui.editors">
-        <editor name="%editor.org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone.name"
+        <editor name="%editor.org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone.name"
                 extensions="erd"
                 icon="icons/erd.png"
-                contributorClass="org.jkiss.dbeaver.ext.erd.editor.ERDEditorContributor"
-                class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone"
-                id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone">
+                contributorClass="org.jkiss.dbeaver.erd.ui.editor.ERDEditorContributor"
+                class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone"
+                id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
         </editor>
     </extension>
@@ -413,7 +413,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.erd.diagram.view" class="org.jkiss.dbeaver.ext.erd.navigator.ViewDiagramHandler">
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.view" class="org.jkiss.dbeaver.erd.ui.navigator.ViewDiagramHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -426,7 +426,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.ext.erd.navigator.CreateDiagramHandler"/>
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -478,7 +478,7 @@
             </command>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=additions">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart.EditorContext?after=additions">
             <command commandId="org.eclipse.ui.edit.undo"/>
             <command commandId="org.eclipse.ui.edit.redo"/>
             <separator name="selection" visible="true"/>
@@ -490,9 +490,9 @@
     <extension point="org.eclipse.ui.newWizards">
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             class="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
              icon="icons/erd.png"
-             id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
              name="%wizard.erd.name">
            <description>
                %wizard.erd.description
@@ -502,15 +502,15 @@
 
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
-            <newWizardShortcut id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"/>
+            <newWizardShortcut id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"/>
         </perspectiveExtension>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ext.erd.export.format">
-        <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportRasterImage"/>
-        <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.ext.erd.export.ERDExportGraphML"/>
+    <extension point="org.jkiss.dbeaver.erd.ui.export.format">
+        <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
     </extension>
 
 </plugin>
