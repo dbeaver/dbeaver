@@ -18,22 +18,16 @@ package org.jkiss.dbeaver.ext.erd;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
-import org.jkiss.dbeaver.ext.erd.model.ERDDiagram;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 public class ERDUIUtils
 {
@@ -73,10 +67,4 @@ public class ERDUIUtils
         return attributeLabel;
 	}
 
-    public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, ERDDiagram diagram, List<ERDEntity> otherEntities, DBSEntity entity, Object userData) {
-        ERDEntity erdEntity = new ERDEntity(entity);
-        erdEntity.setUserData(userData);
-        diagram.getContentProvider().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
-        return erdEntity;
-    }
 }

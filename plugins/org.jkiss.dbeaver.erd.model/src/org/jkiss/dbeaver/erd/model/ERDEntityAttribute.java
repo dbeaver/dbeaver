@@ -17,10 +17,9 @@
 /*
  * Created on Jul 13, 2004
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;

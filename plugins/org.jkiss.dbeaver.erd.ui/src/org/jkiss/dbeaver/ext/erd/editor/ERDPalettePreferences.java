@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
 
 
 /**
@@ -40,7 +40,7 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public int getDockLocation()
 	{
-		int location = ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
+		int location = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
 		if (location == 0)
 		{
 			return PositionConstants.EAST;
@@ -51,13 +51,13 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public int getPaletteState()
 	{
-		return ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
+		return ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
 	}
 
 	@Override
     public int getPaletteWidth()
 	{
-		int width = ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
+		int width = ERDUIActivator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
 		if (width == 0)
 			return DEFAULT_PALETTE_WIDTH;
 		return width;
@@ -66,19 +66,19 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public void setDockLocation(int location)
 	{
-		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
+		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
 	}
 
 	@Override
     public void setPaletteState(int state)
 	{
-		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
+		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
 	}
 
 	@Override
     public void setPaletteWidth(int width)
 	{
-		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
+		ERDUIActivator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
 	}
 
 }

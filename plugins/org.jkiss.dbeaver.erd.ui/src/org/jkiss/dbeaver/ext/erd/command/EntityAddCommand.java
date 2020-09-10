@@ -20,8 +20,8 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
-import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -82,7 +82,7 @@ public class EntityAddCommand extends Command
                                 new Class[]{DBSTable.class},
                             null);
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
-                            entity = ERDUIUtils.makeEntityFromObject(
+                            entity = ERDUtils.makeEntityFromObject(
                                 monitor,
                                 diagramPart.getDiagram(),
                                 Collections.emptyList(),

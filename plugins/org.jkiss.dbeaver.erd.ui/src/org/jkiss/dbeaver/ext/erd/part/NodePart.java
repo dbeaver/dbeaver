@@ -22,9 +22,9 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDElement;
+import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.erd.model.ERDElement;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -134,7 +134,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             newBorder = new MarginBorder(5);
         } else {
             newBorder = new CompoundBorder(
-                new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
+                new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
                 new MarginBorder(5)
             );
         }
@@ -153,7 +153,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
         if (figure != null) {
             figure.setBackgroundColor(
                 color == null ?
-                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND) :
+                    UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND) :
                     color);
         }
     }
@@ -170,7 +170,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
         if (figure != null) {
             figure.setForegroundColor(
                 color == null ?
-                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_FOREGROUND) :
+                    UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND) :
                     color);
         }
     }

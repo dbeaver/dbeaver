@@ -24,7 +24,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -72,10 +72,10 @@ public class EditableLabel extends Label
 		if (selected)
 		{
 			graphics.pushState();
-			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
 			graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
 			graphics.popState();
-			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 		}
 		super.paintFigure(graphics);
 	}

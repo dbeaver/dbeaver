@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.utils.CommonUtils;
+package org.jkiss.dbeaver.erd.model;
+
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
- * Simple text note
+ * ERD constants
  */
-public class ERDNote extends ERDElement<String> {
+public class ERDConstants {
 
-    public ERDNote(String text) {
-        super(CommonUtils.notEmpty(text));
-    }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return getObject();
-    }
+    public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
+    public static final String PREF_ATTR_STYLES = "erd.attr.styles";
 
-    @Override
-    public void setObject(String object) {
-        super.setObject(CommonUtils.notEmpty(object));
-    }
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
 }

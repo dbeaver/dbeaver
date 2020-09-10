@@ -21,8 +21,8 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
 /**
@@ -36,7 +36,7 @@ public class DiagramLayoutAction extends Action
 
 	public DiagramLayoutAction(ERDEditorPart editor)
 	{
-		super(ERDMessages.action_diagram_layout_name, ERDActivator.getImageDescriptor("icons/arrangeall.png")); //$NON-NLS-2$
+		super(ERDUIMessages.action_diagram_layout_name, ERDUIActivator.getImageDescriptor("icons/arrangeall.png")); //$NON-NLS-2$
 		this.editor = editor;
 	}
 

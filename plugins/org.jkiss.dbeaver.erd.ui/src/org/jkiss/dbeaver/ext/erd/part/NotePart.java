@@ -26,12 +26,12 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.erd.model.ERDElement;
+import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.FigureEditorLocator;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDElement;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
@@ -193,7 +193,7 @@ public class NotePart extends NodePart
         if (visualInfo.fgColor != null) {
             noteFigure.setForegroundColor(visualInfo.fgColor);
         }
-        if (visualInfo.borderWidth != ERDConstants.DEFAULT_NOTE_BORDER_WIDTH) {
+        if (visualInfo.borderWidth != ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH) {
             noteFigure.setBorder(createBorder(visualInfo.borderWidth));
         }
         if (visualInfo.font != null) {

@@ -26,25 +26,25 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackEvent;
 import org.eclipse.gef.commands.CommandStackEventListener;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
+import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.ERDUIActivator;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
 import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.command.EntityDeleteCommand;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutAuto;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -317,8 +317,8 @@ public class DiagramPart extends PropertyAwarePart {
     public Object getAdapter(Class key)
     {
         if (key == SnapToHelper.class) {
-            final IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
-            if (store.getBoolean(ERDConstants.PREF_GRID_ENABLED) && store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED)) {
+            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+            if (store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED) && store.getBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED)) {
                 return new SnapToGrid(this);
             } else {
                 return null;
@@ -381,7 +381,7 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     public String toString()
     {
-        return ERDMessages.entity_diagram_ + " " + getDiagram().getName();
+        return ERDUIMessages.entity_diagram_ + " " + getDiagram().getName();
     }
 
 

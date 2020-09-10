@@ -26,8 +26,9 @@ import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
-import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.ext.erd.ERDUIMessages;
+import org.jkiss.dbeaver.ext.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.ext.erd.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -60,7 +61,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle(ERDMessages.wizard_diagram_create_title);
+        setWindowTitle(ERDUIMessages.wizard_diagram_create_title);
         setNeedsProgressMonitor(true);
         IFolder diagramFolder = null;
         if (selection != null) {
@@ -161,6 +162,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
                 Collection<DBSEntity> tables = DiagramObjectCollector.collectTables(
                     monitor,
                     roots,
+                    new DiagramCollectSettingsDefault(),
                     true);
                 diagram.fillEntities(monitor, tables, null);
 

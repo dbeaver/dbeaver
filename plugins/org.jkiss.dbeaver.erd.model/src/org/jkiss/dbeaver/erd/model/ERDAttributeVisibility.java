@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.erd.model.internal.ERDMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,7 +46,7 @@ public enum ERDAttributeVisibility
         return title;
     }
 
-    public static ERDAttributeVisibility getDefaultVisibility(IPreferenceStore store)
+    public static ERDAttributeVisibility getDefaultVisibility(DBPPreferenceStore store)
     {
         String attrVisibilityString = store.getString(ERDConstants.PREF_ATTR_VISIBILITY);
         if (!CommonUtils.isEmpty(attrVisibilityString)) {

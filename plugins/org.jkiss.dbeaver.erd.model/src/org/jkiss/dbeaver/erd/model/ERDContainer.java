@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 

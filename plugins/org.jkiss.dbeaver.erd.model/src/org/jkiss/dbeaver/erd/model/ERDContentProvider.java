@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -27,6 +27,8 @@ import java.util.List;
  * ERD content provider
  */
 public interface ERDContentProvider {
+
+    boolean allowEntityDuplicates();
 
     /**
      * Create default entity attributes.

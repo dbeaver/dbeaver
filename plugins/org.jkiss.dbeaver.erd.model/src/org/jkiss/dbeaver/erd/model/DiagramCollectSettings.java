@@ -14,30 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
-
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.EditPartFactory;
-import org.eclipse.gef.palette.PaletteRoot;
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.erd.model;
 
 /**
- * ERD object adapter
+ * Table collector settings
  */
-public interface ERDDecorator {
+public interface DiagramCollectSettings {
 
-    boolean showCheckboxes();
+    boolean isShowViews();
 
-    boolean supportsAttributeVisibility();
+    void setShowViews(boolean showViews);
 
-    /**
-     * Margin around entity figure. This affects diagram connections layout
-     */
-    Insets getDefaultEntityInsets();
+    boolean isShowPartitions();
 
-    @NotNull
-    EditPartFactory createPartFactory();
-
-    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
-
+    void setShowPartitions(boolean showPartitions);
 }

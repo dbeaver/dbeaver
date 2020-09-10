@@ -14,54 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Logical foreign key
+ * Logical primary key
  */
-public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityReferrer {
+public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferrer {
 
-    private ERDElement entity;
+    private Object entity;
     private String name;
     private String description;
-    private ERDLogicalPrimaryKey pk;
+    private List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
 
-    public ERDLogicalAssociation(ERDElement entity, String name, String description, ERDLogicalPrimaryKey pk)
+    public ERDLogicalPrimaryKey(ERDElement entity, String name, String description)
     {
-        this.entity = entity;
+        this.entity = entity.getObject();
         this.name = name;
         this.description = description;
-        this.pk = pk;
-    }
-
-    @Nullable
-    @Override
-    public DBSEntityConstraint getReferencedConstraint()
-    {
-        return pk;
-    }
-
-    @Override
-    public DBSEntity getAssociatedEntity()
-    {
-        return pk.getParentObject();
     }
 
     @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
-        return entity instanceof ERDEntity ? ((ERDEntity) entity).getDataSource() : null;
+        return entity instanceof DBSObject ? ((DBSObject) entity).getDataSource() : null;
     }
 
     @Nullable
@@ -71,18 +57,17 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
         return description;
     }
 
-    @NotNull
     @Override
     public DBSEntity getParentObject()
     {
-        return entity instanceof ERDEntity ? ((ERDEntity)entity).getObject() : null;
+        return entity instanceof DBSEntity ? (DBSEntity) entity : null;
     }
 
     @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {
-        return ERDConstants.CONSTRAINT_LOGICAL_FK;
+        return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
     @NotNull
@@ -101,6 +86,6 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     @Override
     public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return Collections.emptyList();
+        return columns;
     }
 }

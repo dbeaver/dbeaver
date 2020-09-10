@@ -18,12 +18,11 @@
 package org.jkiss.dbeaver.ext.erd;
 
 import org.eclipse.draw2d.PrintFigureOperation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * ERD constants
  */
-public class ERDConstants {
+public class ERDUIConstants {
 
     public static final String ERD_CONTROL_ID = "org.jkiss.dbeaver.erd.ERDEditor";
 
@@ -46,8 +45,6 @@ public class ERDConstants {
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
-    public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
-    public static final String PREF_ATTR_STYLES = "erd.attr.styles";
     public static final String COLOR_ERD_DIAGRAM_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.background";
     public static final String COLOR_ERD_ENTITY_PRIMARY_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.primary.background";
     public static final String COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.association.background";
@@ -75,11 +72,9 @@ public class ERDConstants {
     public static final String COLOR_ERD_HEADER_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"; //$NON-NLS-1$
     public static final String COLOR_ERD_HEADER_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"; //$NON-NLS-1$
 
-    public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDActivator.PLUGIN_ID + "/icons/";
+    public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDUIActivator.PLUGIN_ID + "/icons/";
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
-
-    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
 
 }

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
  */
 public class DBNDiagram extends DBNResource
 {
-    private static final DBIcon DIAGRAM_ICON = new DBIcon(ERDConstants.ICON_LOCATION_PREFIX + "erd.png");
+    private static final DBIcon DIAGRAM_ICON = new DBIcon(ERDUIConstants.ICON_LOCATION_PREFIX + "erd.png");
 
     private DBPImage image;
 

@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -39,12 +34,12 @@ public class DiagramObjectCollector {
 
     private static final Log log = Log.getLog(DiagramObjectCollector.class);
 
-    private final EntityDiagram diagram;
+    private final ERDDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();
     private boolean showViews;
     private boolean showPartitions;
 
-    public DiagramObjectCollector(EntityDiagram diagram)
+    public DiagramObjectCollector(ERDDiagram diagram)
     {
         this.diagram = diagram;
     }
@@ -52,11 +47,12 @@ public class DiagramObjectCollector {
     public static Collection<DBSEntity> collectTables(
         DBRProgressMonitor monitor,
         Collection<? extends DBSObject> roots,
+        DiagramCollectSettings settings,
         boolean forceShowViews)
         throws DBException
     {
         Set<DBSEntity> tables = new LinkedHashSet<>();
-        collectTables(monitor, roots, tables, forceShowViews);
+        collectTables(monitor, roots, tables, settings, forceShowViews);
         return tables;
     }
 
@@ -68,11 +64,12 @@ public class DiagramObjectCollector {
         DBRProgressMonitor monitor,
         Collection<? extends DBSObject> roots,
         Set<DBSEntity> tables,
+        DiagramCollectSettings settings,
         boolean forceShowViews)
         throws DBException
     {
-        boolean showPartitions = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_PARTITIONS);
-        boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
+        boolean showPartitions = settings.isShowPartitions();
+        boolean showViews = settings.isShowViews();
 
         for (DBSObject root : roots) {
             if (monitor.isCanceled()) {
@@ -84,7 +81,7 @@ public class DiagramObjectCollector {
             }
 
             if (root instanceof DBSFolder) {
-                collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables, false);
+                collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables, settings, false);
             } else if (root instanceof DBSEntity) {
                 if ((root instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView((DBSEntity) root) && !(showViews || forceShowViews))) {
                     continue;
@@ -135,10 +132,11 @@ public class DiagramObjectCollector {
 
     public void generateDiagramObjects(
         DBRProgressMonitor monitor,
-        Collection<? extends DBSObject> roots)
+        Collection<? extends DBSObject> roots,
+        DiagramCollectSettings settings)
         throws DBException
     {
-        Collection<DBSEntity> tables = collectTables(monitor, roots, showViews);
+        Collection<DBSEntity> tables = collectTables(monitor, roots, settings, showViews);
         for (DBSEntity table : tables) {
             if (DBUtils.isHiddenObject(table)) {
                 // Skip hidden tables
@@ -155,11 +153,11 @@ public class DiagramObjectCollector {
 
     private void addDiagramEntity(DBRProgressMonitor monitor, DBSEntity table)
     {
-        if (diagram.containsTable(table) && !diagram.getDecorator().allowEntityDuplicates()) {
+        if (diagram.containsTable(table) && !diagram.getContentProvider().allowEntityDuplicates()) {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDUIUtils.makeEntityFromObject(monitor, diagram, erdEntities, table, null);
+        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, erdEntities, table, null);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
         }
@@ -179,7 +177,12 @@ public class DiagramObjectCollector {
         return erdEntities;
     }
 
-    public static List<ERDEntity> generateEntityList(final EntityDiagram diagram, Collection<DBPNamedObject> objects, boolean forceShowViews)
+    public static List<ERDEntity> generateEntityList(
+        DBRProgressMonitor monitor,
+        final ERDDiagram diagram,
+        Collection<DBPNamedObject> objects,
+        DiagramCollectSettings settings,
+        boolean forceShowViews)
     {
         final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
@@ -190,26 +193,19 @@ public class DiagramObjectCollector {
 
         final List<ERDEntity> entities = new ArrayList<>();
 
-        try {
-            UIUtils.runInProgressService(monitor -> {
-                monitor.beginTask("Collect diagram objects", 1);
-                DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
-                collector.setShowViews(forceShowViews);
-                //boolean showViews = ERDActivator.getDefault().getPreferenceStore().getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS);
+        monitor.beginTask("Collect diagram objects", 1);
+        DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
+        collector.setShowViews(forceShowViews);
+        //boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
 
-                try {
-                    collector.generateDiagramObjects(monitor, roots);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-                entities.addAll(collector.getDiagramEntities());
-                monitor.done();
-            });
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        } catch (InterruptedException e) {
-            // interrupted
+        try {
+            collector.generateDiagramObjects(monitor, roots, settings);
+        } catch (DBException e) {
+            log.error(e);
         }
+        entities.addAll(collector.getDiagramEntities());
+        monitor.done();
+
         return entities;
     }
 

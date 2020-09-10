@@ -26,8 +26,8 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -44,11 +44,11 @@ public class NoteFigure extends FlowPage {
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
 
-        setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND));
-        setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_FOREGROUND));
+        setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND));
+        setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND));
         setOpaque(true);
         setBorder(new CompoundBorder(
-            new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), ERDConstants.DEFAULT_NOTE_BORDER_WIDTH),
+            new LineBorder(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND), ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
     }

@@ -17,11 +17,10 @@
 /*
  * Created on Jul 13, 2004
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
