@@ -240,6 +240,8 @@ public class ResultSetMessages extends NLS {
 
 	public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
+    public static String pref_page_database_general_use_column_names;
+    public static String pref_page_database_general_use_column_names_tip;
 
 	public static String value_format_selector_database_native;
 	public static String value_format_selector_display;
