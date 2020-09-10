@@ -317,6 +317,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_group_general;
 	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
+	public static String pref_page_eclipse_ui_general_group_general;
+	public static String pref_page_eclipse_ui_general_group_label;
 
 	public static String runtime_jobs_connect_name;
 	public static String runtime_jobs_connect_status_connected;
@@ -383,8 +385,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_server_side_object_filters;
 	public static String pref_page_database_general_server_side_object_filters_tip;
 	public static String pref_page_database_general_group_query_metadata;
-	public static String pref_page_database_general_use_column_names;
-	public static String pref_page_database_general_use_column_names_tip;
 	// EntityEditor
 	public static String pref_page_ui_general_keep_database_editors_tip;
 	public static String pref_page_ui_general_refresh_editor_on_open_tip;
