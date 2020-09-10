@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -47,7 +46,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     private List<ERDEntityAttribute> sourceAttributes;
     private List<ERDEntityAttribute> targetAttributes;
 
-    private List<Point> initBends;
+    private List<int[]> initBends;
 
     /**
      * Constructor for logical association
@@ -176,12 +175,13 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         }
     }
 
-    public List<Point> getInitBends()
+    // Bend is array of coordinates (x = [0], y = [1])
+    public List<int[]> getInitBends()
     {
         return initBends;
     }
 
-    public void setInitBends(List<Point> bends)
+    public void setInitBends(List<int[]> bends)
     {
         this.initBends = bends;
     }

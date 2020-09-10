@@ -6,7 +6,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.erd.ui;singleton:=true
 Bundle-Version: 3.0.0.qualifier
 Bundle-Release-Date: 20200831
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Activator: org.jkiss.dbeaver.ext.erd.ERDUIActivator
+Bundle-Activator: org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -21,12 +21,12 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.ext.erd,
- org.jkiss.dbeaver.ext.erd.command,
- org.jkiss.dbeaver.ext.erd.editor,
- org.jkiss.dbeaver.ext.erd.export,
- org.jkiss.dbeaver.ext.erd.figures,
- org.jkiss.dbeaver.ext.erd.model,
- org.jkiss.dbeaver.ext.erd.part,
- org.jkiss.dbeaver.ext.erd.policy
+Export-Package: org.jkiss.dbeaver.erd.ui,
+ org.jkiss.dbeaver.erd.ui.command,
+ org.jkiss.dbeaver.erd.ui.editor,
+ org.jkiss.dbeaver.erd.ui.export,
+ org.jkiss.dbeaver.erd.ui.figures,
+ org.jkiss.dbeaver.erd.ui.model,
+ org.jkiss.dbeaver.erd.ui.part,
+ org.jkiss.dbeaver.erd.ui.policy
 Automatic-Module-Name: org.jkiss.dbeaver.erd.ui

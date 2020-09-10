@@ -19,7 +19,6 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -363,7 +362,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
         this.needsAutoLayout = needsAutoLayout;
     }
 
-    public void addInitRelationBends(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, String relName, List<Point> bends) {
+    public void addInitRelationBends(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, String relName, List<int[]> bends) {
         for (ERDAssociation rel : sourceEntity.getReferences()) {
             if (rel.getSourceEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
