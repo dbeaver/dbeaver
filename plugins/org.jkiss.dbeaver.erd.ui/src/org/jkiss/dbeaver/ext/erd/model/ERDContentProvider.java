@@ -16,30 +16,26 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.eclipse.draw2d.geometry.Insets;
-import org.eclipse.gef.EditPartFactory;
-import org.eclipse.gef.palette.PaletteRoot;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+
+import java.util.List;
 
 /**
- * ERD object adapter
+ * ERD content provider
  */
-public interface ERDDecorator {
-
-    boolean showCheckboxes();
-
-    boolean allowEntityDuplicates();
-
-    boolean supportsAttributeVisibility();
+public interface ERDContentProvider {
 
     /**
-     * Margin around entity figure. This affects diagram connections layout
+     * Create default entity attributes.
+     * @param diagram Diagram
+     * @param otherEntities list of entities if they are added as a batch
      */
-    Insets getDefaultEntityInsets();
+    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity);
 
-    @NotNull
-    EditPartFactory createPartFactory();
-
-    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
+    @Nullable
+    ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);
 
 }

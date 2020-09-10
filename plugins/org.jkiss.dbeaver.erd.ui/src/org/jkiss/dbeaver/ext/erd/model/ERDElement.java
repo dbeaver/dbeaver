@@ -21,13 +21,14 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Model object representing a relational database Table
+ * Model object representing a relational entity
  * Also includes the bounds of the table so that the diagram can be
  * restored following a serializeDiagram, although ideally this should be
  * in a separate diagram specific model hierarchy

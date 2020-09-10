@@ -17,7 +17,7 @@
 /*
  * Created on Jul 15, 2004
  */
-package org.jkiss.dbeaver.ext.erd.model;
+package org.jkiss.dbeaver.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.model.DBPNamedObject;

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
+import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;

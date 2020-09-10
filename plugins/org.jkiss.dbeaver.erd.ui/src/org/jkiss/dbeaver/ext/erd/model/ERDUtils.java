@@ -19,17 +19,13 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -40,32 +36,6 @@ import java.util.List;
 public class ERDUtils
 {
     private static final Log log = Log.getLog(ERDUtils.class);
-
-    public static String getFullAttributeLabel(EntityDiagram diagram, ERDEntityAttribute attribute, boolean includeType) {
-        String attributeLabel = attribute.getName();
-        if (includeType && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
-            attributeLabel += ": " + attribute.getObject().getFullTypeName();
-        }
-        if (includeType && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
-            if (attribute.getObject().isRequired()) {
-                attributeLabel += " NOT NULL";
-            }
-        }
-        if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
-            String comment = attribute.getObject().getDescription();
-            if (!CommonUtils.isEmpty(comment)) {
-                attributeLabel += " - " + comment;
-            }
-        }
-        return attributeLabel;
-	}
-
-    public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, List<ERDEntity> otherEntities, DBSEntity entity, Object userData) {
-        ERDEntity erdEntity = new ERDEntity(entity);
-        erdEntity.setUserData(userData);
-        diagram.getDecorator().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
-        return erdEntity;
-    }
 
     @NotNull
     public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
@@ -120,21 +90,6 @@ public class ERDUtils
         } catch (DBException e) {
             log.debug(e);
             return false;
-        }
-    }
-
-    public static void openObjectEditor(@NotNull ERDObject object) {
-        if (object.getObject() instanceof DBSObject) {
-            UIUtils.runUIJob("Open object editor", monitor -> {
-                DBNDatabaseNode node = DBNUtils.getNodeByObject(
-                    monitor,
-                    (DBSObject) object.getObject(),
-                    true
-                );
-                if (node != null) {
-                    NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
-                }
-            });
         }
     }
 

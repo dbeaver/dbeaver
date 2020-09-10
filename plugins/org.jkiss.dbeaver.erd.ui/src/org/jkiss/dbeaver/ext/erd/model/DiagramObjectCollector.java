@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -158,7 +159,7 @@ public class DiagramObjectCollector {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, erdEntities, table, null);
+        ERDEntity erdEntity = ERDUIUtils.makeEntityFromObject(monitor, diagram, erdEntities, table, null);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
         }

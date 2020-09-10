@@ -196,9 +196,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         }
         EntityDiagram diagram;
         if (!dbObject.isPersisted()) {
-            diagram = new EntityDiagram(getDecorator(), dbObject, "New Object");
+            diagram = new EntityDiagram(dbObject, "New Object", getContentProvider(), getDecorator());
         } else {
-            diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
+            diagram = new EntityDiagram(dbObject, dbObject.getName(), getContentProvider(), getDecorator());
 
             // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(

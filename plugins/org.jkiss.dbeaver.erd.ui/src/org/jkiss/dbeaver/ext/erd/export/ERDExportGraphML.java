@@ -22,6 +22,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeListFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.*;
@@ -185,7 +186,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                     if (attrsString.length() > 0) {
                                         attrsString.append("\n");
                                     }
-                                    attrsString.append(ERDUtils.getFullAttributeLabel(diagram, attr, true));
+                                    attrsString.append(ERDUIUtils.getFullAttributeLabel(diagram, attr, true));
                                 }
 
                                 xml.addText(attrsString.toString());
@@ -284,7 +285,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
     private double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
         int maxLength = 0;
         for (ERDEntityAttribute attr : entity.getAttributes()) {
-            int attributeLength = (ERDUtils.getFullAttributeLabel(diagram, attr, true)).length();
+            int attributeLength = (ERDUIUtils.getFullAttributeLabel(diagram, attr, true)).length();
             if (attributeLength > maxLength) {
                 maxLength = attributeLength;
             }

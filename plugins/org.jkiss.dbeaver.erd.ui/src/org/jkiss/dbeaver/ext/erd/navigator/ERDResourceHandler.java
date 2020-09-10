@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -146,7 +147,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             DBRRunnableWithProgress runnable = monitor1 -> {
                 try {
                     EntityDiagram newDiagram = copyFrom == null ?
-                            new EntityDiagram(new ERDDecoratorDefault(), null, "<Diagram>") :
+                            new EntityDiagram(null, "<Diagram>", new ERDContentProviderDecorated(), new ERDDecoratorDefault()) :
                             copyFrom.copy();
                     newDiagram.setName(title);
                     newDiagram.setLayoutManualAllowed(true);
