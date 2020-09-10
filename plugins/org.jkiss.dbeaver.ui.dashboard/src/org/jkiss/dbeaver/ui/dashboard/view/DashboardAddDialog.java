@@ -138,7 +138,7 @@ public class DashboardAddDialog extends BaseDialog {
         });
 
         createButton(parent, IDialogConstants.OK_ID, UIDashboardMessages.dialog_add_dashboard_button_add, true).setEnabled(false);
-        createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_add_dashboard_button_cancel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     public DashboardDescriptor getSelectedDashboard() {

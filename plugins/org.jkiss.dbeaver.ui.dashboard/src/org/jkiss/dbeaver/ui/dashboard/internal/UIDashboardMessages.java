@@ -33,6 +33,11 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_add_dashboard_button_cancel;
     public static String dialog_add_dashboard_button_add;
 
+    //select dashboard database dialog
+    public static String dialog_dashboard_database_select_title;
+    public static String dialog_dashboard_database_select_column_name;
+    public static String dialog_dashboard_database_select_column_description;
+
     //edit dashboard dialog
     public static String dialog_edit_dashboard_title;
     public static String dialog_edit_dashboard_infolabels_predifined_dashboard;
@@ -84,6 +89,47 @@ public class UIDashboardMessages extends NLS {
     public static String dialog_dashboard_item_config_buttons_configuration;
     public static String dialog_dashboard_item_config_buttons_sqlqueries;
     public static String dialog_dashboard_item_config_buttons_sqlqueries_dash;
+
+    // dashboard item config dialog
+    public static String dialog_dashboard_item_view_title;
+
+    // dashboard manager dialog
+    public static String dialog_dashboard_manager_title;
+    public static String dialog_dashboard_manager_treecolumn_name;
+    public static String dialog_dashboard_manager_button_new;
+    public static String dialog_dashboard_manager_button_copy;
+    public static String dialog_dashboard_manager_button_edit;
+    public static String dialog_dashboard_manager_button_delete;
+    public static String dialog_dashboard_manager_infolabel_predifined_dashboard;
+    public static String dialog_dashboard_manager_shell_delete_title;
+    public static String dialog_dashboard_manager_shell_delete_question;
+
+    // dashboard view config dialog
+    public static String dialog_dashboard_view_config_title;
+    public static String dialog_dashboard_view_config_group_viewcfg;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_connect;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_connect_tooltip;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn;
+    public static String dialog_dashboard_view_config_group_viewcfg_checkbox_use_separate_conn_tooltip;
+    public static String dialog_dashboard_view_config_button_manage;
+
+    // dashboard renderer timeseries
+    public static String histogram_timeseries_x_axis_label;
+    public static String histogram_timeseries_y_axis_label;
+    public static String histogram_timeseries_date_axis_label;
+
+    // dashboard item
+    public static String dashboard_item_errorlabel_text;
+
+    // dashboard chart composite
+    public static String dashboard_chart_composite_menu_manager_text;
+
+    public static String error_dashboard_view_no_connection_title;
+    public static String error_dashboard_view_no_connection_msg;
+    public static String error_dashboard_view_cannot_open_title;
+    public static String error_dashboard_view_cannot_open_msg;
+
+    public static String dashboard_view_status_off;
 
     static {
         // initialize resource bundle
