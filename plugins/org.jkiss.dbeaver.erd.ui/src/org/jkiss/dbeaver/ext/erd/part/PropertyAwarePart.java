@@ -22,7 +22,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.erd.model.ERDObject;
+import org.jkiss.dbeaver.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 

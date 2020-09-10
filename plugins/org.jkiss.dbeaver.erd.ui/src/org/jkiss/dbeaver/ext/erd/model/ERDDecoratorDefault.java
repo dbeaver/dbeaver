@@ -22,24 +22,12 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.palette.*;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditPartFactory;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * ERD object adapter
@@ -130,106 +118,6 @@ public class ERDDecoratorDefault implements ERDDecorator {
         paletteRoot.add(controls);
 
         return controls;
-    }
-
-    @Override
-    public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, List<ERDEntity> otherEntities, ERDEntity erdEntity) {
-        DBSEntity entity = erdEntity.getObject();
-        ERDAttributeVisibility attributeVisibility = diagram.getDecorator().supportsAttributeVisibility() ?
-            erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
-        if (attributeVisibility == null) {
-            EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(erdEntity.getObject());
-            if (visualInfo != null) {
-                attributeVisibility = visualInfo.attributeVisibility;
-            }
-            if (attributeVisibility == null) {
-                attributeVisibility = diagram.getAttributeVisibility();
-            }
-        }
-        if (attributeVisibility != ERDAttributeVisibility.NONE) {
-            Set<DBSEntityAttribute> keyColumns = new HashSet<>();
-            try {
-                for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
-                    if (assoc instanceof DBSEntityReferrer) {
-                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
-                    }
-                }
-                for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
-                    if (constraint instanceof DBSEntityReferrer) {
-                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
-                    }
-                }
-            } catch (DBException e) {
-                log.warn(e);
-            }
-
-            Collection<? extends DBSEntityAttribute> idColumns = null;
-            try {
-                idColumns = ERDUtils.getBestTableIdentifier(monitor, entity);
-                keyColumns.addAll(idColumns);
-            } catch (DBException e) {
-                log.error("Error reading table identifier", e);
-            }
-            try {
-
-                Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-                DBSEntityAttribute firstAttr = CommonUtils.isEmpty(attributes) ? null : attributes.iterator().next();
-                DBSObjectFilter columnFilter = firstAttr == null ? null :
-                    entity.getDataSource().getContainer().getObjectFilter(firstAttr.getClass(), entity, false);
-                if (!CommonUtils.isEmpty(attributes)) {
-                    for (DBSEntityAttribute attribute : attributes) {
-                        boolean isInIdentifier = idColumns != null && idColumns.contains(attribute);
-                        if (!keyColumns.contains(attribute) && !isAttributeVisible(erdEntity, attribute)) {
-                            // Show all visible attributes and all key attributes
-                            continue;
-                        }
-                        if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
-                            continue;
-                        }
-
-                        switch (attributeVisibility) {
-                            case PRIMARY:
-                                if (!isInIdentifier) {
-                                    continue;
-                                }
-                                break;
-                            case KEYS:
-                                if (!keyColumns.contains(attribute)) {
-                                    continue;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        boolean inPrimaryKey = idColumns != null && idColumns.contains(attribute);
-                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, inPrimaryKey);
-                        erdEntity.addAttribute(c1, false);
-                    }
-                }
-            } catch (DBException e) {
-                // just skip this problematic attributes
-                log.debug("Can't load table '" + entity.getName() + "'attributes", e);
-            }
-        }
-    }
-
-    protected boolean isAttributeVisible(ERDEntity erdEntity, DBSEntityAttribute attribute) {
-        if (attribute instanceof DBSEntityAssociation) {
-            // skip attributes which are associations
-            // usual thing in some systems like WMI/CIM model
-            return false;
-        }
-        if (DBUtils.isHiddenObject(attribute) || DBUtils.isInheritedObject(attribute)) {
-            // Skip hidden attributes
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public ERDAssociation createAutoAssociation(ERDContainer diagram, DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
-        // Allow all auto-associations
-        return new ERDAssociation(association, sourceEntity, targetEntity, reflect);
     }
 
 }

@@ -24,6 +24,7 @@ import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeDirectEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeDragAndDropEditPolicy;
@@ -70,7 +70,7 @@ public class AttributePart extends PropertyAwarePart {
     }
 
     public String getAttributeLabel() {
-        return ERDUtils.getFullAttributeLabel(getDiagram(), getAttribute(), false);
+        return ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), false);
     }
 
     /**
@@ -113,7 +113,7 @@ public class AttributePart extends PropertyAwarePart {
 			performDirectEdit();
 */
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUtils.openObjectEditor(getAttribute());
+            ERDUIUtils.openObjectEditor(getAttribute());
         }
     }
 

@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public interface ERDContainer {
 
-    ERDDecorator getDecorator();
+    ERDContentProvider getContentProvider();
 
     List<ERDEntity> getEntities();
 

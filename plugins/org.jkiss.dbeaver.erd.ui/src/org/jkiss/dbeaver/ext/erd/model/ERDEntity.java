@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -137,7 +136,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         if (!CommonUtils.isEmpty(attributes)) {
             attributes.clear();
         }
-        diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
+        diagram.getContentProvider().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
     }
 
     public boolean isPrimary() {
@@ -178,7 +177,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                             if (DBUtils.isInheritedObject(fk)) {
                                 continue;
                             }
-                            diagram.getDecorator().createAutoAssociation(diagram, fk, this, entity2, reflect);
+                            diagram.getContentProvider().createAutoAssociation(diagram, fk, this, entity2, reflect);
                         }
                     }
                 }
@@ -208,7 +207,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
                 ERDEntity refEntity = diagram.getEntityMap().get(
                     DBVUtils.tryGetRealEntity(fk.getReferencedConstraint().getParentObject()));
                 if (refEntity != null) {
-                    ERDAssociation erdAssociation = diagram.getDecorator().createAutoAssociation(diagram, fk, this, refEntity, reflect);
+                    ERDAssociation erdAssociation = diagram.getContentProvider().createAutoAssociation(diagram, fk, this, refEntity, reflect);
                     if (erdAssociation != null) {
                         iter.remove();
                     }

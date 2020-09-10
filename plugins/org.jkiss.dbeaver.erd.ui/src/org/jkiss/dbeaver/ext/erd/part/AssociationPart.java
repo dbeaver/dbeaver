@@ -28,6 +28,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
@@ -251,7 +252,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     @Override
     public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUtils.openObjectEditor(getAssociation());
+            ERDUIUtils.openObjectEditor(getAssociation());
         }
     }
 

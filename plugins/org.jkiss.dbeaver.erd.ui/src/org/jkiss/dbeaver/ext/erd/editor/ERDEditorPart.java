@@ -141,6 +141,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private PaletteRoot paletteRoot;
 
     private volatile String errorMessage;
+    private ERDContentProvider contentProvider;
     private ERDDecorator decorator;
     private ZoomComboContributionItem zoomCombo;
 
@@ -151,11 +152,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
     }
 
+    public ERDContentProvider getContentProvider() {
+        if (contentProvider == null) {
+            contentProvider = createContentProvider();
+        }
+        return contentProvider;
+    }
+
     public ERDDecorator getDecorator() {
         if (decorator == null) {
             decorator = createDecorator();
         }
         return decorator;
+    }
+
+    protected ERDContentProvider createContentProvider() {
+        return new ERDContentProviderDefault();
     }
 
     protected ERDDecorator createDecorator() {
@@ -390,7 +402,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         initializeGraphicalViewer();
 
         // Set initial (empty) contents
-        viewer.setContents(new EntityDiagram(getDecorator(), null, "empty"));
+        viewer.setContents(new EntityDiagram(null, "empty", getContentProvider(), getDecorator()));
 
         // Set context menu
         ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);

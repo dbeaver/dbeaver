@@ -28,6 +28,7 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.ext.erd.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -49,7 +50,7 @@ import java.util.List;
 public class DiagramCreateWizard extends Wizard implements INewWizard {
 
     private IFolder folder;
-    private EntityDiagram diagram = new EntityDiagram(new ERDDecoratorDefault(), null, "");
+    private EntityDiagram diagram = new EntityDiagram(null, "", new ERDContentProviderDecorated(), new ERDDecoratorDefault());
     private DiagramCreateWizardPage pageContent;
 	private String errorMessage;
     private IStructuredSelection entitySelection;

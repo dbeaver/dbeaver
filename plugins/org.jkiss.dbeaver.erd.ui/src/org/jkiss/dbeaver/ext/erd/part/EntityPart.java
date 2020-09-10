@@ -26,6 +26,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.jkiss.dbeaver.ext.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.TableNameCellEditorValidator;
@@ -33,7 +34,10 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
@@ -100,7 +104,7 @@ public class EntityPart extends NodePart {
 			performDirectEdit();
 */
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
-            ERDUtils.openObjectEditor(getEntity());
+            ERDUIUtils.openObjectEditor(getEntity());
         }
     }
 

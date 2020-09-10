@@ -178,7 +178,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         final IFile file = getEditorFile();
 
         final DiagramPart diagramPart = getDiagramPart();
-        EntityDiagram entityDiagram = new EntityDiagram(getDecorator(), null, file.getName());
+        EntityDiagram entityDiagram = new EntityDiagram(null, file.getName(), getContentProvider(), getDecorator());
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
