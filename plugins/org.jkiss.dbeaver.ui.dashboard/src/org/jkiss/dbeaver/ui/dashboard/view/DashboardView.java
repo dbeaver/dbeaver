@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
+import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
@@ -49,7 +50,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
                 dataSourceContainer.getProject().getName() + "/" + dataSourceContainer.getId(),
                 IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard view", e);
+            DBWorkbench.getPlatformUI().showError(UIDashboardMessages.error_dashboard_view_cannot_open_title, UIDashboardMessages.error_dashboard_view_cannot_open_msg, e);
         }
         return null;
     }
@@ -157,7 +158,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
 
     private void updateStatus() {
         UIUtils.asyncExec(() -> {
-            setPartName(dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : " <off>"));
+            setPartName(dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : UIDashboardMessages.dashboard_view_status_off));
         });
     }
 
