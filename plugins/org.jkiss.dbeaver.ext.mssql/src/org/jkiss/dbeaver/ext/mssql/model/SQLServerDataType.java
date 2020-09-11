@@ -60,6 +60,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     private boolean assemblyType;
     private boolean tableType;
     private String collationName;
+    private int tableTypeId = 0;
 
     private boolean persisted;
 
@@ -80,6 +81,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         this.tableType = JDBCUtils.safeGetInt(dbResult, "is_table_type") != 0;
 
         this.collationName = JDBCUtils.safeGetString(dbResult, "collation_name");
+
+        if (tableType) {
+            this.tableTypeId = JDBCUtils.safeGetInt(dbResult, "type_table_object_id");
+        }
 
         if (userType) {
             SQLServerDataType systemDataType = getSystemDataType();
@@ -127,6 +132,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, schemaId) : null;
     }
 
+    public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
+        return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, 4) : null;
+    }
+
     public SQLServerDataType getSystemDataType() {
         if (userType) {
             return getDataSource().getSystemDataType(systemTypeId);
@@ -153,7 +162,16 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 sql.append(" NOT NULL;");
             }
         } else {
-            sql.append("-- Table types DDL not yet available");
+            try {
+                SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
+                if (tableType != null) {
+                    options.put(DBPScriptObject.OPTION_USE_SPECIAL_NAME, name);
+                    String objectDefinitionText = tableType.getObjectDefinitionText(monitor, options);
+                    sql.append(objectDefinitionText);
+                }
+            } catch (DBException e) {
+                log.debug("Schema not found. ", e);
+            }
         }
         return sql.toString();
     }
@@ -225,6 +243,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Property(viewable = false, order = 26)
     public String getCollationName() {
         return collationName;
+    }
+
+    public int getTableTypeId() {
+        return tableTypeId;
     }
 
     @NotNull

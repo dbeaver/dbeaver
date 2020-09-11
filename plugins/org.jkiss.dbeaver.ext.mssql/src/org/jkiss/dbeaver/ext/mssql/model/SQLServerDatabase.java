@@ -201,7 +201,10 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
             return session.prepareStatement(
-                "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1 order by name");
+                    "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
+                            " ss\nLEFT JOIN sys.table_types tt ON\n" +
+                            "ss.name = tt.name" +
+                            " WHERE ss.is_user_defined = 1 order by ss.name");
         }
 
         @Override
@@ -267,6 +270,18 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
     public SQLServerSchema getSchema(String name) {
         return schemaCache.getCachedObject(name);
+    }
+
+    public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
+        for (SQLServerSchema schema : getSchemas(monitor)) {
+            if (schema.getName().equalsIgnoreCase("sys")) {
+                return schema;
+            }
+        }
+        if (!monitor.isCanceled()) {
+            log.debug("System schema not found");
+        }
+        return null;
     }
 
     @Override

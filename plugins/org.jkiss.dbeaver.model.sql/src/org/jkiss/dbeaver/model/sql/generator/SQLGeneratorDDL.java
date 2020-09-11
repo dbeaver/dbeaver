@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
@@ -72,7 +73,11 @@ public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
 
         String definitionText = CommonUtils.notEmpty(object.getObjectDefinitionText(monitor, options)).trim();
         sql.append(definitionText);
-        if (!definitionText.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+        String delimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+        if (object instanceof DBSObject) {
+            delimiter = ((DBSObject) object).getDataSource().getSQLDialect().getScriptDelimiter();
+        }
+        if (!definitionText.endsWith(delimiter)) {
             sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         }
         sql.append("\n");
