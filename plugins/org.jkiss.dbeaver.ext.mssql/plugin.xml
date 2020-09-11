@@ -109,8 +109,12 @@
                             <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" virtual="true">
                                 <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                                 <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns" visibleIf="object.tableType">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
                             </folder>
                         </items>
                     </folder>
@@ -437,6 +441,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
