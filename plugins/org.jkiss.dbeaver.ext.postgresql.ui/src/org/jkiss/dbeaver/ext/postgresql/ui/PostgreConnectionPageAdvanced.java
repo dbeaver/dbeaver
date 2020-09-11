@@ -127,8 +127,8 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
         showTemplates.setEnabled(showNonDefault.getSelection());
         showUnavailable.setSelection(
-                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
-                        globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
+            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
+            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
         showUnavailable.setEnabled(showNonDefault.getSelection());
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
