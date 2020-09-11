@@ -907,7 +907,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Stretch
         UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_TOGGLE_LAYOUT, false);
+        createToggleLayoutButton();
 
     }
 
@@ -1278,7 +1278,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Remove all presentation panel toggles
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
                     for (Control vb : presentationSwitchFolder.getChildren()) {
-                        if (vb instanceof Label || vb.getData() instanceof SQLPresentationPanelDescriptor) {
+                        if (vb.getData() instanceof SQLPresentationPanelDescriptor) { // || vb instanceof Label
                             vb.dispose();
                             sideBarChanged = true;
                         }
@@ -1295,6 +1295,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Check and add presentation panel toggles
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                    removeToggleLayoutButton();
                     sideBarChanged = true;
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
                     VerticalButton panelButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT);
@@ -1305,6 +1306,7 @@ public class SQLEditor extends SQLEditorBase implements
                         //panelButton.setChecked(true);
                         toggleAction.run();
                     }
+                    createToggleLayoutButton();
                 }
             }
 
@@ -1318,6 +1320,18 @@ public class SQLEditor extends SQLEditorBase implements
             }
         } finally {
             resultsSash.setRedraw(true);
+        }
+    }
+
+    private void createToggleLayoutButton() {
+        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_TOGGLE_LAYOUT, false);
+    }
+
+    private void removeToggleLayoutButton() {
+        for (VerticalButton vButton : presentationSwitchFolder.getItems()) {
+            if (vButton.getCommandId() != null && vButton.getCommandId().equals(SQLEditorCommands.CMD_TOGGLE_LAYOUT)) {
+                vButton.dispose();
+            }
         }
     }
 
