@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.ResultSet;
@@ -41,7 +42,7 @@ import java.util.Map;
 /**
  * SQL Server data type
  */
-public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject {
+public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript {
 
     private static final Log log = Log.getLog(SQLServerDataType.class);
 
@@ -436,4 +437,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         }
     }
 
+    @Override
+    public void setObjectDefinitionText(String source) {
+        
+    }
 }
