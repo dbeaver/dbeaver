@@ -121,6 +121,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_nondefaultDatabase_tip;
     public static String dialog_setting_connection_show_templates;
     public static String dialog_setting_connection_show_templates_tip;
+    public static String dialog_setting_connection_show_not_available_for_conn;
+    public static String dialog_setting_connection_show_not_available_for_conn_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;
