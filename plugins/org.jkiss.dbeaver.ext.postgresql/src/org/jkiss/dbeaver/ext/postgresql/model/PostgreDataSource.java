@@ -119,8 +119,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
         // Make initial connection to read database list
         final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-        StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datallowconn ");
+        final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+        StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
+        if (!showUnavailable) {
+            catalogQuery.append(" AND datallowconn");
+        }
         if (!showTemplates) {
             catalogQuery.append(" AND NOT datistemplate ");
         }
