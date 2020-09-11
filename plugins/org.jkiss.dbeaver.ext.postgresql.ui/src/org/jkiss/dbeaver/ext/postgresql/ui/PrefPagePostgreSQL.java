@@ -42,6 +42,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
 
     private Button showNonDefault;
     private Button showTemplates;
+    private Button showUnavailable;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -77,6 +78,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     showTemplates.setEnabled(showNonDefault.getSelection());
+                    showUnavailable.setEnabled(showNonDefault.getSelection());
                 }
             });
             showTemplates = UIUtils.createCheckbox(secureGroup,
@@ -84,6 +86,13 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 PostgreMessages.dialog_setting_connection_show_templates_tip,
                 globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
                 2);
+            showUnavailable = UIUtils.createCheckbox(
+                    secureGroup,
+                    PostgreMessages.dialog_setting_connection_show_not_available_for_conn,
+                    PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip,
+                    globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
+                    2
+            );
         }
 
         {
@@ -111,6 +120,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);

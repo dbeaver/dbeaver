@@ -43,6 +43,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
 {
     private Button showNonDefault;
     private Button showTemplates;
+    private Button showUnavailable;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -78,9 +79,11 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     showTemplates.setEnabled(showNonDefault.getSelection());
+                    showUnavailable.setEnabled(showNonDefault.getSelection());
                 }
             });
             showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
+            showUnavailable = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_not_available_for_conn, PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip, false, 2);
         }
 
         {
@@ -123,6 +126,10 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
         showTemplates.setEnabled(showNonDefault.getSelection());
+        showUnavailable.setSelection(
+                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
+                        globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
+        showUnavailable.setEnabled(showNonDefault.getSelection());
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
             connectionInfo.getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING),
@@ -139,6 +146,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
+        connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
