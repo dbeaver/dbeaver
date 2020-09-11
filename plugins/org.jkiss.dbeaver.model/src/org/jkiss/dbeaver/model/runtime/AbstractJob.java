@@ -220,7 +220,7 @@ public abstract class AbstractJob extends Job
         private final DBRBlockingObject block;
 
         public JobCanceler(DBRBlockingObject block) {
-            super("Cancel block " + block); //$NON-N LS-1$
+            super("Operation cancel"); //$NON-N LS-1$
             this.block = block;
             setSystem(true);
             setUser(false);

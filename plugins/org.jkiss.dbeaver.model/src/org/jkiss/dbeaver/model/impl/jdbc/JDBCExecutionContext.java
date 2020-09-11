@@ -57,6 +57,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
+    private transient volatile boolean txnIsolationLevelReadInProgress;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
@@ -256,21 +257,28 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public DBPTransactionIsolation getTransactionIsolation()
         throws DBCException {
         if (transactionIsolationLevel == null) {
-            if (!RuntimeUtils.runTask(monitor -> {
+            if (!txnIsolationLevelReadInProgress) {
+                txnIsolationLevelReadInProgress = true;
                 try {
-                    DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+                    if (!RuntimeUtils.runTask(monitor -> {
                         try {
-                            transactionIsolationLevel = getConnection().getTransactionIsolation();
-                        } catch (Throwable e) {
-                            transactionIsolationLevel = Connection.TRANSACTION_NONE;
-                            log.error("Error getting transaction isolation level", e);
+                            DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+                                try {
+                                    transactionIsolationLevel = getConnection().getTransactionIsolation();
+                                } catch (Throwable e) {
+                                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                                    log.error("Error getting transaction isolation level", e);
+                                }
+                            });
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
                         }
-                    });
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+                    }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT, true)) {
+                        throw new DBCException("Can't determine transaction isolation - timeout");
+                    }
+                } finally {
+                    txnIsolationLevelReadInProgress = false;
                 }
-            }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT)) {
-                throw new DBCException("Can't determine transaction isolation - timeout");
             }
             if (transactionIsolationLevel == null) {
                 transactionIsolationLevel = Connection.TRANSACTION_NONE;
