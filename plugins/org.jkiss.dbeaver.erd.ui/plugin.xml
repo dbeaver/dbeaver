@@ -370,6 +370,7 @@
     <extension point="org.eclipse.ui.preferencePages">
         <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.erd.ui.editor.ERDPreferencePage" name="%pref.page.name.erd.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.erd"/>
         </page>
     </extension>
 
