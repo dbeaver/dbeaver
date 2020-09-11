@@ -57,6 +57,11 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
+    public boolean isDisposed() {
+        return resource == null || super.isDisposed();
+    }
+
+    @Override
     protected void dispose(boolean reflect)
     {
         if (this.handler != null) {
@@ -247,7 +252,12 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, ((DBNResource) node).getResource().getName());
+            IResource resource = ((DBNResource) node).getResource();
+            if (resource != null) {
+                pathName.insert(0, resource.getName());
+            } else{
+                pathName.insert(0, "?");
+            }
         }
         return NodePathType.resource.getPrefix() + pathName.toString();
     }

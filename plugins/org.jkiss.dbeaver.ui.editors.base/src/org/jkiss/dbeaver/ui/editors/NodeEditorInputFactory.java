@@ -64,6 +64,9 @@ public class NodeEditorInputFactory implements IElementFactory
     public static void saveState(IMemento memento, NodeEditorInput input)
     {
         final DBNNode node = input.getNavigatorNode();
+        if (node.isDisposed()) {
+            return;
+        }
         memento.putString(TAG_NODE, node.getNodeItemPath());
     }
 
