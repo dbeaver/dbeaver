@@ -151,13 +151,18 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     }
 
     SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, int typeID) throws DBException {
-        typesCache.getAllObjects(monitor, this);
+        try {
+            typesCache.getAllObjects(monitor, this);
 
-        SQLServerDataType dataType = typesCache.getDataType(typeID);
-        if (dataType != null) {
-            return dataType;
+            SQLServerDataType dataType = typesCache.getDataType(typeID);
+            if (dataType != null) {
+                return dataType;
+            }
+        } catch (DBException e) {
+            log.error("Error reading database data types", e);
         }
-        dataType = dataSource.getSystemDataType(typeID);
+
+        SQLServerDataType dataType = dataSource.getSystemDataType(typeID);
         if (dataType != null) {
             return dataType;
         }
@@ -202,9 +207,9 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
             return session.prepareStatement(
                     "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
-                            " ss\nLEFT JOIN sys.table_types tt ON\n" +
+                            " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
                             "ss.name = tt.name" +
-                            " WHERE ss.is_user_defined = 1 order by ss.name");
+                            " WHERE ss.is_user_defined = 1");
         }
 
         @Override
