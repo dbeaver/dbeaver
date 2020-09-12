@@ -55,6 +55,7 @@
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
         </editor>
 
         <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerUniqueKeyConfigurator">
