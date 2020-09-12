@@ -59,6 +59,8 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_INCLUDE_COMMENTS = "ddl.includeComments"; //$NON-NLS-1$
     String OPTION_INCLUDE_PERMISSIONS = "ddl.includePermissions"; //$NON-NLS-1$
 
+    String OPTION_USE_SPECIAL_NAME = "ddl.useSpecialName"; //$NON-NLS-1$
+
     Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
 
     String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
