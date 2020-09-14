@@ -29,20 +29,19 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
  * SQL Server data type
  */
-public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript {
+public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript, DBSEntity {
 
     private static final Log log = Log.getLog(SQLServerDataType.class);
 
@@ -440,5 +439,41 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Override
     public void setObjectDefinitionText(String source) {
         
+    }
+
+    @NotNull
+    @Override
+    public DBSEntityType getEntityType() {
+        return DBSEntityType.TYPE;
+    }
+
+    @Nullable
+    @Override
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttributes(monitor);
+    }
+
+    @Nullable
+    @Override
+    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttribute(monitor, attributeName);
+    }
+
+    @Nullable
+    @Override
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getConstraints(monitor);
+    }
+
+    @Nullable
+    @Override
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
     }
 }

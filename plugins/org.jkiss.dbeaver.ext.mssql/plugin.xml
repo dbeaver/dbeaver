@@ -110,11 +110,24 @@
                                 <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
-                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
-                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns" visibleIf="object.tableType">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
-                                    </items>
-                                </folder>
+                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table type columns" visibleIf="object.isTableType()">
+                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder label="%tree.uni_keys.node.name" icon="#constraints" description="Table type unique keys" visibleIf="object.isTableType()">
+                                        <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table type indexes" visibleIf="object.isTableType()">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                </items>
                             </folder>
                         </items>
                     </folder>
