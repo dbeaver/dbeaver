@@ -110,11 +110,12 @@
                                 <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
-                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
-                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns" visibleIf="object.tableType">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
-                                    </items>
-                                </folder>
+                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table type columns" visibleIf="object.isTableType()">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                </items>
                             </folder>
                         </items>
                     </folder>
