@@ -138,6 +138,11 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return this;
     }
 
+    void refreshDataTypes() {
+        typesCache.clearCache();
+    }
+
+
     //////////////////////////////////////////////////
     // Data types
 

@@ -94,6 +94,20 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
+    public boolean canEditObject(SQLServerTableColumn object) {
+        return !isTableType(object) && super.canEditObject(object);
+    }
+
+    @Override
+    public boolean canDeleteObject(SQLServerTableColumn object) {
+        return !isTableType(object) && super.canDeleteObject(object);
+    }
+
+    private boolean isTableType(SQLServerTableColumn column) {
+        return column.getTable() instanceof SQLServerTableType;
+    }
+
+    @Override
     protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         SQLServerTable table = (SQLServerTable) container;
