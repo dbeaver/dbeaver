@@ -29,20 +29,19 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
  * SQL Server data type
  */
-public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript {
+public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript, DBSEntity {
 
     private static final Log log = Log.getLog(SQLServerDataType.class);
 
@@ -440,5 +439,35 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Override
     public void setObjectDefinitionText(String source) {
         
+    }
+
+    @Override
+    public DBSEntityType getEntityType() {
+        return DBSEntityType.TYPE;
+    }
+
+    @Override
+    public List<SQLServerTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttributes(monitor);
+    }
+
+    @Override
+    public SQLServerTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttribute(monitor, attributeName);
+    }
+
+    @Override
+    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+        return null;
     }
 }
