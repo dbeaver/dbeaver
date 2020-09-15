@@ -179,6 +179,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         sequenceCache.clearCache();
         synonymCache.clearCache();
         procedureCache.clearCache();
+        database.refreshDataTypes();
         hasTableStatistics = false;
 
         return this;
