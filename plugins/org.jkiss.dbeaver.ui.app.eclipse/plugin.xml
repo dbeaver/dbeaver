@@ -78,10 +78,13 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%pref.page.name.connections">
+        <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageGeneralConnections" name="%pref.page.name.connections">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.database.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.client.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%pref.page.name.client.connections">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%pref.page.name.transactions">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
