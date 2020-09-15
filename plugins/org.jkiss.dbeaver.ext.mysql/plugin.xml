@@ -156,7 +156,7 @@
                 </driver>
                 <driver
                         id="mysql5"
-                        label="MySQL"
+                        label="MySQL 5"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
@@ -181,7 +181,7 @@
                 </driver>
                 <driver
                         id="mysql8"
-                        label="MySQL 8+"
+                        label="MySQL"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
