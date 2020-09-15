@@ -181,6 +181,7 @@ public class SQLQueryJob extends DataSourceJob
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
         skipConfirmation = false;
+        monitor.beginTask("Execute SQL script", queries.size());
         try {
             DBCExecutionContext context = getExecutionContext();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -310,6 +311,7 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+            monitor.done();
         }
     }
 
