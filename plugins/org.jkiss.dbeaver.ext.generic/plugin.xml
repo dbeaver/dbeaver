@@ -907,7 +907,7 @@
                         icon="icons/cubrid_icon.png"
                         iconBig="icons/cubrid_icon_big.png"
                         class="cubrid.jdbc.driver.CUBRIDDriver"
-                        sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
+                        sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                         defaultPort="33000"
                         description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/"
