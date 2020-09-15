@@ -85,14 +85,14 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private void createContentsGroup(DBPPreferenceStore store, Composite composite)
     {
         Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
+        //((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
         contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
         contentsShowPartitions = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_shows_partitions, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
     }
 
     private void createColorPrefGroup(DBPPreferenceStore store, Composite composite) {
         Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_color_pref, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
+        //((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
         changeBorderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_border_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
         changeHeaderColors = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_change_header_colors, store.getBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
     }
