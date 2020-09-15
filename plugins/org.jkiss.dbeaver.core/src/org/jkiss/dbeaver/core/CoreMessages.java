@@ -320,6 +320,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_eclipse_ui_general_group_general;
 	public static String pref_page_eclipse_ui_general_group_label;
 
+	public static String pref_page_eclipse_ui_general_connections_group_label;
+
 	public static String runtime_jobs_connect_name;
 	public static String runtime_jobs_connect_status_connected;
 	public static String runtime_jobs_connect_status_error;

@@ -138,15 +138,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             }
         }
 
-        {
-            // Link to secure storage config
-            new PreferenceLinkArea(composite, SWT.NONE,
-                PrefPageSQLEditor.PAGE_ID,
-                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
-
-        }
-
         performDefaults();
 
         return composite;
