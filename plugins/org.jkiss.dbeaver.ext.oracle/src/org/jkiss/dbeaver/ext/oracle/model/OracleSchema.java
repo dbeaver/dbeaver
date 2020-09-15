@@ -506,7 +506,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n" +
                 "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " O\n" +
                 "LEFT OUTER JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) +
-                    " t ON (t.OWNER = O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME AND o.OBJECT_TYPE = 'TABLE')\n" +
+                    " t ON (t.OWNER = O.OWNER AND t.TABLE_NAME = o.OBJECT_NAME)\n" +
                 "WHERE O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
                 (object == null && objectName == null ? "": " AND O.OBJECT_NAME" + tableOper + "?") +
                 (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
