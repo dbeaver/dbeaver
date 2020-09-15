@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.net;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
@@ -34,5 +38,21 @@ public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfig
     {
         return false;
     }
+
+    protected void createSSLConfigHint(Composite composite, boolean optional, int hSpan) {
+        Label tipLabel = new Label(composite, SWT.WRAP);
+        StringBuilder tip = new StringBuilder();
+        if (optional) {
+            tip.append("All SSL parameters are optional.\n");
+        }
+        tip.append("You must specify SSL certificates if they are required by your server configuration.\n\n");
+        tipLabel.setText(tip.toString());
+        if (hSpan > 1) {
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = hSpan;
+            tipLabel.setLayoutData(gd);
+        }
+    }
+
 
 }

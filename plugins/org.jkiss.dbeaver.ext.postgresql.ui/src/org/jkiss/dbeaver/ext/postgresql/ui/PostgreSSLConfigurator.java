@@ -65,6 +65,8 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
+        createSSLConfigHint(composite, true, 1);
+
         {
             Group certGroup = UIUtils.createControlGroup(composite, PostgreMessages.dialog_connection_network_postgres_ssl_certificates, 2, GridData.FILL_HORIZONTAL, -1);
             UIUtils.createControlLabel(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_root);
