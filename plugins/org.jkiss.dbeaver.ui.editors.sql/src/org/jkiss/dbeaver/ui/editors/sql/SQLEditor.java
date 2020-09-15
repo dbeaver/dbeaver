@@ -160,6 +160,8 @@ public class SQLEditor extends SQLEditorBase implements
     public static final String VAR_FILE_NAME = "fileName";
     public static final String VAR_FILE_EXT = "fileExt";
     public static final String VAR_DRIVER_NAME = "driverName";
+    public static final String VAR_ACTIVE_DATABASE = "database";
+    public static final String VAR_ACTIVE_SCHEMA = "schema";
 
     public static final String DEFAULT_TITLE_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
 
@@ -1567,11 +1569,23 @@ public class SQLEditor extends SQLEditorBase implements
                 scriptPath = "<not a file>";
             }
         }
-        return
-            "Script: " + scriptPath +
-                " \nConnection: " + dataSourceContainer.getName() +
-                " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
-                " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
+
+        StringBuilder tip = new StringBuilder();
+        tip
+            .append("Script: ").append(scriptPath)
+            .append(" \nConnection: ").append(dataSourceContainer.getName())
+            .append(" \nType: ").append(dataSourceContainer.getDriver().getFullName())
+            .append(" \nURL: ").append(dataSourceContainer.getConnectionConfiguration().getUrl());
+
+        Map<String, Object> vars = getScriptVariables(null, scriptPath);
+        if (vars.containsKey(VAR_ACTIVE_DATABASE)) {
+            tip.append(" \nDatabase: ").append(vars.get(VAR_ACTIVE_DATABASE));
+        }
+        if (vars.containsKey(VAR_ACTIVE_SCHEMA)) {
+            tip.append(" \nSchema: ").append(vars.get(VAR_ACTIVE_SCHEMA));
+        }
+
+        return tip.toString();
     }
 
     private String getEditorName() {
@@ -1588,16 +1602,32 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        Map<String, Object> vars = getScriptVariables(file, scriptName);
+
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         String pattern = preferenceStore.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN);
+        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
+    }
+
+    @NotNull
+    private Map<String, Object> getScriptVariables(IFile file, String scriptName) {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         Map<String, Object> vars = new HashMap<>();
         vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
         vars.put(VAR_FILE_NAME, scriptName);
         vars.put(VAR_FILE_EXT,
             file == null ? "" : file.getFullPath().getFileExtension());
         vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
-        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
+
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            if (contextDefaults != null) {
+                vars.put(VAR_ACTIVE_DATABASE, contextDefaults.getDefaultCatalog());
+                vars.put(VAR_ACTIVE_SCHEMA, contextDefaults.getDefaultSchema());
+            }
+        }
+        return vars;
     }
 
     @Override
@@ -2461,6 +2491,9 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 return;
             }
+            case SQLPreferenceConstants.SCRIPT_TITLE_PATTERN:
+                setPartName(getEditorName());
+                return;
         }
         super.preferenceChange(event);
     }
