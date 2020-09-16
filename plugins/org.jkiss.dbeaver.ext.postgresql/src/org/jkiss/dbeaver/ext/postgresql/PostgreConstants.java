@@ -84,6 +84,8 @@ public class PostgreConstants {
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_INTERVAL = "interval";
+    public static final String TYPE_TIME = "time";
+    public static final String TYPE_TIMESTAMP = "timestamp";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
