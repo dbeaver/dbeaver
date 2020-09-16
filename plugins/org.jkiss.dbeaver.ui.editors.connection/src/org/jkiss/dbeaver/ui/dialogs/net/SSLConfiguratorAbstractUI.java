@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 /**
  * SSL configuration
@@ -34,8 +35,7 @@ public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfig
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return false;
     }
 
@@ -43,9 +43,9 @@ public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfig
         Label tipLabel = new Label(composite, SWT.WRAP);
         StringBuilder tip = new StringBuilder();
         if (optional) {
-            tip.append("All SSL parameters are optional.\n");
+            tip.append(UIConnectionMessages.dialog_setting_ssl_configurator_label_optional + "\n");
         }
-        tip.append("You must specify SSL certificates if they are required by your server configuration.\n\n");
+        tip.append(UIConnectionMessages.dialog_setting_ssl_configurator_label_description + "\n\n");
         tipLabel.setText(tip.toString());
         if (hSpan > 1) {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
