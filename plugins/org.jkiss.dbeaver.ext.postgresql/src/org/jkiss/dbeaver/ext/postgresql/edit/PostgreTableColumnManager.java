@@ -102,7 +102,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 final int scale = CommonUtils.toInt(column.getScale());
                 String typeName = dataType.getName();
                 if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                    sql.append('(').append(scale).append(')');
+                    if (scale < 6) {
+                        sql.append('(').append(scale).append(')');
+                    }
                 }
         }
         if (PostgreUtils.isGISDataType(column.getTypeName())) {
