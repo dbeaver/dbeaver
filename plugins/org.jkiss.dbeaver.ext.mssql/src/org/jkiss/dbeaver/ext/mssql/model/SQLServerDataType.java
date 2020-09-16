@@ -143,6 +143,11 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return this;
     }
 
+    public SQLServerDatabase getContainer() {
+        if (owner instanceof SQLServerDatabase) return (SQLServerDatabase) owner;
+        return null;
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
@@ -457,17 +462,17 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getConstraints(monitor);
+    }
+
+    @Override
+    public Collection<SQLServerTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 }

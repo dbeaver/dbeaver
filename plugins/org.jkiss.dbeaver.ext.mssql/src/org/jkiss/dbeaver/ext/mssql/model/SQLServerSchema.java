@@ -476,7 +476,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key,t.name as table_name\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append(" i, ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "index_columns")).append(" ic, ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t").append("\n");
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t").append("\n");
             sql.append("WHERE t.object_id = i.object_id AND ic.object_id=i.object_id AND ic.index_id=i.index_id");
             if (forTable != null) {
                 sql.append(" AND t.object_id = ?");
@@ -585,7 +585,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             } else {
                 DBSEntityConstraintType cType = "PK".equals(type) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
-                return new SQLServerTableUniqueKey((SQLServerTable) table, name, null, cType, index, true);
+                return new SQLServerTableUniqueKey(table, name, null, cType, index, true);
             }
         }
 
@@ -696,8 +696,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             DBRProgressMonitor monitor = session.getProgressMonitor();
             int columnId = JDBCUtils.safeGetInt(dbResult, "constraint_column_id");
 
-            SQLServerTable fkTable = object.getParentObject();
-            SQLServerTable refTable = object.getReferencedTable();
+            SQLServerTableBase fkTable = object.getParentObject();
+            SQLServerTableBase refTable = object.getReferencedTable();
             SQLServerTableColumn fkColumn = fkTable.getAttribute(monitor, JDBCUtils.safeGetLong(dbResult, "parent_column_id"));
             SQLServerTableColumn refColumn = refTable.getAttribute(monitor, JDBCUtils.safeGetLong(dbResult, "referenced_column_id"));
             if (fkColumn == null || refColumn == null) {
