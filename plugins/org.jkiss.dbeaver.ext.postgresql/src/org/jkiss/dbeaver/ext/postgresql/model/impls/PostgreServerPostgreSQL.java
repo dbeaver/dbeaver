@@ -54,4 +54,3 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
         return true;
     }
 }
-

@@ -422,5 +422,13 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return false;
     }
 
-}
+    @Override
+    public boolean supportsSuperusers() {
+        return true;
+    }
 
+    @Override
+    public boolean supportsRolesWithCreateDBAbility() {
+        return supportsRoles();
+    }
+}
