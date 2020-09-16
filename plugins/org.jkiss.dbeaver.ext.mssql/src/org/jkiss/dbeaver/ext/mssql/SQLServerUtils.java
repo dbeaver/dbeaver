@@ -237,4 +237,8 @@ public class SQLServerUtils {
         return ddl;
     }
 
+    public static boolean isTableType(SQLServerTableBase table) {
+        return table instanceof SQLServerTableType;
+    }
+
 }

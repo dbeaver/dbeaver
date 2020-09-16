@@ -33,12 +33,12 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, DBSEntityConstraint>
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, DBSEntityConstraint>
 {
     private List<SQLServerTableForeignKeyColumn> columns;
 
     public SQLServerTableForeignKey(
-        SQLServerTable table,
+        SQLServerTableBase table,
         String name,
         String remarks,
         DBSEntityConstraint referencedKey,
@@ -50,7 +50,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
     }
 
     // Copy constructor
-    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTable table, SQLServerTableForeignKey source) throws DBException {
+    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTableBase table, SQLServerTableForeignKey source) throws DBException {
         super(
             monitor,
             table,

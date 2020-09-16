@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
 {
-    private AbstractTableConstraint<SQLServerTable> constraint;
+    private AbstractTableConstraint<SQLServerTableBase> constraint;
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
 
-    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTable> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
+    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTableBase> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -70,7 +70,7 @@ public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    public AbstractTableConstraint<SQLServerTable> getParentObject()
+    public AbstractTableConstraint<SQLServerTableBase> getParentObject()
     {
         return constraint;
     }
