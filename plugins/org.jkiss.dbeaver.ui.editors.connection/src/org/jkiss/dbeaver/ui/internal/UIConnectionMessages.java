@@ -53,6 +53,9 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_setting_connection_driver_properties_advanced_tip;
     public static String dialog_setting_connection_driver_properties_docs_web_reference;
 
+    public static String dialog_setting_ssl_configurator_label_optional;
+    public static String dialog_setting_ssl_configurator_label_description;
+    
     public static String controls_connection_properties_action_add_property;
     public static String controls_connection_properties_action_remove_property;
     public static String controls_connection_properties_category_user_properties;
