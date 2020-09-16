@@ -133,4 +133,8 @@ public interface PostgreServerExtension
     boolean supportsDatabaseSize();
 
     boolean isAlterTableAtomic();
+
+    boolean supportsSuperusers();
+
+    boolean supportsRolesWithCreateDBAbility();
 }

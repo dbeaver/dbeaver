@@ -573,7 +573,7 @@ public class PostgreSchema implements
 
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
-        if (hasStatistics && !forceRefresh) {
+        if (!getDataSource().getServerType().supportsTableStatistics() || hasStatistics && !forceRefresh) {
             return;
         }
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
