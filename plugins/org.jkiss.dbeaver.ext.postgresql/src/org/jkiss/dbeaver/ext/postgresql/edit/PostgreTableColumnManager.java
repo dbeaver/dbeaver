@@ -101,7 +101,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             case DATETIME:
                 final int scale = CommonUtils.toInt(column.getScale());
                 String typeName = dataType.getName();
-                if (typeName.startsWith("timestamp") || typeName.equals("time")) {
+                if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
                     sql.append('(').append(scale).append(')');
                 }
         }
