@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -384,7 +385,11 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     @Override
     public void setElement(IAdaptable element) {
-        this.project = GeneralUtils.adapt(element, IProject.class);
+        if (element instanceof DBNNode) {
+            this.project = ((DBNNode) element).getOwnerProject().getEclipseProject();
+        } else {
+            this.project = GeneralUtils.adapt(element, IProject.class);
+        }
         this.projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(this.project);
     }
 
