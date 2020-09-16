@@ -268,7 +268,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             optionsPanel.setLayout(new RowLayout());
             embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
             anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
-            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_aloows_empty_password_label, UIConnectionMessages.dialog_edit_driver_aloows_empty_password_tip, driver.isAnonymousAccess(), 1);
+            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
             nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, "Use legacy JDBC instantiation", "Do not instantiate driver directly, use DriverManager always.", !driver.isInstantiable(), 1);
 
             if (isReadOnly) {

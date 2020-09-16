@@ -147,8 +147,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_embedded_tip;
     public static String dialog_edit_driver_anonymous_label;
     public static String dialog_edit_driver_anonymous_tip;
-    public static String dialog_edit_driver_aloows_empty_password_label;
-    public static String dialog_edit_driver_aloows_empty_password_tip;
+    public static String dialog_edit_driver_allows_empty_password_label;
+    public static String dialog_edit_driver_allows_empty_password_tip;
     public static String dialog_edit_driver_description;
     public static String dialog_edit_driver_edit_maven_title;
     public static String dialog_edit_driver_edit_maven_group_id_label;
