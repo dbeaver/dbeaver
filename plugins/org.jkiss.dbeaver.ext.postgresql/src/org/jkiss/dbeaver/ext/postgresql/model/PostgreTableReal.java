@@ -171,6 +171,9 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     }
 
     protected void readTableStatistics(JDBCSession session) throws DBException, SQLException {
+        if (!getDataSource().getServerType().supportsTableStatistics()) {
+            return;
+        }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "select " +
                     "pg_catalog.pg_total_relation_size(?) as total_rel_size," +

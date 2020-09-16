@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -88,10 +89,17 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
-        if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
-        if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
+        final PostgreServerExtension extension = role.getDataSource().getServerType();
+        if (extension.supportsSuperusers()) {
+            if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
+        }
+        if (extension.supportsRolesWithCreateDBAbility()) {
+            if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
+        }
         if (role.isCreateRole()) script.append(" CREATEROLE"); else script.append(" NOCREATEROLE");
-        if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
+        if (extension.supportsInheritance()) {
+            if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
+        }
         if (role.isCanLogin()) script.append(" LOGIN"); else script.append(" NOLOGIN");
 
         if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
@@ -103,7 +111,4 @@ PASSWORD password
 VALID UNTIL 'timestamp'
 */
     }
-
-
 }
-
