@@ -50,20 +50,6 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     };
 
     @Override
-    public boolean canEditObject(SQLServerTableBase object) {
-        return !isTableType(object) && super.canEditObject(object);
-    }
-
-    @Override
-    public boolean canDeleteObject(SQLServerTableBase object) {
-        return !isTableType(object) && super.canDeleteObject(object);
-    }
-
-    private boolean isTableType(SQLServerTableBase table) {
-        return table instanceof SQLServerTableType;
-    }
-
-    @Override
     protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         SQLServerSchema schema = (SQLServerSchema) container;

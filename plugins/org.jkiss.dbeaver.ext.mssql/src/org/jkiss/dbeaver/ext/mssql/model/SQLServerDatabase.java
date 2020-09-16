@@ -129,6 +129,10 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return name.equals("msdb");
     }
 
+    public DataTypeCache getDataTypesCache() {
+        return typesCache;
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         typesCache.clearCache();

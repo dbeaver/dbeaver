@@ -115,7 +115,19 @@
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
-                                </items>
+                                    <folder label="%tree.uni_keys.node.name" icon="#constraints" description="Table type unique keys" visibleIf="object.isTableType()">
+                                        <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <!--<folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table type indexes" visibleIf="object.isTableType()">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>-->
+                                 </items>
                             </folder>
                         </items>
                     </folder>
@@ -451,6 +463,7 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDataTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
