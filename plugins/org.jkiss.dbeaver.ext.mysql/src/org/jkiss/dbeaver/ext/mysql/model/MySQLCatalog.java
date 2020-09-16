@@ -155,7 +155,11 @@ public class MySQLCatalog implements
             additionalInfo.loaded = true;
             return;
         }
-        MySQLDataSource dataSource = getDataSource();
+//        MySQLDataSource dataSource = getDataSource();
+//        if (dataSource.getInfo().getDatabaseVersion().getMajor() < 5) {
+//            additionalInfo.loaded = false;
+//            return;
+//        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.INFO_SCHEMA_NAME + ".SCHEMATA WHERE SCHEMA_NAME=?")) {
@@ -520,15 +524,17 @@ public class MySQLCatalog implements
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
-            StringBuilder sql = new StringBuilder();
+            StringBuilder sql = new StringBuilder("SHOW ");
+            if (session.getMetaData().getDatabaseMajorVersion() > 4) {
+                sql.append("FULL ");
+            }
+            sql.append("TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
             if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
-                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
                 if (object != null || objectName != null) {
                     sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 }
             } else {
-                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
                 String tableNameCol = DBUtils.getQuotedIdentifier(owner.getDataSource(), "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
