@@ -33,17 +33,17 @@ import java.util.List;
 /**
  * SQLServerTableUniqueKey
  */
-public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable> {
+public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableBase> {
     private SQLServerTableIndex index;
     private List<SQLServerTableUniqueKeyColumn> columns;
 
-    public SQLServerTableUniqueKey(SQLServerTable table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted) {
+    public SQLServerTableUniqueKey(SQLServerTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
         this.index = index;
     }
 
     // Copy constructor
-    protected SQLServerTableUniqueKey(DBRProgressMonitor monitor, SQLServerTable table, DBSEntityConstraint source) throws DBException {
+    protected SQLServerTableUniqueKey(DBRProgressMonitor monitor, SQLServerTableBase table, DBSEntityConstraint source) throws DBException {
         super(table, source, false);
         this.index = table.getIndex(monitor, source.getName());
     }

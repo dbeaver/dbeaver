@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
@@ -31,7 +33,7 @@ import java.util.Map;
 /**
  * SQL server unique constraint manager
  */
-public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTableUniqueKey, SQLServerTable> {
+public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTableUniqueKey, SQLServerTableBase> {
 
     @Nullable
     @Override
@@ -53,6 +55,16 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
             DBSEntityConstraintType.INDEX,
             null,
             false);
+    }
+
+    @Override
+    protected boolean isShortNotation(SQLServerTableBase owner) {
+        return owner instanceof SQLServerTableType;
+    }
+
+    @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof SQLServerTable;
     }
 
 }

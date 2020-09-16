@@ -84,11 +84,12 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         String constraintName = DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName());
 
         boolean legacySyntax = isLegacyConstraintsSyntax(owner);
+        boolean shortNotation = isShortNotation(owner);
         StringBuilder decl = new StringBuilder(40);
-        if (!legacySyntax || !constraint.isPersisted()) {
+        if ((!legacySyntax || !constraint.isPersisted()) && !shortNotation) {
             decl.append("CONSTRAINT "); //$NON-NLS-1$
         }
-        if (!legacySyntax) {
+        if (!legacySyntax && !shortNotation) {
             decl.append(constraintName).append(" ");
         }
         decl.append(getAddConstraintTypeClause(constraint));
@@ -138,6 +139,10 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     protected boolean isLegacyConstraintsSyntax(TABLE_TYPE owner) {
+        return false;
+    }
+
+    protected boolean isShortNotation(TABLE_TYPE owner) {
         return false;
     }
 }

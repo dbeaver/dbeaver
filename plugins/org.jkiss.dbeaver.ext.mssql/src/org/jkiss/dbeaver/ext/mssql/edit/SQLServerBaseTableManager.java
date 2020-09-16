@@ -78,5 +78,14 @@ public abstract class SQLServerBaseTableManager<OBJECT extends SQLServerTableBas
         );
     }
 
+    @Override
+    public boolean canEditObject(OBJECT object) {
+        return !SQLServerUtils.isTableType(object) && super.canEditObject(object);
+    }
+
+    @Override
+    public boolean canDeleteObject(OBJECT object) {
+        return !SQLServerUtils.isTableType(object) && super.canDeleteObject(object);
+    }
 
 }
