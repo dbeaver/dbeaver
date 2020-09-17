@@ -203,7 +203,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         } else if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
             return adapter.cast(dataSource);
         }
-        return null;
+        return super.getAdapter(adapter);
     }
 
     @Override
