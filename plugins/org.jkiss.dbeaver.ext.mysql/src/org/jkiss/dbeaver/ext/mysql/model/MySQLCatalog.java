@@ -155,11 +155,11 @@ public class MySQLCatalog implements
             additionalInfo.loaded = true;
             return;
         }
-//        MySQLDataSource dataSource = getDataSource();
-//        if (dataSource.getInfo().getDatabaseVersion().getMajor() < 5) {
-//            additionalInfo.loaded = false;
-//            return;
-//        }
+        MySQLDataSource dataSource = getDataSource();
+        if (!getDataSource().supportsInformationSchema()) {
+            additionalInfo.loaded = false;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.INFO_SCHEMA_NAME + ".SCHEMATA WHERE SCHEMA_NAME=?")) {
@@ -261,7 +261,7 @@ public class MySQLCatalog implements
 
     @Property(viewable = true, order = 20, formatter = ByteNumberFormat.class)
     public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
-        if (databaseSize == null) {
+        if (databaseSize == null && getDataSource().supportsInformationSchema()) {
             try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database size")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT SUM((DATA_LENGTH+INDEX_LENGTH))\n" +
@@ -1016,5 +1016,4 @@ public class MySQLCatalog implements
             }
         }
     }
-
 }

@@ -328,15 +328,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
 
-            // Check check constraints in base
-            try {
-                String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
-                        "WHERE\n" +
-                        "\tt.TABLE_SCHEMA = 'information_schema'\n" +
-                        "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'");
-                containsCheckConstraintTable = (resultSet != null);
-            } catch (SQLException e) {
-                log.debug("Error reading information schema", e);
+            if (getDataSource().supportsInformationSchema()) {
+                // Check check constraints in base
+                try {
+                    String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
+                            "WHERE\n" +
+                            "\tt.TABLE_SCHEMA = 'information_schema'\n" +
+                            "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'");
+                    containsCheckConstraintTable = (resultSet != null);
+                } catch (SQLException e) {
+                    log.debug("Error reading information schema", e);
+                }
             }
         }
     }
@@ -756,4 +758,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    /**
+     * Checks if information_schema table is supported.
+     *
+     * <p>The table was not supported up until MySQL 5.0
+     *
+     * @return {@code true} if information_schema is supported
+     */
+    public boolean supportsInformationSchema() {
+        return isServerVersionAtLeast(5, 0);
+    }
 }
