@@ -52,6 +52,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,7 @@ public class MySQLCatalog implements
     final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
 
-    private MySQLDataSource dataSource;
+    private final MySQLDataSource dataSource;
     private String name;
     private Long databaseSize;
     private boolean persisted;
@@ -319,16 +320,14 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return indexCache.getObjects(monitor, this, null);
+    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                indexCache.getObjects(monitor, this, null) :
+                Collections.emptyList();
     }
 
     @Association
-    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, MySQLTable.class);
     }
 
@@ -346,10 +345,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return proceduresCache.getAllObjects(monitor, this);
+    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                proceduresCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
@@ -366,10 +365,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return triggerCache.getAllObjects(monitor, this);
+    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                triggerCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String name)
@@ -379,10 +378,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return eventCache.getAllObjects(monitor, this);
+    public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                eventCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     @Override
