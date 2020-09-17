@@ -52,6 +52,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,7 @@ public class MySQLCatalog implements
     final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
 
-    private MySQLDataSource dataSource;
+    private final MySQLDataSource dataSource;
     private String name;
     private Long databaseSize;
     private boolean persisted;
@@ -156,6 +157,10 @@ public class MySQLCatalog implements
             return;
         }
         MySQLDataSource dataSource = getDataSource();
+        if (!getDataSource().supportsInformationSchema()) {
+            additionalInfo.loaded = false;
+            return;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.INFO_SCHEMA_NAME + ".SCHEMATA WHERE SCHEMA_NAME=?")) {
@@ -257,7 +262,7 @@ public class MySQLCatalog implements
 
     @Property(viewable = true, order = 20, formatter = ByteNumberFormat.class)
     public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
-        if (databaseSize == null) {
+        if (databaseSize == null && getDataSource().supportsInformationSchema()) {
             try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database size")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT SUM((DATA_LENGTH+INDEX_LENGTH))\n" +
@@ -315,16 +320,14 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return indexCache.getObjects(monitor, this, null);
+    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                indexCache.getObjects(monitor, this, null) :
+                Collections.emptyList();
     }
 
     @Association
-    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, MySQLTable.class);
     }
 
@@ -342,10 +345,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return proceduresCache.getAllObjects(monitor, this);
+    public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                proceduresCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
@@ -362,10 +365,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return triggerCache.getAllObjects(monitor, this);
+    public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                triggerCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String name)
@@ -375,10 +378,10 @@ public class MySQLCatalog implements
     }
 
     @Association
-    public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return eventCache.getAllObjects(monitor, this);
+    public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                eventCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
     }
 
     @Override
@@ -520,15 +523,17 @@ public class MySQLCatalog implements
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
-            StringBuilder sql = new StringBuilder();
+            StringBuilder sql = new StringBuilder("SHOW ");
+            if (session.getMetaData().getDatabaseMajorVersion() > 4) {
+                sql.append("FULL ");
+            }
+            sql.append("TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
             if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
-                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
                 if (object != null || objectName != null) {
                     sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 }
             } else {
-                sql.append("SHOW FULL TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
                 String tableNameCol = DBUtils.getQuotedIdentifier(owner.getDataSource(), "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
@@ -1010,5 +1015,4 @@ public class MySQLCatalog implements
             }
         }
     }
-
 }
