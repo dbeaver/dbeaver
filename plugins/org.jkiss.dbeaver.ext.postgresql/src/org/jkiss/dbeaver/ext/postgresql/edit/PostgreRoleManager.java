@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -90,21 +91,26 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
     private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
         final PostgreServerExtension extension = role.getDataSource().getServerType();
+        final StringBuilder options = new StringBuilder();
         if (extension.supportsSuperusers()) {
-            if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
+            if (role.isSuperUser()) options.append(" SUPERUSER"); else options.append(" NOSUPERUSER");
         }
         if (extension.supportsRolesWithCreateDBAbility()) {
-            if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
+            if (role.isCreateDatabase()) options.append(" CREATEDB"); else options.append(" NOCREATEDB");
         }
-        if (role.isCreateRole()) script.append(" CREATEROLE"); else script.append(" NOCREATEROLE");
+        if (role.isCreateRole()) options.append(" CREATEROLE"); else options.append(" NOCREATEROLE");
         if (extension.supportsInheritance()) {
-            if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
+            if (role.isInherit()) options.append(" INHERIT"); else options.append(" NOINHERIT");
         }
-        if (role.isCanLogin()) script.append(" LOGIN"); else script.append(" NOLOGIN");
+        if (role.isCanLogin()) options.append(" LOGIN"); else options.append(" NOLOGIN");
 
         if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
-            script.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
+            options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
         }
+        if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
+            script.append(" WITH");
+        }
+        script.append(options);
         //if (role.isCreateDatabase()) script.append(" CONNECTION LIMIT connlimit");
 /*
 PASSWORD password
