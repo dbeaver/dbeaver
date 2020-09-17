@@ -108,6 +108,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
             options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
         }
         if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
+            // FIXME: use some generic approach
             script.append(" WITH");
         }
         script.append(options);
