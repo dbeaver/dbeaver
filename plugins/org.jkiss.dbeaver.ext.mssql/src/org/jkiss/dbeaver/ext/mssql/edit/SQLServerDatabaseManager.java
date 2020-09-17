@@ -87,6 +87,6 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
 
     @Override
     public DBSObjectCache<? extends DBSObject, SQLServerDatabase> getObjectsCache(SQLServerDatabase object) {
-        return null;
+        return object.getDataSource().getDatabaseCache();
     }
 }
