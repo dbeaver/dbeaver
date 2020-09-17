@@ -27,18 +27,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
 
     @Override
     public void renameObject(DBECommandContext commandContext, SQLServerDatabase object, String newName) throws DBException {
-        if (object.isSystem()) {
-            throw new DBException("Cannot rename system database.");
-        }
-
         processObjectRename(commandContext, object, newName);
-    }
-
-    @Override
-    public void deleteObject(DBECommandContext commandContext, SQLServerDatabase object, Map<String, Object> options) throws DBException {
-        if (object.isSystem()) {
-            throw new DBException("Cannot delete system database.");
-        }
     }
 
     @Override
