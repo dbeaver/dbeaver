@@ -453,6 +453,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDatabaseManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>

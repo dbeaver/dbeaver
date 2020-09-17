@@ -37,6 +37,10 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_setting_trust_server_certificate;
     public static String dialog_setting_trust_server_certificate_tip;
 
+    public static String dialog_create_db_group_general;
+    public static String dialog_create_db_label_db_name;
+    public static String dialog_create_db_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLServerUIMessages.class);
