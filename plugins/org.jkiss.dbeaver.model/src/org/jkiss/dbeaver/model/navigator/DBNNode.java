@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -235,6 +236,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
+        if (IProject.class.isAssignableFrom(adapter)) {
+            // Do not adapt to IProject.
+            // It brings a lot of Eclipse preferences/props to link to navigator nodes. We don't need them.
+            //return adapter.cast(getOwnerProject().getEclipseProject());
+        }
+
         return null;
     }
 
