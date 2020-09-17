@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ext.derby.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -25,8 +27,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -42,6 +47,7 @@ import java.util.regex.Pattern;
 public class DerbyMetaModel extends GenericMetaModel
 {
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at line ([0-9]+), column ([0-9]+)\\.");
+    private static final Log log = Log.getLog(DerbyMetaModel.class);
 
     public DerbyMetaModel() {
         super();
@@ -126,6 +132,67 @@ public class DerbyMetaModel extends GenericMetaModel
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         return "GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)";
+    }
+
+    @Override
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+        JDBCPreparedStatement dbStat;
+        dbStat = session.prepareStatement("SELECT CONS.*, cons.CONSTRAINTNAME AS PK_NAME, CG.DESCRIPTOR, t.TABLENAME AS TABLE_NAME, s.SCHEMANAME\n" +
+                        "FROM SYS.SYSKEYS KEYS, SYS.SYSCONGLOMERATES CG, SYS.SYSCONSTRAINTS CONS \n" +
+                        "JOIN sys.SYSTABLES t\n" +
+                        " ON CONS.TABLEID = t.TABLEID\n" +
+                        " JOIN sys.SYSSCHEMAS s\n" +
+                        " ON s.SCHEMAID = CONS.SCHEMAID\n" +
+                        "WHERE KEYS.CONSTRAINTID = CONS.CONSTRAINTID AND CG.CONGLOMERATEID=KEYS.CONGLOMERATEID\n" +
+                        "AND SCHEMANAME=?" + (forParent != null ? " AND TABLENAME=?" : ""));
+        if (forParent != null) {
+            dbStat.setString(1, forParent.getSchema().getName());
+            dbStat.setString(2, forParent.getName());
+        } else {
+            dbStat.setString(1, owner.getName());
+        }
+        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            while (dbResult.next()) {
+                String name = JDBCUtils.safeGetString(dbResult, "PK_NAME");
+                if (name == null) {
+                    continue;
+                }
+                try {
+                    GenericUniqueKey gConstraint = new GenericUniqueKey(forParent, name, null, getUniqueConstraintType(dbResult), true);
+                    Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
+                    if (descriptor != null) {
+                        Object baseColumnPositions = BeanUtils.invokeObjectMethod(descriptor, "baseColumnPositions");
+                        int[] columnPositions = (int []) baseColumnPositions;
+                        for (int pos : columnPositions) {
+                            List<? extends GenericTableColumn> attributes = forParent.getAttributes(session.getProgressMonitor());
+                            if (!CommonUtils.isEmpty(attributes)) {
+                                for (GenericTableColumn genericTableColumn : attributes) {
+                                    if (genericTableColumn.getOrdinalPosition() == pos) {
+                                        GenericTableConstraintColumn constraintColumn = new GenericTableConstraintColumn(gConstraint, genericTableColumn, pos);
+                                        gConstraint.addColumn(constraintColumn);
+                                        forParent.addUniqueKey(gConstraint);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable e) {
+                    log.debug("Can't get constraint", e);
+                }
+            }
+        }
+        return dbStat;
+    }
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+        String type = JDBCUtils.safeGetString(dbResult, "TYPE");
+        if (type != null) {
+            if ("P".equals(type)) {
+                return DBSEntityConstraintType.PRIMARY_KEY;
+            }
+            return DBSEntityConstraintType.UNIQUE_KEY;
+        }
+        return super.getUniqueConstraintType(dbResult);
     }
 
 }
