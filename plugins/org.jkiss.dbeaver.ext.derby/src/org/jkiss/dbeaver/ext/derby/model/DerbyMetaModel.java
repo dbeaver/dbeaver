@@ -158,7 +158,7 @@ public class DerbyMetaModel extends GenericMetaModel
                     continue;
                 }
                 try {
-                    GenericUniqueKey gConstraint = new GenericUniqueKey(forParent, name, null, getUniqueConstraintType(dbResult), false);
+                    GenericUniqueKey gConstraint = new GenericUniqueKey(forParent, name, null, getUniqueConstraintType(dbResult), true);
                     Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
                     if (descriptor != null) {
                         Object baseColumnPositions = BeanUtils.invokeObjectMethod(descriptor, "baseColumnPositions");
