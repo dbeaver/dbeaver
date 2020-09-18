@@ -613,8 +613,7 @@ public class GenericMetaModel {
     // Constraints
 
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent)
-        throws SQLException
-    {
+            throws SQLException, DBException {
         return session.getMetaData().getPrimaryKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
