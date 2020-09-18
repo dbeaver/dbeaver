@@ -135,7 +135,7 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
-    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException, DBException {
         JDBCPreparedStatement dbStat;
         dbStat = session.prepareStatement("SELECT CONS.*, cons.CONSTRAINTNAME AS PK_NAME, CG.DESCRIPTOR, t.TABLENAME AS TABLE_NAME, s.SCHEMANAME\n" +
                         "FROM SYS.SYSKEYS KEYS, SYS.SYSCONGLOMERATES CG, SYS.SYSCONSTRAINTS CONS \n" +
@@ -177,7 +177,7 @@ public class DerbyMetaModel extends GenericMetaModel
                         }
                     }
                 } catch (Throwable e) {
-                    log.debug("Can't get constraint", e);
+                    throw new DBException("Can't get Derby constraint", e);
                 }
             }
         }
