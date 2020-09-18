@@ -49,7 +49,7 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
                 parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
             infoLabel.setText("Override user credentials (" + connectionInfo.getUserName() +
-                ") for objects '" + wizard.getObjectsName() + "'.\nExternal tools like 'mysqldump' may require different set of permissions.");
+                ") for external tools.\nIf not set, external tools like 'mysqldump' will likely use credentials stored in the system.");
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);
