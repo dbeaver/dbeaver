@@ -18,7 +18,7 @@
    </license>
 
    <requires>
-      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="compatible"/>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.egit" version="1.0.0"/>
    </requires>
 
