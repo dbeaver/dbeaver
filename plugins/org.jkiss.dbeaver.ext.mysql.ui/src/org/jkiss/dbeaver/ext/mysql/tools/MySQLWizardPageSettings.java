@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
@@ -45,20 +47,18 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
     {
         final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
         if (connectionInfo != null) {
-            Group securityGroup = UIUtils.createControlGroup(
-                parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group securityGroup = UIUtils.createControlGroup(parent, MySQLUIMessages.tools_db_export_wizard_page_settings_security_group, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText("Override user credentials (" + connectionInfo.getUserName() +
-                ") for external tools.\nIf not set, external tools like 'mysqldump' will likely use credentials stored in the system.");
+            infoLabel.setText(NLS.bind(MySQLUIMessages.tools_db_export_wizard_page_settings_security_label_info, connectionInfo.getUserName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);
             Button authButton = new Button(securityGroup, SWT.PUSH);
-            authButton.setText("Authentication");
+            authButton.setText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_button_auth);
             authButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false, true);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), MySQLUIMessages.tools_db_export_wizard_page_settings_auth_title, false, true);
                     authDialog.setUserName(wizard.getSettings().getToolUserName());
                     authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
                     authDialog.setSavePassword(true);
@@ -70,7 +70,7 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
             });
 
             Button resetButton = new Button(securityGroup, SWT.PUSH);
-            resetButton.setText("Reset to default");
+            resetButton.setText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_button_reset);
             resetButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
