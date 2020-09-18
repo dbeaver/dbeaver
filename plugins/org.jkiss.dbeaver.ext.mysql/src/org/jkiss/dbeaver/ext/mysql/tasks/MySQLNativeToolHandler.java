@@ -35,23 +35,10 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         /*
          * Let's assume that if username is not set, then
          * native tool must search for credentials on its own.
-         *
-         * Native tools like mysqldump doesn't read password set in
-         * MYSQL_PWD (also it's deprecated since MySQL 8.0) and prefer
-         * to grab credentials from my.cnf (that is located somewhere in the system),
-         * so we'll generate our own my.cnf with required credentials (#5350)
          */
         if (!CommonUtils.isEmpty(toolUserName)) {
-            File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler");
-            File cnf = new File(dir, "my.cnf");
-
-            try (Writer writer = new FileWriter(cnf)) {
-                writer.write("[client]");
-                writer.write("\nuser=" + (CommonUtils.isEmpty(toolUserName) ? "" : toolUserName));
-                writer.write("\npassword=" + (CommonUtils.isEmpty(toolUserPassword) ? "" : toolUserPassword));
-            }
-
-            cmd.add(1, "--defaults-file=" + cnf.getPath());
+            String credentialsFile = createCredentialsFile(toolUserName, toolUserPassword);
+            cmd.add(1, "--defaults-file=" + credentialsFile);
         }
 
         DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
@@ -63,4 +50,22 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
+    /*
+     * Native tools like mysqldump doesn't read password set in
+     * MYSQL_PWD (also it's deprecated since MySQL 8.0) and prefer
+     * to grab credentials from my.cnf (that is located somewhere in the system),
+     * so we'll generate our own my.cnf with required credentials (#5350)
+     */
+    private static String createCredentialsFile(String username, String password) throws IOException {
+        File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
+        File cnf = new File(dir, "my.cnf"); //$NON-NLS-1$
+
+        try (Writer writer = new FileWriter(cnf)) {
+            writer.write("[client]"); //$NON-NLS-1$
+            writer.write("\nuser=" + (CommonUtils.isEmpty(username) ? "" : username)); //$NON-NLS-1$
+            writer.write("\npassword=" + (CommonUtils.isEmpty(password) ? "" : password)); //$NON-NLS-1$
+        }
+
+        return cnf.getPath();
+    }
 }
