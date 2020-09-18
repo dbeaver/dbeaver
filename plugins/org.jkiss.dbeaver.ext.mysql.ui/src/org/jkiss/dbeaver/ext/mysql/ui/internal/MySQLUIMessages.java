@@ -120,6 +120,8 @@ public class MySQLUIMessages extends NLS {
 	public static String tools_db_export_wizard_page_settings_group_output;
 	public static String tools_db_export_wizard_page_settings_group_settings;
 	public static String tools_db_export_wizard_page_settings_label_out_text;
+	public static String tools_db_export_wizard_page_settings_label_file_name_pattern_text;
+	public static String tools_db_export_wizard_page_settings_label_file_name_pattern_tip;
 	public static String tools_db_export_wizard_page_settings_page_description;
 	public static String tools_db_export_wizard_page_settings_page_name;
 	public static String tools_db_export_wizard_task_name;
@@ -134,4 +136,10 @@ public class MySQLUIMessages extends NLS {
 	public static String tools_script_execute_wizard_page_settings_script_configuration;
 	public static String tools_script_execute_wizard_page_settings_set_db_import_settings;
 	public static String tools_script_execute_wizard_page_settings_set_script_execution_settings;
+
+	public static String tools_db_export_wizard_page_settings_security_group;
+	public static String tools_db_export_wizard_page_settings_security_label_info;
+	public static String tools_db_export_wizard_page_settings_security_button_auth;
+	public static String tools_db_export_wizard_page_settings_security_button_reset;
+	public static String tools_db_export_wizard_page_settings_auth_title;
 }

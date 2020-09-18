@@ -107,8 +107,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
-        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getSettings().getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern",
+        outputFileText = UIUtils.createLabelText(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_file_name_pattern_text, wizard.getSettings().getOutputFilePattern());
+        UIUtils.setContentProposalToolTip(outputFileText, MySQLUIMessages.tools_db_export_wizard_page_settings_label_file_name_pattern_tip,
             NativeToolUtils.VARIABLE_HOST,
             NativeToolUtils.VARIABLE_DATABASE,
             NativeToolUtils.VARIABLE_TABLE,
