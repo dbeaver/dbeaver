@@ -70,7 +70,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
-    protected DatabaseNavigatorTree getNavigatorTree()
+    public DatabaseNavigatorTree getNavigatorTree()
     {
         return tree;
     }
