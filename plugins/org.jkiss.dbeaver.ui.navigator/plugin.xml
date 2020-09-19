@@ -229,6 +229,9 @@
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.navigator.filter.connected" name="%command.org.jkiss.dbeaver.navigator.filter.connected.name" description="%command.org.jkiss.dbeaver.navigator.filter.connected.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.navigator.filter.object.type" name="%command.org.jkiss.dbeaver.navigator.filter.object.type.name" description="%command.org.jkiss.dbeaver.navigator.filter.object.type.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="type" name="Object type" optional="false"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.object.filter.config" name="%command.org.jkiss.dbeaver.core.object.filter.config.name" description="%command.org.jkiss.dbeaver.core.object.filter.config.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.exclude" name="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.include" name="%command.org.jkiss.dbeaver.core.object.filter.add.include.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.include.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -332,6 +335,8 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.navigator.filter.connected" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerConnectionFilter">
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.navigator.filter.object.type" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterObjectType">
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.object.filter.config" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig">
             <enabledWhen>
@@ -756,7 +761,9 @@
 
         <!-- Connection filter menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.connectionFilterMenu">
-<!--            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>-->
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="connection"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="container"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="table"/></command>
             <separator name="connected_toggle" visible="true"/>
             <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
         </menuContribution>
