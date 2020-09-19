@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -188,4 +191,20 @@ public class DialogUtils {
 
         return directoryText.getTextControl();
     }
+
+    public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {
+        FilteredTree filteredTree;
+        try {
+            filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
+        } catch (Throwable e) {
+            // Fast hash lookup is not supported on old Eclipse versions. Use old constructor
+            filteredTree = new FilteredTree(parent, treeStyle, filter, true);
+        }
+        if (initialText != null) {
+            filteredTree.setInitialText(initialText);
+        }
+        return filteredTree.getViewer();
+    }
+
+
 }
