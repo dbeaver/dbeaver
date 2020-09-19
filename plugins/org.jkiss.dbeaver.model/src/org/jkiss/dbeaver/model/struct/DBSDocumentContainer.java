@@ -34,4 +34,6 @@ public interface DBSDocumentContainer extends DBSEntity
     @Nullable
     DBSEntityAttribute getDocumentAttribute(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+
+
 }
