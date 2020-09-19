@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.AbstractTextPanelEditor;
 import org.jkiss.dbeaver.ui.editors.json.JSONTextEditor;
@@ -27,7 +31,18 @@ public class JSONPanelEditor extends AbstractTextPanelEditor<JSONTextEditor> {
 
     @Override
     protected JSONTextEditor createEditorParty(IValueController valueController) {
-        return new JSONTextEditor();
+        // Override init function because standard is VEEERY slow
+        return new JSONTextEditor() {
+            @Override
+            public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+                setSite(site);
+                try {
+                    doSetInput(input);
+                } catch (CoreException e) {
+                    throw new PartInitException("Error initializing panel JSON editor", e);
+                }
+            }
+        };
     }
 
 }

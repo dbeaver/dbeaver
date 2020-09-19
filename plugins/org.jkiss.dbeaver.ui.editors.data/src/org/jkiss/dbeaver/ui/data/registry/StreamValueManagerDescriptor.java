@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,7 +30,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class StreamValueManagerDescriptor extends AbstractDescriptor
 {
-    public static final String TAG_STREAM_MANAGER = "streamManager"; //$NON-NLS-1$
+    static final String TAG_STREAM_MANAGER = "streamManager"; //$NON-NLS-1$
+
     private static final String ATTR_PRIMARY_MIME = "primaryMime";
     private static final String ATTR_SUPPORTED_MIME = "supportedMime";
 
@@ -40,10 +42,11 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
     private final DBPImage icon;
     private final String primaryMime;
     private final String[] supportedMime;
+    private boolean supportsText;
 
     private IStreamValueManager instance;
 
-    public StreamValueManagerDescriptor(IConfigurationElement config)
+    StreamValueManagerDescriptor(IConfigurationElement config)
     {
         super(config);
 
@@ -63,6 +66,12 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
                 mimeList = ArrayUtils.add(String.class, mimeList, this.primaryMime);
             }
             this.supportedMime = mimeList;
+        }
+        for (String mime : supportedMime) {
+            if (ContentUtils.isTextMime(mime)) {
+                supportsText = true;
+                break;
+            }
         }
     }
 
@@ -91,6 +100,10 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
         return primaryMime;
     }
 
+    public boolean supportsText() {
+        return supportsText;
+    }
+
     @NotNull
     public IStreamValueManager getInstance()
     {
@@ -109,4 +122,5 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
     public String toString() {
         return id + " (" + label + ")";
     }
+
 }
