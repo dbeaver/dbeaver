@@ -197,6 +197,12 @@ class ResultSetPersister {
             return false;
         }
 
+        if (rowIdentifier.getEntity() instanceof DBSDocumentContainer) {
+            // FIXME: do not refresh documents for now. Can be solved by extracting document ID attributes
+            // FIXME: but it will require to provide dynamic document metadata.
+            return false;
+        }
+
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
