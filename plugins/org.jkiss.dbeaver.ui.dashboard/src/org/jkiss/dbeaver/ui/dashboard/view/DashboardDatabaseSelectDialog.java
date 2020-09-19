@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -66,7 +66,7 @@ public class DashboardDatabaseSelectDialog extends BaseDialog {
         Composite dialogArea = super.createDialogArea(parent);
 
         {
-            treeViewer = new FilteredTree(dialogArea, SWT.BORDER, new NamedObjectPatternFilter(), true).getViewer();
+            treeViewer = DialogUtils.createFilteredTree(dialogArea, SWT.BORDER, new NamedObjectPatternFilter(), null);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;

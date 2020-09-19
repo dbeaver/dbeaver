@@ -640,6 +640,14 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static class CustomFilteredTree extends FilteredTree {
         CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
             super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
+            try {
+                if (treeViewer != null) {
+                    treeViewer.setUseHashlookup(true);
+                }
+            } catch (Throwable e) {
+                // May happen in old Eclipse versions
+            }
+
             setInitialText(UINavigatorMessages.actions_navigator_search_tip);
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
