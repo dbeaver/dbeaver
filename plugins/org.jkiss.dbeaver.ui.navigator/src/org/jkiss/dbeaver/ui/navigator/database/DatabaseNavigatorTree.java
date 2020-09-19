@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -30,10 +32,13 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -63,6 +68,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
+    private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
 
     private TreeViewer treeViewer;
     private DBNModel model;
@@ -73,8 +79,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean inlineRenameEnabled = false;
     private INavigatorItemRenderer itemRenderer;
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
-    {
+    private boolean filterShowConnected = false;
+
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style) {
         this(parent, rootNode, style, false);
     }
 
@@ -131,6 +138,14 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             //tree.addListener(SWT.EraseItem, event -> eraseItem(tree, event));
             tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
         }
+    }
+
+    public boolean isFilterShowConnected() {
+        return filterShowConnected;
+    }
+
+    public void setFilterShowConnected(boolean filterShowConnected) {
+        this.filterShowConnected = filterShowConnected;
     }
 
     public ILabelDecorator getLabelDecorator() {
@@ -210,7 +225,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             return checkboxTreeViewer;
         } else {
             if (navigatorFilter != null) {
-                CustomFilteredTree filteredTree = new CustomFilteredTree(this, treeStyle);
+                CustomFilteredTree filteredTree = new CustomFilteredTree(treeStyle);
                 filterControl = filteredTree.getFilterControl();
                 return filteredTree.getViewer();
             } else {
@@ -582,7 +597,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     ////////////////////////////////////////////////////////////////////////////
     // Filtered tree
 
-    private static class TreeFilter extends PatternFilter {
+    private class TreeFilter extends PatternFilter {
         private final INavigatorFilter filter;
         private boolean hasPattern = false;
 
@@ -609,7 +624,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         public boolean isElementVisible(Viewer viewer, Object element){
-            if (hasPattern && filter.filterFolders() && element instanceof DBNLocalFolder) {
+            if (filterShowConnected && element instanceof DBNDataSource && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
+                return false;
+            }
+            if ((filterShowConnected || (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder)element);
             }
             if (filter.select(element)) {
@@ -629,6 +647,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         return true;
                     }
                 } else if (isLeafMatch(viewer, child)) {
+                    if (filterShowConnected && child instanceof DBNDataSource && !((DBNDataSource) child).getDataSourceContainer().isConnected()) {
+                        continue;
+                    }
+
                     return true;
                 }
             }
@@ -637,9 +659,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     }
 
-    private static class CustomFilteredTree extends FilteredTree {
-        CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
-            super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
+    private class CustomFilteredTree extends FilteredTree {
+
+        CustomFilteredTree(int treeStyle) {
+            super(DatabaseNavigatorTree.this, treeStyle, new TreeFilter(DatabaseNavigatorTree.this.navigatorFilter), true);
             try {
                 if (treeViewer != null) {
                     treeViewer.setUseHashlookup(true);
@@ -652,6 +675,27 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
+        }
+
+        @Override
+        protected Composite createFilterControls(Composite parent) {
+            super.createFilterControls(parent);
+            ((GridLayout)parent.getLayout()).numColumns++;
+
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+
+            ToolBarManager filterManager = new ToolBarManager();
+            filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
+            if (menuService != null) {
+                menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+            }
+
+            filterManager.createControl(parent);
+
+            parent.addDisposeListener(e -> filterManager.dispose());
+
+            return parent;
         }
 
         @Override
