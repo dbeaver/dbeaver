@@ -65,6 +65,7 @@ import java.util.ArrayList;
 
 public class DatabaseNavigatorTree extends Composite implements INavigatorListener
 {
+
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
@@ -146,6 +147,19 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public void setFilterShowConnected(boolean filterShowConnected) {
         this.filterShowConnected = filterShowConnected;
+    }
+
+    public DatabaseNavigatorTreeFilterObjectType getFilterObjectType() {
+        if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            return ((DatabaseNavigatorTreeFilter) navigatorFilter).getFilterObjectType();
+        }
+        return DatabaseNavigatorTreeFilterObjectType.table;
+    }
+
+    public void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+        if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            ((DatabaseNavigatorTreeFilter) navigatorFilter).setFilterObjectType(filterObjectType);
+        }
     }
 
     public ILabelDecorator getLabelDecorator() {
@@ -627,7 +641,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (filterShowConnected && element instanceof DBNDataSource && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
                 return false;
             }
-            if ((filterShowConnected || (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder) {
+            if ((filterShowConnected ||
+                getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection ||
+                (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder)
+            {
                 return hasVisibleConnections(viewer, (DBNLocalFolder)element);
             }
             if (filter.select(element)) {
