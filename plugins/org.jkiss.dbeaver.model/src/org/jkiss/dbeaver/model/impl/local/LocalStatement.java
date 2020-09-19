@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.local;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
@@ -28,10 +27,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * LocalResultSet
  */
-public class LocalStatement extends AbstractStatement
+public class LocalStatement extends AbstractStatement<DBCSession>
 {
     private String text;
-    private DBCExecutionSource source;
 
     public LocalStatement(DBCSession session, String text) {
         super(session);
@@ -41,16 +39,6 @@ public class LocalStatement extends AbstractStatement
     @Override
     public String getQueryString() {
         return text;
-    }
-
-    @Override
-    public DBCExecutionSource getStatementSource() {
-        return source;
-    }
-
-    @Override
-    public void setStatementSource(DBCExecutionSource source) {
-        this.source = source;
     }
 
     @Override

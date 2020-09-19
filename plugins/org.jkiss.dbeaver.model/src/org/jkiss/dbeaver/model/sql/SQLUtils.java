@@ -552,11 +552,13 @@ public final class SQLUtils {
                     if (i > 0) {
                         conString.append(" AND");
                     }
+                    String strValue;
                     if (inlineCriteria) {
-                        conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
+                        strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
                     } else {
-                        conString.append(" ").append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(),"?"));
+                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?");
                     }
+                    conString.append(' ').append(strValue);
                 }
             } else if (operator.getArgumentCount() < 0) {
                 // Multiple arguments

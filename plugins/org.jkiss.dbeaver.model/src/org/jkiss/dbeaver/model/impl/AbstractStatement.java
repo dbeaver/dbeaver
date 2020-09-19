@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 public abstract class AbstractStatement<SESSION extends DBCSession> implements DBCStatement {
 
     protected final SESSION connection;
+    private DBCExecutionSource statementSource;
 
     public AbstractStatement(SESSION session) {
         this.connection = session;
@@ -33,5 +36,16 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
     @Override
     public SESSION getSession() {
         return connection;
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionSource getStatementSource() {
+        return statementSource;
+    }
+
+    @Override
+    public void setStatementSource(@Nullable DBCExecutionSource source) {
+        this.statementSource = source;
     }
 }
