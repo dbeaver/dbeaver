@@ -830,6 +830,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void createControlsBar(Composite sqlEditorPanel) {
 
         sideToolBar = new VerticalFolder(sqlEditorPanel, SWT.LEFT);
+        sideToolBar.setCheckCommandEnablement(true);
         ((GridLayout)sideToolBar.getLayout()).marginTop = 3;
         ((GridLayout)sideToolBar.getLayout()).marginBottom = 10;
         ((GridLayout)sideToolBar.getLayout()).verticalSpacing = 3;
