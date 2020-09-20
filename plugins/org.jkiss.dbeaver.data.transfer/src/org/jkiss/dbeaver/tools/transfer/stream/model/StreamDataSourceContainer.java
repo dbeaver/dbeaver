@@ -59,13 +59,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     private File inputFile;
     private String name;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
-
-    StreamDataSourceContainer(File inputFile) {
-        this.inputFile = inputFile;
-    }
+    private final DBVModel virtualModel;
 
     StreamDataSourceContainer(String name) {
         this.name = name;
+        this.virtualModel = new DBVModel(this);
     }
 
     @NotNull
@@ -113,6 +111,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isProvided() {
         return true;
+    }
+
+    @Override
+    public boolean isTemplate() {
+        return false;
     }
 
     @Override
@@ -180,7 +183,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public DBVModel getVirtualModel() {
-        return null;
+        return virtualModel;
     }
 
     @Override

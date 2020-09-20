@@ -346,7 +346,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             String filterText = filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
             executePanel.setEnabled(supportsDataFilter);
-            filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters() || !CommonUtils.isEmpty(filterText));
+            filtersClearButton.setEnabled(viewer.getModel().getDataFilter().hasFilters() || viewer.getModel().getDataFilter().hasOrdering() || !CommonUtils.isEmpty(filterText));
             filtersSaveButton.setEnabled(viewer.getDataContainer() instanceof DBSEntity);
             // Update history buttons
             if (historyPosition > 0) {

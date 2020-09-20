@@ -51,13 +51,13 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS))) {
+        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -66,7 +66,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     public DBSObjectCache<? extends DBSObject, OracleMaterializedView> getObjectsCache(OracleMaterializedView object)
     {
-        return object.getSchema().mviewCache;
+        return (DBSObjectCache) object.getSchema().tableCache;
     }
 
     @Override

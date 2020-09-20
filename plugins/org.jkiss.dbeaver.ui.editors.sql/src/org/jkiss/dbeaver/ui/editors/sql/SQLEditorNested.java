@@ -266,6 +266,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     }
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
+                        monitor.beginTask(getName(), 1);
                         try {
                             DBExecUtils.tryExecuteRecover(monitor, getDataSource(), param -> {
                                 try {
@@ -281,6 +282,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
                         } catch (Exception e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
                             return Status.CANCEL_STATUS;
+                        } finally {
+                            monitor.done();
                         }
                     }
                 };

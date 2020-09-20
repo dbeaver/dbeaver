@@ -185,6 +185,7 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
+        IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
                 UserResponse dbErrorResp = showDatabaseError(message, (DBException) s.getException());
@@ -195,11 +196,13 @@ public class DBeaverUI implements DBPPlatformUI {
                 break;
             }
             if (s.getChildren() != null && s.getChildren().length > 0) {
-                s = s.getChildren()[0];
+                s = rootStatus = s.getChildren()[0];
             } else {
                 break;
             }
         }
+        log.error(rootStatus.getMessage(), rootStatus.getException());
+
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
@@ -213,8 +216,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
-        log.error(error);
-
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
@@ -232,6 +233,17 @@ public class DBeaverUI implements DBPPlatformUI {
                 message,
                 error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
             });
+    }
+
+    @Override
+    public void showWarningMessageBox(@NotNull String title, String message) {
+        UIUtils.syncExec(() -> {
+            UIUtils.showMessageBox(
+                    UIUtils.getActiveWorkbenchShell(),
+                    title,
+                    message,
+                    SWT.ICON_WARNING);
+        });
     }
 
     @Override
@@ -422,10 +434,15 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void readAndDispatchEvents() {
+    public boolean readAndDispatchEvents() {
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
-            currentDisplay.readAndDispatch();
+            if (!currentDisplay.readAndDispatch()) {
+                currentDisplay.sleep();
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 

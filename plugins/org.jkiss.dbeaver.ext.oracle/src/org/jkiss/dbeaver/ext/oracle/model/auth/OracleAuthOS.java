@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,17 +31,29 @@ import java.util.Properties;
 /**
  * Oracle OS auth model.
  */
-public class OracleAuthOS extends AuthModelDatabaseNative {
+public class OracleAuthOS extends AuthModelDatabaseNative<OracleAuthOSCredentials> {
 
     public static final String ID = "oracle_os";
 
+    @NotNull
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        configuration.setUserName(null);
-        configuration.setUserPassword(null);
+    public OracleAuthOSCredentials createCredentials() {
+        return new OracleAuthOSCredentials();
+    }
 
+    @NotNull
+    @Override
+    public OracleAuthOSCredentials loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        OracleAuthOSCredentials credentials = super.loadCredentials(dataSource, configuration);
+        credentials.setUserName(null);
+        credentials.setUserPassword(null);
+        return credentials;
+    }
+
+    @Override
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, OracleAuthOSCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
-        super.initAuthentication(monitor, dataSource, configuration, connProperties);
+        super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
 }

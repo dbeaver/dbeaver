@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.AbstractTextPanelEditor;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
@@ -27,6 +31,17 @@ public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
 
     @Override
     protected XMLEditor createEditorParty(IValueController valueController) {
-        return new XMLEditor();
+        // Override init function because standard is VEEERY slow
+        return new XMLEditor() {
+            @Override
+            public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+                setSite(site);
+                try {
+                    doSetInput(input);
+                } catch (CoreException e) {
+                    throw new PartInitException("Error initializing panel XML editor", e);
+                }
+            }
+        };
     }
 }

@@ -232,6 +232,9 @@ public class UIIcon {
 
     public static final DBIcon RUN = new DBIcon("run.png"); //$NON-NLS-1$
 
+    public static final DBIcon BUTTON_READ_ONLY = new DBIcon("buttons/lock.png"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.png"); //$NON-NLS-1$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }

@@ -51,7 +51,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
             throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
@@ -101,9 +101,13 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP VIEW " +
+                "DROP " + getDropViewType(command.getObject()) + " " +
                 command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
+    }
+
+    protected String getDropViewType(GenericTableBase object) {
+        return "VIEW";
     }
 
     private void createOrReplaceViewQuery(List<DBEPersistAction> actions, DBECommandComposite<GenericTableBase, PropertyHandler> command)

@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.ui.feature"
         label="%featureName"
-        version="7.1.1.qualifier"
+        version="7.2.1.qualifier"
         provider-name="%providerName">
 
     <description>
@@ -38,7 +38,7 @@
     <plugin id="org.jkiss.dbeaver.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.editors.acl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.editors.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ui.editors.content" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+<!--    <plugin id="org.jkiss.dbeaver.ui.editors.content" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
     <plugin id="org.jkiss.dbeaver.ui.editors.connection" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.editors.data" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.editors.entity" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -50,7 +50,7 @@
     <plugin id="org.jkiss.dbeaver.ui.editors.xml" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.navigator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.search" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.erd" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.erd.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.colortheme" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.tasks.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

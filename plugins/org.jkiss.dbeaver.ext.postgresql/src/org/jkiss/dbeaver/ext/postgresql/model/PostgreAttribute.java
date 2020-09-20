@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
@@ -45,7 +46,7 @@ import java.util.TreeSet;
  * PostgreAttribute
  */
 public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
-    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -121,7 +122,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public void setPrecision(Integer precision) {
         super.setPrecision(precision);
         if (getDataKind() == DBPDataKind.STRING) {
-            this.maxLength = precision;
+            this.maxLength = CommonUtils.toInt(precision);
         }
     }
 
@@ -213,10 +214,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return dataType;
     }
 
+    @Override
     public void setDataType(@NotNull PostgreDataType dataType) {
         this.dataType = dataType;
-        setTypeName(dataType.getTypeName());
-        setValueType(dataType.getTypeID());
+        this.typeName = dataType.getTypeName();
+        this.valueType = dataType.getTypeID();
     }
 
     @Override

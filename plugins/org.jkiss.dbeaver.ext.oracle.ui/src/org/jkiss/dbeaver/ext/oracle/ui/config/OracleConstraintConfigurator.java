@@ -41,12 +41,14 @@ public class OracleConstraintConfigurator implements DBEObjectConfigurator<Oracl
                 constraint,
                 new DBSEntityConstraintType[] {
                     DBSEntityConstraintType.PRIMARY_KEY,
-                    DBSEntityConstraintType.UNIQUE_KEY });
+                    DBSEntityConstraintType.UNIQUE_KEY,
+                    DBSEntityConstraintType.CHECK });
             if (!editPage.edit()) {
                 return null;
             }
             constraint.setName(editPage.getConstraintName());
             constraint.setConstraintType(editPage.getConstraintType());
+            constraint.setSearchCondition(editPage.getConstraintExpression());
 
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {

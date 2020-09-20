@@ -338,12 +338,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     	if (addMetaProps == null)
     		addMetaProps = new Properties();
     	
-    	if (JDBCExecutionContext.TYPE_METADATA.equals(purpose)) {
-    		addMetaProps.clear();
-    		addMetaProps.put("snapshottransactions", "1");
-    	} else {
-    		addMetaProps.clear();
-    	}
+		addMetaProps.clear();
     	
     	return props;
     	
@@ -479,8 +474,9 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 	// Manage Children: ExasolSchema
 	// --------------------------
 
-	@Override
-	public Class<? extends ExasolSchema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	@NotNull
+    @Override
+	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}
@@ -944,6 +940,23 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
             return new QueryTransformerFetchAll();
         }
         return super.createQueryTransformer(type);
+    }
+    
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+    	// exasol has no sqlstates 
+    	String errorMessage = error.getMessage();
+    	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
+    	{
+    		return ErrorType.CONNECTION_LOST;
+    	} else if (errorMessage.contains("Feature not supported")) {
+			return ErrorType.FEATURE_UNSUPPORTED;
+		} else if (errorMessage.contains("GlobalTransactionRollback")) {
+			return ErrorType.TRANSACTION_ABORTED;
+		} else if (errorMessage.contains("insufficient privileges")) {
+			return ErrorType.PERMISSION_DENIED;
+		}
+    	return super.discoverErrorType(error);
     }
 
 

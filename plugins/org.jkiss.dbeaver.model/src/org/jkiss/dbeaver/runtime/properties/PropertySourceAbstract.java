@@ -76,7 +76,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.put(prop.getId(), prop);
     }
 
-    public synchronized void addProperty(@Nullable String category, Object id, String name, Object value)
+    public synchronized void addProperty(@Nullable String category, String id, String name, Object value)
     {
         props.add(new PropertyDescriptor(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
@@ -106,10 +106,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return props.isEmpty();
     }
 
-    public DBPPropertyDescriptor[] getProperties() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
-    }
-
     public DBPPropertyDescriptor getProperty(String id) {
         for (DBPPropertyDescriptor prop : props) {
             if (prop.getId().equals(id)) {
@@ -117,11 +113,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-        return false;
     }
 
     public Object getSourceObject()
@@ -136,7 +127,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 /*
@@ -152,7 +143,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 */
 
     @Override
-    public boolean isPropertySet(Object id)
+    public boolean isPropertySet(String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -174,7 +165,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object id)
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -241,7 +232,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(Object id)
+    public boolean isPropertyResettable(String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -259,7 +250,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -276,12 +267,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
@@ -321,11 +312,13 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter, locale);
             for (final ObjectPropertyDescriptor desc : annoProps) {
-                addProperty(desc);
+                if (desc.isPropertyVisible(editableValue, editableValue)) {
+                    addProperty(desc);
+                }
             }
             if (editableValue instanceof DBPPropertySource) {
                 DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
-                DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
+                DBPPropertyDescriptor[] ownProperties = ownPropSource.getProperties();
                 if (!ArrayUtils.isEmpty(ownProperties)) {
                     for (DBPPropertyDescriptor prop : ownProperties) {
                         props.add(prop);

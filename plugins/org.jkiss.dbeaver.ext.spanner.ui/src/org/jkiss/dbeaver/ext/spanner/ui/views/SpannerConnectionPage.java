@@ -141,7 +141,7 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements ICo
             connectionInfo.setDatabaseName(databaseText.getText().trim());
         }
         if (privateKeyFile != null) {
-            connectionInfo.setProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH, privateKeyFile.getText());
+            connectionInfo.setProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH, privateKeyFile.getText().trim());
         }
         super.saveSettings(dataSource);
     }

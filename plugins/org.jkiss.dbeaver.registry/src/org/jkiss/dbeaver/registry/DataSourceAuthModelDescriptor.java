@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +36,6 @@ import java.util.List;
  * Auth model descriptor
  */
 public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor implements DBPAuthModelDescriptor {
-    private static final Log log = Log.getLog(DataSourceAuthModelDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceAuth"; //$NON-NLS-1$
 
@@ -46,7 +48,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
 
     private DBAAuthModel instance;
 
-    public DataSourceAuthModelDescriptor(IConfigurationElement config) {
+    DataSourceAuthModelDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
@@ -61,25 +63,31 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             this.replaces.add(dsConfig.getAttribute("model"));
         }
-
     }
 
+    @NotNull
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public DBPImage getIcon() {
         return icon;
     }
 
+    @NotNull
     @Override
     public String getImplClassName() {
         return implType.getImplName();
@@ -102,6 +110,18 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             }
         }
         return instance;
+    }
+
+    @NotNull
+    @Override
+    public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource) {
+        DBAAuthModel instance = getInstance();
+        DBAAuthCredentials credentials = dataSource == null ?
+            instance.createCredentials() :
+            instance.loadCredentials(dataSource, dataSource.getConnectionConfiguration());
+        PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
+        propertyCollector.collectProperties();
+        return propertyCollector;
     }
 
     boolean appliesTo(DBPDriver driver) {

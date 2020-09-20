@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,11 +52,11 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     private static final Log log = Log.getLog(PostgreTableReal.class);
 
     protected long rowCountEstimate;
-    protected volatile Long rowCount;
-    protected volatile Long diskSpace;
-    protected volatile long tableRelSize;
-    final TriggerCache triggerCache = new TriggerCache();
-    final RuleCache ruleCache = new RuleCache();
+    protected transient volatile Long rowCount;
+    protected transient volatile Long diskSpace;
+    protected transient volatile long tableRelSize;
+    private final TriggerCache triggerCache = new TriggerCache();
+    private final RuleCache ruleCache = new RuleCache();
 
     protected PostgreTableReal(PostgreTableContainer container)
     {
@@ -73,6 +75,11 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     // Copy constructor
     public PostgreTableReal(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTableReal source, boolean persisted) throws DBException {
         super(monitor, container, source, persisted);
+
+        for (PostgreTableConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
+            PostgreTableConstraint constr = new PostgreTableConstraint(monitor, this, srcConstr);
+            getSchema().getConstraintCache().cacheObject(constr);
+        }
     }
 
     public TriggerCache getTriggerCache() {
@@ -163,7 +170,10 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    protected void readTableStatistics(JDBCSession session) throws SQLException {
+    protected void readTableStatistics(JDBCSession session) throws DBException, SQLException {
+        if (!getDataSource().getServerType().supportsTableStatistics()) {
+            return;
+        }
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "select " +
                     "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
@@ -179,7 +189,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
         diskSpace = dbResult.getLong("total_rel_size");
         tableRelSize = dbResult.getLong("rel_size");
     }
@@ -193,6 +203,19 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         throws DBException
     {
         return getSchema().getConstraintCache().getObject(monitor, getSchema(), this, ukName);
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.diskSpace != null) {
+            // Re-read statistics on the next try
+            getSchema().resetStatistics();
+        }
+        this.rowCount = null;
+        this.diskSpace = null;
+        this.tableRelSize = 0;
+
+        return super.refreshObject(monitor);
     }
 
     @Nullable

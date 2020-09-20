@@ -141,6 +141,7 @@ public class DataSourceDescriptor
     private volatile boolean connecting = false;
     private boolean temporary;
     private boolean hidden;
+    private boolean template;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
     private DBWTunnel tunnelHandler;
@@ -196,7 +197,6 @@ public class DataSourceDescriptor
         this.connectionReadOnly = source.connectionReadOnly;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
-        this.formatterProfile = source.formatterProfile;
         this.clientHome = source.clientHome;
 
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
@@ -216,6 +216,13 @@ public class DataSourceDescriptor
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
+
+        if (source.formatterProfile == null || source.formatterProfile.getProfileName().equals(source.getId())) {
+            this.formatterProfile = null;
+        } else {
+            this.formatterProfile = new DataFormatterProfile(source.formatterProfile.getProfileName(), preferenceStore);
+        }
+
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 
@@ -244,7 +251,7 @@ public class DataSourceDescriptor
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
     }
 
@@ -577,6 +584,15 @@ public class DataSourceDescriptor
     @Override
     public boolean isProvided() {
         return !origin.isDefault();
+    }
+
+    @Override
+    public boolean isTemplate() {
+        return template;
+    }
+
+    public void setTemplate(boolean template) {
+        this.template = template;
     }
 
     @Override
@@ -1159,7 +1175,7 @@ public class DataSourceDescriptor
                 for (DBSInstance instance : dataSource.getAvailableInstances()) {
                     for (DBCExecutionContext context : instance.getAllContexts()) {
                         conIndex++;
-                        coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
+                        coll.addProperty("Connections", String.valueOf(conIndex), String.valueOf(conIndex), new ContextInfo(context));
                     }
                 }
             }

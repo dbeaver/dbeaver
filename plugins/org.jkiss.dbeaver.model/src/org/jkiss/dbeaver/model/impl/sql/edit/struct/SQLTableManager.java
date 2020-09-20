@@ -67,13 +67,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
     
-    protected String beginCreateTableStatement(OBJECT_TYPE table, String tableName) {
-        return "CREATE " + getCreateTableType(table) + " " + tableName +
-                " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
-                ;
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
     
-    protected boolean hasAttrDeclarations() {
+    protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
 
@@ -91,7 +89,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append(beginCreateTableStatement(table,tableName));
+        createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
         for (NestedObjectCommand nestedCommand : orderedCommands) {
@@ -118,9 +116,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                     } else {
                            createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
-                    createQuery.append(lineSeparator); //$NON-NLS-1$
+                    createQuery.append(lineSeparator);
                 }
-                if (!hasNestedDeclarations && !hasAttrDeclarations()) {
+                if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
                     createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
                 } else {
                  createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
@@ -134,16 +132,29 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 }
             }
         }
+        if (hasAttrDeclarations(table) || hasNestedDeclarations) {
+            createQuery.append(lineSeparator);
+            createQuery.append(")"); //$NON-NLS-1$
+        }
 
-        createQuery.append(lineSeparator); //$NON-NLS-1$
-        if (hasAttrDeclarations() || hasNestedDeclarations) createQuery.append(")"); //$NON-NLS-1$
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
-
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
 
+    @Override
+    protected boolean isIncludeChildObjectReference(DBRProgressMonitor monitor, DBSObject childObject) throws DBException {
+        if (childObject instanceof DBSTableIndex) {
+            return isIncludeIndexInDDL(monitor, (DBSTableIndex) childObject);
+        }
+        return super.isIncludeChildObjectReference(monitor, childObject);
+    }
+
     protected String getCreateTableType(OBJECT_TYPE table) {
-        return DBUtils.isView(table) ? "VIEW" : "TABLE";
+        return DBUtils.isView(table) ? "VIEW" : "TABLE";//$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    protected String getDropTableType(OBJECT_TYPE table) {
+        return getCreateTableType(table);
     }
 
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
@@ -158,7 +169,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + getCreateTableType(object) +  //$NON-NLS-2$
+                "DROP " + getDropTableType(object) +  //$NON-NLS-2$
                 " " + tableName + //$NON-NLS-2$
                 (!DBUtils.isView(object) && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "") //$NON-NLS-2$
             )
@@ -267,7 +278,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (im != null && table instanceof DBSTable) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
-                    if (!isIncludeIndexInDDL(index)) {
+                    if (!isIncludeIndexInDDL(monitor, index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index, options));
@@ -287,7 +298,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     }
 
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
         return !DBUtils.isHiddenObject(index) && !DBUtils.isInheritedObject(index);
     }
 

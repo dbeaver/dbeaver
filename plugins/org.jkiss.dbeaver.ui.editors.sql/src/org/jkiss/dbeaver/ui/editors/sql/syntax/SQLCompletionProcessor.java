@@ -20,8 +20,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateProposal;
+import org.eclipse.jface.viewers.ISelection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -173,13 +175,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         // Templates
         for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
             if (template.getName().toLowerCase().startsWith(wordPart)) {
+                SQLContext templateContext = new SQLContext(
+                    SQLTemplatesRegistry.getInstance().getTemplateContextRegistry().getContextType(template.getContextTypeId()),
+                    viewer.getDocument(),
+                    new Position(request.getWordDetector().getStartOffset(), request.getWordDetector().getLength()),
+                    editor);
+                ISelection selection = viewer.getSelectionProvider().getSelection();
+                if (selection instanceof TextSelection) {
+                    templateContext.setVariable(GlobalTemplateVariables.SELECTION, ((TextSelection) selection).getText());
+                }
                 templateProposals.add(new SQLTemplateCompletionProposal(
                     template,
-                    new SQLContext(
-                        SQLTemplatesRegistry.getInstance().getTemplateContextRegistry().getContextType(template.getContextTypeId()),
-                        viewer.getDocument(),
-                        new Position(request.getWordDetector().getStartOffset(), request.getWordDetector().getLength()),
-                        editor),
+                    templateContext,
                     new Region(request.getDocumentOffset(), 0),
                     null));
             }

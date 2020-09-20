@@ -26,20 +26,18 @@ public interface DBPPropertySource {
 
     Object getEditableValue();
 
-    DBPPropertyDescriptor[] getPropertyDescriptors2();
+    DBPPropertyDescriptor[] getProperties();
 
-    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id);
+    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id);
 
-    boolean isPropertySet(Object id);
+    boolean isPropertySet(String id);
 
-    boolean isPropertyResettable(Object id);
+    boolean isPropertyResettable(String id);
 
-    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id);
+    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id);
 
-    void resetPropertyValueToDefault(Object id);
+    void resetPropertyValueToDefault(String id);
 
-    void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value);
-
-    boolean isDirty(Object id);
+    void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value);
 
 }

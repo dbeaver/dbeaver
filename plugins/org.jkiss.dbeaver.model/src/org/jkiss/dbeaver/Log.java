@@ -20,12 +20,15 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -51,13 +54,19 @@ public class Log
     }
 
     private final String name;
-    private static ThreadLocal<PrintWriter> logWriter = new ThreadLocal<>();
+    private static ThreadLocal<PrintStream> logWriter = new ThreadLocal<>();
     private static boolean quietMode;
-    private static PrintWriter DEFAULT_DEBUG_WRITER;
     private final boolean doEclipseLog;
 
+    @NotNull
+    private static PrintStream defaultDebugStream = System.err;
+
+    public static void setDefaultDebugStream(@NotNull PrintStream defaultDebugStream) {
+        Log.defaultDebugStream = defaultDebugStream;
+    }
+
     public static Log getLog(Class<?> forClass) {
-        return new Log(forClass.getName(), false);
+        return new Log(forClass.getName(), true);
     }
 
     public static Log getLog(String name) {
@@ -72,16 +81,19 @@ public class Log
         return quietMode;
     }
 
-    public static PrintWriter getLogWriter() {
+    public static PrintStream getLogWriter() {
         return logWriter.get();
     }
 
-    public static void setLogWriter(Writer logWriter) {
+    public static void setLogWriter(OutputStream logWriter) {
         if (logWriter == null) {
             Log.logWriter.remove();
         } else {
-            PrintWriter printStream = new PrintWriter(logWriter, true);
-            Log.logWriter.set(printStream);
+            if (logWriter instanceof PrintStream) {
+                Log.logWriter.set((PrintStream) logWriter);
+            } else {
+                Log.logWriter.set(new PrintStream(logWriter, true));
+            }
         }
     }
 
@@ -120,7 +132,7 @@ public class Log
     }
 
     public void flush() {
-        PrintWriter logStream = logWriter.get();
+        PrintStream logStream = logWriter.get();
         if (logStream != null) {
             logStream.flush();
         }
@@ -184,12 +196,9 @@ public class Log
     }
 
     private void debugMessage(Object message, Throwable t) {
-        PrintWriter logStream = logWriter.get();
+        PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
-            if (DEFAULT_DEBUG_WRITER == null) {
-                DEFAULT_DEBUG_WRITER = new PrintWriter(System.err, true);
-            }
-            PrintWriter debugWriter = logStream != null ? logStream : (quietMode ? null : DEFAULT_DEBUG_WRITER);
+            PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : defaultDebugStream);
             if (debugWriter == null) {
                 return;
             }
@@ -207,6 +216,20 @@ public class Log
             debugWriter.flush();
             for (Listener listener : listeners) {
                 listener.loggedMessage(message, t);
+            }
+        }
+        if (t != null) {
+            // Log nested exceptions
+            for (Throwable ex = t; ex != null; ex = ex.getCause()) {
+                if (ex instanceof SQLException) {
+                    // Log all chained SQL exceptions
+                    for (SQLException error = ((SQLException) ex).getNextException(); error != null; error = error.getNextException()) {
+                        String chainedMessage = error.getMessage();
+                        if (!CommonUtils.isEmpty(chainedMessage)) {
+                            debug(chainedMessage.trim());
+                        }
+                    }
+                }
             }
         }
     }

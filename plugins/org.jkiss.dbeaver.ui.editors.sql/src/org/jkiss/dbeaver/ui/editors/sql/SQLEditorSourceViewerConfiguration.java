@@ -125,7 +125,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[]{new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, editor.getSyntaxManager())};
+            return new IAutoEditStrategy[]{
+                new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, sourceViewer, editor.getSyntaxManager())};
         } else if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[]{new SQLCommentAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING)};
         } else if (SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(contentType)) {

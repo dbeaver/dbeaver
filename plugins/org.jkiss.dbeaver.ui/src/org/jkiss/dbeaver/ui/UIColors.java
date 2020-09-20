@@ -25,7 +25,6 @@ import org.eclipse.swt.graphics.RGB;
  */
 public class UIColors {
 
-
     public static final RGB[] EXTRA_DS_COLORS = new RGB[] {
         new RGB(119, 206, 130),
         new RGB(206, 63, 34),

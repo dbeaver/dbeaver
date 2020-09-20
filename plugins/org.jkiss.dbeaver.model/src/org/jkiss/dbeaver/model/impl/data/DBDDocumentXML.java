@@ -51,9 +51,15 @@ public class DBDDocumentXML implements DBDDocument {
 
     @Nullable
     @Override
+    public Object getDocumentId() {
+        return document.getDocumentURI();
+    }
+
+    @Nullable
+    @Override
     public Object getDocumentProperty(String name) {
         if (PROP_ID.equals(name)) {
-            return document.getDocumentURI();
+            return getDocumentId();
         }
         return null;
     }

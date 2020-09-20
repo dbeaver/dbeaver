@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-
 import java.util.Map;
 
 /**
@@ -27,8 +25,8 @@ public interface IStreamDataImporterSite {
 
     StreamProducerSettings getSettings();
 
-    DBSEntity getSourceObject();
+    StreamEntityMapping getSourceObject();
 
-    Map<Object,Object> getProcessorProperties();
+    Map<String, Object> getProcessorProperties();
 
 }

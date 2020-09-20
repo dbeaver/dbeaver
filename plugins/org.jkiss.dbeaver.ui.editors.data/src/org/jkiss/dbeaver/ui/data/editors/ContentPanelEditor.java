@@ -28,7 +28,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -105,12 +104,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
         if (isStringValue()) {
             // It is a string
-            DBPDataSource dataSource = valueController.getExecutionContext() == null ? null : valueController.getExecutionContext().getDataSource();
             streamEditor.primeEditorValue(
                 new VoidProgressMonitor(),
                 control,
                 new StringContent(
-                    dataSource, CommonUtils.toString(content)));
+                    valueController.getExecutionContext(), CommonUtils.toString(content)));
         } else if (content instanceof DBDContent) {
             loadInService = !(content instanceof DBDContentCached);
             if (loadInService) {
@@ -142,7 +140,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         final Object content = valueController.getValue();
         if (isStringValue()) {
             StringContent stringContent = new StringContent(
-                valueController.getExecutionContext().getDataSource(), null);
+                valueController.getExecutionContext(), null);
             streamEditor.extractEditorValue(new VoidProgressMonitor(), control, stringContent);
             return stringContent.getRawValue();
         } else {

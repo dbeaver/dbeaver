@@ -39,8 +39,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * abstract struct implementation.
@@ -189,7 +189,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     }
 
     @Override
-    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
+    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException {
         if (!CommonUtils.equalObjects(values[attribute.getOrdinalPosition()], value)) {
             this.values[attribute.getOrdinalPosition()] = value;
             this.modified = true;
@@ -230,7 +230,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
         @Nullable
         @Override
-        public Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
+        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
             return Arrays.asList(attributes);
         }
     }

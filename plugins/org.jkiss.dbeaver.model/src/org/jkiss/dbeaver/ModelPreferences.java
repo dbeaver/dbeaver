@@ -115,6 +115,7 @@ public final class ModelPreferences
     public static final String SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES = "sql.format.insert.delimiters.in.empty_lines";
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
+    public static final String READ_EXPENSIVE_STATISTICS = "database.stats.expensive"; //$NON-NLS-1$
 
     // Driver and proxy settings. They have prefix UI_ by historical reasons.
     public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
@@ -243,6 +244,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES, false);
 
         PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
+        PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_STATISTICS, false);
 
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_HOST, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);

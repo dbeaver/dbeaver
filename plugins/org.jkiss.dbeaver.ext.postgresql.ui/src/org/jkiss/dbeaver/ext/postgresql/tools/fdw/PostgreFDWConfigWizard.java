@@ -274,7 +274,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
 
         PostgreFDWConfigWizard.FDWInfo selectedFDW = getSelectedFDW();
         PropertySourceCustom propertySource = getFdwPropertySource();
-        Map<Object, Object> propValues = propertySource.getPropertiesWithDefaults();
+        Map<String, Object> propValues = propertySource.getPropertiesWithDefaults();
 
         String serverId = getFdwServerId();
 
@@ -285,7 +285,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                 .append("\n\tFOREIGN DATA WRAPPER ").append(selectedFDW.getId())
                 .append("\n\tOPTIONS(");
             boolean firstProp = true;
-            for (Map.Entry<Object, Object> pe : propValues.entrySet()) {
+            for (Map.Entry<String, Object> pe : propValues.entrySet()) {
                 String propName = CommonUtils.toString(pe.getKey());
                 String propValue = CommonUtils.toString(pe.getValue());
                 if (CommonUtils.isEmpty(propName) || CommonUtils.isEmpty(propValue)) {
@@ -330,7 +330,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                     if (catalogSchema != null) {
                         catalogSchema.getDataTypes(monitor);
                     }
-                    String defTypeName = DBStructUtils.mapTargetDataType(database, attr);
+                    String defTypeName = DBStructUtils.mapTargetDataType(database, attr, true);
                     String plainTargetTypeName = SQLUtils.stripColumnTypeModifiers(defTypeName);
                     PostgreDataType dataType = database.getDataType(monitor, plainTargetTypeName);
                     if (dataType == null) {

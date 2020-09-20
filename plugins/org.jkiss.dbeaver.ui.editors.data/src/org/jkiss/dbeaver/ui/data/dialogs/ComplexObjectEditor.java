@@ -375,7 +375,11 @@ public class ComplexObjectEditor extends TreeViewer {
         }
         if (complexValue instanceof DBDComposite) {
             for (ComplexElement item : items) {
-                ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
+                try {
+                    ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
+                } catch (DBCException e) {
+                    log.error("Error setting attribute value", e);
+                }
             }
         } else if (complexValue instanceof DBDCollection) {
             if (items != null) {
@@ -648,10 +652,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                        monitor.beginTask("Read object reference", 1);
                         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value")) {
                             result = reference.getReferencedObject(session);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
                         }
                     }
                 };

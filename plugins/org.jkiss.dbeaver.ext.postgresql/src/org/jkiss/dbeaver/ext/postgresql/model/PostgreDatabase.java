@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -60,7 +61,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         DBPNamedObject2,
         PostgreObject,
         DBPDataTypeProvider,
-        DBSInstanceLazy {
+        DBSInstanceLazy,
+        DBPObjectStatistics {
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -80,6 +82,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private int connectionLimit;
     private long tablespaceId;
     private String description;
+    private long dbTotalSize;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -149,8 +152,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
-                "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
@@ -466,7 +468,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public Collection<PostgreDataType> getLocalDataTypes() {
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
-            return schema.dataTypeCache.getCachedObjects();
+            return schema.getDataTypeCache().getCachedObjects();
         }
         return null;
     }
@@ -592,8 +594,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return getSchema(monitor, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
@@ -685,7 +688,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return dataType;
         }
         for (PostgreSchema schema : schemaCache.getCachedObjects()) {
-            dataType = schema.dataTypeCache.getDataType(typeId);
+            dataType = schema.getDataTypeCache().getDataType(typeId);
             if (dataType != null) {
                 dataTypeCache.put(typeId, dataType);
                 return dataType;
@@ -694,7 +697,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // Type not found. Let's resolve it
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
-            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -711,7 +714,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             // First check system catalog
             final PostgreSchema schema = getCatalogSchema();
             if (schema != null) {
-                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
                 if (dataType != null) {
                     return dataType;
                 }
@@ -723,7 +726,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
-                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
                 if (dataType != null) {
                     return dataType;
                 }
@@ -734,7 +737,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             if (searchPath.contains(schema.getName())) {
                 continue;
             }
-            final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+            final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
             if (dataType != null) {
                 return dataType;
             }
@@ -747,12 +750,35 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // Type not found. Let's resolve it
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
-            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
             return null;
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    // Stats
+
+    @Override
+    public boolean hasStatistics() {
+        return true;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return dbTotalSize;
+    }
+
+    public void setDbTotalSize(long dbTotalSize) {
+        this.dbTotalSize = dbTotalSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
     }
 
     @Override
@@ -961,13 +987,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return session.prepareStatement(
                   "SELECT \n" +
                   " e.oid,\n" +
-                  " a.rolname oname,\n" +
                   " cfg.tbls,\n" +
                   "  n.nspname as schema_name,\n" +
                   " e.* \n" +
                   "FROM \n" +
                   " pg_catalog.pg_extension e \n" +
-                  " join pg_authid a on a.oid = e.extowner\n" +
                   " join pg_namespace n on n.oid =e.extnamespace\n" +
                   " left join  (\n" +
                   "         select\n" +

@@ -94,7 +94,7 @@ public class SQLScriptParser
                     } catch (BadLocationException e) {
                         log.debug(e);
                     }
-                } else if (useBlankLines && token.isWhitespace() && tokenLength >= 1) {
+                } else if (useBlankLines && token.isWhitespace() && tokenLength > 1) {
                     // Check for blank line delimiter
                     if (lastTokenLineFeeds + countLineFeeds(document, tokenOffset, tokenLength) >= 2) {
                         isDelimiter = true;
@@ -235,7 +235,7 @@ public class SQLScriptParser
                         return null;
                     }
                 }
-                if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+                if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos) || tokenOffset > endPos)) {
                     if (tokenOffset > endPos) {
                         tokenOffset = endPos;
                     }

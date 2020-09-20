@@ -28,18 +28,20 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * SQL Server data type
  */
-public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject {
+public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject, DBSObjectWithScript, DBSEntity {
 
     private static final Log log = Log.getLog(SQLServerDataType.class);
 
@@ -56,7 +58,9 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     private boolean nullable;
     private boolean userType;
     private boolean assemblyType;
+    private boolean tableType;
     private String collationName;
+    private int tableTypeId = 0;
 
     private boolean persisted;
 
@@ -74,8 +78,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         this.nullable = JDBCUtils.safeGetInt(dbResult, "is_nullable") != 0;
         this.userType = JDBCUtils.safeGetInt(dbResult, "is_user_defined") != 0;
         this.assemblyType = JDBCUtils.safeGetInt(dbResult, "is_assembly_type") != 0;
+        this.tableType = JDBCUtils.safeGetInt(dbResult, "is_table_type") != 0;
 
         this.collationName = JDBCUtils.safeGetString(dbResult, "collation_name");
+
+        if (tableType) {
+            this.tableTypeId = JDBCUtils.safeGetInt(dbResult, "type_table_object_id");
+        }
 
         if (userType) {
             SQLServerDataType systemDataType = getSystemDataType();
@@ -123,6 +132,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, schemaId) : null;
     }
 
+    public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
+        return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, 4) : null;
+    }
+
     public SQLServerDataType getSystemDataType() {
         if (userType) {
             return getDataSource().getSystemDataType(systemTypeId);
@@ -130,10 +143,42 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return this;
     }
 
+    public SQLServerDatabase getContainer() {
+        if (owner instanceof SQLServerDatabase) return (SQLServerDatabase) owner;
+        return null;
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
-        return "";
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (!tableType) {
+            sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append("\n").append("FROM ");
+            SQLServerDataType systemDataType = getSystemDataType();
+            String typeName = systemDataType.getName();
+            sql.append(typeName.toUpperCase(Locale.ENGLISH));
+            SQLServerTypedObject serverTypedObjects = new SQLServerTypedObject(typeName, getDataTypeIDByName(typeName), dataKind, scale, precision, maxLength);
+            String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), serverTypedObjects, typeName, dataKind);
+            if (modifiers != null) {
+                sql.append(modifiers);
+            }
+            if (!nullable) {
+                sql.append(" NOT NULL;");
+            }
+        } else {
+            try {
+                SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
+                if (tableType != null) {
+                    options.put(DBPScriptObject.OPTION_USE_SPECIAL_NAME, name);
+                    String objectDefinitionText = tableType.getObjectDefinitionText(monitor, options);
+                    sql.append(objectDefinitionText);
+                }
+            } catch (DBException e) {
+                log.debug("Schema not found. ", e);
+            }
+        }
+        return sql.toString();
     }
 
     @Override
@@ -196,8 +241,17 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Property(viewable = false, order = 25)
+    public boolean isTableType() {
+        return tableType;
+    }
+
+    @Property(viewable = false, order = 26)
     public String getCollationName() {
         return collationName;
+    }
+
+    public int getTableTypeId() {
+        return tableTypeId;
     }
 
     @NotNull
@@ -255,24 +309,24 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     public static DBPDataKind getDataKindByName(String systemTypeName) {
         switch (systemTypeName) {
-            case "char":
-            case "nchar":
-            case "ntext":
-            case "nvarchar":
-            case "varchar":
-            case "text":
+            case SQLServerConstants.TYPE_CHAR:
+            case SQLServerConstants.TYPE_NCHAR:
+            case SQLServerConstants.TYPE_NTEXT:
+            case SQLServerConstants.TYPE_NVARCHAR:
+            case SQLServerConstants.TYPE_VARCHAR:
+            case SQLServerConstants.TYPE_TEXT:
             case "sysname":
                 return DBPDataKind.STRING;
 
-            case "tinyint":
-            case "bigint":
-            case "bit":
-            case "int":
-            case "numeric":
-            case "real":
-            case "smallint":
-            case "decimal":
-            case "float":
+            case SQLServerConstants.TYPE_TINYINT:
+            case SQLServerConstants.TYPE_BIGINT:
+            case SQLServerConstants.TYPE_BIT:
+            case SQLServerConstants.TYPE_INT:
+            case SQLServerConstants.TYPE_NUMERIC:
+            case SQLServerConstants.TYPE_REAL:
+            case SQLServerConstants.TYPE_SMALLINT:
+            case SQLServerConstants.TYPE_DECIMAL:
+            case SQLServerConstants.TYPE_FLOAT:
                 return DBPDataKind.NUMERIC;
 
             case SQLServerConstants.TYPE_DATETIME:
@@ -285,28 +339,28 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case SQLServerConstants.TYPE_DATETIMEOFFSET:
                 return DBPDataKind.STRING;
 
-            case "binary":
-            case "timestamp":
+            case SQLServerConstants.TYPE_BINARY:
+            case SQLServerConstants.TYPE_TIMESTAMP:
                 return DBPDataKind.BINARY;
 
-            case "image":
-            case "varbinary":
+            case SQLServerConstants.TYPE_IMAGE:
+            case SQLServerConstants.TYPE_VARBINARY:
                 return DBPDataKind.CONTENT;
 
-            case "uniqueidentifier":
+            case SQLServerConstants.TYPE_UNIQUEIDENTIFIER:
                 return DBPDataKind.STRING;
 
             case SQLServerConstants.TYPE_GEOGRAPHY:
             case SQLServerConstants.TYPE_GEOMETRY:
-            case "hierarchyid":
+            case SQLServerConstants.TYPE_HIERARCHYID:
                 return DBPDataKind.BINARY;
-            case "money":
-            case "smallmoney":
 
-            case "sql_variant":
+            case SQLServerConstants.TYPE_MONEY:
+            case SQLServerConstants.TYPE_SMALLMONEY:
+            case SQLServerConstants.TYPE_SQL_VARIANT:
                 return DBPDataKind.OBJECT;
 
-            case "xml":
+            case SQLServerConstants.TYPE_XML:
                 return DBPDataKind.CONTENT;
 
             default:
@@ -387,4 +441,38 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         }
     }
 
+    @Override
+    public void setObjectDefinitionText(String source) {
+        
+    }
+
+    @Override
+    public DBSEntityType getEntityType() {
+        return DBSEntityType.TYPE;
+    }
+
+    @Override
+    public List<SQLServerTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttributes(monitor);
+    }
+
+    @Override
+    public SQLServerTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttribute(monitor, attributeName);
+    }
+
+    @Override
+    public Collection<SQLServerTableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getConstraints(monitor);
+    }
+
+    @Override
+    public Collection<SQLServerTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
 }

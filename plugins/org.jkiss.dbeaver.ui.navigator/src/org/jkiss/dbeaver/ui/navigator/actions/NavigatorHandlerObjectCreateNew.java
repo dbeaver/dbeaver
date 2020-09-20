@@ -138,7 +138,10 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                             if (typeName != null) {
                                 // Prepend "Create new" as it is a single node
                                 typeName = NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName);
-                                objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+                                // Do not use object icon ()
+//                                if (!(node instanceof DBNDatabaseFolder)) {
+//                                    objectIcon = command.getParameterMap().get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+//                                }
                             }
                             break;
                         }
@@ -242,7 +245,13 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (node instanceof DBNDatabaseFolder) {
             final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
             if (!CommonUtils.isEmpty(metaChildren)) {
-                Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
+                Class<?> nodeClass = null;
+                if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
+                    nodeClass = node.getChildrenClass((DBXTreeItem)metaChildren.get(0));
+                }
+                if (nodeClass == null) {
+                    nodeClass = ((DBNDatabaseFolder) node).getChildrenClass();
+                }
                 String nodeType = metaChildren.get(0).getChildrenTypeLabel(node.getDataSource(), null);
                 DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {

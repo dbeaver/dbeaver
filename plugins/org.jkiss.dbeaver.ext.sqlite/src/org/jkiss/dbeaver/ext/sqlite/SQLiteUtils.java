@@ -62,7 +62,9 @@ public class SQLiteUtils {
                             sql.append(";\n");
                         }
                     }
-                    return sql.toString();
+                    String ddl = sql.toString();
+                    //ddl = ddl.replaceAll("(?i)CREATE VIEW", "CREATE OR REPLACE VIEW");
+                    return ddl;
                 }
             }
         } catch (Exception e) {

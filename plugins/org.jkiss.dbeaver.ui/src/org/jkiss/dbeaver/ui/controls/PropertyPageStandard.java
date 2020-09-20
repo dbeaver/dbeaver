@@ -144,7 +144,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
                 new PropertySourceCollection((Collection<?>) object));
         } else if (object instanceof Map) {
             return new PropertySourceDelegate(
-                new PropertySourceMap((Map<?, ?>) object));
+                new PropertySourceMap((Map<String, ?>) object));
         }
         return RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
     }

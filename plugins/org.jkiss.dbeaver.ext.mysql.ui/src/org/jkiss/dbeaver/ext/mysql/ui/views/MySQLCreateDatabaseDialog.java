@@ -55,7 +55,7 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
 
         final Text nameText = UIUtils.createLabelText(group, "Database name", "");
         nameText.addModifyListener(e -> {
-            name = nameText.getText();
+            name = nameText.getText().trim();
             getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
         });
 

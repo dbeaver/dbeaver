@@ -22,12 +22,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,6 +55,7 @@ public class DataSourceUtils {
 
     private static final String PARAM_PASSWORD = "password";
     private static final String PARAM_SAVE_PASSWORD = "savePassword";
+    private static final String PARAM_AUTH_MODEL = "auth";
     private static final String PARAM_SHOW_SYSTEM_OBJECTS = "showSystemObjects";
     private static final String PARAM_SHOW_UTILITY_OBJECTS = "showUtilityObjects";
     private static final String PARAM_SHOW_ONLY_ENTITIES = "showOnlyEntities";
@@ -63,6 +67,7 @@ public class DataSourceUtils {
 
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
+    private static final String PREFIX_AUTH_PROP = "authProp.";
 
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
@@ -73,7 +78,9 @@ public class DataSourceUtils {
         boolean searchByParameters,
         boolean createNewDataSource)
     {
-        String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
+        String driverName = null, url = null, host = null, port = null,
+            server = null, database = null,
+            user = null, password = null, authModelId = null;
         boolean
             showSystemObjects = false,
             showUtilityObjects = false,
@@ -85,6 +92,7 @@ public class DataSourceUtils {
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
+        Map<String, String> authProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null;
 
@@ -133,6 +141,9 @@ public class DataSourceUtils {
                 case PARAM_PASSWORD:
                     password = paramValue;
                     break;
+                case PARAM_AUTH_MODEL:
+                    authModelId = paramValue;
+                    break;
                 case PARAM_SAVE_PASSWORD:
                     savePassword = CommonUtils.toBoolean(paramValue);
                     break;
@@ -165,6 +176,10 @@ public class DataSourceUtils {
                     if (paramName.length() > PREFIX_PROP.length() && paramName.startsWith(PREFIX_PROP)) {
                         paramName = paramName.substring(PREFIX_PROP.length());
                         conProperties.put(paramName, paramValue);
+                        handled = true;
+                    } else if (paramName.length() > PREFIX_AUTH_PROP.length() && paramName.startsWith(PREFIX_AUTH_PROP)) {
+                        paramName = paramName.substring(PREFIX_AUTH_PROP.length());
+                        authProperties.put(paramName, paramValue);
                         handled = true;
                     } else if (paramName.length() > PREFIX_HANDLER.length() && paramName.startsWith(PREFIX_HANDLER)) {
                         // network handler prop
@@ -297,6 +312,12 @@ public class DataSourceUtils {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
+        if (!CommonUtils.isEmpty(authProperties)) {
+            connConfig.setAuthProperties(authProperties);
+        }
+        if (!CommonUtils.isEmpty(authModelId)) {
+            connConfig.setAuthModelId(authModelId);
+        }
 
         if (autoCommit != null) {
             connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
@@ -372,5 +393,41 @@ public class DataSourceUtils {
             }
         }
         return false;
+    }
+
+    @NotNull
+    public static String getDataSourceAddressText(DBPDataSourceContainer dataSourceContainer) {
+        DBPDataSourceProvider dataSourceProvider = dataSourceContainer.getDriver().getDataSourceProvider();
+        if (dataSourceProvider instanceof DBPInformationProvider) {
+            String objectInformation = ((DBPInformationProvider) dataSourceProvider).getObjectInformation(dataSourceContainer, DBPInformationProvider.INFO_TARGET_ADDRESS);
+            if (!CommonUtils.isEmpty(objectInformation)) {
+                return objectInformation;
+            }
+        }
+        DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
+        String hostText = getTargetTunnelHostName(cfg);
+        String hostPort = cfg.getHostPort();
+        if (!CommonUtils.isEmpty(hostPort)) {
+            return hostText + ":" + hostPort;
+        }
+        return hostText;
+    }
+
+    @NotNull
+    public static String getTargetTunnelHostName(DBPConnectionConfiguration cfg) {
+        String hostText = cfg.getHostName();
+        // For localhost ry to get real host name from tunnel configuration
+        if (CommonUtils.isEmpty(hostText) || hostText.equals("localhost") || hostText.equals("127.0.0.1")) {
+            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
+                if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
+                    String tunnelHost = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
+                    if (!CommonUtils.isEmpty(tunnelHost)) {
+                        hostText = tunnelHost;
+                        break;
+                    }
+                }
+            }
+        }
+        return CommonUtils.notEmpty(hostText);
     }
 }

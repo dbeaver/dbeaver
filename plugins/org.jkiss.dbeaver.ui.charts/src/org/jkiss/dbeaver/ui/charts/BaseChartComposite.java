@@ -37,6 +37,7 @@ import org.jfree.chart.swt.ChartComposite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages;
 
 import java.io.IOException;
 
@@ -78,19 +79,19 @@ public class BaseChartComposite extends ChartComposite {
     protected void fillContextMenu(IMenuManager manager) {
         boolean zoomable = getChart().getPlot() instanceof Zoomable;
         if (zoomable) {
-            manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
+            manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_in, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
                 @Override
                 public void runWithEvent(Event e) {
                     zoomInBoth(e.x, e.y);
                 }
             });
-            manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
+            manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_out, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
                 @Override
                 public void runWithEvent(Event e) {
                     zoomOutBoth(e.x, e.y);
                 }
             });
-            manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
+            manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_reset, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
                 @Override
                 public void runWithEvent(Event e) {
                     restoreAutoBounds();
@@ -98,23 +99,24 @@ public class BaseChartComposite extends ChartComposite {
             });
             manager.add(new Separator());
         }
-        manager.add(new Action("Copy to clipboard") {
+        manager.add(new Action(UIChartsMessages.base_chart_composite_action_copy_to_clipboard) {
             @Override
             public void runWithEvent(Event event) {
                 doCopyToClipboard();
             }
         });
-        manager.add(new Action("Save as ...") {
+        manager.add(new Action(UIChartsMessages.base_chart_composite_action_save_as) {
             @Override
             public void run() {
                 try {
                     doSaveAs();
                 } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("Save image", "Error saving chart image", e);
+                    DBWorkbench.getPlatformUI().showError(UIChartsMessages.base_chart_composite_error_title_save_image,
+                            UIChartsMessages.base_chart_composite_error_message_error_saving_chart_image, e);
                 }
             }
         });
-        manager.add(new Action("Print ...") {
+        manager.add(new Action(UIChartsMessages.base_chart_composite_action_print) {
             @Override
             public void run() {
                 createChartPrintJob();
@@ -124,7 +126,7 @@ public class BaseChartComposite extends ChartComposite {
         if (hasConfigurationDialog()) {
             manager.add(new Separator());
 
-            manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+            manager.add(new Action(UIChartsMessages.base_chart_composite_action_settings, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
                 @Override
                 public void run() {
                     showChartConfigDialog();
@@ -132,7 +134,7 @@ public class BaseChartComposite extends ChartComposite {
             });
         }
         if (hasColorsConfiguration()) {
-            manager.add(new Action("Colors ...", DBeaverIcons.getImageDescriptor(UIIcon.PALETTE)) {
+            manager.add(new Action(UIChartsMessages.base_chart_composite_action_colors, DBeaverIcons.getImageDescriptor(UIIcon.PALETTE)) {
                 @Override
                 public void run() {
                     PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(getShell(), ExtensionFactory.COLORS_AND_FONTS_PREFERENCE_PAGE, null, null);

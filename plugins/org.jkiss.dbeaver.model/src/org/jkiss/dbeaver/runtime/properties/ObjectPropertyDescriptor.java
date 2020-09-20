@@ -42,7 +42,9 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -213,6 +215,64 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return getEditableValue(object);
     }
 
+    @Nullable
+    @Override
+    public String[] getFeatures() {
+        List<String> features = new ArrayList<>();
+        if (this.isRequired()) features.add("required");
+        if (this.isSpecific()) features.add("specific");
+        if (this.isOptional()) features.add("optional");
+        if (this.isHidden()) features.add("hidden");
+        if (this.isRemote()) features.add("remote");
+
+        if (this.isDateTime()) features.add("datetme");
+        if (this.isNumeric()) features.add("numeric");
+        if (this.isNameProperty()) features.add("name");
+
+        if (this.isMultiLine()) features.add("multiline");
+        if (this.isExpensive()) features.add("expensive");
+        if (this.isEditPossible()) features.add("editPossible");
+        if (this.isLinkPossible()) features.add("linkPossible");
+        if (this.isViewable()) features.add("viewable");
+        if (this.isPassword()) features.add("password");
+        return features.toArray(new String[0]);
+    }
+
+    @Override
+    public boolean hasFeature(@NotNull String feature) {
+        switch (feature) {
+            case "required":
+                return this.isRequired();
+            case "specific":
+                return this.isSpecific();
+            case "optional":
+                return this.isOptional();
+            case "hidden":
+                return this.isHidden();
+
+            case "datetme":
+                return this.isDateTime();
+            case "numeric":
+                return this.isNumeric();
+            case "name":
+                return this.isNameProperty();
+
+            case "multiline":
+                return this.isMultiLine();
+            case "expensive":
+                return this.isExpensive();
+            case "editPossible":
+                return this.isEditPossible();
+            case "linkPossible":
+                return this.isLinkPossible();
+            case "viewable":
+                return this.isViewable();
+            case "password":
+                return this.isPassword();
+        }
+        return false;
+    }
+
     private boolean getEditableValue(Object object)
     {
         boolean isNew = isNewObject(object);
@@ -262,7 +322,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             Class<? extends Format> formatClass = propInfo.formatter();
             if (formatClass != Format.class) {
                 try {
-                    displayFormat = formatClass.newInstance();
+                    displayFormat = formatClass.getConstructor().newInstance();
                 } catch (Throwable e) {
                     log.error(e);
                 }
@@ -419,7 +479,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
             // List
             try {
-                return propInfo.listProvider().newInstance().allowCustomValue();
+                return propInfo.listProvider().getConstructor().newInstance().allowCustomValue();
             } catch (Exception e) {
                 log.error(e);
             }
@@ -437,7 +497,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
             // List
             try {
-                return propInfo.listProvider().newInstance().getPossibleValues(object);
+                return propInfo.listProvider().getConstructor().newInstance().getPossibleValues(object);
             } catch (Exception e) {
                 log.error(e);
             }

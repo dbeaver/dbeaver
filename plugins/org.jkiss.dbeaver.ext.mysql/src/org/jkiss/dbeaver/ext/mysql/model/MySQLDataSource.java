@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource {
+public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
@@ -79,11 +79,14 @@ public class MySQLDataSource extends JDBCDataSource {
     private String defaultCharset, defaultCollation;
     private int lowerCaseTableNames = 1;
     private SQLHelpProvider helpProvider;
+    private volatile boolean hasStatistics;
+    private boolean containsCheckConstraintTable;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
         super(monitor, container, new MySQLDialect());
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
+        hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
     }
 
     @Override
@@ -324,6 +327,19 @@ public class MySQLDataSource extends JDBCDataSource {
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
+
+            if (getDataSource().supportsInformationSchema()) {
+                // Check check constraints in base
+                try {
+                    String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
+                            "WHERE\n" +
+                            "\tt.TABLE_SCHEMA = 'information_schema'\n" +
+                            "\tAND t.TABLE_NAME = 'CHECK_CONSTRAINTS'");
+                    containsCheckConstraintTable = (resultSet != null);
+                } catch (SQLException e) {
+                    log.debug("Error reading information schema", e);
+                }
+            }
         }
     }
 
@@ -366,8 +382,9 @@ public class MySQLDataSource extends JDBCDataSource {
         return getCatalog(childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return MySQLCatalog.class;
     }
@@ -636,6 +653,46 @@ public class MySQLDataSource extends JDBCDataSource {
         }
     }
 
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        if (!this.isMariaDB() && !this.isServerVersionAtLeast(4, 1)) {
+            // Not supported by MySQL server
+            hasStatistics = true;
+            return;
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT table_schema, SUM(data_length + index_length) \n" +
+                    "FROM information_schema.tables \n" +
+                    "GROUP BY table_schema"))
+            {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String dbName = dbResult.getString(1);
+                        MySQLCatalog catalog = catalogCache.getObject(monitor, this, dbName);
+                        if (catalog != null) {
+                            long dbSize = dbResult.getLong(2);
+                            catalog.setDatabaseSize(dbSize);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        } finally {
+            hasStatistics = true;
+        }
+    }
+
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @NotNull
         @Override
@@ -692,4 +749,23 @@ public class MySQLDataSource extends JDBCDataSource {
         return null;
     }
 
+    public boolean supportsCheckConstraints() {
+        if (this.isMariaDB()) {
+            return this.isServerVersionAtLeast(10, 2) && containsCheckConstraintTable;
+        }
+        else {
+            return this.isServerVersionAtLeast(8, 0) && containsCheckConstraintTable;
+        }
+    }
+
+    /**
+     * Checks if information_schema table is supported.
+     *
+     * <p>The table was not supported up until MySQL 5.0
+     *
+     * @return {@code true} if information_schema is supported
+     */
+    public boolean supportsInformationSchema() {
+        return isServerVersionAtLeast(5, 0);
+    }
 }

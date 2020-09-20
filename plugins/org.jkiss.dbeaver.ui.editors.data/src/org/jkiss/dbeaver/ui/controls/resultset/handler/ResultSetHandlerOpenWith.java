@@ -180,7 +180,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     settings.setOutputFolder(tempDir.getAbsolutePath());
                     settings.setOutputFilePattern(tempFile.getName());
 
-                    Map<Object, Object> properties = new HashMap<>();
+                    Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
                     IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
                     IDialogSettings procListSection = dtSettings.getSection("processors");

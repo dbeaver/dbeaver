@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 /**
  * Entity constraint
  */
-public interface DBSEntityConstraint extends DBSObject {
+public interface DBSEntityConstraint extends DBSEntityElement {
 
     @NotNull
     @Override

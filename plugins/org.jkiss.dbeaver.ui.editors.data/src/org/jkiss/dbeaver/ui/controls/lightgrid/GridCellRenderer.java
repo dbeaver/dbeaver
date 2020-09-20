@@ -41,6 +41,10 @@ class GridCellRenderer extends AbstractRenderer
     static final Image LINK2_IMAGE = DBeaverIcons.getImage(UIIcon.LINK2);
     static final Rectangle LINK_IMAGE_BOUNDS = new Rectangle(0, 0, 13, 13);
 
+    // Clipping limits cell paint with cell bounds. But is an expensive GC call.
+    // Generally we don't need it because we repaint whole grid left-to-right and all text tails will be overpainted by trailing cells
+    private static final boolean USE_CLIPPING = false;
+
     protected Color colorLineFocused;
 
     public GridCellRenderer(LightGrid grid)
@@ -121,21 +125,29 @@ class GridCellRenderer extends AbstractRenderer
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     // Right (numbers, datetimes)
+                    Point textSize = gc.textExtent(text);
+                    boolean useClipping = textSize.x > bounds.width;
+
                     int imageMargin = 0;
                     if (image != null) {
                         // Reduce bounds by link image size
                         imageMargin = imageBounds.width + INSIDE_MARGIN;
-                        gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
+                        if (useClipping) {
+                            gc.setClipping(bounds.x, bounds.y, bounds.width - imageMargin, bounds.height);
+                        }
                     } else {
-                        gc.setClipping(bounds);
+                        if (useClipping) {
+                            gc.setClipping(bounds);
+                        }
                     }
-                    Point textSize = gc.textExtent(text);
                     gc.drawString(
                             text,
                             bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             true);
-                    gc.setClipping((Rectangle) null);
+                    if (useClipping) {
+                        gc.setClipping((Rectangle) null);
+                    }
                     break;
                 default:
                     gc.drawString(
@@ -152,31 +164,13 @@ class GridCellRenderer extends AbstractRenderer
             gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
         }
 
-        if (grid.isLinesVisible()) {
-            if (selected) {
-                gc.setForeground(grid.getLineSelectedColor());
-            } else {
-                gc.setForeground(grid.getLineColor());
-            }
-            gc.drawLine(
-                bounds.x,
-                bounds.y + bounds.height,
-                bounds.x + bounds.width,
-                bounds.y + bounds.height);
-            gc.drawLine(
-                bounds.x + bounds.width - 1,
-                bounds.y,
-                bounds.x + bounds.width - 1,
-                bounds.y + bounds.height);
-        }
-
         if (focus) {
 
             gc.setForeground(colorLineFocused);
-            gc.drawRectangle(bounds.x, bounds.y, bounds.width - 1, bounds.height);
+            gc.drawRectangle(bounds.x + 1, bounds.y, bounds.width - 2, bounds.height - 1);
 
             if (grid.isFocusControl()) {
-                gc.drawRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 2);
+                gc.drawRectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 3);
             }
         }
     }

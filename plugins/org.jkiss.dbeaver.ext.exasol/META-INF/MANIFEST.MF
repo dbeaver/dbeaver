@@ -3,15 +3,16 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.exasol;singleton:=true
-Bundle-Version: 1.0.93.qualifier
-Bundle-Release-Date: 20200622
+Bundle-Version: 1.0.99.qualifier
+Bundle-Release-Date: 20200921
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.data.gis
+ org.jkiss.dbeaver.data.gis,
+ org.jkiss.utils
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Export-Package: org.jkiss.dbeaver.ext.exasol,

@@ -21,9 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -31,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -46,7 +45,8 @@ import java.util.Map;
 /**
  * Postgre table column manager
  */
-public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase> implements DBEObjectRenamer<PostgreTableColumn>  {
+public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase>
+        implements DBEObjectRenamer<PostgreTableColumn>, DBPScriptObjectExt2 {
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
@@ -98,6 +98,14 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                 }
                 break;
+            case DATETIME:
+                final int scale = CommonUtils.toInt(column.getScale());
+                String typeName = dataType.getName();
+                if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
+                    if (scale < 6) {
+                        sql.append('(').append(scale).append(')');
+                    }
+                }
         }
         if (PostgreUtils.isGISDataType(column.getTypeName())) {
             try {
@@ -169,7 +177,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
         ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier};
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }
         return modifiers;
@@ -212,6 +220,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
+        boolean isAtomic = column.getDataSource().getServerType().isAlterTableAtomic();
         // PostgreSQL can't perform all changes by one query
 //        ALTER [ COLUMN ] column [ SET DATA ] TYPE data_type [ COLLATE collation ] [ USING expression ]
 //        ALTER [ COLUMN ] column SET DEFAULT expression
@@ -223,21 +232,21 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         String typeClause = column.getFullTypeName();
-        if (column.getDataType() != null) {
+        if (column.getDataSource().isServerVersionAtLeast(8, 0) && column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
         if (command.hasProperty(DBConstants.PROP_ID_DATA_TYPE) || command.hasProperty("maxLength") || command.hasProperty("precision") || command.hasProperty("scale")) {
-            actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
+            actionList.add(new SQLDatabasePersistActionAtomic("Set column type", prefix + "TYPE " + typeClause, isAtomic));
         }
         if (command.hasProperty(DBConstants.PROP_ID_REQUIRED)) {
-            actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
+            actionList.add(new SQLDatabasePersistActionAtomic("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL", isAtomic));
         }
 
         if (command.hasProperty(DBConstants.PROP_ID_DEFAULT_VALUE)) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
-                actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
+                actionList.add(new SQLDatabasePersistActionAtomic("Drop column default", prefix + "DROP DEFAULT", isAtomic));
             } else {
-                actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
+                actionList.add(new SQLDatabasePersistActionAtomic("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue(), isAtomic));
             }
         }
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
@@ -274,4 +283,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
 
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
+    }
 }

@@ -36,4 +36,8 @@ public class SQLServerToolTableTriggerDisable extends SQLServerToolWithStatus<SQ
         String sql = "ALTER TABLE " + object.getTable() + " DISABLE TRIGGER " + DBUtils.getQuotedIdentifier(object);
         queries.add(new SQLDatabasePersistAction(sql));
     }
+
+    public boolean needsRefreshOnFinish() {
+        return true;
+    }
 }

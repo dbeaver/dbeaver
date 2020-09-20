@@ -77,9 +77,9 @@ public class ExasolConnectionDialog extends BaseDialog {
 
         
         ModifyListener mod = e -> {
-            name = nameText.getText();
-            user = userText.getText();
-            url  = urlText.getText();
+            name = nameText.getText().trim();
+            user = userText.getText().trim();
+            url  = urlText.getText().trim();
             password = passwordText.getText();
             comment = commentText.getText();
             //enable/disable OK button

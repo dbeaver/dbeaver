@@ -51,7 +51,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     @Override
     public DBSObjectCache<PostgreTableContainer, PostgreTableConstraintBase> getObjectsCache(PostgreTableConstraintBase object)
     {
-        return object.getTable().getContainer().getSchema().constraintCache;
+        return object.getTable().getContainer().getSchema().getConstraintCache();
     }
 
     @Override

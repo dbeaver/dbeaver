@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -108,5 +109,14 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             new BinaryFileTransformerJob(monitor, task, new File(settings.getInputFile()), process.getOutputStream(), log).start();
         }
     }
+
+    @Override
+    public void validateErrorCode(int exitCode) throws IOException {
+    if (exitCode == 1) {
+        DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", "Database restore finished with warnings.\nPlease check the error log to see what is wrong.");
+    } else {
+        super.validateErrorCode(exitCode);
+    }
+}
 
 }

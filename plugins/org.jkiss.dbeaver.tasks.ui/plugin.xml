@@ -13,7 +13,9 @@
             class="org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView"
             allowMultiple="false"
             icon="icons/task_list.png"
-            name="%view.tasks.title"/>
+            name="%view.tasks.title">
+            <description>%view.tasks.description</description>
+        </view>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -177,6 +179,11 @@
             <separator name="tasks" visible="true"/>
             <dynamic id="org.jkiss.dbeaver.menu.tasks.recent" class="org.jkiss.dbeaver.tasks.ui.RecentTasksMenuContributor"/>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:window?before=primary.views">
+            <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.jkiss.dbeaver.tasks"/></command>
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

@@ -231,5 +231,14 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
             throw new DBException(e, table.getDataSource());
         }
     }
-}
 
+    @Override
+    public boolean supportsSuperusers() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsRolesWithCreateDBAbility() {
+        return false;
+    }
+}

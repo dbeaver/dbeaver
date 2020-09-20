@@ -64,6 +64,8 @@ public class DashboardUpdater {
     }
 
     private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
+        monitor.beginTask("Update dashboards", dashboards.size());
+
         // Get all map queries used by dashboards
         for (DashboardContainer dashboard : dashboards) {
             DashboardMapQuery mapQuery = dashboard.getMapQuery();
@@ -84,6 +86,7 @@ public class DashboardUpdater {
         }
 
         for (Map.Entry<DBPDataSourceContainer, List<MapQueryInfo>> mqEntry : mapQueries.entrySet()) {
+            monitor.subTask("Read dashboard data");
             DBPDataSourceContainer dsContainer = mqEntry.getKey();
             DBPDataSource dataSource = dsContainer.getDataSource();
             if (dataSource == null) {
@@ -120,7 +123,9 @@ public class DashboardUpdater {
             } catch (DBException e) {
                 log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data: " + GeneralUtils.getRootCause(e).getMessage());
             }
+            monitor.worked(1);
         }
+        monitor.done();
     }
 
     private void readMapQueryData(DBRProgressMonitor monitor, MapQueryInfo mqInfo) throws DBCException {

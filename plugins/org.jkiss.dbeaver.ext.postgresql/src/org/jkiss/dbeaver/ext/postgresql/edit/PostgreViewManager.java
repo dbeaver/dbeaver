@@ -53,11 +53,11 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     @Override
     public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object)
     {
-        return object.getContainer().getSchema().tableCache;
+        return object.getContainer().getSchema().getTableCache();
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         PostgreTableBase object = command.getObject();

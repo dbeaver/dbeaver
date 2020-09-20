@@ -27,6 +27,8 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
@@ -54,6 +56,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,6 +65,8 @@ import java.util.List;
  */
 public class ItemListControl extends NodeListControl
 {
+    private static final Log log = Log.getLog(ItemListControl.class);
+
     private ISearchExecutor searcher;
     private Color searchHighlightColor;
     //private Color disabledCellColor;
@@ -252,6 +257,13 @@ public class ItemListControl extends NodeListControl
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
+
+                DBPDataSourceContainer ds = getDataSourceContainer();
+                // If we in folder-less mode then filter children by meta
+                if (ds != null && ds.getNavigatorSettings().isHideFolders()) {
+                    children = Arrays.stream(children).filter(n -> n instanceof DBNDatabaseNode && ((DBNDatabaseNode) n).getMeta().getParent() == metaNode).toArray(DBNNode[]::new);
+                }
+
                 // Cache statistics
                 while (parentNode instanceof DBNDatabaseFolder) {
                     parentNode = parentNode.getParentNode();
@@ -259,8 +271,12 @@ public class ItemListControl extends NodeListControl
                 if (parentNode instanceof DBNDatabaseNode) {
                     DBSObject parentObject = DBUtils.getPublicObject(((DBNDatabaseNode) parentNode).getObject());
                     if (parentObject instanceof DBPObjectStatisticsCollector) {
-                        if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
-                            ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                        try {
+                            if (!((DBPObjectStatisticsCollector) parentObject).isStatisticsCollected()) {
+                                ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
+                            }
+                        } catch (Exception e) {
+                            log.error("Error reading statistics of '" + parentObject.getName() + "'", e);
                         }
                     }
                 }

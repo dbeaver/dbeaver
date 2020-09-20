@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +39,7 @@ import java.util.List;
 public abstract class AbstractTable<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSObject>
-    implements DBSTable
+    implements DBSTable, DBPNamedObject2
 {
     private CONTAINER container;
     private String tableName;
@@ -82,6 +83,7 @@ public abstract class AbstractTable<
         return tableName;
     }
 
+    @Override
     public void setName(String tableName)
     {
         this.tableName = tableName;

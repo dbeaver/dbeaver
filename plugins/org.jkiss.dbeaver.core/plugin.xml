@@ -74,6 +74,12 @@
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
             type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+            namespace="org.jkiss.dbeaver.model"
+            properties="childOfType"
+            type="org.jkiss.dbeaver.model.struct.DBSObject"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -83,7 +89,9 @@
                 class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
                 allowMultiple="false"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.png"
-                name="%view.query.manager.title"/>
+                name="%view.query.manager.title">
+            <description>%view.query.manager.description</description>
+        </view>
         <view
                 id="org.jkiss.dbeaver.core.shellProcess"
                 category="org.jkiss.dbeaver.core.category"
@@ -91,7 +99,9 @@
                 allowMultiple="true"
                 restorable="false"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/shell.png"
-                name="%view.shell.process.title"/>
+                name="%view.shell.process.title">
+            <description>%view.shell.process.description</description>
+        </view>
 <!--
         <view
                 id="org.jkiss.dbeaver.core.databaseOutput"
@@ -167,6 +177,7 @@
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
             </with>
         </definition>
+<!--
         <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetEditor">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.InlineWidgetEditor"/>
@@ -182,6 +193,7 @@
                 </with>
             </and>
         </definition>
+-->
 
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
@@ -355,6 +367,7 @@
         </handler>
 
         <!-- Set default behaviour for standard widgets -->
+<!--
         <handler commandId="org.eclipse.ui.edit.copy" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:copy">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
         </handler>
@@ -367,6 +380,7 @@
         <handler commandId="org.eclipse.ui.edit.selectAll" class="org.eclipse.ui.internal.handlers.SelectAllHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
         </handler>
+-->
 
         <!--
             Inline control handlers.
@@ -548,7 +562,12 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                            <test property="org.jkiss.dbeaver.core.global.standalone"/>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -983,15 +1002,6 @@
             </enabledWhen>
         </page>
 
-        <page category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" id="org.jkiss.dbeaver.preferences.main.entityeditor" name="%page.org.jkiss.dbeaver.preferences.main.entityeditor.name">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-                </or>
-            </enabledWhen>
-        </page>
-
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain" name="%page.org.jkiss.dbeaver.preferences.main.resultset.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
@@ -1191,6 +1201,9 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.grid.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.database.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.database.connection.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.user.interface.label"/>
+
     </extension>
 
     <!-- DBeaver extensions -->

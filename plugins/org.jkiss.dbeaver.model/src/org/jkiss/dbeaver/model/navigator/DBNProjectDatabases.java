@@ -46,11 +46,15 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         super(parentNode);
         this.dataSourceRegistry = getModel().isGlobal() ?
             dataSourceRegistry :
-            dataSourceRegistry.createCopy(parentNode.getProject(), false);
+            dataSourceRegistry.createCopy(parentNode.getProject(), ds -> !ds.isTemplate());
         this.dataSourceRegistry.addDataSourceListener(this);
 
         List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
         for (DBPDataSourceContainer ds : projectDataSources) {
+            if (ds.isTemplate()) {
+                // Skip templates
+                continue;
+            }
             addDataSource(ds, false, false);
         }
     }
@@ -252,6 +256,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private DBNDataSource addDataSource(@NotNull DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
+        if (!getModel().isNodeVisible(newNode)) {
+            return null;
+        }
         dataSources.add(newNode);
 
         DBPDataSourceFolder dsFolder = descriptor.getFolder();
@@ -394,12 +401,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                         nodeChange);
 
                     if (event.getObject() instanceof DBPDataSourceContainer) {
-                        if (enabled != null && !enabled) {
-                            // Clear disabled node
-                            dbmNode.clearNode(false);
+                        if (enabled != null) {
+                            if (!enabled) {
+                                // Clear disabled node
+                                dbmNode.clearNode(false);
+                            }
                         } else {
                             if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE) {
-                                // Force reorder
+                                // Force reorder.
                                 children = null;
                                 getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
                             }

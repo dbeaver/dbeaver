@@ -18,6 +18,7 @@
         <module>org.jkiss.dbeaver.registry</module>
 
         <module>org.jkiss.dbeaver.cmp.simple</module>
+        <module>org.jkiss.dbeaver.erd.model</module>
 
         <module>org.jkiss.dbeaver.ext.generic</module>
 
@@ -114,7 +115,7 @@
                 <module>org.jkiss.dbeaver.ui.dashboard</module>
                 <module>org.jkiss.dbeaver.ui.search</module>
 
-                <module>org.jkiss.dbeaver.ext.erd</module>
+                <module>org.jkiss.dbeaver.erd.ui</module>
                 <module>org.jkiss.dbeaver.tasks.native.ui</module>
                 <module>org.jkiss.dbeaver.tasks.ui</module>
                 <module>org.jkiss.dbeaver.tasks.sql.ui</module>

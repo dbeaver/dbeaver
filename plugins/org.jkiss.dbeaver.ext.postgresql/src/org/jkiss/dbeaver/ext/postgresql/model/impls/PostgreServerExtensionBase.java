@@ -339,6 +339,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExplainPlan() {
         return true;
     }
@@ -389,7 +394,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
-        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn()) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
             withClauseBuilder.append("\n)");
         }
@@ -397,5 +402,33 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return withClauseBuilder.toString();
     }
 
-}
+    @Override
+    public boolean supportsPGConstraintExpressionColumn() {
+        return true;
+    }
 
+    @Override
+    public boolean supportsHasOidsColumn() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return false;
+    }
+
+    @Override
+    public boolean isAlterTableAtomic() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsSuperusers() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsRolesWithCreateDBAbility() {
+        return supportsRoles();
+    }
+}

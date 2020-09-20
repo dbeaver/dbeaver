@@ -108,14 +108,22 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, (byte[]) object);
+            try {
+                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, (byte[]) object);
 //            if (invertCoordinates) {
 //                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
 //            }
-            geometry = new DBGeometry(jtsGeometry);
+                geometry = new DBGeometry(jtsGeometry);
+            } catch (DBCException e) {
+                throw new DBCException("Error parsing geometry value from binary", e);
+            }
         } else if (object instanceof String) {
-            Geometry jtsGeometry = GeometryConverter.getInstance().fromWKT((String) object);
-            geometry = new DBGeometry(jtsGeometry);
+            try {
+                Geometry jtsGeometry = GeometryConverter.getInstance().fromWKT((String) object);
+                geometry = new DBGeometry(jtsGeometry);
+            } catch (Exception e) {
+                throw new DBCException("Error parsing geometry value from string", e);
+            }
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }

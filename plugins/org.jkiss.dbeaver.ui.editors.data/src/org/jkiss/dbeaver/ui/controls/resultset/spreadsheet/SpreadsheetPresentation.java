@@ -158,6 +158,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private int highlightScopeFirstLine;
     private int highlightScopeLastLine;
     private Color highlightScopeColor;
+    private boolean useNativeNumbersFormat;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -192,13 +193,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public boolean isDirty() {
-        boolean hasActiveEditor =
-            activeInlineEditor != null &&
+        return activeInlineEditor != null &&
             activeInlineEditor.getControl() != null &&
             !activeInlineEditor.getControl().isDisposed() &&
-            !getController().getModel().isAttributeReadOnly(getCurrentAttribute()) &&
+            !DBExecUtils.isAttributeReadOnly(getCurrentAttribute()) &&
             !(activeInlineEditor instanceof IValueEditorStandalone);
-        return hasActiveEditor;
     }
 
     @Override
@@ -361,7 +360,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
-        this.spreadsheet.setCursor(cell, false, true);
+        UIUtils.asyncExec(() -> {
+            this.spreadsheet.setCursor(cell, false, true);
+        });
         //this.spreadsheet.showColumn(this.curAttribute);
     }
 
@@ -576,18 +577,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
-                    // Create new rows on demand
-                    if (overNewRow) {
+
+                    // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
+                    /*if (overNewRow) {
                         for (int i = 0 ; i < newLines.length - 1; i++) {
                             controller.addNewRow(false, true, false);
                         }
                         spreadsheet.refreshRowsData();
-                    } else {
+                    } else {*/
                         while (rowNum + newLines.length > spreadsheet.getItemCount()) {
                             controller.addNewRow(false, true, false);
                             spreadsheet.refreshRowsData();
                         }
-                    }
+                    //}
                     if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
                         return;
                     }
@@ -764,6 +766,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
+        useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
 
@@ -1625,6 +1628,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
+                    case ANY:
                         return ElementState.EXPANDED;
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
@@ -1777,10 +1781,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                     }
                 }
-                return attr.getValueRenderer().getValueDisplayString(
-                    attr.getAttribute(),
-                    value,
-                    getValueRenderFormat(attr, value));
+                try {
+                    return attr.getValueRenderer().getValueDisplayString(
+                        attr.getAttribute(),
+                        value,
+                        getValueRenderFormat(attr, value));
+                } catch (Exception e) {
+                    return new DBDValueError(e);
+                }
             } else {
                 return value;
             }
@@ -1961,7 +1969,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     private DBDDisplayFormat getValueRenderFormat(DBDAttributeBinding attr, Object value) {
-        if (value instanceof Number && controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT)) {
+        if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
         return DBDDisplayFormat.UI;

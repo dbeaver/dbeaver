@@ -106,6 +106,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_connection_network_postgres_ssl_advanced;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
+    public static String dialog_connection_network_postgres_ssl_advanced_use_proxy;
+    public static String dialog_connection_network_postgres_ssl_advanced_use_proxy_tip;
 
     /* PostgreConnectionPage */
     public static String dialog_setting_connection_host;
@@ -119,6 +121,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_nondefaultDatabase_tip;
     public static String dialog_setting_connection_show_templates;
     public static String dialog_setting_connection_show_templates_tip;
+    public static String dialog_setting_connection_show_not_available_for_conn;
+    public static String dialog_setting_connection_show_not_available_for_conn_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;

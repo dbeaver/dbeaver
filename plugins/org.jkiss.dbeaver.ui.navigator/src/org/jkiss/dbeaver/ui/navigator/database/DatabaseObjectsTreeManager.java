@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -131,7 +130,7 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
             }
             for (DBNDatabaseNode container : change ? collectInfo.targetContainers : Collections.singletonList(element)) {
                 try {
-                    DBNDatabaseNode[] directChildren = container.getChildren(new VoidProgressMonitor());
+                    DBNDatabaseNode[] directChildren = container.getChildren(monitor);
                     if (directChildren != null) {
                         boolean missingOne = false, missingAll = true;
                         for (DBNDatabaseNode node : directChildren) {
@@ -164,7 +163,7 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         }
 
         boolean isChecked = checkedElements.containsKey(element) || element == collectInfo.rootElement;
-        if (!collectInfo.wasChecked && !isChecked) {
+        if (onlyChecked && !collectInfo.wasChecked && !isChecked) {
             // Uncheck event - this element never was checked so just skip it with all ts children
             return false;
         }

@@ -184,6 +184,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
+    public boolean hasProperty(String name) {
+        return properties.containsKey(name);
+    }
+
     public String getProperty(String name) {
         return properties.get(name);
     }
@@ -345,6 +349,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     ///////////////////////////////////////////////////////////
     // Authentication
 
+    @Nullable
     public String getAuthModelId() {
         return authModelId;
     }
@@ -352,7 +357,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     @NotNull
     public DBAAuthModel getAuthModel() {
         if (!CommonUtils.isEmpty(authModelId)) {
-            DBPAuthModelDescriptor authModelDesc = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
+            DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor();
             if (authModelDesc != null) {
                 return authModelDesc.getInstance();
             } else {
@@ -360,6 +365,10 @@ public class DBPConnectionConfiguration implements DBPObject {
             }
         }
         return AuthModelDatabaseNative.INSTANCE;
+    }
+
+    public DBPAuthModelDescriptor getAuthModelDescriptor() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
     }
 
     public void setAuthModelId(String authModelId) {

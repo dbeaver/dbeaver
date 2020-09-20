@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
@@ -34,7 +35,7 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
 
     @NotNull
     @Override
-    public Object getId()
+    public String getId()
     {
         return this.original.getId();
     }
@@ -62,11 +63,6 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     }
 
     @Override
-    public boolean isRemote() {
-        return original.isRemote();
-    }
-
-    @Override
     public Object getDefaultValue() {
         return original.getDefaultValue();
     }
@@ -74,6 +70,17 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     @Override
     public boolean isEditable(Object object) {
         return original.isEditable(object);
+    }
+
+    @Nullable
+    @Override
+    public String[] getFeatures() {
+        return original.getFeatures();
+    }
+
+    @Override
+    public boolean hasFeature(@NotNull String feature) {
+        return original.hasFeature(feature);
     }
 
     @NotNull

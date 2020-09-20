@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,7 +52,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     private Blob blob;
     private InputStream tmpStream;
 
-    public JDBCContentBLOB(DBPDataSource dataSource, Blob blob) {
+    public JDBCContentBLOB(DBCExecutionContext dataSource, Blob blob) {
         super(dataSource);
         this.blob = blob;
     }
@@ -63,7 +63,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             try {
                 return blob.length();
             } catch (Throwable e) {
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, executionContext);
             }
         }
         return 0;
@@ -82,7 +82,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     {
         if (storage == null && blob != null) {
             long contentLength = getContentLength();
-            DBPPlatform platform = dataSource.getContainer().getPlatform();
+            DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
             if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     try (InputStream bs = blob.getBinaryStream()) {
@@ -94,7 +94,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 } catch (IOException e) {
                     throw new DBCException("IO error while reading content", e);
                 } catch (Throwable e) {
-                    throw new DBCException(e, dataSource);
+                    throw new DBCException(e, executionContext);
                 }
             } else {
                 // Create new local storage
@@ -114,7 +114,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     throw new DBCException("IO error while copying stream", e);
                 } catch (Throwable e) {
                     ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, dataSource);
+                    throw new DBCException(e, executionContext);
                 }
                 this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding());
             }
@@ -243,7 +243,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     @Override
     protected JDBCContentLOB createNewContent()
     {
-        return new JDBCContentBLOB(dataSource, null);
+        return new JDBCContentBLOB(executionContext, null);
     }
 
     @Override
@@ -255,7 +255,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         if (storage != null && storage instanceof DBDContentCached) {
             final Object cachedValue = ((DBDContentCached) storage).getCachedValue();
             if (cachedValue instanceof byte[]) {
-                return DBValueFormatting.formatBinaryString(dataSource, (byte[]) cachedValue, format);
+                return DBValueFormatting.formatBinaryString(executionContext.getDataSource(), (byte[]) cachedValue, format);
             }
         }
         return "[BLOB]";

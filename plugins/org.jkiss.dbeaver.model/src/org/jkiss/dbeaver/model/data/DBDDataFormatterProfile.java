@@ -39,9 +39,9 @@ public interface DBDDataFormatterProfile {
 
     void setLocale(Locale locale);
 
-    Map<Object, Object> getFormatterProperties(String typeId);
+    Map<String, Object> getFormatterProperties(String typeId);
 
-    void setFormatterProperties(String typeId, Map<Object, Object> properties);
+    void setFormatterProperties(String typeId, Map<String, Object> properties);
 
     boolean isOverridesParent();
 
@@ -49,6 +49,6 @@ public interface DBDDataFormatterProfile {
 
     void saveProfile() throws IOException;
 
-    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws IllegalAccessException, InstantiationException, IllegalArgumentException;
+    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws ReflectiveOperationException;
 
 }

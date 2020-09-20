@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -47,6 +48,12 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     //private Spinner toolbarDatabaseSelectorWidth;
     //private Spinner toolbarSchemaSelectorWidth;
 
+    private Button keepEditorsOnRestart;
+    private Button refreshEditorOnOpen;
+    private Button editorFullName;
+    private Button showTableGrid;
+    private Button showPreviewOnSave;
+
     public PrefPageDatabaseEditors()
     {
         super();
@@ -73,6 +80,17 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             showEditToolbar = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_edit_toolbar, CoreMessages.pref_page_database_general_label_show_edit_toolbar_tip, false, 2);
             //toolbarDatabaseSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_database_selector_width, CoreMessages.pref_page_database_general_label_database_selector_width_tip, 20, 10, 200);
             //toolbarSchemaSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_schema_selector_width, CoreMessages.pref_page_database_general_label_schema_selector_width_tip, 20, 10, 200);
+            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_editors, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            keepEditorsOnRestart = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_keep_database_editors, false);
+            keepEditorsOnRestart.setToolTipText(CoreMessages.pref_page_ui_general_keep_database_editors_tip);
+
+            refreshEditorOnOpen = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_refresh_editor_on_open, false);
+            refreshEditorOnOpen.setToolTipText(CoreMessages.pref_page_ui_general_refresh_editor_on_open_tip);
+
+            editorFullName = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_full_name_in_editor, false);
+            showTableGrid = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_table_grid, false);
+            showPreviewOnSave = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_preview_on_save, false);
         }
 
             performDefaults();
@@ -91,6 +109,11 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         showEditToolbar.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT));
         //toolbarDatabaseSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH));
         //toolbarSchemaSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH));
+        keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
+        refreshEditorOnOpen.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
+        editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
+        showTableGrid.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
+        showPreviewOnSave.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
     }
 
     @Override
@@ -103,6 +126,11 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.TOOLBARS_SHOW_EDIT, showEditToolbar.getSelection());
         //store.setValue(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, toolbarDatabaseSelectorWidth.getSelection());
         //store.setValue(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, toolbarSchemaSelectorWidth.getSelection());
+        store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 

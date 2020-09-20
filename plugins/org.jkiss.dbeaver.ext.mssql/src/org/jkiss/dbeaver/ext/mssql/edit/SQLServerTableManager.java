@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * SQLServer table manager
  */
-public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTable> {
+public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         SQLServerTableColumn.class,
@@ -70,7 +70,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         // ALTER
 /*
@@ -90,7 +90,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
-        SQLServerTable object = command.getObject();
+        SQLServerTableBase object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
@@ -109,26 +109,28 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, SQLServerTable object, String newName) throws DBException
+    public void renameObject(DBECommandContext commandContext, SQLServerTableBase object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
     }
 
     @Override
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
-        return !index.isPrimary() && super.isIncludeIndexInDDL(index);
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !index.isPrimary() && super.isIncludeIndexInDDL(monitor, index);
     }
 
-    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {
-        SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTable> ccm = getObjectEditor(
+    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTableBase table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {
+        SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTableBase> ccm = getObjectEditor(
             table.getDataSource().getContainer().getPlatform().getEditorsRegistry(),
             SQLServerTableCheckConstraint.class);
         if (ccm != null) {
             try {
-                Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(table.getCheckConstraints(monitor));
-                if (!CommonUtils.isEmpty(checkConstraints)) {
-                    for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
-                        createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint, options));
+                if (table instanceof SQLServerTable) {
+                    Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(((SQLServerTable) table).getCheckConstraints(monitor));
+                    if (!CommonUtils.isEmpty(checkConstraints)) {
+                        for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
+                            createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint, options));
+                        }
                     }
                 }
             } catch (DBException e) {

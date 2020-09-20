@@ -16,25 +16,35 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
 /**
  * Data source provider descriptor
  */
 public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
+    @NotNull
     String getId();
 
     String getDescription();
 
     DBPImage getIcon();
 
+    @NotNull
     String getImplClassName();
 
     boolean isApplicableTo(DBPDriver driver);
 
+    @NotNull
     DBAAuthModel getInstance();
+
+    @NotNull
+    DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource);
 
 }

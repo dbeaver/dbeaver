@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -35,7 +36,8 @@ public class EmergentExitAction extends Action {
         if (UIUtils.confirmAction(
             window == null ? null : window.getShell(),
             CoreApplicationMessages.actions_menu_exit_emergency,
-            CoreApplicationMessages.actions_menu_exit_emergency_message)) {
+            CoreApplicationMessages.actions_menu_exit_emergency_message,
+            SWT.ICON_WARNING)) {
             System.exit(1);
         }
     }

@@ -55,10 +55,10 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private OracleDataType tableType;
     private String iotType;
     private String iotName;
-    private Long tableSize;
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
+    private transient volatile Long tableSize;
 
     public class AdditionalInfo extends TableAdditionalInfo {
         private int pctFree;
@@ -202,25 +202,30 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     private void loadSize(DBRProgressMonitor monitor) throws DBCException {
+        tableSize = null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             boolean hasDBA = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "DBA_SEGMENTS");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT SUM(bytes) TABLE_SIZE\n" +
                     "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
-                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.OWNER = ? AND s.SEGMENT_NAME = ?"))
+                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.SEGMENT_NAME = ?" + (hasDBA ? " AND s.OWNER = ?" : "")))
             {
-                dbStat.setString(1, getSchema().getName());
-                dbStat.setString(2, getName());
+                dbStat.setString(1, getName());
+                if (hasDBA) {
+                    dbStat.setString(2, getSchema().getName());
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         fetchTableSize(dbResult);
-                    } else {
-                        tableSize = 0L;
                     }
                 }
             }
-        } catch (SQLException e) {
-            throw new DBCException("Error reading table statistics", e);
+        } catch (Exception e) {
+            log.error("Error reading table statistics", e);
+        } finally {
+            if (tableSize == null) {
+                tableSize = 0L;
+            }
         }
     }
 
@@ -329,6 +334,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().foreignKeyCache.clearObjectCache(this);
+        tableSize = null;
         return super.refreshObject(monitor);
     }
 

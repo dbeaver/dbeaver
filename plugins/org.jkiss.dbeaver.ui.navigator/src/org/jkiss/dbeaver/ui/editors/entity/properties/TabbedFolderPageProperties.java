@@ -165,7 +165,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
 
     public List<String> getExtraCategories() {
         List<String> extraCategories = new ArrayList<>();
-        for (DBPPropertyDescriptor prop : input.getPropertySource().getPropertyDescriptors2()) {
+        for (DBPPropertyDescriptor prop : input.getPropertySource().getProperties()) {
             String category = prop.getCategory();
             if (!CommonUtils.isEmpty(category)) {
                 if (!extraCategories.contains(category)) {

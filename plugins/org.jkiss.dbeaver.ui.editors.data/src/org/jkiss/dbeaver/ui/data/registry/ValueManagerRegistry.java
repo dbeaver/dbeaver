@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.MimeType;
 
@@ -100,8 +101,13 @@ public class ValueManagerRegistry {
     }
 
     public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getApplicableStreamManagers(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypedObject attribute, @Nullable DBDContent value) {
+        boolean isTextContent = ContentUtils.isTextContent(value);
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
         for (StreamValueManagerDescriptor contentManager : streamManagers) {
+            if (isTextContent != contentManager.supportsText()) {
+                // Skip different kind of manager
+                continue;
+            }
             IStreamValueManager.MatchType matchType = contentManager.getInstance().matchesTo(monitor, attribute, value);
             switch (matchType) {
                 case NONE:

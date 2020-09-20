@@ -49,7 +49,7 @@ public class ExasolForeignKeyManager
     @Override
     protected String getDropForeignKeyPattern(ExasolTableForeignKey constraint) {
         return "ALTER TABLE " + DBUtils.getObjectFullName(constraint.getTable(), DBPEvaluationContext.DDL) + " DROP CONSTRAINT "
-            + DBUtils.getObjectFullName(constraint, DBPEvaluationContext.DDL)
+            + DBUtils.getQuotedIdentifier(constraint)
             ;
     }
 

@@ -31,7 +31,7 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
     }
 

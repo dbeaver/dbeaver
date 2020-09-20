@@ -42,7 +42,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private DateTimeFormatter dateTimeFormatter;
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         dateFormat = new ExtendedDateFormat(

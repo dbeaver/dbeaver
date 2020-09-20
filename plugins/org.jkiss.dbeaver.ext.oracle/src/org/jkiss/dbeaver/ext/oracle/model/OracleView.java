@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
@@ -78,6 +79,8 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private String viewText;
+    // Generated from ALL_VIEWS
+    private String viewSourceText;
 
     public OracleView(OracleSchema schema, String name)
     {
@@ -116,11 +119,22 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (viewText == null) {
+            OracleDDLFormat format = OracleDDLFormat.COMPACT;
+            if (CommonUtils.getOption(options, OPTION_INCLUDE_COMMENTS)) {
+                format = OracleDDLFormat.FULL;
+            }
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, format, options);
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
             }
+        }
+        if (CommonUtils.isEmpty(viewText)) {
+            loadAdditionalInfo(monitor);
+            if (CommonUtils.isEmpty(viewSourceText)) {
+                return "-- Oracle view definition is not available";
+            }
+            return viewSourceText;
         }
         return viewText;
     }
@@ -218,8 +232,16 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
                 }
                 paramsList.append(")");
             }
-            viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewDefinitionText;
+            viewSourceText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewDefinitionText;
         }
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.additionalInfo.loaded = false;
+        this.viewText = null;
+        this.viewSourceText = null;
+        return super.refreshObject(monitor);
     }
 
     @Override

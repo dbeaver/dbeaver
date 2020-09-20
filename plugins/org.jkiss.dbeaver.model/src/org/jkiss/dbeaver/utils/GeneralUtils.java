@@ -38,6 +38,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -672,6 +674,10 @@ public class GeneralUtils {
         return Platform.getOS().contains("win32");
     }
 
+    public static boolean isMacOS() {
+        return Platform.getOS().contains("macos");
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // Adapters
     // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
@@ -731,6 +737,36 @@ public class GeneralUtils {
             result = AdapterManager.getDefault().getAdapter(sourceObject, adapterId);
         }
         return result;
+    }
+
+
+    public static byte[] getBytesFromUUID(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        return bb.array();
+    }
+
+    public static UUID getUUIDFromBytes(byte[] bytes) throws IllegalArgumentException {
+        if (bytes.length < 16) {
+            throw new IllegalArgumentException("UUID length must be at least 16 bytes (actual length = " + bytes.length + ")");
+        }
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
+    }
+
+    public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
+        ByteBuffer source = ByteBuffer.wrap(bytes);
+        ByteBuffer target = ByteBuffer.allocate(16).
+                order(ByteOrder.LITTLE_ENDIAN).
+                putInt(source.getInt()).
+                putShort(source.getShort()).
+                putShort(source.getShort()).
+                order(ByteOrder.BIG_ENDIAN).
+                putLong(source.getLong());
+        target.rewind();
+        return new UUID(target.getLong(), target.getLong());
     }
 
 }

@@ -151,6 +151,11 @@ public class UIUtils {
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
     }
 
+    public static void createLabelSeparator(Composite toolBar, int style) {
+        Label label = new Label(toolBar, SWT.SEPARATOR | style);
+        label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+    }
+
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
@@ -1016,11 +1021,21 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener)
-    {
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener) {
+        return createDialogButton(parent, label, null, null, selectionListener);
+    }
+
+    @NotNull
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable DBPImage icon, @Nullable String toolTip, @Nullable SelectionListener selectionListener) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
         button.setFont(JFaceResources.getDialogFont());
+        if (icon != null) {
+            button.setImage(DBeaverIcons.getImage(icon));
+        }
+        if (toolTip != null) {
+            button.setToolTipText(toolTip);
+        }
 
         // Dialog settings
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -1123,24 +1138,13 @@ public class UIUtils {
             focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
         }
         if (focusService != null) {
-            focusService.addFocusTracker(control, controlID);
-        } else {
-            log.debug("Focus service not found in " + serviceLocator);
-        }
-    }
+            IFocusService finalFocusService = focusService;
+            finalFocusService.addFocusTracker(control, controlID);
 
-    public static void removeFocusTracker(IServiceLocator serviceLocator, Control control)
-    {
-        if (PlatformUI.getWorkbench().isClosing()) {
-            // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
-            return;
-        }
-        IFocusService focusService = serviceLocator.getService(IFocusService.class);
-        if (focusService == null) {
-            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
-        }
-        if (focusService != null) {
-            focusService.removeFocusTracker(control);
+            control.addDisposeListener(e -> {
+                // Unregister from focus service
+                finalFocusService.removeFocusTracker(control);
+            });
         } else {
             log.debug("Focus service not found in " + serviceLocator);
         }
@@ -1148,10 +1152,6 @@ public class UIUtils {
 
     public static void addDefaultEditActionsSupport(final IServiceLocator site, final Control control) {
         UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, control);
-        control.addDisposeListener(e -> {
-            // Unregister from focus service
-            UIUtils.removeFocusTracker(site, control);
-        });
     }
 
 

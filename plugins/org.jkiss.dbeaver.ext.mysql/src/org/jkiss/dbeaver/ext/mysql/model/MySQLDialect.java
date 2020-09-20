@@ -64,6 +64,8 @@ class MySQLDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
+        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
@@ -118,7 +120,7 @@ class MySQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeString(String string) {
-        return string.replace("'", "''").replace("\\", "\\\\");
+        return string.replace("'", "''").replace("\\^[_%?]", "\\\\");
     }
 
     @NotNull

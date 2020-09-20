@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.greenplum.edit;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
+import org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign;
@@ -36,12 +37,16 @@ public class GreenplumTableManagerTest {
 
     private GreenplumTableManager greenplumTableManager;
 
+    @Mock
+    private PostgreServerGreenplum mockServerGreenplum;
+
     @Before
     public void setUp() {
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
+        Mockito.when(mockDataSource.getServerType()).thenReturn(mockServerGreenplum);
 
         greenplumTableManager = new GreenplumTableManager();
     }

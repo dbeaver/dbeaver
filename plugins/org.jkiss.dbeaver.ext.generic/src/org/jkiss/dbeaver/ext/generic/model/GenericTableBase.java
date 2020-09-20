@@ -184,7 +184,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return null;
     }
 
-    void addUniqueKey(GenericUniqueKey constraint) {
+    public void addUniqueKey(GenericUniqueKey constraint) {
         getContainer().getConstraintKeysCache().cacheObject(constraint);
     }
 

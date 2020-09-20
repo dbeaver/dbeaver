@@ -163,6 +163,7 @@
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
                     <file type="jar" path="drivers/vertica" bundle="drivers.vertica"/>
+<!--                    <file type="jar" path="maven:/com.vertica:vertica-jdbc:RELEASE"/>-->
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
@@ -179,6 +180,16 @@
 
         </datasource>
     </extension>
+
+
+<!--
+    FIXME: it is not official and it doesn't support https
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="vertica-maven-repo" name="Vertica Repository" url="https://maven.icm.edu.pl/artifactory/repo/" order="10">
+            <scope group="com.vertica"/>
+        </repository>
+    </extension>
+-->
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaTableColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaTableColumn"/>

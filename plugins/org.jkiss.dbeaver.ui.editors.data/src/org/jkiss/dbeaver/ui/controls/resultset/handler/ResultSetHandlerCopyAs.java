@@ -130,7 +130,9 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Copy data as", 3);
                 try {
+                    monitor.subTask("Init");
                     IDataTransferProcessor processorInstance = processor.getInstance();
                     if (!(processorInstance instanceof IStreamDataExporter)) {
                         return Status.CANCEL_STATUS;
@@ -144,7 +146,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     settings.setOutputEncodingBOM(false);
                     settings.setOpenFolderOnFinish(false);
 
-                    Map<Object, Object> properties = new HashMap<>();
+                    Map<String, Object> properties = new HashMap<>();
                     for (DBPPropertyDescriptor prop : processor.getProperties()) {
                         properties.put(prop.getId(), prop.getDefaultValue());
                     }
@@ -172,12 +174,20 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
                     producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
 
-                    producer.transferData(monitor, consumer, null, producerSettings, null);
+                    monitor.worked(1);
+                    monitor.subTask("Export data");
 
+                    producer.transferData(monitor, consumer, null, producerSettings, null);
+                    monitor.worked(1);
+
+                    monitor.subTask("Finalize export");
                     consumer.finishTransfer(monitor, false);
                     consumer.finishTransfer(monitor, true);
+                    monitor.worked(1);
                 } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError("Error opening in " + processor.getAppName(), null, e);
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }

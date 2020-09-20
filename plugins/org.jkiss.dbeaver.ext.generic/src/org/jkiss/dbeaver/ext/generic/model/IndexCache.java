@@ -66,12 +66,13 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
                     forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
                     false,
                     true).getSourceStatement();
-        } catch (SQLException e) {
-            throw e;
         } catch (Exception e) {
             if (forParent == null) {
                 throw new SQLException("Global indexes read not supported", e);
             } else {
+                if (e instanceof SQLException) {
+                    throw (SQLException)e;
+                }
                 throw new SQLException(e);
             }
         }

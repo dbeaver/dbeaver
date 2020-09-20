@@ -67,7 +67,7 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, "Schema Name", "");
         nameText.addModifyListener(e -> {
-            name = nameText.getText();
+            name = nameText.getText().trim();
             updateButtons();
         });
 

@@ -84,6 +84,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
     static final String VERSION_PROP_PRODUCT_NAME = "product-name";
     static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
 
+    private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
     static boolean WORKSPACE_MIGRATED = false;
@@ -101,7 +102,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
 
     private Display display = null;
 
-    private boolean resetUIOnRestart;
+    private boolean resetUIOnRestart, resetWorkspaceOnRestart;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -232,8 +233,11 @@ public class DBeaverApplication extends BaseApplicationImpl {
             getDisplay();
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
-            if (resetUIOnRestart) {
+            if (resetUIOnRestart || resetWorkspaceOnRestart) {
                 resetUISettings(instanceLoc);
+            }
+            if (resetWorkspaceOnRestart) {
+                // FIXME: ???
             }
 
             // Copy-pasted from IDEApplication
@@ -629,6 +633,10 @@ public class DBeaverApplication extends BaseApplicationImpl {
 
     public void setResetUIOnRestart(boolean resetUIOnRestart) {
         this.resetUIOnRestart = resetUIOnRestart;
+    }
+
+    public void setResetWorkspaceOnRestart(boolean resetWorkspaceOnRestart) {
+        this.resetWorkspaceOnRestart = resetWorkspaceOnRestart;
     }
 
     private class ProxyPrintStream extends OutputStream {

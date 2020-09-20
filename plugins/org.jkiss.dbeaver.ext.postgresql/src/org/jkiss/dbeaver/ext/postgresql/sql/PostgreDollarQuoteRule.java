@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-class PostgreDollarQuoteRule implements TPPredicateRule {
+public class PostgreDollarQuoteRule implements TPPredicateRule {
 
     private final boolean partitionRule;
     private final boolean ddPlainIsString;
     private final boolean ddTagIsString;
     private final TPToken stringToken, delimiterToken;
 
-    PostgreDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
+    public PostgreDollarQuoteRule(DBPDataSourceContainer dataSource, boolean partitionRule) {
         this.partitionRule = partitionRule;
         boolean ddPlainDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING);
         boolean ddTagDefault = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_DD_TAG_STRING);

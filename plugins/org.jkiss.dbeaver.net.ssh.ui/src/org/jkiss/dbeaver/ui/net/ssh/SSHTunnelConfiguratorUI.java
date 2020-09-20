@@ -200,7 +200,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 SSHTunnelImpl tunnel = new SSHTunnelImpl();
                 DBPConnectionConfiguration connectionConfig = new DBPConnectionConfiguration();
                 connectionConfig.setHostName("localhost");
-                connectionConfig.setHostPort(configuration.getStringProperty(SSHConstants.PROP_PORT));
+                connectionConfig.setHostPort(configuration.getStringProperty(DBWHandlerConfiguration.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
                     tunnel.initializeHandler(monitor, DBWorkbench.getPlatform(), configuration, connectionConfig);
@@ -232,8 +232,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_HOST)));
-        int portString = configuration.getIntProperty(SSHConstants.PROP_PORT);
+        hostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST)));
+        int portString = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
         if (portString != 0) {
             portText.setSelection(portString);
         } else {
@@ -305,15 +305,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration)
     {
-        configuration.setProperty(SSHConstants.PROP_HOST, hostText.getText());
-        configuration.setProperty(SSHConstants.PROP_PORT, portText.getSelection());
+        configuration.setProperty(DBWHandlerConfiguration.PROP_HOST, hostText.getText().trim());
+        configuration.setProperty(DBWHandlerConfiguration.PROP_PORT, portText.getSelection());
         switch (authMethodCombo.getSelectionIndex()) {
             case 0: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PASSWORD.name()); break;
             case 1: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.PUBLIC_KEY.name()); break;
             case 2: configuration.setProperty(SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.AGENT.name()); break;
         }
-        configuration.setProperty(SSHConstants.PROP_KEY_PATH, privateKeyText.getText());
-        configuration.setUserName(userNameText.getText());
+        configuration.setProperty(SSHConstants.PROP_KEY_PATH, privateKeyText.getText().trim());
+        configuration.setUserName(userNameText.getText().trim());
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());
 
@@ -325,7 +325,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             }
         }
 
-        configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText());
+        configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText().trim());
         int localPort = localPortSpinner.getSelection();
         if (localPort <= 0) {
             configuration.setProperty(SSHConstants.PROP_LOCAL_PORT, null);
@@ -333,7 +333,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             configuration.setProperty(SSHConstants.PROP_LOCAL_PORT, localPort);
         }
 
-        configuration.setProperty(SSHConstants.PROP_REMOTE_HOST, remoteHostText.getText());
+        configuration.setProperty(SSHConstants.PROP_REMOTE_HOST, remoteHostText.getText().trim());
         int remotePort = remotePortSpinner.getSelection();
         if (remotePort <= 0) {
             configuration.setProperty(SSHConstants.PROP_REMOTE_PORT, null);

@@ -113,6 +113,22 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
                             <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="View constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
@@ -275,6 +291,8 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     useURL="false"
                     defaultPort="1521"
+                    defaultDatabase="ORCL"
+                    defaultUser="system"
                     webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
                     icon="icons/oracle_icon.png"
                     iconBig="icons/oracle_icon_big.png"

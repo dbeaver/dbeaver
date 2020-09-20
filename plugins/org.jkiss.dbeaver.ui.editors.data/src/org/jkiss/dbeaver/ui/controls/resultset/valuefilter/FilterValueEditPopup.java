@@ -16,13 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -41,9 +38,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 
-public class FilterValueEditPopup extends Dialog {
+public class FilterValueEditPopup extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.FilterValueEditMenu";//$NON-NLS-1$
 
@@ -52,7 +50,7 @@ public class FilterValueEditPopup extends Dialog {
     private Point location;
 
     public FilterValueEditPopup(Shell parentShell, @NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows) {
-        super(parentShell);
+        super(parentShell, "Filter by '" + attr.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
         setShellStyle(SWT.SHELL_TRIM);
         filter = new GenericFilterValueEdit(viewer, attr, rows, DBCLogicalOperator.IN);
     }
@@ -80,8 +78,6 @@ public class FilterValueEditPopup extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Filter by '" + filter.getAttribute().getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
-
         DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.getAttribute());
 
         Composite group = (Composite) super.createDialogArea(parent);
@@ -106,33 +102,20 @@ public class FilterValueEditPopup extends Dialog {
             }
         }
 
-        FocusAdapter focusListener = new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                UIUtils.asyncExec(() -> {
-                    Shell shell = getShell();
-                    if (shell != null && !UIUtils.isParent(shell, shell.getDisplay().getFocusControl())) {
-                        cancelPressed();
-                    }
-                });
-            }
-        };
-
-        {
-            Text filterTextbox = filter.addFilterTextbox(group);
-            filterTextbox.setFocus();
-            filterTextbox.addTraverseListener(e -> {
-                Table table = filter.getTableViewer().getTable();
-                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
-                    if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
-                        table.setSelection(0);
-                    }
-                    table.setFocus();
+        Text filterTextbox = filter.addFilterTextbox(group);
+        filterTextbox.setFocus();
+        filterTextbox.addTraverseListener(e -> {
+            Table table = filter.getTableViewer().getTable();
+            if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
+                if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
+                    table.setSelection(0);
                 }
-            });
-            filterTextbox.addFocusListener(focusListener);
-            UIUtils.addEmptyTextHint(filterTextbox, text -> "Type partial value to search");
-        }
+                table.setFocus();
+            } else if (e.detail == SWT.TRAVERSE_RETURN) {
+                applyFilterValue();
+            }
+        });
+        UIUtils.addEmptyTextHint(filterTextbox, text -> "Type partial value to search");
 
         Composite tableComposite = UIUtils.createComposite(group, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -169,8 +152,6 @@ public class FilterValueEditPopup extends Dialog {
             });
         }
 
-        table.addFocusListener(focusListener);
-
         filter.getTableViewer().addSelectionChangedListener(event -> {
             value = filter.getFilterValue();
             //okPressed();
@@ -187,6 +168,8 @@ public class FilterValueEditPopup extends Dialog {
                 applyFilterValue();
             }
         });
+
+        closeOnFocusLost(filterTextbox, table);
 
         return tableComposite;
     }

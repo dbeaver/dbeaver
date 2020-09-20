@@ -53,7 +53,7 @@ public class EntityEditPage extends BaseObjectEditPage {
             @Override
             public void modifyText(ModifyEvent e)
             {
-                name = nameText.getText();
+                name = nameText.getText().trim();
             }
         });
 

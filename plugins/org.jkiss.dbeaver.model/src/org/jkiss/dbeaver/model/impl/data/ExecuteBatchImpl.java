@@ -72,9 +72,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     @NotNull
     @Override
-    public DBCStatistics execute(@NotNull DBCSession session) throws DBCException
+    public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException
     {
-        return processBatch(session, null, Collections.emptyMap());
+        return processBatch(session, null, options);
     }
 
     @NotNull
@@ -104,7 +104,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             }
         }
 
-        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement;
+        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && Boolean.FALSE.equals(options.get(DBSDataManipulator.OPTION_DISABLE_BATCHES));
         if (values.size() <= 1) {
             useBatch = false;
         }
@@ -161,7 +161,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         } else {
                             // Execute each row separately
                             long startTime = System.currentTimeMillis();
-                            executeStatement(statement);
+                            executeStatement(statistics, statement);
                             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
 
                             long rowCount = statement.getUpdateRowCount();
@@ -189,6 +189,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     if (!reuse) {
                         statement.close();
                     }
+                    if (rowIndex > 0 && rowIndex % 100 == 0) {
+                        session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
+                    }
                 }
             }
             values.clear();
@@ -203,6 +206,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         } finally {
             if (reuseStatement && statement != null) {
                 statement.close();
+            }
+            if (!useBatch && !values.isEmpty()) {
+                values.clear();
             }
         }
 
@@ -285,6 +291,21 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 statistics.addRowsUpdated(rows);
             }
         }
+        saveExecuteWarnings(statistics, statement);
+    }
+
+    protected void executeStatement(DBCStatistics statistics, DBCStatement statement) throws DBCException {
+        statement.executeStatement();
+        saveExecuteWarnings(statistics, statement);
+    }
+
+    private void saveExecuteWarnings(DBCStatistics statistics, DBCStatement statement) throws DBCException {
+        Throwable[] warnings = statement.getStatementWarnings();
+        if (warnings != null) {
+            for (Throwable w : warnings) {
+                statistics.addWarning(w);
+            }
+        }
     }
 
     @Override
@@ -328,8 +349,5 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     protected abstract void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException;
 
-    protected void executeStatement(DBCStatement statement) throws DBCException {
-        statement.executeStatement();
-    }
 
 }

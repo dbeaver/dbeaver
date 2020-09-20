@@ -132,6 +132,10 @@ public class DBDAttributeConstraintBase {
         return hasCondition() || orderPosition > 0 || !ArrayUtils.isEmpty(options);
     }
 
+    public boolean isDirty() {
+        return hasFilter() || !visible;
+    }
+
     public boolean hasCondition() {
         return !CommonUtils.isEmpty(criteria) || operator != null;
     }

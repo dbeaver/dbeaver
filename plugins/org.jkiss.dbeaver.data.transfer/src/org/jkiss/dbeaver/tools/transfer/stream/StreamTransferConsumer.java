@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -96,7 +99,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private long lobCount;
     private File outputFile;
     private StreamExportSite exportSite;
-    private Map<Object, Object> processorProperties;
+    private Map<String, Object> processorProperties;
     private StringWriter outputBuffer;
     private boolean initialized = false;
     private TransferParameters parameters;
@@ -345,7 +348,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<Object, Object> processorProperties) {
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<String, Object> processorProperties) {
         this.dataContainer = (DBSDataContainer) sourceObject;
         this.parameters = parameters;
         this.processor = processor;
@@ -392,6 +395,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
+    @Override
+    public Object getTargetObject() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Object getTargetObjectContainer() {
+        return null;
+    }
+
     private void executeFinishCommand() {
         String commandLine = translatePattern(
             settings.getFinishProcessCommand(),
@@ -401,7 +415,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Run process", "Error running process [" + commandLine + "]", e);
+
+            DBWorkbench.getPlatformUI().showError(DTMessages.stream_transfer_consumer_title_run_process,
+                    NLS.bind(DTMessages.stream_transfer_consumer_message_error_running_process, commandLine), e);
         }
     }
 
@@ -587,7 +603,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public Map<Object, Object> getProperties() {
+        public Map<String, Object> getProperties() {
             return processorProperties;
         }
 

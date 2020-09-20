@@ -91,6 +91,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsEntityMetadataInResults() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExplainPlanXML() {
         return false;
     }
@@ -112,5 +117,15 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         } else {
             return super.readTableDDL(monitor, table);
         }
+    }
+
+    @Override
+    public boolean supportsHasOidsColumn() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsDatabaseSize() {
+        return true;
     }
 }

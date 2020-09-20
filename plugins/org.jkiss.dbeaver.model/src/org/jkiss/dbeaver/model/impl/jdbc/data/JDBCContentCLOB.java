@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.data.storage.ExternalContentStorage;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,8 +54,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     private Clob clob;
     private Reader tmpReader;
 
-    public JDBCContentCLOB(DBPDataSource dataSource, Clob clob) {
-        super(dataSource);
+    public JDBCContentCLOB(DBCExecutionContext executionContext, Clob clob) {
+        super(executionContext);
         this.clob = clob;
     }
 
@@ -67,7 +67,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         try {
             return clob.length();
         } catch (Throwable e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, executionContext);
         }
     }
 
@@ -84,11 +84,11 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            DBPPlatform platform = dataSource.getContainer().getPlatform();
+            DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
             if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     String subString = clob.getSubString(1, (int) contentLength);
-                    storage = new JDBCContentChars(dataSource, subString);
+                    storage = new JDBCContentChars(executionContext, subString);
                 } catch (Exception e) {
                     log.debug("Can't get CLOB as substring", e);
                     try {
@@ -96,7 +96,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     } catch (IOException e1) {
                         throw new DBCException("IO error while reading content", e);
                     } catch (Throwable e1) {
-                        throw new DBCException(e, dataSource);
+                        throw new DBCException(e, executionContext);
                     }
                 }
             } else {
@@ -115,7 +115,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     throw new DBCException("IO error while copying content", e);
                 } catch (Throwable e) {
                     ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, dataSource);
+                    throw new DBCException(e, executionContext);
                 }
                 this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding());
             }
@@ -220,7 +220,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     @Override
     protected JDBCContentLOB createNewContent()
     {
-        return new JDBCContentCLOB(dataSource, null);
+        return new JDBCContentCLOB(executionContext, null);
     }
 
     @Override

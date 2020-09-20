@@ -30,6 +30,7 @@ class IndentFormatter {
     private final String[] blockHeaderStrings;
 
     private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
+    private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
 
     IndentFormatter(SQLFormatterConfiguration formatterCfg, boolean isCompact) {
         this.formatterCfg = formatterCfg;
@@ -72,7 +73,7 @@ class IndentFormatter {
             case ",":
                 if (!isCompact) {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
-                    if(bracketsDepth <= 0 || functionBracket.size() == 0)
+                    if(bracketsDepth <= 0 || functionBracket.size() == 0 || ("SELECT".equalsIgnoreCase(getPrevDMLKeyword(argList, index)) && bracketsDepth > 0 && bracketsDepth == indent))
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(
@@ -442,6 +443,18 @@ class IndentFormatter {
             return null;
         }
         return argList.get(ki).getString();
+    }
+
+    private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == TokenType.KEYWORD) {
+                if (ArrayUtils.contains(DML_KEYWORD, token.getString().toUpperCase(Locale.ENGLISH))) {
+                    return token.getString();
+                }
+            }
+        }
+        return null;
     }
 
 }

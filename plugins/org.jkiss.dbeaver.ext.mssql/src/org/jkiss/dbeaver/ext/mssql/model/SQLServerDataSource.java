@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -50,7 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBAUserCredentialsProvider, IAdaptable {
+public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
 
@@ -60,6 +59,8 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     private boolean supportsColumnProperty;
     private String serverVersion;
+
+    private volatile transient boolean hasStatistics;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -105,6 +106,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     @Override
     public DBPDataSource getDataSource() {
         return this;
+    }
+
+    public DatabaseCache getDatabaseCache() {
+        return databaseCache;
     }
 
     @Override
@@ -202,7 +207,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 return dt;
             }
         }
-        log.debug("System data type " + systemTypeId + " not found");
+        if (systemTypeId != 243) { // 243 - ID of user defined types
+            log.debug("System data type " + systemTypeId + " not found");
+        }
         SQLServerDataType sdt = new SQLServerDataType(this, String.valueOf(systemTypeId), systemTypeId, DBPDataKind.OBJECT, java.sql.Types.OTHER);
         dataTypeCache.cacheObject(sdt);
         return sdt;
@@ -244,27 +251,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return CommonUtils.toBoolean(getContainer().getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
     }
 
-    //////////////////////////////////////////////////////////
-    // Windows authentication
-
-    @Override
-    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserName();
-        }
-    }
-
-    @Override
-    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserPassword();
-        }
-    }
-
     //////////////////////////////////////////////////////////////
     // Databases
 
@@ -275,6 +261,15 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public SQLServerDatabase getDatabase(DBRProgressMonitor monitor, String name) throws DBException {
         return databaseCache.getObject(monitor, this, name);
+    }
+
+    public SQLServerDatabase getDatabase(DBRProgressMonitor monitor, long dbId) throws DBException {
+        for (SQLServerDatabase db : databaseCache.getAllObjects(monitor, this)) {
+            if (db.getDatabaseId() == dbId) {
+                return db;
+            }
+        }
+        return null;
     }
 
     public SQLServerDatabase getDatabase(String name) {
@@ -295,8 +290,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return databaseCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return SQLServerDatabase.class;
     }
 
@@ -308,6 +304,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();
+        hasStatistics = false;
         return super.refreshObject(monitor);
     }
 
@@ -352,6 +349,42 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
 
         return super.getErrorPosition(monitor, context, query, error);
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasStatistics && !forceRefresh) {
+            return;
+        }
+        if (SQLServerUtils.isDriverAzure(getContainer().getDriver()) || isDataWarehouseServer(monitor)) {
+            hasStatistics = true;
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT database_id, SUM(size)\n" +
+                    "FROM sys.master_files WITH(NOWAIT)\n" +
+                    "GROUP BY database_id")) {
+                    while (dbResult.next()) {
+                        long dbId = JDBCUtils.safeGetLong(dbResult, 1);
+                        long bytes = dbResult.getLong(2) * 8 * 1024;
+                        SQLServerDatabase database = getDatabase(monitor, dbId);
+                        if (database != null) {
+                            database.setDatabaseTotalSize(bytes);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading database statistics", e);
+        } finally {
+            hasStatistics = true;
+        }
     }
 
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {

@@ -102,7 +102,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
 
         boolean oldAutoCommit = false;
-        if (txnManager != null) {
+        if (txnManager != null && txnManager.isSupportsTransactions()) {
             oldAutoCommit = txnManager.isAutoCommit();
             if (oldAutoCommit != useAutoCommit) {
                 try {
@@ -115,19 +115,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         try {
             executeCommands(monitor, options, useAutoCommit ? null : txnManager);
 
-            // Commit changes
-            if (txnManager != null && !useAutoCommit) {
-                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
-                    txnManager.commit(session);
-                } catch (DBCException e1) {
-                    log.warn("Can't commit script transaction", e1);
-                }
-            }
             // Clear commands. We can't undo after save
             clearCommandQueues();
         } catch (Throwable e) {
             // Rollback changes
-            if (txnManager != null && !useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
                     txnManager.rollback(session, null);
                 } catch (DBCException e1) {
@@ -136,7 +128,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
             throw e;
         } finally {
-            if (txnManager != null && oldAutoCommit != useAutoCommit) {
+            if (txnManager != null && txnManager.isSupportsTransactions() && oldAutoCommit != useAutoCommit) {
                 try {
                     txnManager.setAutoCommit(monitor, oldAutoCommit);
                 } catch (DBCException e) {
@@ -205,7 +197,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 if (error != null) {
                                     throw error;
                                 }
-                                if (txnManager != null) {
+                                if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                                     // Commit all processed changes
                                     txnManager.commit(session);
                                 }

@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
@@ -31,8 +34,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -43,7 +47,8 @@ import java.util.List;
 /**
  * OracleTableColumn
  */
-public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2
+public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements
+    DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2, DBSTypedObjectExt4<OracleDataType>
 {
     private static final Log log = Log.getLog(OracleTableColumn.class);
 
@@ -109,45 +114,21 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return DBUtils.getFullTypeName(this);
     }
 
-    public void setFullTypeName(String typeName) throws DBException {
-        String plainTypeName;
-        int divPos = typeName.indexOf("(");
-        if (divPos == -1) {
-            plainTypeName = typeName;
-        } else {
-            plainTypeName = typeName.substring(0, divPos);
-            int divPos2 = typeName.indexOf(')', divPos);
-            if (divPos2 != -1) {
-                String modifiers = typeName.substring(divPos + 1, divPos2);
-                int divPos3 = modifiers.indexOf(',');
-                if (divPos3 == -1) {
-                    if (getDataKind() == DBPDataKind.STRING) {
-                        maxLength = CommonUtils.toInt(modifiers);
-                    } else {
-                        precision = CommonUtils.toInt(modifiers);
-                    }
-                } else {
-                    precision= CommonUtils.toInt(modifiers.substring(0, divPos3).trim());
-                    scale = CommonUtils.toInt(modifiers.substring(divPos3 + 1).trim());
-                }
-            }
+    @Override
+    protected void validateTypeName(String typeName) throws DBException {
+        if (getDataSource().resolveDataType(new VoidProgressMonitor(), typeName) == null) {
+            throw new DBException("Bad data type name " + typeName);
         }
-        OracleDataType newDataType = getDataSource().resolveDataType(new VoidProgressMonitor(), plainTypeName);
-        if (newDataType == null) {
-            throw new DBException("Bad data type: " + plainTypeName);
-        }
-        this.type = newDataType;
-        this.typeName = this.type.getTypeName();
     }
 
     @Nullable
     @Override
     //@Property(viewable = false, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 21, listProvider = ColumnDataTypeListProvider.class)
-    public OracleDataType getDataType()
-    {
+    public OracleDataType getDataType() {
         return type;
     }
 
+    @Override
     public void setDataType(OracleDataType type)
     {
         this.type = type;

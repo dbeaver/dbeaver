@@ -165,6 +165,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             name = source.getName();
         }
         DBSObjectContainer container = parent.getSettings().getContainer();
+
+        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
+            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        }
+
         return container == null ? name : DBUtils.getQuotedIdentifier(container.getDataSource(), name);
     }
 
@@ -184,13 +189,13 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public String getTargetType(DBPDataSource targetDataSource)
+    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers)
     {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
 
-        return DBStructUtils.mapTargetDataType(targetDataSource, source);
+        return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
     }
 
     public void setTargetType(String targetType)

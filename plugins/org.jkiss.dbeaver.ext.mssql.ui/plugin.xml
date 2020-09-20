@@ -55,8 +55,12 @@
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
         </editor>
 
+        <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerDatabaseConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
+        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.mssql.ui.config.SQLServerUniqueKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
         </configurator>
@@ -78,7 +82,8 @@
         <datasourcePatch id="sqlserver">
             <treeInjection path="sqlserver/database" after="trigger">
                 <folder label="%tree.databaseInfo.node.name" icon="#folder_info" description="Database system information">
-                    <object type="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"/>
+                    <treeContribution category="connectionEditor"/>
+<!--                    <object type="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"/>-->
                 </folder>
             </treeInjection>
         </datasourcePatch>

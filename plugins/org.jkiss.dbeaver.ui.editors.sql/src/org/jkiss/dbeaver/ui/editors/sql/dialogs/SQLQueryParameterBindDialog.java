@@ -183,6 +183,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                         if (dups != null) {
                             for (SQLQueryParameter dup : dups) {
                                 dup.setValue(newValue);
+                                dup.setVariableSet(!CommonUtils.isEmpty(newValue));
                             }
                         }
                         queryContext.setVariable(param.getVarName(), param.getValue());

@@ -69,6 +69,21 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         super(table, constraintName, null, constraintType, false);
     }
 
+    public PostgreTableConstraintBase(DBRProgressMonitor monitor, PostgreTableReal owner, PostgreTableConstraintBase srcConstr) throws DBException {
+        super(owner, srcConstr, false);
+        // Make constraint name unique
+        int postfix = 1;
+        while (owner.getSchema().getConstraintCache().getObject(monitor, owner.getSchema(), getName()) != null) {
+            setName(srcConstr.getName() + "_" + postfix);
+            postfix++;
+        }
+        this.isLocal = srcConstr.isLocal;
+        this.deferrable = srcConstr.deferrable;
+        this.deferred = srcConstr.deferred;
+
+        this.description = srcConstr.description;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)

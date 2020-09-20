@@ -43,7 +43,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private FieldPosition position;
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
         numberFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         Object useGrouping = properties.get(NumberFormatSample.PROP_USE_GROUPING);

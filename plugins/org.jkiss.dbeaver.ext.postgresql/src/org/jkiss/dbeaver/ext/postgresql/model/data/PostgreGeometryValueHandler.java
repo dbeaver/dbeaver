@@ -124,7 +124,12 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
-            return "'" + value.toString() + "'";
+            final int valueSRID = ((DBGeometry) value).getSRID();
+            String strValue = value.toString();
+            if (valueSRID != 0 && !strValue.startsWith("SRID=")) {
+                strValue = "'SRID=" + valueSRID + ";" + strValue + "'::geometry";
+            }
+            return strValue;
         }
         return super.getValueDisplayString(column, value, format);
     }

@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -408,8 +408,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             UIUtils.addFocusTracker(site, QUERY_LOG_CONTROL_ID, logTable);
 
             logTable.addDisposeListener(e -> {
-                // Unregister from focus service
-                UIUtils.removeFocusTracker(QueryLogViewer.this.site, logTable);
                 dispose();
             });
         }
@@ -910,8 +908,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
-                    String containerId = stmtExec.getStatement().getSession().getContainerId();
-                    dsContainer = DBUtils.findDataSource(containerId);
+                    QMMSessionInfo session = stmtExec.getStatement().getSession();
+                    DBPProject project = session.getProject();
+                    String containerId = session.getContainerId();
+                    if (project != null) {
+                        dsContainer = project.getDataSourceRegistry().getDataSource(containerId);
+                    } else {
+                        dsContainer = DBUtils.findDataSource(containerId);
+                    }
                 }
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {
