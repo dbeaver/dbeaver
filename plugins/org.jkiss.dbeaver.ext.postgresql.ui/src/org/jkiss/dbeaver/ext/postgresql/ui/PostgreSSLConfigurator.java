@@ -56,6 +56,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
     private Combo sslModeCombo;
     private Combo sslFactoryCombo;
     private Button useProxyService;
+    private boolean sslClassesResolved;
 
     @Override
     public void createControl(Composite parent, Runnable propertyChangeListener) {
@@ -117,31 +118,35 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
             useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
         }
 
-        final Job resolveJob = new Job("Find factories") {
-            {
-                setUser(true);
-            }
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                final DriverClassFindJob finder = new DriverClassFindJob(
-                    configuration.getDriver(),
-                    SSLSocketFactory.class.getName(),
-                    false);
-                finder.run(new DefaultProgressMonitor(monitor));
-                UIUtils.syncExec(() -> {
-                    sslFactoryCombo.removeAll();
-                    for (String cn : finder.getDriverClassNames()) {
-                        sslFactoryCombo.add(cn);
-                    }
-                    final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
-                    if (!CommonUtils.isEmpty(factoryValue)) {
-                        sslFactoryCombo.setText(factoryValue);
-                    }
-                });
-                return Status.OK_STATUS;
-            }
-        };
-        resolveJob.schedule();
+        if (!sslClassesResolved) {
+            sslClassesResolved = true;
+            final Job resolveJob = new Job("Find factories") {
+                {
+                    setUser(true);
+                }
+
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    final DriverClassFindJob finder = new DriverClassFindJob(
+                        configuration.getDriver(),
+                        SSLSocketFactory.class.getName(),
+                        false);
+                    finder.run(new DefaultProgressMonitor(monitor));
+                    UIUtils.syncExec(() -> {
+                        sslFactoryCombo.removeAll();
+                        for (String cn : finder.getDriverClassNames()) {
+                            sslFactoryCombo.add(cn);
+                        }
+                        final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
+                        if (!CommonUtils.isEmpty(factoryValue)) {
+                            sslFactoryCombo.setText(factoryValue);
+                        }
+                    });
+                    return Status.OK_STATUS;
+                }
+            };
+            resolveJob.schedule();
+        }
     }
 
     @Override
