@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.wizard;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -215,6 +216,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     @Override
                     public void controlResized(ControlEvent e) {
                         UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f});
+                        taskCategoryTree.removeControlListener(this);
                     }
                 });
 
@@ -307,18 +309,18 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     @Override
     protected boolean determinePageCompletion() {
         if (CommonUtils.isEmpty(taskName)) {
-            setErrorMessage("Enter task name (unique)");
+            setErrorMessage(TaskUIMessages.task_configuration_wizard_page_task_error_message_enter_task_name);
             return false;
         }
         if (task == null) {
             DBTTask task2 = selectedProject.getTaskManager().getTaskByName(taskName);
             if (task2 != null) {
-                setErrorMessage("Task '" + taskName + "' already exists in project '" + selectedProject.getName() + "'");
+                setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_page_task_already_exists, taskName, selectedProject.getName()));
                 return false;
             }
         }
         if (selectedTaskType == null) {
-            setErrorMessage("Enter task type");
+            setErrorMessage(TaskUIMessages.task_configuration_wizard_page_task_enter_type);
             return false;
         }
         setErrorMessage(null);

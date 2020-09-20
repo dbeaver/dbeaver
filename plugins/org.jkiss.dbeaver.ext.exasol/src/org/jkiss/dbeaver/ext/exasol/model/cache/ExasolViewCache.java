@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -126,19 +125,27 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"WHERE table_schem = '%s' ";
 	
 	
+	private static final String SQL_VIEWS = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'VIEW' " +
+            " union all select 'SYS',-1,' ',SCHEMA_name, object_name as column_table, object_type,object_comment,null, null,null,null,null from EXA_SYSCAT where SCHEMA_NAME = '%s' order by TABLE_NAME";
+	
+	
 
     public ExasolViewCache() {
-        super("TABLE_NAME");
+        super("COLUMN_TABLE");
 
     }
 
 	@NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema) throws SQLException {
-        JDBCDatabaseMetaData meta = session.getMetaData();
 
-        return meta.getTables("EXA_DB", exasolSchema.getName(), null,
-                new String[] { "VIEW", "SYSTEM TABLE" }).getSourceStatement();
+		String sql = String.format(SQL_VIEWS, exasolSchema.getName(),exasolSchema.getName());
+		
+		JDBCStatement dbstat = session.createStatement();
+		
+		dbstat.setQueryString(sql);
+
+		return dbstat;
     }
 
     @Override

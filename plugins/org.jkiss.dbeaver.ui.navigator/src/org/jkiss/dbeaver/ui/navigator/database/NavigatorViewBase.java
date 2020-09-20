@@ -20,6 +20,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
@@ -55,22 +57,20 @@ import java.util.Map;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider, DBPPreferenceListener {
 
-    private DBNModel model;
     private DatabaseNavigatorTree tree;
     private transient Object lastSelection;
 
     protected NavigatorViewBase()
     {
         super();
-        model = DBWorkbench.getPlatform().getNavigatorModel();
     }
 
     public DBNModel getModel()
     {
-        return model;
+        return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
-    protected DatabaseNavigatorTree getNavigatorTree()
+    public DatabaseNavigatorTree getNavigatorTree()
     {
         return tree;
     }
@@ -99,7 +99,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public void createPartControl(Composite parent)
     {
         this.tree = createNavigatorTree(parent, null);
-        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer());
+        this.tree.setItemRenderer(new StatisticsNavigatorNodeRenderer(this));
 
         getViewSite().setSelectionProvider(tree.getViewer());
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
@@ -120,6 +120,25 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         navigatorTree.getViewer().addSelectionChangedListener(
             event -> onSelectionChange((IStructuredSelection)event.getSelection())
         );
+        navigatorTree.getViewer().getTree().addListener(SWT.MouseDoubleClick, event -> {
+            event.doit = false;
+        });
+        navigatorTree.getViewer().getTree().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                super.mouseDoubleClick(e);
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                super.mouseDown(e);
+            }
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+                super.mouseUp(e);
+            }
+        });
         navigatorTree.getViewer().addDoubleClickListener(event -> {
             TreeViewer viewer = tree.getViewer();
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -246,7 +265,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
 
-        model = null;
         super.dispose();
     }
 
@@ -311,6 +329,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 break;
             case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
             case NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME:
+            case NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS:
                 tree.getViewer().getTree().redraw();
                 break;
         }

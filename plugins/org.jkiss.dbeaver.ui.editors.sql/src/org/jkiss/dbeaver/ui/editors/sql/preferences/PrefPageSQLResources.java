@@ -120,9 +120,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                         GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)));
+                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT),
+                        GeneralUtils.variablePattern(SQLEditor.VAR_ACTIVE_DATABASE),
+                        GeneralUtils.variablePattern(SQLEditor.VAR_ACTIVE_SCHEMA)));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
-                    SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
+                    SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT,
+                    SQLEditor.VAR_ACTIVE_DATABASE, SQLEditor.VAR_ACTIVE_SCHEMA);
         }
 
         performDefaults();

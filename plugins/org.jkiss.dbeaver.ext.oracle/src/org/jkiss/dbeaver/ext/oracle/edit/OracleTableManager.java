@@ -63,15 +63,15 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     {
         OracleSchema schema = (OracleSchema) container;
 
-        OracleTable table = new OracleTable(schema, "");
+        OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
         setNewObjectName(monitor, schema, table);
-        return table; //$NON-NLS-1$
+        return table;
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(monitor, command.getObject(), command, query, true);
@@ -82,7 +82,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
         OracleTable table = command.getObject();
-        if (command.getProperty("comment") != null) {
+        if (command.getProperty("comment") != null) { //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
@@ -131,7 +131,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
+                "DROP " + (object.isView() ? "VIEW" : "TABLE") +
                     " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE CONSTRAINTS" : "")
             )

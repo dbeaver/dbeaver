@@ -78,7 +78,7 @@ public class NetezzaMetaModel extends GenericMetaModel
                     if (dbResult.nextRow()) {
                         return
                             "CREATE OR REPLACE PROCEDURE " + dbResult.getString(1) + " RETURNS " + dbResult.getString(2) +
-                            "LANGUAGE NZPLSQL AS BEGIN_PROC\n" + dbResult.getString(3) + "\nEND_PROC;";
+                            " LANGUAGE NZPLSQL AS BEGIN_PROC\n" + dbResult.getString(3).trim() + "\nEND_PROC;";
                     }
                     return "-- Netezza procedure source not found";
                 }

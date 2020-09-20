@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -39,7 +40,8 @@ public class ResetUISettingsAction extends Action
         if (UIUtils.confirmAction(
             window == null ? null : window.getShell(),
             CoreApplicationMessages.actions_menu_reset_ui_settings_title,
-            CoreApplicationMessages.actions_menu_reset_ui_settings_message))
+            CoreApplicationMessages.actions_menu_reset_ui_settings_message,
+            SWT.ICON_WARNING))
         {
             DBeaverApplication.getInstance().setResetUIOnRestart(true);
             IWorkbench workbench = PlatformUI.getWorkbench();

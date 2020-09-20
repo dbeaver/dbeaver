@@ -100,7 +100,7 @@ public class OracleSchemaConfigurator implements DBEObjectConfigurator<OracleSch
         @Override
         protected void okPressed()
         {
-            user.setName(DBObjectNameCaseTransformer.transformObjectName(user, nameText.getText()));
+            user.setName(DBObjectNameCaseTransformer.transformObjectName(user, nameText.getText().trim()));
             user.setPassword(passwordText.getText());
             super.okPressed();
         }

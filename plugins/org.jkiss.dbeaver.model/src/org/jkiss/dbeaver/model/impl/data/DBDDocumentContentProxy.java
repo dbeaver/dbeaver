@@ -48,6 +48,12 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
 
     @Nullable
     @Override
+    public Object getDocumentId() {
+        return document.getDocumentId();
+    }
+
+    @Nullable
+    @Override
     public Object getDocumentProperty(String name) {
         return document.getDocumentProperty(name);
     }

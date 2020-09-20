@@ -36,7 +36,7 @@ public interface IStreamDataExporterSite {
 
     DBDDisplayFormat getExportFormat();
 
-    Map<Object, Object> getProperties();
+    Map<String, Object> getProperties();
 
     DBDAttributeBinding[] getAttributes();
 

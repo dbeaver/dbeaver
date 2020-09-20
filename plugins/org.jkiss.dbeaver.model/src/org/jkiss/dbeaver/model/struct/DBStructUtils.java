@@ -208,10 +208,10 @@ public final class DBStructUtils {
         cyclicTables.addAll(realTables);
     }
 
-    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject) {
+    public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
         if (typedObject instanceof DBSObject) {
             // If source and target datasources have the same type then just return the same type name
-            if (((DBSObject) typedObject).getDataSource().getClass() == objectContainer.getDataSource().getClass()) {
+            if (((DBSObject) typedObject).getDataSource().getClass() == objectContainer.getDataSource().getClass() && addModifiers) {
                 return typedObject.getFullTypeName();
             }
         }
@@ -293,7 +293,7 @@ public final class DBStructUtils {
         }
 
         // Get type modifiers from target datasource
-        if (objectContainer instanceof DBPDataSource) {
+        if (addModifiers && objectContainer instanceof DBPDataSource) {
             SQLDialect dialect = ((DBPDataSource) objectContainer).getSQLDialect();
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, typedObject, typeName, dataKind);
             if (modifiers != null) {

@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.erd.ui.export.format.exsd"/>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                file-extensions="erd"
+                id="org.jkiss.dbeaver.erd"
+                name="%content-type.org.jkiss.dbeaver.erd.name"
+                priority="normal"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
+            class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
+            main="false"
+            label="%editor.erd.name"
+            description="%editor.erd.description"
+            position="additions_end"
+            icon="icons/erd.png">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="ER diagrams" managable="true" icon="icons/erd_folder.png">
+            <root folder="Diagrams"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.erd.ui.model.ERDObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.preferences.DBPPropertySource"/>
+            <adapter type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+        </factory>
+        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorAdapter">
+           <adapter type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerCopy">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPaste">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.editable"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerDelete">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <and>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.erd.ui.editor.canDelete"/>
+                        </adapt>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerSelectAll">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerUndo">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.canUndo"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerRedo">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.canRedo"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPrint">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerRefresh">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+        </handler>
+
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
+             id="org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester"
+             namespace="org.jkiss.dbeaver.erd.ui.editor"
+             properties="canUndo,canRedo,canDelete,editable"
+             type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+       </propertyTester>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory
+                label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.label"
+                id="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>
+                %themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.description
+            </description>
+        </themeElementCategory>
+        <fontDefinition
+                label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.font">
+            <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
+        </fontDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.association.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.association.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.association.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.name.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.name.foreground"
+                value="COLOR_INFO_FOREGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.name.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.attributes.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.attributes.foreground"
+                value="COLOR_LIST_FOREGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.notes.foreground"
+                value="COLOR_INFO_FOREGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.notes.background"
+                value="COLOR_INFO_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.background.description</description>
+        </colorDefinition>
+
+        <!-- Colors for table borders -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.borders.label" id="org.jkiss.dbeaver.ui.presentation.erd.borders" parentId="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.borders.description</description>
+        </themeElementCategory>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
+                value="0, 143, 207">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.1.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.1"
+                value="119, 206, 130">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.2.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.2"
+                value="206, 63, 34">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.3.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.3"
+                value="242, 132, 35">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.4.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.4"
+                value="124, 38, 19">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.5.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.5"
+                value="157, 214, 245">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.6.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.6"
+                value="173, 140, 127">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.borders.color.7.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.borders"
+                id="org.jkiss.dbeaver.ui.presentation.erd.borders.color.7"
+                value="249, 214, 205">
+        </colorDefinition>
+
+        <!-- Colors for table headers -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.headers.label" id="org.jkiss.dbeaver.ui.presentation.erd.headers" parentId="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.headers.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.erd.diagram.entity.regular.background"
+                value="COLOR_INFO_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.regular.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.erd.diagram.entity.primary.background"
+                value="255,128,64">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.primary.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.1.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.1"
+                value="204, 192, 184">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.2.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.2"
+                value="228, 255, 181">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.3.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.3"
+                value="255, 255, 255">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.4.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.4"
+                value="219, 229, 241">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.5.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.5"
+                value="248, 214, 205">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.6.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"
+                value="251, 216, 166">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.headers.color.7.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.headers"
+                id="org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"
+                value="225, 221, 252">
+        </colorDefinition>
+
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark_erd_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
+            </themeid>
+        </stylesheet>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.erd.ui.ERDPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.erd.ui.editor.ERDPreferencePage" name="%pref.page.name.erd.editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.erd"/>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.erd.ui.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
+           <enabledWhen>
+              <instanceof value="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+           </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="utf-8"
+            file-extensions="erd"
+            id="org.jkiss.dbeaver.erd.content-type-erd"
+            name="%content-type.org.jkiss.dbeaver.erd.content-type-erd.name"
+            priority="normal"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor name="%editor.org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone.name"
+                extensions="erd"
+                icon="icons/erd.png"
+                contributorClass="org.jkiss.dbeaver.erd.ui.editor.ERDEditorContributor"
+                class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone"
+                id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.erd.diagram.view" name="%command.org.jkiss.dbeaver.erd.diagram.view.name" description="%command.org.jkiss.dbeaver.erd.diagram.view.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.erd.diagram.create" name="%command.org.jkiss.dbeaver.erd.diagram.create.name" description="%command.org.jkiss.dbeaver.erd.diagram.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.view" class="org.jkiss.dbeaver.erd.ui.navigator.ViewDiagramHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <or>
+                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </or>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=compare">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.view" label="%command.org.jkiss.dbeaver.erd.diagram.view.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IFolder">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="(1-"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart.EditorContext?after=additions">
+            <command commandId="org.eclipse.ui.edit.undo"/>
+            <command commandId="org.eclipse.ui.edit.redo"/>
+            <separator name="selection" visible="true"/>
+            <command commandId="org.eclipse.ui.edit.selectAll"/>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
+             icon="icons/erd.png"
+             id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
+             name="%wizard.erd.name">
+           <description>
+               %wizard.erd.description
+           </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <newWizardShortcut id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"/>
+        </perspectiveExtension>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.erd.ui.export.format">
+        <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
+    </extension>
+
+</plugin>

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -26,12 +27,18 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -39,7 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
+public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
+    DBAUserCredentialsProvider,
+    DBPNativeClientLocationManager,
+    DBPInformationProvider {
 
     public OracleDataSourceProvider()
     {
@@ -55,18 +65,13 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
-        OracleConstants.ConnectionType connectionType;
-        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
-        if (conTypeProperty != null) {
-            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
-        } else {
-            connectionType = OracleConstants.ConnectionType.BASIC;
-        }
+        OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
-            return connectionInfo.getUrl();
+            return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
         }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:thin:@"); //$NON-NLS-1$
+        String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
         if (connectionType == OracleConstants.ConnectionType.TNS) {
             // TNS name specified
             // Try to get description from TNSNAMES
@@ -84,7 +89,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             }
 
             final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, checkTnsAdmin);
-            final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
+            final String tnsDescription = tnsNames.get(databaseName);
             if (!CommonUtils.isEmpty(tnsDescription)) {
                 url.append(tnsDescription);
             } else {
@@ -94,7 +99,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
                 if (tnsNamesFile != null && tnsNamesFile.exists()) {
                     System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, tnsNamesFile.getAbsolutePath());
                 }
-                url.append(connectionInfo.getDatabaseName());
+                url.append(databaseName);
             }
         } else {
             // Basic connection info specified
@@ -114,11 +119,23 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             } else {
                 url.append("/"); //$NON-NLS-1$
             }
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                url.append(connectionInfo.getDatabaseName());
+            if (!CommonUtils.isEmpty(databaseName)) {
+                url.append(databaseName);
             }
         }
         return url.toString();
+    }
+
+    @NotNull
+    private OracleConstants.ConnectionType getConnectionType(DBPConnectionConfiguration connectionInfo) {
+        OracleConstants.ConnectionType connectionType;
+        String conTypeProperty = connectionInfo.getProviderProperty(OracleConstants.PROP_CONNECTION_TYPE);
+        if (conTypeProperty != null) {
+            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
+        } else {
+            connectionType = OracleConstants.ConnectionType.BASIC;
+        }
+        return connectionType;
     }
 
     @NotNull
@@ -178,6 +195,54 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             File ociLibFile = new File(folder, dllName);
             if (ociLibFile.exists()) {
                 return counter;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+        String userName = connectionInfo.getUserName();
+        String authModelId = connectionInfo.getAuthModelId();
+        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
+            return userName;
+        }
+        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
+        if (!CommonUtils.isEmpty(userName) && userName.contains(" AS ")) {
+            return userName;
+        }
+        final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
+        return role == null ? userName : userName + " AS " + role;
+    }
+
+    @Override
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return connectionInfo.getUserPassword();
+    }
+
+
+    @Nullable
+    @Override
+    public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
+        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
+            DBPConnectionConfiguration connectionInfo = ((DBPDataSourceContainer) object).getConnectionConfiguration();
+            OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
+            if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
+                return JDBCURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
+            }
+            String databaseName = CommonUtils.notEmpty(connectionInfo.getDatabaseName());
+            if (connectionType == OracleConstants.ConnectionType.TNS) {
+                return databaseName;
+            } else {
+                String hostName = DataSourceUtils.getTargetTunnelHostName(connectionInfo);
+                String hostPort = connectionInfo.getHostPort();
+                if (CommonUtils.isEmpty(hostName)) {
+                    return null;
+                } else if (CommonUtils.isEmpty(hostPort)) {
+                    return hostName;
+                } else {
+                    return hostName + ":" + hostPort;
+                }
             }
         }
         return null;

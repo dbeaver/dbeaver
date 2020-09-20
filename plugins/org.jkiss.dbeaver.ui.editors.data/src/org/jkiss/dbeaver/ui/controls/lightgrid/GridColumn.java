@@ -106,8 +106,8 @@ class GridColumn {
 	void setWidth(int width, boolean redraw) {
         int delta = width - this.width;
 		this.width = width;
-        if (parent != null) {
-            parent.width += delta;
+        for (GridColumn pc = parent; pc != null; pc = pc.parent) {
+            pc.width += delta;
         }
 		if (redraw) {
 			grid.setScrollValuesObsolete();

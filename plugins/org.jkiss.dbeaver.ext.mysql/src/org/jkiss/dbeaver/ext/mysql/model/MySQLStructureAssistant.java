@@ -214,6 +214,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String constrName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
                     final boolean isFK = MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType);
+                    final boolean isCheck = MySQLConstants.CONSTRAINT_CHECK.equals(constrType);
                     objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -228,8 +229,12 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                             DBSObject constraint;
                             if (isFK) {
                                 constraint = table.getAssociation(monitor, constrName);
-                            } else {
-                                constraint = table.getConstraint(monitor, constrName);
+                            }
+                            else if (isCheck) {
+                                constraint = table.getCheckConstraint(monitor, constrName);
+                            }
+                            else {
+                                constraint = table.getUniqueKey(monitor, constrName);
                             }
                             if (constraint == null) {
                                 throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");

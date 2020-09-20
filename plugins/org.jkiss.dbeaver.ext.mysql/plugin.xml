@@ -41,10 +41,14 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
                                     <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
-                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true" visibleIf="object.constraintType!='CHECK'">
                                         </items>
                                     </items>
                                 </folder>
+                                <!--<folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableCheckConstraint" label="%tree.check.constraints.node.name" icon="#check_constraints" description="Table check constraints" visibleIf = "object.dataSource.supportsCheckConstraints()">
+                                    <items label="%tree.check.constraint.node.name" path="constraint" property="checkConstraints" icon="#constraint">
+                                    </items>
+                                </folder>-->
                                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
@@ -152,13 +156,14 @@
                 </driver>
                 <driver
                         id="mysql5"
-                        label="MySQL"
+                        label="MySQL 5"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
+                        defaultUser="root"
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 4.x+"
@@ -176,13 +181,14 @@
                 </driver>
                 <driver
                         id="mysql8"
-                        label="MySQL 8+"
+                        label="MySQL"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
+                        defaultUser="root"
                         webURL="https://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8 and later"
@@ -207,6 +213,7 @@
                     sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
                     useURL="false"
                     defaultPort="3306"
+                    defaultUser="root"
                     webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                     description="Driver for MySQL NDB cluster"
@@ -228,6 +235,7 @@
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
+                    defaultUser="root"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     description="MariaDB JDBC driver"

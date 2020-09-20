@@ -116,7 +116,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return new GroupingResultsDecorator(this);
     }
 
-    public void addGroupingAttributes(List<String> attributes) {
+    void clearGroupingAttributes() {
+        groupAttributes.clear();
+    }
+
+    void addGroupingAttributes(List<String> attributes) {
         for (String attrName : attributes) {
             attrName = cleanupObjectName(attrName);
             if (!groupAttributes.contains(attrName)) {
@@ -125,7 +129,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
     }
 
-    public boolean removeGroupingAttribute(List<String> attributes) {
+    boolean removeGroupingAttribute(List<String> attributes) {
         boolean changed = false;
         for (String attrName : attributes) {
             attrName = cleanupObjectName(attrName);

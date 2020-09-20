@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -180,7 +181,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         return oid;
     }
 
-    @Property(editable = true, updatable = true, order = 10)
+    @Property(editable = true, updatable = true, order = 10, visibleIf = PostgreRoleCanBeSuperUserValidator.class)
     public boolean isSuperUser() {
         return superUser;
     }
@@ -189,7 +190,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         this.superUser = superUser;
     }
 
-    @Property(editable = true, updatable = true, order = 11)
+    @Property(editable = true, updatable = true, order = 11, visibleIf = PostgreRoleInheritValidator.class)
     public boolean isInherit() {
         return inherit;
     }
@@ -207,7 +208,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
         this.createRole = createRole;
     }
 
-    @Property(editable = true, updatable = true, order = 13)
+    @Property(editable = true, updatable = true, order = 13, visibleIf = PostgreRoleCanCreateDBValidator.class)
     public boolean isCreateDatabase() {
         return createDatabase;
     }
@@ -381,5 +382,25 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
     public String toString() {
         return getName();
     }
-}
 
+    public static class PostgreRoleCanBeSuperUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsSuperusers();
+        }
+    }
+
+    public static class PostgreRoleInheritValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsInheritance();
+        }
+    }
+
+    public static class PostgreRoleCanCreateDBValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsRolesWithCreateDBAbility();
+        }
+    }
+}

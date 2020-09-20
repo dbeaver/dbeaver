@@ -127,6 +127,8 @@ public class OracleUtils {
                     }
                 }
             }
+            ddl = ddl.trim();
+
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
@@ -136,7 +138,7 @@ public class OracleUtils {
                     }
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {
-                            ddl += "\n" + dbResult.getString(1);
+                            ddl += "\n\n" + dbResult.getString(1).trim();
                         }
                     }
                 } catch (Exception e) {

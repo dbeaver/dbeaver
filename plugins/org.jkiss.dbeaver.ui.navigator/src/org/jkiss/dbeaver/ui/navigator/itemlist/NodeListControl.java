@@ -59,7 +59,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * NodeListControl
@@ -395,10 +394,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
 
         @Override
-        public DBPPropertyDescriptor[] getPropertyDescriptors2()
-        {
-            Set<DBPPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new DBPPropertyDescriptor[0]);
+        public DBPPropertyDescriptor[] getProperties() {
+            return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
     }

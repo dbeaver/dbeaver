@@ -57,7 +57,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2()
+    public DBPPropertyDescriptor[] getProperties()
     {
         try {
             WMIQualifiedObject qualifiedObject = getQualifiedObject();
@@ -80,7 +80,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         try {
             return getQualifiedObject().getQualifier(id.toString());
@@ -91,7 +91,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public boolean isPropertySet(Object id)
+    public boolean isPropertySet(String id)
     {
         try {
             return getQualifiedObject().getQualifier(id.toString()) != null;
@@ -102,30 +102,25 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
     {
 
     }
 
     @Override
-    public boolean isPropertyResettable(Object id) {
+    public boolean isPropertyResettable(String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
 
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-        return false;
     }
 
 }

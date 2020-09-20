@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDecoratorBase;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,10 +91,14 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     @Override
     public void registerDragAndDrop(@NotNull IResultSetPresentation presentation) {
+        final DropTargetListener[] gridDropListeners;
         // Register drop target to accept columns dropping
         Object oldDropTarget = presentation.getControl().getData(DND.DROP_TARGET_KEY);
         if (oldDropTarget instanceof DropTarget) {
+            gridDropListeners = ((DropTarget) oldDropTarget).getDropListeners();
             ((DropTarget) oldDropTarget).dispose();
+        } else {
+            gridDropListeners = null;
         }
         DropTarget dropTarget = new DropTarget(presentation.getControl(), DND.DROP_MOVE | DND.DROP_COPY);
         dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
@@ -154,19 +159,46 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                     return;
                 }
                 List<Object> dropElements = (List<Object>) event.data;
-                List<String> attributeBindings = new ArrayList<>();
+                List<String> newBindings = new ArrayList<>();
+                List<DBDAttributeBinding> movedBindings = new ArrayList<>();
                 for (Object element : dropElements) {
                     if (element instanceof DBDAttributeBinding) {
                         DBDAttributeBinding binding = (DBDAttributeBinding) element;
-                        if (binding instanceof DBDAttributeBindingMeta && binding.getMetaAttribute() != null) {
-                            attributeBindings.add(DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel()));
+                        String attrName = getAttributeBindingName(binding);
+
+                        if (ArrayUtils.contains(container.getResultSetController().getModel().getAttributes(), binding)) {
+                            // Check for group function - can't move function columns
+                            if (!container.getGroupFunctions().contains(attrName)) {
+                                // It is column move, not new binding
+                                movedBindings.add(binding);
+                            }
                         } else {
-                            attributeBindings.add(binding.getFullyQualifiedName(DBPEvaluationContext.DML));
+                            newBindings.add(attrName);
                         }
                     }
                 }
-                if (!attributeBindings.isEmpty()) {
-                    container.addGroupingAttributes(attributeBindings);
+                if (!movedBindings.isEmpty()) {
+                    if (gridDropListeners != null) {
+                        // Do visual reordering if needed
+                        dropElements.clear();
+                        dropElements.addAll(movedBindings);
+                        for (DropTargetListener listener : gridDropListeners) {
+                            listener.drop(event);
+                        }
+                    }
+                    // Reorder columns
+                    List<String> curAttributes = new ArrayList<>(container.getGroupAttributes());
+                    for (DBDAttributeBinding mb : movedBindings) {
+                        String attrName = getAttributeBindingName(mb);
+                        curAttributes.remove(attrName);
+                        curAttributes.add(0, attrName);
+                    }
+                    container.clearGroupingAttributes();
+                    container.addGroupingAttributes(curAttributes);
+                }
+
+                if (!newBindings.isEmpty()) {
+                    container.addGroupingAttributes(newBindings);
                 }
                 UIUtils.asyncExec(() -> {
                     if (event.detail == DND.DROP_COPY) {
@@ -184,6 +216,14 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                 });
             }
         });
+    }
+
+    private static String getAttributeBindingName(DBDAttributeBinding binding) {
+        if (binding instanceof DBDAttributeBindingMeta && binding.getMetaAttribute() != null) {
+            return DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel());
+        } else {
+            return binding.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
     }
 
 }

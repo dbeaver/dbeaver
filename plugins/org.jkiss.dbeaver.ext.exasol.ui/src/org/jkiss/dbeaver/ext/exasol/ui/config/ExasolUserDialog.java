@@ -119,9 +119,9 @@ public class ExasolUserDialog extends BaseDialog {
         ModifyListener mod = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
-                ldapDN  = urlText.getText();
-                kerberosPrincipal = principalText.getText();
+                name = nameText.getText().trim();
+                ldapDN  = urlText.getText().trim();
+                kerberosPrincipal = principalText.getText().trim();
                 password = passwordText.getText();
                 comment = commentText.getText();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());

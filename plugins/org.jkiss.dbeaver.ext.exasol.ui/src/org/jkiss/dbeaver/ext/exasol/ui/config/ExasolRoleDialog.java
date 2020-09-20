@@ -54,7 +54,7 @@ public class ExasolRoleDialog extends BaseDialog {
         ModifyListener mod = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                name = nameText.getText();
+                name = nameText.getText().trim();
                 comment = commentText.getText();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             }

@@ -116,6 +116,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean needsTableMetaForColumnResolution() {
+        return false;
+    }
+
+    @Override
     public boolean supportsBatchUpdates()
     {
         return false;

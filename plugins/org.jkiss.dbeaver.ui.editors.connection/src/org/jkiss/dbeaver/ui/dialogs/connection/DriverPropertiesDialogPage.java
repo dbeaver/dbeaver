@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -75,7 +74,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             final DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
                 site.getDataSourceRegistry(),
                 activeDataSource.getId(),
-                (DriverDescriptor) activeDataSource.getDriver(),
+                activeDataSource.getDriver(),
                 tmpConnectionInfo);
 
             hostPage.saveSettings(tempDataSource);
@@ -119,7 +118,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         if (propertySource != null) {
             final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
             properties.clear();
-            for (Map.Entry<Object, Object> entry : propertySource.getProperties().entrySet()) {
+            for (Map.Entry<String, Object> entry : propertySource.getPropertyValues().entrySet()) {
                 String propName = CommonUtils.toString(entry.getKey());
                 if (!propName.isEmpty()) {
                     properties.put(propName, CommonUtils.toString(entry.getValue()));

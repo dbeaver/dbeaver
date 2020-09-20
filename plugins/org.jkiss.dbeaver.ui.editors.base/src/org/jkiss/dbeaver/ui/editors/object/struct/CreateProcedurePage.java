@@ -55,7 +55,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
-            name = nameText.getText();
+            name = nameText.getText().trim();
             updatePageState();
         });
         Combo typeCombo;

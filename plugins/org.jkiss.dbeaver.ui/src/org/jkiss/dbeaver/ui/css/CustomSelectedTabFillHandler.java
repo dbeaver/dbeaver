@@ -42,7 +42,7 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
 
         Widget widget = SWTElementHelpers.getWidget(element);
         if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control)widget))) {
-            return false;
+            return super.applyCSSProperty(element, property, value, pseudo, engine);
         }
 
         if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY))) {

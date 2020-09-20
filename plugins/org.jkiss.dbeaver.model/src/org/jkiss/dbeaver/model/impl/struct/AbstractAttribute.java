@@ -18,17 +18,22 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt2;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * AbstractAttribute
  */
-public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipObject
+public abstract class AbstractAttribute implements DBSAttributeBase, DBSTypedObjectExt2, DBSTypedObjectExt3, DBPToolTipObject, DBPNamedObject2
 {
     protected String name;
     protected int valueType;
@@ -116,9 +121,39 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return DBUtils.getFullTypeName(this);
     }
 
+    @Override
     public void setTypeName(String typeName)
     {
         this.typeName = typeName;
+    }
+
+    @Override
+    public void setFullTypeName(String fullTypeName) throws DBException {
+        String plainTypeName;
+        int divPos = fullTypeName.indexOf("(");
+        if (divPos == -1) {
+            plainTypeName = fullTypeName;
+            validateTypeName(plainTypeName);
+        } else {
+            plainTypeName = fullTypeName.substring(0, divPos);
+            validateTypeName(plainTypeName);
+            int divPos2 = fullTypeName.indexOf(')', divPos);
+            if (divPos2 != -1) {
+                String modifiers = fullTypeName.substring(divPos + 1, divPos2);
+                int divPos3 = modifiers.indexOf(',');
+                if (divPos3 == -1) {
+                    maxLength = precision = CommonUtils.toInt(modifiers);
+                } else {
+                    precision= CommonUtils.toInt(modifiers.substring(0, divPos3).trim());
+                    scale = CommonUtils.toInt(modifiers.substring(divPos3 + 1).trim());
+                }
+            }
+        }
+        setTypeName(plainTypeName);
+    }
+
+    protected void validateTypeName(String typeName) throws DBException {
+
     }
 
     @Override
@@ -139,6 +174,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return maxLength;
     }
 
+    @Override
     public void setMaxLength(long maxLength)
     {
         this.maxLength = maxLength;
@@ -151,6 +187,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return scale;
     }
 
+    @Override
     public void setScale(Integer scale)
     {
         this.scale = scale;
@@ -163,6 +200,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return precision;
     }
 
+    @Override
     public void setPrecision(Integer precision)
     {
         this.precision = precision;
@@ -174,6 +212,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return required;
     }
 
+    @Override
     public void setRequired(boolean required)
     {
         this.required = required;

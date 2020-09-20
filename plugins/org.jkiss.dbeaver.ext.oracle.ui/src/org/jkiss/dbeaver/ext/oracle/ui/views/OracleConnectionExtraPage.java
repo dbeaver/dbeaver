@@ -187,7 +187,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 providerProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
             }
 
-            String dateFormat = nlsDateFormat.getText();
+            String dateFormat = nlsDateFormat.getText().trim();
             if (!dateFormat.isEmpty()) {
                 providerProperties.put(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, dateFormat);
             } else {

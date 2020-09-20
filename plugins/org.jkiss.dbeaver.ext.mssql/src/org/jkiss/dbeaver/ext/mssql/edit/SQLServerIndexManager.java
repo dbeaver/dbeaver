@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -70,6 +71,9 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         SQLServerTableIndex index = command.getObject();
+        if (index.getTable() instanceof SQLServerTableType) {
+            return;
+        }
         if (index.isPersisted()) {
             try {
                 String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);

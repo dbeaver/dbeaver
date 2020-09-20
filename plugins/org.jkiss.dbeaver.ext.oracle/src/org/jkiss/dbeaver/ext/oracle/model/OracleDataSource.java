@@ -27,13 +27,11 @@ import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -43,7 +41,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -64,7 +61,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class OracleDataSource extends JDBCDataSource implements DBAUserCredentialsProvider, DBPObjectStatisticsCollector, IAdaptable {
+public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -281,26 +278,6 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
     }
 
     @Override
-    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        String userName = connectionInfo.getUserName();
-        String authModelId = connectionInfo.getAuthModelId();
-        if (!CommonUtils.isEmpty(authModelId) && !AuthModelDatabaseNative.ID.equals(authModelId)) {
-            return userName;
-        }
-        // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
-        if (!CommonUtils.isEmpty(userName) && userName.contains(" AS ")) {
-            return userName;
-        }
-        final String role = connectionInfo.getProviderProperty(OracleConstants.PROP_INTERNAL_LOGON);
-        return role == null ? userName : userName + " AS " + role;
-    }
-
-    @Override
-    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
-        return connectionInfo.getUserPassword();
-    }
-
-    @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new OracleDataSourceInfo(this, metaData);
     }
@@ -308,8 +285,13 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         Throwable rootCause = GeneralUtils.getRootCause(error);
-        if (rootCause instanceof SQLException && ((SQLException) rootCause).getErrorCode() == OracleConstants.EC_FEATURE_NOT_SUPPORTED) {
-            return ErrorType.FEATURE_UNSUPPORTED;
+        if (rootCause instanceof SQLException) {
+            switch (((SQLException) rootCause).getErrorCode()) {
+                case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
+                    return ErrorType.RESULT_SET_MISSING;
+                case OracleConstants.EC_FEATURE_NOT_SUPPORTED:
+                    return ErrorType.FEATURE_UNSUPPORTED;
+            }
         }
         return super.discoverErrorType(error);
     }
@@ -351,7 +333,8 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
         if (publicSchema != null && publicSchema.getName().equals(name)) {
             return publicSchema;
         }
-        return schemaCache.getObject(monitor, this, name);
+        // Schema cache may be null during DataSource initialization
+        return schemaCache == null ? null : schemaCache.getObject(monitor, this, name);
     }
 
     @Association
@@ -492,8 +475,9 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
         return getSchema(monitor, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends OracleSchema> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return OracleSchema.class;
     }
@@ -798,7 +782,7 @@ public class OracleDataSource extends JDBCDataSource implements DBAUserCredentia
         }
 
         @Override
-        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable SQLQueryResult queryResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable DBCExecutionResult executionResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
                 try (CallableStatement getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
                     getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);

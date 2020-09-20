@@ -20,6 +20,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PropertySourceDelegate
@@ -34,7 +35,7 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public boolean isPropertyResettable(Object id) {
-        return source.isPropertyResettable(id);
+        return source.isPropertyResettable(CommonUtils.toString(id));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        DBPPropertyDescriptor[] src = source.getPropertyDescriptors2();
+        DBPPropertyDescriptor[] src = source.getProperties();
         if (src == null) {
             return null;
         }
@@ -57,21 +58,21 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public Object getPropertyValue(Object id) {
-        return source.getPropertyValue(null, id);
+        return source.getPropertyValue(null, CommonUtils.toString(id));
     }
 
     @Override
     public boolean isPropertySet(Object id) {
-        return source.isPropertySet(id);
+        return source.isPropertySet(CommonUtils.toString(id));
     }
 
     @Override
     public void resetPropertyValue(Object id) {
-        source.resetPropertyValue(null, id);
+        source.resetPropertyValue(null, CommonUtils.toString(id));
     }
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        source.setPropertyValue(null, id, value);
+        source.setPropertyValue(null, CommonUtils.toString(id), value);
     }
 }

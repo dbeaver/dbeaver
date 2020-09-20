@@ -24,11 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * FDWConfigDescriptor
@@ -44,7 +40,7 @@ public class FDWConfigDescriptor extends AbstractDescriptor
     @NotNull
     private final String name;
     private final String description;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final DBPPropertyDescriptor[] properties;
     private final String[] foreignDatabases;
 
     public FDWConfigDescriptor(IConfigurationElement config)
@@ -57,9 +53,7 @@ public class FDWConfigDescriptor extends AbstractDescriptor
         this.description = config.getAttribute("description");
         this.foreignDatabases = CommonUtils.notEmpty(config.getAttribute("databases")).split(",");
 
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
-        }
+        this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
 
     @NotNull
@@ -85,7 +79,7 @@ public class FDWConfigDescriptor extends AbstractDescriptor
         return foreignDatabases;
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
+    public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 

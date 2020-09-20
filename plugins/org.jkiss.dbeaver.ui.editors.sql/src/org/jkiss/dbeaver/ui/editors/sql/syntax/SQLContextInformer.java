@@ -274,6 +274,7 @@ public class SQLContextInformer
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
+            monitor.beginTask("Read metadata information", 1);
             cache.references = new ArrayList<>();
             try {
 
@@ -363,6 +364,7 @@ public class SQLContextInformer
             }
             finally {
                 cache.loading = false;
+                monitor.done();
             }
             return Status.OK_STATUS;
         }

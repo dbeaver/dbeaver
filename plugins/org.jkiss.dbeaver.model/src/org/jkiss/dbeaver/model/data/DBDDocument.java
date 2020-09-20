@@ -40,6 +40,9 @@ public interface DBDDocument extends DBDValue {
     String PROP_TITLE = "title";
     String PROP_CREATE_TIME = "createTime";
 
+    @Nullable
+    Object getDocumentId();
+
     /**
      * Document property
      * @param name    property name

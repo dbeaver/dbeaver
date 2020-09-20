@@ -404,7 +404,24 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         null);
 
                 // Collect all properties
-                List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), classList, propertyFilter);
+                PropertySourceAbstract propertySource = getListPropertySource();
+                List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(propertySource, classList, propertyFilter);
+                if (!items.isEmpty()) {
+                    // Remove hidden properties (we need to check them against all items)
+                    try {
+                        allProps.removeIf(p -> {
+                            for (OBJECT_TYPE item : items) {
+                                Object objectValue = getObjectValue(item);
+                                if (p.isPropertyVisible(objectValue, objectValue)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        });
+                    } catch (Throwable e) {
+                        log.debug(e);
+                    }
+                }
 
                 if (reload) {
                     clearListData();
@@ -413,7 +430,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 // Create columns from classes' annotations
                 for (ObjectPropertyDescriptor prop : allProps) {
-                    if (!getListPropertySource().hasProperty(prop)) {
+                    if (!propertySource.hasProperty(prop)) {
                         if (prop.isOptional()) {
                             // Check whether at least one itme has this property
                             boolean propHasValue = false;
@@ -434,7 +451,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                 continue;
                             }
                         }
-                        getListPropertySource().addProperty(prop);
+                        propertySource.addProperty(prop);
                         createColumn(prop);
                     }
                 }
@@ -448,7 +465,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (reload || objectList.isEmpty()) {
                 // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
+                objectList = CommonUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
 
                 // Pack columns
                 sampleItems = true;
@@ -927,7 +944,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private class DefaultListPropertySource extends PropertySourceAbstract {
 
-        public DefaultListPropertySource() {
+        DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
         }
 
@@ -942,9 +959,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-            Set<DBPPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        public DBPPropertyDescriptor[] getProperties() {
+            return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
     }

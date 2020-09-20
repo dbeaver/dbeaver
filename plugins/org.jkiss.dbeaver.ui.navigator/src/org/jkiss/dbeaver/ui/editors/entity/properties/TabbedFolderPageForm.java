@@ -177,7 +177,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             return;
         }
         curPropertySource = input.getPropertySource();
-        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getPropertyDescriptors2());
+        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getProperties());
 
         boolean firstInit = editorMap.isEmpty();
         if (firstInit) {
@@ -388,7 +388,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private void updateOtherPropertyValues(Object excludePropId) {
-        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getPropertyDescriptors2());
+        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getProperties());
 
         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
         for (DBPPropertyDescriptor prop : allProps) {
@@ -402,7 +402,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private boolean isEditableObject() {
-        for (DBPPropertyDescriptor prop : curPropertySource.getPropertyDescriptors2()) {
+        for (DBPPropertyDescriptor prop : curPropertySource.getProperties()) {
             if (prop.isEditable(curPropertySource.getEditableValue()) ||
                 (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()))
             {
@@ -506,7 +506,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             } else {
                 Class<?> dataType = prop.getDataType();
                 if (value instanceof String) {
-                    value = GeneralUtils.convertString((String) value, dataType);
+                    value = GeneralUtils.convertString((String) UIUtils.normalizePropertyValue(value), dataType);
                 }
                 Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
                 curPropertySource.setPropertyValue(null, prop.getId(), value);

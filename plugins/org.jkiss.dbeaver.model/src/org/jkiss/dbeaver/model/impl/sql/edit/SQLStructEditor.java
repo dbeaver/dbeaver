@@ -80,6 +80,11 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                 SQLObjectEditor<DBSObject, ?> nestedEditor = getObjectEditor(editorsRegistry, childType);
                 if (nestedEditor != null) {
                     for (DBSObject child : children) {
+                        if (!isIncludeChildObjectReference(monitor, child)) {
+                            // We need to skip some objects as they are automatically created by main commands.
+                            // E.g. primary key indexes
+                            continue;
+                        }
                         ObjectCreateCommand childCreateCommand = (ObjectCreateCommand) nestedEditor.makeCreateCommand(child, createCommand.getOptions());
                         //((StructCreateCommand)createCommand).aggregateCommand(childCreateCommand);
                         commandContext.addCommand(childCreateCommand, null, false);
@@ -92,6 +97,10 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<T> type) {
         final Class<? extends T> childType = getChildType(type);
         return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
+    }
+
+    protected boolean isIncludeChildObjectReference(DBRProgressMonitor monitor, DBSObject childObject) throws DBException {
+        return true;
     }
 
     protected <T> Class<? extends T> getChildType(Class<T> type) {

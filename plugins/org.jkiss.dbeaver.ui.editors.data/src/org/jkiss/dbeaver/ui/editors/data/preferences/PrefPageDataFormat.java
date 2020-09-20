@@ -69,7 +69,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private String profileName;
     private Locale profileLocale;
-    private Map<String, Map<Object, Object>> profileProperties = new HashMap<>();
+    private Map<String, Map<String, Object>> profileProperties = new HashMap<>();
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
     private Button datetimeNativeFormatCheck;
@@ -240,7 +240,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         profileLocale = formatterProfile.getLocale();
         profileProperties.clear();
         for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<Object, Object> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            Map<String, Object> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
             if (formatterProps != null) {
                 profileProperties.put(dfd.getId(), formatterProps);
             }
@@ -306,8 +306,8 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
 
-        Map<Object,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
-        Map<Object, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
+        Map<String,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
+        Map<String, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
         propertySource = new PropertySourceCustom(
             formatterDescriptor.getProperties(),
             formatterProps);
@@ -325,9 +325,9 @@ public class PrefPageDataFormat extends TargetPrefPage
         try {
             DBDDataFormatter formatter = formatterDescriptor.createFormatter();
 
-            Map<Object, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
-            Map<Object, Object> props = profileProperties.get(formatterDescriptor.getId());
-            Map<Object, Object> formatterProps = new HashMap<>();
+            Map<String, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
+            Map<String, Object> props = profileProperties.get(formatterDescriptor.getId());
+            Map<String, Object> formatterProps = new HashMap<>();
             if (defProps != null && !defProps.isEmpty()) {
                 formatterProps.putAll(defProps);
             }
@@ -349,7 +349,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (formatterDescriptor == null) {
             return;
         }
-        Map<Object, Object> props = propertySource.getProperties();
+        Map<String, Object> props = propertySource.getPropertyValues();
         profileProperties.put(formatterDescriptor.getId(), props);
         reloadSample();
     }

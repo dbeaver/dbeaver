@@ -109,8 +109,25 @@
                             <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" virtual="true">
                                 <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
-                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table type columns" visibleIf="object.isTableType()">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder label="%tree.uni_keys.node.name" icon="#constraints" description="Table type unique keys" visibleIf="object.isTableType()">
+                                        <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <!--<folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table type indexes" visibleIf="object.isTableType()">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>-->
+                                 </items>
                             </folder>
                         </items>
                     </folder>
@@ -133,6 +150,7 @@
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
                         promoted="1"
@@ -158,6 +176,7 @@
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
                         categories="sql">
@@ -182,6 +201,7 @@
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
                         description="%driver.jTDS.description"
                         categories="sql">
@@ -274,6 +294,7 @@
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.old.description"
                         categories="sql">
@@ -305,6 +326,7 @@
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="1433"
+                        defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
                         description="jTDS SQL Server (MSSQL) driver"
                         categories="sql">
@@ -341,6 +363,7 @@
                         sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="http://jtds.sourceforge.net/"
                         description="Sybase jTDS driver"
                         categories="sql">
@@ -371,6 +394,7 @@
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
                         description="Sybase jConnect driver"
                         categories="sql">
@@ -401,6 +425,7 @@
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
                         useURL="false"
                         defaultPort="5000"
+                        defaultUser="sa"
                         webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
                         description="SAP ASE jConnect driver"
                         categories="sql">
@@ -428,7 +453,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDatabaseManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
@@ -437,9 +464,12 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDataTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">

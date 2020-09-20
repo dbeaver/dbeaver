@@ -74,11 +74,11 @@ public class OracleXMLValueHandler extends OracleCLOBValueHandler {
         }
 
         if (object == null) {
-            return new OracleContentXML(session.getDataSource(), null);
+            return new OracleContentXML(session.getExecutionContext(), null);
         } else if (object.getClass().getName().equals(OracleConstants.XMLTYPE_CLASS_NAME)) {
-            return new OracleContentXML(session.getDataSource(), new OracleXMLWrapper(object));
+            return new OracleContentXML(session.getExecutionContext(), new OracleXMLWrapper(object));
         } else if (object instanceof SQLXML) {
-            return new OracleContentXML(session.getDataSource(), (SQLXML) object);
+            return new OracleContentXML(session.getExecutionContext(), (SQLXML) object);
         } else {
             throw new DBCException("Unsupported object type: " + object.getClass().getName());
         }
@@ -88,7 +88,7 @@ public class OracleXMLValueHandler extends OracleCLOBValueHandler {
     public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
-            return new OracleContentXML(session.getDataSource(), null);
+            return new OracleContentXML(session.getExecutionContext(), null);
         } else if (object instanceof OracleContentXML) {
             return copy ? (OracleContentXML)((OracleContentXML) object).cloneValue(session.getProgressMonitor()) : (OracleContentXML) object;
         }

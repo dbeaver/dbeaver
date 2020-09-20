@@ -20,11 +20,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandWithOptions;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -58,7 +56,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                 if (incrementValue <= 0) incrementValue = 1;
                 sql.append(" IDENTITY(").append(identityInfo.getSeedValue()).append(",").append(incrementValue).append(")");
             } catch (DBCException e) {
-                log.error("Error reading identity information", e);
+                log.error("Error reading identity information", e); //$NON-NLS-1$
             }
         }
     };
@@ -66,12 +64,19 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     protected final ColumnModifier<SQLServerTableColumn> CollateModifier = (monitor, column, sql, command) -> {
         String collationName = column.getCollationName();
         if (!CommonUtils.isEmpty(collationName)) {
-            sql.append(" COLLATE ").append(collationName);
+            sql.append(" COLLATE ").append(collationName); //$NON-NLS-1$
         }
     };
 
     protected final ColumnModifier<SQLServerTableColumn> SQLServerDefaultModifier = (monitor, column, sql, command) -> {
-        if (!column.isPersisted()) {
+        boolean ddlSource = false;
+        if (command instanceof DBECommandWithOptions) {
+            DBECommandWithOptions commandWithOptions = (DBECommandWithOptions)command;
+            if (commandWithOptions.getOptions().containsKey(DBPScriptObject.OPTION_DDL_SOURCE)){
+                ddlSource = true;
+            }
+        }
+        if (!column.isPersisted() || ddlSource) {
             DefaultModifier.appendModifier(monitor, column, sql, command);
         }
     };
@@ -86,6 +91,20 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
         return new ColumnModifier[] {DataTypeModifier, IdentityModifier, CollateModifier, SQLServerDefaultModifier, NullNotNullModifier};
+    }
+
+    @Override
+    public boolean canEditObject(SQLServerTableColumn object) {
+        return !isTableType(object) && super.canEditObject(object);
+    }
+
+    @Override
+    public boolean canDeleteObject(SQLServerTableColumn object) {
+        return !isTableType(object) && super.canDeleteObject(object);
+    }
+
+    private boolean isTableType(SQLServerTableColumn column) {
+        return column.getTable() instanceof SQLServerTableType;
     }
 
     @Override
@@ -134,9 +153,9 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             String defaultValue = column.getDefaultValue();
             if (!CommonUtils.isEmpty(defaultValue)) {
                 StringBuilder sql = new StringBuilder();
-                sql.append("ALTER TABLE ").append(column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ADD ");
+                sql.append("ALTER TABLE ").append(column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ADD "); //$NON-NLS-1$ //$NON-NLS-2$
                 DefaultModifier.appendModifier(monitor, column, sql, command);
-                sql.append(" FOR ").append(DBUtils.getQuotedIdentifier(column));
+                sql.append(" FOR ").append(DBUtils.getQuotedIdentifier(column)); //$NON-NLS-1$
                 actionList.add(new SQLDatabasePersistAction("Alter default value", sql.toString())); //$NON-NLS-1$
             }
         }

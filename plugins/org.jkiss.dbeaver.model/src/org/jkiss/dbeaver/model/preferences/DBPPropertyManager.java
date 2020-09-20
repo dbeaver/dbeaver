@@ -25,5 +25,5 @@ public interface DBPPropertyManager extends DBPPropertySource {
 
     void addProperty(DBPPropertyDescriptor prop);
 
-    void addProperty(@Nullable String category, Object id, String name, Object value);
+    void addProperty(@Nullable String category, String id, String name, Object value);
 }

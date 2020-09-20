@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.greenplum.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -29,6 +28,6 @@ public class GreenplumFunctionManager extends PostgreProcedureManager {
     @Override
     public DBSObjectCache<PostgreSchema, PostgreProcedure> getObjectsCache(PostgreProcedure object)
     {
-        return ((GreenplumSchema) object.getContainer()).getGreenplumFunctionsCache();
+        return object.getContainer().getProceduresCache();
     }
 }

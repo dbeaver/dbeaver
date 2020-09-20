@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * OracleUserProfile
@@ -36,7 +35,6 @@ public class OracleUserProfile extends OracleGlobalObject
     private static final Log log = Log.getLog(OracleUserProfile.class);
 
     private String name;
-    private List<ProfileResource> resources;
 
     public OracleUserProfile(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource, resultSet != null);
@@ -53,20 +51,7 @@ public class OracleUserProfile extends OracleGlobalObject
     @Association
     public Collection<ProfileResource> getResources(DBRProgressMonitor monitor) throws DBException
     {
-        if (resources == null) {
-            getDataSource().profileCache.loadChildren(monitor, getDataSource(), this);
-        }
-        return resources;
-    }
-
-    boolean isResourcesCached()
-    {
-        return resources != null;
-    }
-
-    void setResources(List<ProfileResource> resources)
-    {
-        this.resources = resources;
+        return getDataSource().profileCache.getChildren(monitor, getDataSource(), this);
     }
 
     /**

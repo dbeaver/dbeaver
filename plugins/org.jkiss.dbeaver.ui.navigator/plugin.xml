@@ -4,6 +4,7 @@
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.navigator.nodeAction" name="%extension-point.org.jkiss.dbeaver.navigator.nodeAction.name" schema="schema/org.jkiss.dbeaver.navigator.nodeAction.exsd"/>
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
@@ -39,28 +40,36 @@
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
-            name="%view.database.navigator.title"/>
+            name="%view.database.navigator.title">
+            <description>%view.database.navigator.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.databaseBrowser"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView"
             allowMultiple="true"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"
-            name="%view.database.browser.title"/>
+            name="%view.database.browser.title">
+            <description>%view.database.browser.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.projectNavigator"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/projects.png"
-            name="%view.project.navigator.title"/>
+            name="%view.project.navigator.title">
+            <description>%view.project.navigator.description</description>
+        </view>
         <view
             id="org.jkiss.dbeaver.core.projectExplorer"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"
             allowMultiple="false"
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
-            name="%view.project.explorer.title"/>
+            name="%view.project.explorer.title">
+            <description>%view.project.explorer.description</description>
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
@@ -219,6 +228,10 @@
         <command id="org.jkiss.dbeaver.core.object.move.down" name="%command.org.jkiss.dbeaver.core.object.move.down.name" description="%command.org.jkiss.dbeaver.core.object.move.down.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
+        <command id="org.jkiss.dbeaver.navigator.filter.connected" name="%command.org.jkiss.dbeaver.navigator.filter.connected.name" description="%command.org.jkiss.dbeaver.navigator.filter.connected.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.navigator.filter.object.type" name="%command.org.jkiss.dbeaver.navigator.filter.object.type.name" description="%command.org.jkiss.dbeaver.navigator.filter.object.type.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="type" name="Object type" optional="false"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.object.filter.config" name="%command.org.jkiss.dbeaver.core.object.filter.config.name" description="%command.org.jkiss.dbeaver.core.object.filter.config.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.exclude" name="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.include" name="%command.org.jkiss.dbeaver.core.object.filter.add.include.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.include.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -240,6 +253,10 @@
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resource.link.folder" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.view.toggle" name="Show/Hide view" categoryId="org.jkiss.dbeaver.core.navigator" description="Toggle view">
+            <commandParameter id="viewId" name="View ID" optional="false" values="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerToggleView$ViewValues">
+            </commandParameter>
+        </command>
 
         <command id="org.jkiss.dbeaver.core.new.folder" name="%command.org.jkiss.dbeaver.core.new.folder.name" description="%command.org.jkiss.dbeaver.core.new.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -264,6 +281,7 @@
         <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_up.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_down.png"/>
 
+        <image commandId="org.jkiss.dbeaver.navigator.filter.connected" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_apply.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
@@ -316,6 +334,10 @@
 -->
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.navigator.filter.connected" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerConnectionFilter">
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.navigator.filter.object.type" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterObjectType">
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.object.filter.config" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig">
             <enabledWhen>
                 <with variable="selection">
@@ -675,6 +697,7 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.view.toggle" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerToggleView"/>
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCollapseAll"/>
         <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerExpandAll"/>
         <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerViewConfigure"/>
@@ -731,6 +754,21 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <!-- Database navigator filter toolbar -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar?after=additions">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.connected" id="org.jkiss.dbeaver.navigator.connectionFilterMenu" style="pulldown"/>
+        </menuContribution>
+
+        <!-- Connection filter menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.connectionFilterMenu">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="connection"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="container"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="table"/></command>
+            <separator name="connected_toggle" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
+        </menuContribution>
+
+        <!-- Tools toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="dbeaver-tools" label="Database Tools Toolbar">
                 <separator name="additions" visible="false"/>
@@ -773,5 +811,18 @@
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.navigator.nodeAction">
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConfiguration" order="999">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceTunnel" order="200">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+    </extension>
+
 
 </plugin>

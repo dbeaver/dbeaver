@@ -70,7 +70,6 @@ public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, E
 						)
 				); 
 		
-		super.addObjectCreateActions(monitor, executionContext, actions, command, options);
 	}
 	
 	

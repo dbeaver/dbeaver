@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -56,6 +57,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
+    private transient volatile boolean txnIsolationLevelReadInProgress;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
@@ -106,6 +108,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 txnLevel = dataSource.getContainer().getDefaultTransactionsIsolation();
             }
 
+            if (txnLevel != null) {
+                try {
+                    this.connection.setTransactionIsolation(txnLevel);
+                    this.transactionIsolationLevel = txnLevel;
+                } catch (Throwable e) {
+                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
+                }
+            }
+
             try {
                 connection.setAutoCommit(autoCommit);
                 this.autoCommit = autoCommit;
@@ -119,15 +130,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 } catch (Throwable e) {
                     log.debug("Can't check auto-commit state", e); //$NON-NLS-1$
                     this.autoCommit = false;
-                }
-            }
-
-            if (!this.autoCommit && txnLevel != null) {
-                try {
-                    this.connection.setTransactionIsolation(txnLevel);
-                    this.transactionIsolationLevel = txnLevel;
-                } catch (Throwable e) {
-                    log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
 
@@ -171,7 +173,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
             if (this.connection != null) {
-                this.dataSource.closeConnection(connection, purpose);
+                if (!this.dataSource.closeConnection(connection, purpose, true)) {
+                    log.debug("Connection close timeout");
+                }
             }
             this.connection = null;
         }
@@ -223,21 +227,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
-        boolean checkOk = false;//JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
-        closeOnFailure = true;
+        Boolean prevAutocommit = autoCommit;
+        Integer txnLevel = transactionIsolationLevel;
+        closeContext(false);
+        connect(monitor, prevAutocommit, txnLevel, this, false);
 
-        if (!checkOk) {
-            Boolean prevAutocommit = autoCommit;
-            Integer txnLevel = transactionIsolationLevel;
-            if (closeOnFailure) {
-                closeContext(false);
-            }
-            connect(monitor, prevAutocommit, txnLevel, this, false);
-
-            return InvalidateResult.RECONNECTED;
-        }
-        return InvalidateResult.ALIVE;
+        return InvalidateResult.RECONNECTED;
     }
 
     @Override
@@ -262,15 +257,28 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public DBPTransactionIsolation getTransactionIsolation()
         throws DBCException {
         if (transactionIsolationLevel == null) {
-            if (!RuntimeUtils.runTask(monitor -> {
+            if (!txnIsolationLevelReadInProgress) {
+                txnIsolationLevelReadInProgress = true;
                 try {
-                    transactionIsolationLevel = getConnection().getTransactionIsolation();
-                } catch (Throwable e) {
-                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
-                    log.error("Error getting transaction isolation level", e);
+                    if (!RuntimeUtils.runTask(monitor -> {
+                        try {
+                            DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+                                try {
+                                    transactionIsolationLevel = getConnection().getTransactionIsolation();
+                                } catch (Throwable e) {
+                                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                                    log.error("Error getting transaction isolation level", e);
+                                }
+                            });
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT, true)) {
+                        throw new DBCException("Can't determine transaction isolation - timeout");
+                    }
+                } finally {
+                    txnIsolationLevelReadInProgress = false;
                 }
-            }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT)) {
-                throw new DBCException("Can't determine transaction isolation - timeout");
             }
             if (transactionIsolationLevel == null) {
                 transactionIsolationLevel = Connection.TRANSACTION_NONE;
@@ -306,9 +314,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             // Run in task with timeout
             if (!RuntimeUtils.runTask(monitor -> {
                 try {
-                    autoCommit = getConnection().getAutoCommit();
-                } catch (Exception e) {
-                    log.error("Error getting auto commit state", e);
+                    DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
+                        try {
+                            autoCommit = getConnection().getAutoCommit();
+                        } catch (Exception e) {
+                            log.error("Error getting auto commit state", e);
+                        }
+                    });
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             }, "Get auto commit state", TXN_INFO_READ_TIMEOUT)) {
                 throw new DBCException("Can't determine auto-commit state - timeout");

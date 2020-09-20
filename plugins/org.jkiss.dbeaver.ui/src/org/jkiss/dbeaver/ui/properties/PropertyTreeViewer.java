@@ -40,6 +40,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -266,7 +267,7 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         Map<String, TreeNode> categories = new LinkedHashMap<>();
         TreeNode lastCategory = null;
-        final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getPropertyDescriptors2());
+        final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getProperties());
         for (DBPPropertyDescriptor prop : props) {
             if (prop instanceof ObjectPropertyDescriptor) {
                 Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
@@ -307,15 +308,15 @@ public class PropertyTreeViewer extends TreeViewer {
                                 collection = (Collection<?>) propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
-                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
+                            for (DBPPropertyDescriptor pd : psc.getProperties()) {
                                 new TreeNode(propNode, psc, pd);
                             }
                         }
                     } else if (Map.class.isAssignableFrom(propType)) {
-                        Map<?,?> propertyValue = (Map<?, ?>) propertySource.getPropertyValue(monitor, prop.getId());
+                        Map<String,?> propertyValue = (Map<String, ?>) propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             PropertySourceMap psc = new PropertySourceMap(propertyValue);
-                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
+                            for (DBPPropertyDescriptor pd : psc.getProperties()) {
                                 new TreeNode(propNode, psc, pd);
                             }
                         }
@@ -491,10 +492,10 @@ public class PropertyTreeViewer extends TreeViewer {
                         // The same empty string
                         return;
                     }
-                    if (!CommonUtils.equalObjects(oldValue, value)) {
+                    if (DBUtils.compareDataValues(oldValue, value) != 0) {
                         if (selectedColumn == 0) {
                             String newName = CommonUtils.toString(value);
-                            Object oldPropId = prop.property.getId();
+                            String oldPropId = prop.property.getId();
                             Object oldPropValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
                             ((DBPNamedObject2)prop.property).setName(newName);
                             if (oldPropValue != null) {

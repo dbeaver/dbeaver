@@ -2,16 +2,17 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.svg;singleton:=true
-Bundle-Version: 1.0.71.qualifier
-Bundle-Release-Date: 20200622
+Bundle-Version: 1.0.77.qualifier
+Bundle-Release-Date: 20200921
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
  org.eclipse.gef,
- org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.erd,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.erd.ui,
  org.jkiss.bundle.apache.batik
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

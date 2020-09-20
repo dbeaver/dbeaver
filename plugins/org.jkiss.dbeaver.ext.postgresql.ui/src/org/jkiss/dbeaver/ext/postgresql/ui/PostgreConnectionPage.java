@@ -123,10 +123,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
 
-        if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectionInfo.setUserName(serverType.getDefaultUser());
-        }
-
         super.loadSettings();
 
         setImageDescriptor(DBeaverIcons.getImageDescriptor(serverType.getIcon()));
@@ -143,18 +139,14 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(connectionInfo.getHostPort());
             } else if (getSite().isNew()) {
-                if (driver.getDefaultPort() != null) {
-                    portText.setText(driver.getDefaultPort());
-                } else {
-                    portText.setText("");
-                }
+                portText.setText(CommonUtils.notEmpty(driver.getDefaultPort()));
             }
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
                 if (getSite().isNew()) {
-                    databaseName = serverType.getDefaultDatabase();
+                    databaseName = driver.getDefaultDatabase();
                     if (CommonUtils.isEmpty(databaseName)) {
                         databaseName = PostgreConstants.DEFAULT_DATABASE;
                     }

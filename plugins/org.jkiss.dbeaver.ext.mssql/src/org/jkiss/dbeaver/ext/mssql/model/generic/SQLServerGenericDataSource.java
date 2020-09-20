@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -39,7 +38,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerGenericDataSource extends GenericDataSource implements DBAUserCredentialsProvider {
+public class SQLServerGenericDataSource extends GenericDataSource {
 
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -98,27 +97,6 @@ public class SQLServerGenericDataSource extends GenericDataSource implements DBA
 
     //////////////////////////////////////////////////////////
     // Databases
-
-    //////////////////////////////////////////////////////////
-    // Windows authentication
-
-    @Override
-    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserName();
-        }
-    }
-
-    @Override
-    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserPassword();
-        }
-    }
 
     @Override
     protected boolean isPopulateClientAppName() {

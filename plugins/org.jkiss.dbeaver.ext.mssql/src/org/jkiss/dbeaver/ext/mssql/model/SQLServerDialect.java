@@ -66,6 +66,27 @@ public class SQLServerDialect extends JDBCSQLDialect {
         SQLServerConstants.TYPE_IMAGE,
     };
 
+    private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
+            "CURRENT_TIMEZONE",
+            "DATEPART",
+            "DATEADD",
+            "DATEDIFF",
+            "DATEDIFF_BIG",
+            "DATEFROMPARTS",
+            "DATENAME",
+            "DATETIMEFROMPARTS",
+            "EOMONTH",
+            "GETDATE",
+            "GETUTCDATE",
+            "ISDATE",
+            "SYSDATETIMEOFFSET",
+            "SYSUTCDATETIME",
+            "SMALLDATETIMEFROMPARTS",
+            "SWITCHOFFSET",
+            "TIMEFROMPARTS",
+            "TODATETIMEOFFSET"
+    };
+
     private JDBCDataSource dataSource;
     private boolean isSqlServer;
 
@@ -78,6 +99,8 @@ public class SQLServerDialect extends JDBCSQLDialect {
         super.addSQLKeywords(Arrays.asList(SQLSERVER_EXTRA_KEYWORDS));
         this.dataSource = dataSource;
         this.isSqlServer = SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
+
+        addFunctions(Arrays.asList(SQLSERVER_FUNCTIONS_DATETIME));
     }
 
     @NotNull
@@ -151,7 +174,9 @@ public class SQLServerDialect extends JDBCSQLDialect {
     @Override
     public String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
-            if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName)) {
+            if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName) ||
+                    SQLServerConstants.TYPE_TIME.equalsIgnoreCase(typeName) ||
+                    SQLServerConstants.TYPE_DATETIMEOFFSET.equalsIgnoreCase(typeName)) {
                 Integer scale = column.getScale();
                 if (scale != null && scale != 0) {
                     return "(" + scale + ')';
@@ -162,7 +187,9 @@ public class SQLServerDialect extends JDBCSQLDialect {
                 case SQLServerConstants.TYPE_CHAR:
                 case SQLServerConstants.TYPE_NCHAR:
                 case SQLServerConstants.TYPE_VARCHAR:
-                case SQLServerConstants.TYPE_NVARCHAR: {
+                case SQLServerConstants.TYPE_NVARCHAR:
+                case SQLServerConstants.TYPE_SQL_VARIANT:
+                case SQLServerConstants.TYPE_VARBINARY:{
                     long maxLength = column.getMaxLength();
                     if (maxLength == 0) {
                         return null;

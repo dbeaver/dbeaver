@@ -59,7 +59,14 @@
             id="native"
             label="Database Native"
             description="Database native authentication"
-            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative"/>
+            class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative">
+
+            <propertyGroup label="Database user">
+                <property id="user" label="User" type="string"/>
+                <property id="password" label="Password" type="string" features="password"/>
+            </propertyGroup>
+
+        </authModel>
     </extension>
 
 </plugin>

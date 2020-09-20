@@ -179,12 +179,12 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     public List<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().externalTableCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getExternalTableCache().getChildren(monitor, getContainer(), this);
     }
 
     public List<RedshiftExternalTableColumn> getCachedAttributes()
     {
-        final DBSObjectCache<RedshiftExternalTable, RedshiftExternalTableColumn> childrenCache = getContainer().externalTableCache.getChildrenCache(this);
+        final DBSObjectCache<RedshiftExternalTable, RedshiftExternalTableColumn> childrenCache = getContainer().getExternalTableCache().getChildrenCache(this);
         if (childrenCache != null) {
             return childrenCache.getCachedObjects();
         }
@@ -195,7 +195,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     public RedshiftExternalTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().externalTableCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getExternalTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
@@ -238,7 +238,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return getContainer().externalTableCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getExternalTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

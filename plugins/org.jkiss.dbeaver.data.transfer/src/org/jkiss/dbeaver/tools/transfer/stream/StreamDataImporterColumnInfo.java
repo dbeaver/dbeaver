@@ -16,25 +16,49 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-public class StreamDataImporterColumnInfo {
-    private int columnIndex;
-    private String columnName;
 
-    public StreamDataImporterColumnInfo(int columnIndex, String columnName) {
-        this.columnIndex = columnIndex;
-        this.columnName = columnName;
-    }
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-    public int getColumnIndex() {
-        return columnIndex;
-    }
+public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
-    public String getColumnName() {
-        return columnName;
+    private StreamEntityMapping entityMapping;
+    private DBPDataKind dataKind;
+
+    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
+        super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
+        this.entityMapping = entity;
+        this.dataKind = dataKind;
     }
 
     @Override
-    public String toString() {
-        return columnName + " (" + columnIndex + ")";
+    public DBPDataKind getDataKind() {
+        return dataKind;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public StreamEntityMapping getParentObject() {
+        return entityMapping;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return entityMapping.getDataSource();
+    }
+
+    public void setDataKind(DBPDataKind dataKind) {
+        this.dataKind = dataKind;
     }
 }

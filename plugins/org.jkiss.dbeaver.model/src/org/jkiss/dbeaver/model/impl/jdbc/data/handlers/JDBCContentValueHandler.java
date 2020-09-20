@@ -101,7 +101,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
         if (value instanceof String) {
             // If we have a string - do not try to convert it to a binary representation (#494)
             // We need to convert only in case of some value transformations, not when getting it from DB
-            return new JDBCContentChars(session.getDataSource(), (String) value);
+            return new JDBCContentChars(session.getExecutionContext(), (String) value);
         }
         return getValueFromObject(session, type, value, false, false);
     }
@@ -140,33 +140,33 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 case java.sql.Types.NVARCHAR:
                 case java.sql.Types.LONGVARCHAR:
                 case java.sql.Types.LONGNVARCHAR:
-                    return new JDBCContentChars(session.getDataSource(), null);
+                    return new JDBCContentChars(session.getExecutionContext(), null);
                 case java.sql.Types.CLOB:
                 case java.sql.Types.NCLOB:
-                    return new JDBCContentCLOB(session.getDataSource(), null);
+                    return new JDBCContentCLOB(session.getExecutionContext(), null);
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(session.getDataSource());
+                    return new JDBCContentBytes(session.getExecutionContext());
                 case java.sql.Types.BLOB:
-                    return new JDBCContentBLOB(session.getDataSource(), null);
+                    return new JDBCContentBLOB(session.getExecutionContext(), null);
                 case java.sql.Types.SQLXML:
-                    return new JDBCContentXML(session.getDataSource(), null);
+                    return new JDBCContentXML(session.getExecutionContext(), null);
                 default:
                     {
                         String typeName = type.getTypeName();
                         if (typeName.contains(DBConstants.TYPE_NAME_XML) || typeName.contains(DBConstants.TYPE_NAME_XML2)) {
-                            return new JDBCContentXML(session.getDataSource(), null);
+                            return new JDBCContentXML(session.getExecutionContext(), null);
                         } else if (typeName.contains(DBConstants.TYPE_NAME_JSON) || typeName.contains(DBConstants.TYPE_NAME_JSON2)) {
-                            return new JDBCContentChars(session.getDataSource(), null);
+                            return new JDBCContentChars(session.getExecutionContext(), null);
                         } else {
                             //log.debug(ModelMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
-                            return new JDBCContentBytes(session.getDataSource());
+                            return new JDBCContentBytes(session.getExecutionContext());
                         }
                     }
             }
         } else if (object instanceof byte[]) {
-            return new JDBCContentBytes(session.getDataSource(), (byte[]) object);
+            return new JDBCContentBytes(session.getExecutionContext(), (byte[]) object);
         } else if (object instanceof String) {
             // String is a default format in many cases (like clipboard transfer)
             // So it is possible that real object type isn't string
@@ -174,13 +174,15 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(session.getDataSource(), (String) object);
+                    return new JDBCContentBytes(session.getExecutionContext(), (String) object);
                 default:
                     // String by default
-                    return new JDBCContentChars(session.getDataSource(), (String) object);
+                    return new JDBCContentChars(session.getExecutionContext(), (String) object);
             }
+        } else if (object instanceof Number) {
+            return new JDBCContentBytes(session.getExecutionContext(), object.toString());
         } else if (object instanceof Blob) {
-            final JDBCContentBLOB blob = new JDBCContentBLOB(session.getDataSource(), (Blob) object);
+            final JDBCContentBLOB blob = new JDBCContentBLOB(session.getExecutionContext(), (Blob) object);
             final DBPPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
             if (preferenceStore.getBoolean(ModelPreferences.CONTENT_CACHE_BLOB) &&
                 blob.getLOBLength() < preferenceStore.getLong(ModelPreferences.CONTENT_CACHE_MAX_SIZE))
@@ -190,7 +192,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             }
             return blob;
         } else if (object instanceof Clob) {
-            JDBCContentCLOB clob = new JDBCContentCLOB(session.getDataSource(), (Clob) object);
+            JDBCContentCLOB clob = new JDBCContentCLOB(session.getExecutionContext(), (Clob) object);
             final DBPPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
             if (preferenceStore.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB) &&
                 clob.getLOBLength() < preferenceStore.getLong(ModelPreferences.CONTENT_CACHE_MAX_SIZE))
@@ -200,7 +202,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             }
             return clob;
         } else if (object instanceof SQLXML) {
-            return new JDBCContentXML(session.getDataSource(), (SQLXML) object);
+            return new JDBCContentXML(session.getExecutionContext(), (SQLXML) object);
         } else if (object instanceof InputStream) {
             // Some weird drivers returns InputStream instead of Xlob.
             // Copy stream to byte array
@@ -212,7 +214,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 throw new DBCException("Error reading content stream", e);
             }
             IOUtils.close(stream);
-            return new JDBCContentBytes(session.getDataSource(), buffer.toByteArray());
+            return new JDBCContentBytes(session.getExecutionContext(), buffer.toByteArray());
         } else if (object instanceof Reader) {
             // Copy reader to string
             StringWriter buffer = new StringWriter();
@@ -223,7 +225,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 throw new DBCException("Error reading content reader", e);
             }
             IOUtils.close(reader);
-            return new JDBCContentChars(session.getDataSource(), buffer.toString());
+            return new JDBCContentChars(session.getExecutionContext(), buffer.toString());
         } else if (object instanceof DBDContent) {
             if (copy && object instanceof DBDValueCloneable) {
                 return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
@@ -231,7 +233,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
             return (DBDContent) object;
         } else {
             // Give up. Let's show string value
-            return new JDBCContentChars(session.getDataSource(), CommonUtils.toString(object));
+            return new JDBCContentChars(session.getExecutionContext(), CommonUtils.toString(object));
             //throw new DBCException(ModelMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
         }
     }

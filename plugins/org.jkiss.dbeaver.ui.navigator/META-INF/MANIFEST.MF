@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.navigator;singleton:=true
-Bundle-Version: 1.0.35.qualifier
-Bundle-Release-Date: 20200622
+Bundle-Version: 1.0.41.qualifier
+Bundle-Release-Date: 20200921
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UINavigatorActivator
@@ -18,6 +18,7 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui.views,
+ org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.ui.services,
  org.eclipse.e4.ui.workbench.swt,

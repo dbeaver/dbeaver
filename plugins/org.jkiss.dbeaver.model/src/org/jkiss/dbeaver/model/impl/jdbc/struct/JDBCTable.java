@@ -699,7 +699,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     // Ignore it
                     //keyPattern = Double.parseDouble((String) keyPattern);
                 }
-            } else if (keyPattern instanceof CharSequence && keyColumn.getDataKind() == DBPDataKind.STRING) {
+            } else if (keyPattern instanceof CharSequence /*&& keyColumn.getDataKind() == DBPDataKind.STRING*/) {
                 // Its ok
             } else {
                 searchInKeys = false;
@@ -758,8 +758,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 query.append(DBUtils.getQuotedIdentifier(keyColumn));
                 if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
                     query.append(" >= ?");
-                } else {
+                } else if (keyColumn.getDataKind() == DBPDataKind.STRING) {
                     query.append(" LIKE ?");
+                } else {
+                    query.append(" = ?");
                 }
             }
             // Add desc columns conditions
@@ -835,7 +837,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (!isTruncateSupported()) {
             try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
                 batch.add(new Object[0]);
-                return batch.execute(session);
+                return batch.execute(session, Collections.emptyMap());
             }
         } else {
             DBCStatistics statistics = new DBCStatistics();

@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.AbstractContent;
@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public abstract class JDBCContentAbstract extends AbstractContent implements DBDValueCloneable {
 
-    protected JDBCContentAbstract(DBPDataSource dataSource)
+    protected JDBCContentAbstract(DBCExecutionContext executionContext)
     {
-        super(dataSource);
+        super(executionContext);
     }
 
     protected JDBCContentAbstract(JDBCContentAbstract copyFrom) {
@@ -42,7 +42,7 @@ public abstract class JDBCContentAbstract extends AbstractContent implements DBD
     }
 
     protected String getDefaultEncoding() {
-        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
+        return DBValueFormatting.getDefaultBinaryFileEncoding(executionContext.getDataSource());
     }
 
     public abstract void bindParameter(JDBCSession session, JDBCPreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)

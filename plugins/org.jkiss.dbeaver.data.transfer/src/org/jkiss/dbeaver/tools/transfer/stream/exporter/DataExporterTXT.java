@@ -55,7 +55,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
-        Map<Object, Object> properties = site.getProperties();
+        Map<String, Object> properties = site.getProperties();
         this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 100);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);

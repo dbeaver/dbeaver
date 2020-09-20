@@ -54,6 +54,8 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
+        createSSLConfigHint(composite, true, 1);
+
         {
             Group certGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.mysql_ssl_configurator_legend_certificates, 2, GridData.FILL_HORIZONTAL, -1);
             UIUtils.createControlLabel(certGroup, MySQLUIMessages.mysql_ssl_configurator_label_ca_certificate);

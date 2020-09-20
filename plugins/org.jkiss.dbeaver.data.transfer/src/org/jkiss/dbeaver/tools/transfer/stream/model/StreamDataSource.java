@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.AbstractSimpleDataSource;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,9 +40,12 @@ import java.util.Collection;
  */
 public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionContext> implements DBDValueHandlerProvider {
 
+    private final StreamDataSourceDialect dialect;
+
     public StreamDataSource(StreamDataSourceContainer container) {
         super(container);
         this.executionContext = new StreamExecutionContext(this, "Main");
+        this.dialect = new StreamDataSourceDialect();
     }
 
     public StreamDataSource(String inputName) {
@@ -63,7 +65,7 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
 
     @Override
     public SQLDialect getSQLDialect() {
-        return BasicSQLDialect.INSTANCE;
+        return dialect;
     }
 
     @Override
@@ -97,7 +99,7 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
         return DBSObject.class;
     }
 

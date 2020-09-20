@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class ExasolTableIndexCache extends JDBCCompositeCache<ExasolSchema, ExasolTable, ExasolTableIndex, ExasolTableIndexColumn> {
 
 
-	private static final String QUERYINDEX = "SELECT * FROM SYS.%s_INDICES WHERE INDEX_SCHEMA = '%s'";
+	private static final String QUERYINDEX = "/*snapshot execution*/ SELECT * FROM SYS.%s_INDICES WHERE INDEX_SCHEMA = '%s'";
 	private static final Pattern indexCols = Pattern.compile(".+\\((.+)\\)");
 
 	public ExasolTableIndexCache(ExasolTableCache parentCache) {
@@ -52,7 +52,7 @@ public class ExasolTableIndexCache extends JDBCCompositeCache<ExasolSchema, Exas
 	@Override
 	protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema schema, ExasolTable table)
 			throws SQLException {
-	String tablePrefix = table.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+	String tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 		
 	
 		StringBuilder sql = new StringBuilder(

@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Object name case transformer
  */
-public class DBPositiveNumberTransformer implements IPropertyValueTransformer<DBSObject, Number> {
+public class DBPositiveNumberTransformer implements IPropertyValueTransformer<Object, Number> {
 
 
     @Override
-    public Number transform(DBSObject object, Number value) {
+    public Number transform(Object object, Number value) {
         if (value == null) {
             return null;
         }

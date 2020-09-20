@@ -76,6 +76,9 @@ public class RegistryConstants {
     public static final String ATTR_CODE = "code"; //$NON-NLS-1$
     public static final String ATTR_LABEL = "label"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_PORT = "defaultPort"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_DATABASE = "defaultDatabase"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_SERVER = "defaultServer"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_USER = "defaultUser"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_URL = "sampleURL"; //$NON-NLS-1$
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
     public static final String ATTR_PROPERTIES_WEB_URL = "propertiesURL"; //$NON-NLS-1$
@@ -171,6 +174,7 @@ public class RegistryConstants {
     public static final String ATTR_UPDATE_DATE = "update-date"; //$NON-NLS-1$
     public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
+    public static final String ATTR_TEMPLATE = "template"; //$NON-NLS-1$
 
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
     public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$

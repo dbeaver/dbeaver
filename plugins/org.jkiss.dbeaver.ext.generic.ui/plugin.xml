@@ -46,7 +46,7 @@
                 embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericView"/>
         </editor>
-        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+        <editor id="generic.source.view" class="org.jkiss.dbeaver.ext.generic.editors.GenericSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>

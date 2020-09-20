@@ -151,7 +151,7 @@ public class AuthModelSelector extends Composite {
         Label authModelDescLabel = new Label(authModelComp, SWT.NONE);
         authModelDescLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (selectedAuthModel != null) {
-            authModelDescLabel.setText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
+            //authModelDescLabel.setText(CommonUtils.notEmpty(selectedAuthModel.getDescription()));
         }
         for (DBPAuthModelDescriptor model : allAuthModels) {
             authModelCombo.add(model.getName());

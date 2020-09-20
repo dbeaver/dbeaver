@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
     @Override
     public TaskConfigurationWizard createTaskConfigWizard(@NotNull DBTTask taskConfiguration) {
-        return new DataTransferWizard(UIUtils.getDefaultRunnableContext(), taskConfiguration);
+        return DataTransferWizard.openWizard(taskConfiguration);
     }
 
     private static class ConfigPanel implements DBTTaskConfigPanel {
@@ -180,7 +181,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                             }
                                         });
                                     } catch (InvocationTargetException ex) {
-                                        DBWorkbench.getPlatformUI().showError("Error opening datasource", "Error while opening datasource", ex);
+                                        DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
+                                                DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
                                         return;
                                     } catch (InterruptedException ex) {
                                         return;
@@ -254,7 +256,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setData(pipe);
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
-            item.setText(0, node.getObjectName());
+            item.setText(0, CommonUtils.toString(node.getObjectName(), "?"));
 
             DBSObject object = node.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {

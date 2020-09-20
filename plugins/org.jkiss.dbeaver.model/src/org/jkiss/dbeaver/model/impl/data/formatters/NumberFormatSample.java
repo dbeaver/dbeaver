@@ -34,10 +34,10 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_ROUNDING_MODE ="roundingMode";
 
     @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    public Map<String, Object> getDefaultProperties(Locale locale)
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
-        Map<Object, Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
         props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
         props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());

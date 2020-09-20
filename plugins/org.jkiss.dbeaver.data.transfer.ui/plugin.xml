@@ -14,17 +14,6 @@
         <image commandId="org.jkiss.dbeaver.core.import.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.png"/>
     </extension>
 
-<!--
-    <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-                class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
-                id="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataTransferPropertyTester"
-                namespace="org.jkiss.dbeaver.tools.transfer"
-                properties="supportsImportFrom"
-                type="java.lang.Object"/>
-    </extension>
--->
-
     <extension point="org.eclipse.ui.menus">
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=export_import">
@@ -60,15 +49,9 @@
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-<!--
-                            <adapt type="org.eclipse.core.resources.IFile">
-                                <or>
-                                    <test property="org.eclipse.core.resources.extension" value="csv"/>
-                                    <test property="org.eclipse.core.resources.extension" value="tsv"/>
-                                    <test property="org.eclipse.core.resources.extension" value="txt"/>
-                                </or>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObjectContainer">
+                                <test property="org.jkiss.dbeaver.model.childOfType" value="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
                             </adapt>
--->
                         </or>
                     </iterate>
                 </with>
@@ -84,13 +67,12 @@
         </configPages>
 
         <configPages node="database_consumer">
-            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageMapping" producerType="database_producer"/>
+            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageMapping"/>
             <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseConsumerPageLoadSettings" type="settings"/>
         </configPages>
 
         <configPages node="stream_producer">
             <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPageSettings"/>
-            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamProducerPagePreview" type="preview"/>
         </configPages>
 
         <configPages node="stream_consumer">

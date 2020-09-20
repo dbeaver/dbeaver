@@ -28,11 +28,12 @@ public class DateFormatSample implements DBDDataFormatterSample {
     public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
 
     @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    public Map<String, Object> getDefaultProperties(Locale locale)
     {
 //        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
 //        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_DATE_PATTERN);
+        return Collections.singletonMap(
+            DateTimeDataFormatter.PROP_PATTERN, DEFAULT_DATE_PATTERN);
     }
 
     @Override

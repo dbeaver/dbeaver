@@ -244,7 +244,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         targetContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
         protocolTabCustom.setControl(targetContainer);
 
-        final Label urlLabel = UIUtils.createControlLabel(targetContainer, "JDBC URL"); //$NON-NLS-1$
+        final Label urlLabel = UIUtils.createControlLabel(targetContainer, "JDBC URL Template"); //$NON-NLS-1$
         urlLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         connectionUrlText = new Text(targetContainer, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
@@ -335,16 +335,22 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
 
         switch (connectionType) {
             case BASIC:
-                hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    hostText.setText("localhost");
+                } else {
+                    hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+                }
                 if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(connectionInfo.getHostPort());
-                } else if (site.getDriver().getDefaultPort() != null) {
-                    portText.setText(site.getDriver().getDefaultPort());
                 } else {
-                    portText.setText("");
+                    portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
                 }
 
-                serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    serviceNameCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
+                } else {
+                    serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                }
                 break;
             case TNS: {
                 tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
@@ -390,10 +396,10 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
-                connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText());
+                connectionInfo.setProviderProperty(OracleConstants.PROP_TNS_PATH, tnsPathText.getText().trim());
                 break;
             case CUSTOM:
-                connectionInfo.setUrl(connectionUrlText.getText());
+                connectionInfo.setUrl(connectionUrlText.getText().trim());
                 break;
         }
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());

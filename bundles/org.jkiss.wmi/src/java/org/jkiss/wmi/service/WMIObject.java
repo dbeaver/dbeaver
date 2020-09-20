@@ -17,7 +17,6 @@
 package org.jkiss.wmi.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,14 +45,14 @@ public class WMIObject extends WMIQualifiedObject {
         writeAttributeValue(name, value);
     }
 
-    public Collection<WMIObjectAttribute> getAttributes(long flags) throws WMIException
+    public List<WMIObjectAttribute> getAttributes(long flags) throws WMIException
     {
         List<WMIObjectAttribute> attributes = new ArrayList<>();
         readAttributes(flags, attributes);
         return attributes;
     }
 
-    public Collection<WMIObjectMethod> getMethods(long flags) throws WMIException
+    public List<WMIObjectMethod> getMethods(long flags) throws WMIException
     {
         List<WMIObjectMethod> methods = new ArrayList<>();
         readMethods(flags, methods);

@@ -314,6 +314,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         Object pv = pe.getValue();
                         if (pv instanceof String || pv instanceof Number || pv instanceof Boolean || pv == null) {
                             // No changes
+                        } else if (pv instanceof Map) {
+                            simplifiedProperties.putAll((Map<? extends String, ?>) pv);
                         } else {
                             pv = CommonUtils.toString(pv);
                         }

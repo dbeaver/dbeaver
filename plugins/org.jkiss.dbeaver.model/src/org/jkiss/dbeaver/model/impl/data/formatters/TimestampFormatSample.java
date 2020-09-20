@@ -27,11 +27,13 @@ import java.util.Random;
 public class TimestampFormatSample implements DBDDataFormatterSample {
 
     @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    public Map<String, Object> getDefaultProperties(Locale locale)
     {
 //        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, locale);
 //        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)(DateFormatSample.DEFAULT_DATE_PATTERN + " " + TimeFormatSample.DEFAULT_TIME_PATTERN));
+        return Collections.singletonMap(
+            DateTimeDataFormatter.PROP_PATTERN,
+            (DateFormatSample.DEFAULT_DATE_PATTERN + " " + TimeFormatSample.DEFAULT_TIME_PATTERN));
     }
 
     @Override

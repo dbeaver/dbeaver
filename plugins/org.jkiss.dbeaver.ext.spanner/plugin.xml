@@ -12,23 +12,38 @@
                 description="%datasource.spanner.description"
                 id="google_spanner"
                 parent="generic"
-                label="Google Spanner"
+                label="Google Cloud Spanner"
                 icon="icons/spanner_icon.png"
                 dialect="spanner">
             <drivers managable="true">
 
                 <driver
-                        id="spanner_jdbc"
-                        label="Google Spanner"
+                        id="spanner_jdbc_official"
+                        label="Google Cloud Spanner JDBC Driver"
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
+                        class="com.google.cloud.spanner.jdbc.JdbcDriver"
+                        sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
+                        defaultPort=""
+                        description="Google Cloud Spanner Open Source JDBC Driver"
+                        webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
+                        categories="sql,bigdata,cloud">
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE"/>
+                </driver>
+                
+                <driver
+                        id="spanner_jdbc"
+                        label="Google Cloud Spanner Community (Topicus) Driver"
+                        icon="icons/database.png"
+                        iconBig="icons/database@2x.png"
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""
-                        description="Google Spanner JDBC driver by Simba"
+                        description="Google Spanner JDBC community (Topicus) driver"
                         webURL="https://github.com/olavloite/spanner-jdbc"
-                        categories="bigdata,cloud">
-                    <!--<file type="jar" path="https://storage.cloud.google.com/simba-cs-release/jdbc/CloudSpannerJDBC42-1.0.11.1023.zip"/>-->
+                        categories="sql,bigdata,cloud">
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="true"/>
                     <file type="jar" path="maven:/nl.topicus:spanner-jdbc:RELEASE"/>

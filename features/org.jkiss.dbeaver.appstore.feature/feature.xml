@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.appstore.feature"
         label="%featureName"
-        version="7.1.1.qualifier"
+        version="7.2.1.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 

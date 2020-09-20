@@ -44,6 +44,11 @@ class PostgreDataSourceInfo extends JDBCDataSourceInfo {
     }
 
     @Override
+    public boolean needsTableMetaForColumnResolution() {
+        return dataSource.getServerType().supportsEntityMetadataInResults();
+    }
+
+    @Override
     public boolean supportsResultSetLimit() {
         // ??? Disable maxRows for data transfer - it turns cursors off ?
         return dataSource.getServerType().supportsResultSetLimits();

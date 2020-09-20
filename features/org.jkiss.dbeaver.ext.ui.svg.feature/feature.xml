@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ui.svg.feature"
       label="%featureName"
-      version="1.0.71.qualifier"
+      version="1.0.77.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.ui.svg">
 
@@ -17,6 +17,10 @@
    <license url="%licenseURL">
       %license
    </license>
+
+   <requires>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
+   </requires>
 
    <plugin id="org.jkiss.dbeaver.ext.ui.svg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
    <plugin id="org.jkiss.bundle.apache.batik" download-size="0" install-size="0" version="0.0.0"/>

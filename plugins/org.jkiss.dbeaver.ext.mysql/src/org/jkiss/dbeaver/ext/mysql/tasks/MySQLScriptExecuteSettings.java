@@ -76,7 +76,7 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) throws DBException {
         super.loadSettings(runnableContext, preferenceStore);
 
-        isImport = CommonUtils.toBoolean(preferenceStore.getString("MySQL.script.import"));
+        isImport = CommonUtils.getBoolean(preferenceStore.getString("MySQL.script.import"), isImport);
         logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString("MySQL.script.logLevel"), LogLevel.Normal);
         noBeep = CommonUtils.toBoolean(preferenceStore.getString("MySQL.script.noBeep"));
     }

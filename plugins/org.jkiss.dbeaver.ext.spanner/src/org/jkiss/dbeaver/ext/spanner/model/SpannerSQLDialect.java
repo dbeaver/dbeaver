@@ -19,10 +19,15 @@ package org.jkiss.dbeaver.ext.spanner.model;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 
 /**
- * Snowflake constants
+ * Spanner dialect
  */
 public class SpannerSQLDialect extends GenericSQLDialect {
     public SpannerSQLDialect() {
         super("Spanner");
     }
+
+	@Override
+	public String[][] getIdentifierQuoteStrings() {
+	    return new String[][] {{"`", "`"}};
+	}
 }

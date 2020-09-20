@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
@@ -115,7 +116,7 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 		@Override
 		public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
 			try {
-				return ((ExasolTable) object.getTable()).getAvailableColumns().toArray();
+				return ((ExasolTable) object.getTable()).getAvailableColumns(new VoidProgressMonitor()).toArray();
 			} catch (DBException e) {
 				log.error("Failed to get list of available columns",e);
 				return new Object[0];

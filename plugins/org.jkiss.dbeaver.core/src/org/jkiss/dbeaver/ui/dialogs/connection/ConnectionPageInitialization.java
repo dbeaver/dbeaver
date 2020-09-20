@@ -332,11 +332,13 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         }
         dataSource.setDefaultAutoCommit(autocommit.getSelection());
         if (txnOptionsLoaded) {
-            int levelIndex = isolationLevel.getSelectionIndex();
-            if (levelIndex <= 0) {
+            if (CommonUtils.isEmpty(isolationLevel.getText())) {
                 dataSource.setDefaultTransactionsIsolation(null);
             } else {
-                dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
+                int levelIndex = isolationLevel.getSelectionIndex();
+                if (levelIndex >= 0) {
+                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex));
+                }
             }
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();

@@ -32,10 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBFetchProgress;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -107,6 +104,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean skipConfirmation;
     private int fetchSize;
     private long fetchFlags;
+    private SQLQueryResult curResult;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -154,6 +152,10 @@ public class SQLQueryJob extends DataSourceJob
         return curStatement;
     }
 
+    public SQLQueryResult getCurrentQueryResult() {
+        return curResult;
+    }
+
     private boolean hasLimits()
     {
         return rsOffset >= 0 && rsMaxRows > 0;
@@ -179,6 +181,7 @@ public class SQLQueryJob extends DataSourceJob
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
         skipConfirmation = false;
+        monitor.beginTask("Execute SQL script", queries.size());
         try {
             DBCExecutionContext context = getExecutionContext();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -261,7 +264,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.done();
 
                 // Commit data
-                if (txnManager != null && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                if (txnManager != null && txnManager.isSupportsTransactions() && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
                             monitor.beginTask("Commit data", 1);
@@ -308,6 +311,7 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
+            monitor.done();
         }
     }
 
@@ -384,12 +388,13 @@ public class SQLQueryJob extends DataSourceJob
             sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
         }
 
-        final SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
+        curResult = new SQLQueryResult(sqlQuery);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
 
         monitor.beginTask("Process query", 1);
+        monitor.subTask("Initialize context");
         try {
             // Prepare statement
             closeStatement();
@@ -413,6 +418,7 @@ public class SQLQueryJob extends DataSourceJob
                 startQueryAlerted = true;
             }
 
+            monitor.subTask("Execute query");
             startTime = System.currentTimeMillis();
 
             SQLQuery execStatement = sqlQuery;
@@ -423,6 +429,11 @@ public class SQLQueryJob extends DataSourceJob
                     //statistics.setExecuteTime(0);
                     //statistics.setFetchTime(0);
                     //statistics.setRowsUpdated(0);
+
+                    // Toggle smart commit mode
+                    if (resultsConsumer instanceof ISmartTransactionManager && ((ISmartTransactionManager) resultsConsumer).isSmartAutoCommit()) {
+                        DBExecUtils.checkSmartAutoCommit(session, execStatement.getText());
+                    }
                     long execStartTime = System.currentTimeMillis();
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
@@ -441,12 +452,7 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
             if (fireEvents && listener != null && startQueryAlerted) {
-                // Notify query end
-                try {
-                    listener.onEndQuery(session, curResult, statistics);
-                } catch (Exception e) {
-                    log.error(e);
-                }
+                notifyQueryExecutionEnd(curResult);
             }
 
             scriptContext.clearStatementContext();
@@ -460,6 +466,15 @@ public class SQLQueryJob extends DataSourceJob
         // Success
         lastGoodQuery = originalQuery;
         return true;
+    }
+
+    public void notifyQueryExecutionEnd(SQLQueryResult curResult) {
+        // Notify query end
+        try {
+            listener.onEndQuery(null, curResult, statistics);
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 
     private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
@@ -501,7 +516,19 @@ public class SQLQueryJob extends DataSourceJob
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                     if (hasResultSet && fetchResultSets) {
-                        DBCResultSet resultSet = dbcStatement.openResultSet();
+                        DBCResultSet resultSet;
+                        try {
+                            resultSet = dbcStatement.openResultSet();
+                        } catch (DBCException e) {
+                            DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(session.getDataSource(), e);
+                            if (errorType == DBPErrorAssistant.ErrorType.RESULT_SET_MISSING) {
+                                // We need to ignore this error and try to get next results
+                                if (dbcStatement.nextResults()) {
+                                    continue;
+                                }
+                            }
+                            throw e;
+                        }
                         if (resultSet == null) {
                             // Kind of bug in the driver. It says it has resultset but returns null
                             break;

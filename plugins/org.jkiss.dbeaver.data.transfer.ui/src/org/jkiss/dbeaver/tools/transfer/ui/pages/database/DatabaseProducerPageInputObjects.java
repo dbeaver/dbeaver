@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -69,9 +68,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        composite.setLayout(new GridLayout());
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         DataTransferSettings settings = getWizard().getSettings();
 
@@ -144,7 +141,8 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Assign error", "Error reading container objects", e);
+            DBWorkbench.getPlatformUI().showError(DTUIMessages.database_producer_page_input_objects_title_assign_error,
+                    DTUIMessages.database_producer_page_input_objects_message_error_reading_container_objects, e);
         } catch (InterruptedException e) {
             // ignore
         }

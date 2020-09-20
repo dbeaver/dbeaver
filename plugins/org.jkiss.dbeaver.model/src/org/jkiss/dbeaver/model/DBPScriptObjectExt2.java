@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 /**
- * Can check whether objet support an option or not
+ * Can check whether object support an option or not
  */
 public interface DBPScriptObjectExt2 extends DBPObject {
 

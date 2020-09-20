@@ -136,8 +136,8 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        super.validateObjectProperties(command, options);
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        super.validateObjectProperties(monitor, command, options);
         options.put(DBECommandContext.OPTION_AVOID_TRANSACTIONS, true);
     }
 

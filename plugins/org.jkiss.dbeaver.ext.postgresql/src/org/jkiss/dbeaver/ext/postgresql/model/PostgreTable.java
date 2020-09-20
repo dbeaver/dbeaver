@@ -31,16 +31,21 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreTable
@@ -60,6 +65,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     private boolean hasPartitions;
     private String partitionKey;
+    private String partitionRange;
 
     public PostgreTable(PostgreTableContainer container)
     {
@@ -72,7 +78,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     {
         super(container, dbResult);
 
-        this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        if (getDataSource().getServerType().supportsHasOidsColumn()) {
+            this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        }
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
         this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
 
@@ -87,6 +95,14 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         this.tablespaceId = container == source.getContainer() ? source.tablespaceId : 0;
 
         this.partitionKey = source.partitionKey;
+
+        for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+            if (srcIndex.isPrimaryKeyIndex()) {
+                continue;
+            }
+            PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
+            getSchema().getIndexCache().cacheObject(constr);
+        }
 
 /*
         // Copy FKs
@@ -130,7 +146,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         return false;
     }
 
-    @Property(editable = true, updatable = true, order = 40)
+    @Property(editable = true, updatable = true, order = 40, visibleIf = PostgreColumnHasOidsValidator.class)
     public boolean isHasOids() {
         return hasOids;
     }
@@ -154,8 +170,32 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
     }
 
     @Override
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+        super.fetchStatistics(dbResult);
+        if (diskSpace != null && diskSpace == 0 && hasSubClasses) {
+            // Prefetch partitions (shouldn't be too expensive, we already have all tables in cache)
+            getPartitions(dbResult.getSession().getProgressMonitor());
+        }
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        if (diskSpace != null && subTables != null) {
+            long partSizeSum = diskSpace;
+            for (PostgreTableInheritance ti : subTables) {
+                PostgreTableBase partTable = ti.getParentObject();
+                if (partTable.isPartition() && partTable instanceof PostgreTableReal) {
+                    partSizeSum += ((PostgreTableReal) partTable).getStatObjectSize();
+                }
+            }
+            return partSizeSum;
+        }
+        return super.getStatObjectSize();
+    }
+
+    @Override
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-        return getSchema().indexCache.getObjects(monitor, getSchema(), this);
+        return getSchema().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override
@@ -197,7 +237,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         // This is dummy implementation
         // Get references from this schema only
         final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().getSchema().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
+            getContainer().getSchema().getConstraintCache().getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
         for (PostgreTableForeignKey constraint : allForeignKeys) {
             if (constraint.getAssociatedEntity() == this) {
                 refs.add(constraint);
@@ -208,7 +248,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Association
     public Collection<PostgreTableForeignKey> getForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+        return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
     @Nullable
@@ -247,48 +287,83 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
-        if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT i.*,c.relnamespace " +
-                    "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
-                    "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
-                    "ORDER BY i.inhseqno")) {
-                    dbStat.setLong(1, getObjectId());
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
-                            final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
-                            PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
-                            if (schema == null) {
-                                log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
-                                continue;
-                            }
-                            PostgreTableBase parentTable = schema.getTable(monitor, parentTableId);
-                            if (parentTable == null) {
-                                log.warn("Can't find parent table '" + parentTableId + "' in '" + schema.getName() + "'");
-                                continue;
-                            }
-                            if (superTables == null) {
-                                superTables = new ArrayList<>();
-                            }
-                            superTables.add(
-                                new PostgreTableInheritance(
-                                    this,
-                                    parentTable,
-                                    JDBCUtils.safeGetInt(dbResult, "inhseqno"),
-                                    true));
+        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted()) {
+            superTables = initSuperTables(monitor);
+        }
+        return superTables == null || superTables.isEmpty() ? null : superTables;
+    }
+
+    void addSuperTableInheritance(PostgreTableBase superTable, int seqNum) {
+        PostgreTableInheritance inheritance = new PostgreTableInheritance(this, superTable, seqNum, true);
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+        superTables.add(inheritance);
+    }
+
+    void nullifyEmptySuperTableInheritance() {
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+    }
+
+
+    private List<PostgreTableInheritance> initSuperTables(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableInheritance> inheritanceList = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT i.*,c.relnamespace " +
+                "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
+                "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
+                "ORDER BY i.inhseqno")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                        final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
+                        PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
+                        if (schema == null) {
+                            log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
+                            continue;
                         }
+                        PostgreTableBase parentTable = schema.getTable(monitor, parentTableId);
+                        if (parentTable == null) {
+                            log.warn("Can't find parent table '" + parentTableId + "' in '" + schema.getName() + "'");
+                            continue;
+                        }
+                        inheritanceList.add(
+                            new PostgreTableInheritance(
+                                this,
+                                parentTable,
+                                JDBCUtils.safeGetInt(dbResult, "inhseqno"),
+                                true));
+                    }
+                }
+                return inheritanceList;
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
+
+    @Nullable
+    public String getPartitionRange(DBRProgressMonitor monitor) throws DBException {
+        if (partitionRange == null && getDataSource().getServerType().supportsInheritance()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table partition range")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from \"pg_catalog\".pg_class c where relname = ? and relnamespace = ?;")) { //$NON-NLS-1$
+                    dbStat.setString(1, getName());
+                    dbStat.setLong(2, getSchema().oid);
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        dbResult.next();
+                        partitionRange = JDBCUtils.safeGetString(dbResult, "partition_range"); //$NON-NLS-1$
                     }
                 } catch (SQLException e) {
                     throw new DBCException(e, session.getExecutionContext());
                 }
             }
-            if (superTables == null) {
-                superTables = Collections.emptyList();
-            }
         }
-        return superTables == null || superTables.isEmpty() ? null : superTables;
+        return partitionRange;
     }
 
     public boolean hasSubClasses() {
@@ -297,7 +372,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
+        if (isPersisted() && subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 String sql = "SELECT i.*,c.relnamespace " +
@@ -310,8 +385,8 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
-                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
-                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid");
+                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace"); //$NON-NLS-1$
+                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid"); //$NON-NLS-1$
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
@@ -326,7 +401,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
                                 new PostgreTableInheritance(
                                     subTable,
                                     this,
-                                    JDBCUtils.safeGetInt(dbResult, "inhseqno"),
+                                    JDBCUtils.safeGetInt(dbResult, "inhseqno"),//$NON-NLS-1$
                                     true));
                         }
                     }
@@ -355,5 +430,20 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
             }
         }
         return result;
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        superTables = null;
+        subTables = null;
+        return super.refreshObject(monitor);
+    }
+
+    public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsHasOidsColumn();
+        }
     }
 }

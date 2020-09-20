@@ -19,17 +19,20 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 
 import java.util.UUID;
 
 /**
  * UUID value manager
  */
-public class UUIDValueManager extends BaseValueManager {
+public class UUIDValueManager extends ContentValueManager {
 
     @NotNull
     @Override
@@ -41,7 +44,6 @@ public class UUIDValueManager extends BaseValueManager {
     public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
         switch (controller.getEditType()) {
             case INLINE:
-            case PANEL:
                 return new StringInlineEditor(controller) {
                     @Override
                     public Object extractEditorValue() throws DBCException {
@@ -59,8 +61,14 @@ public class UUIDValueManager extends BaseValueManager {
                         return strValue;
                     }
                 };
+            case PANEL:
+                return new ContentPanelEditor(controller);
             case EDITOR:
-                return new TextViewDialog(controller);
+                if (controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR)) {
+                    return ContentEditor.openEditor(controller);
+                } else {
+                    return new TextViewDialog(controller);
+                }
             default:
                 return null;
         }

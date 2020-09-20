@@ -54,6 +54,17 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
         this.nullable = nullable;
     }
 
+    public PostgreIndexColumn(DBRProgressMonitor monitor, PostgreIndex index, PostgreIndexColumn srcColumn) throws DBException {
+        this.index = index;
+        PostgreAttribute srcTableColumn = srcColumn.getTableColumn();
+        this.tableColumn = srcTableColumn == null ? null : index.getTable().getAttribute(monitor, srcTableColumn.getName());
+        this.expression = srcColumn.expression;
+        this.ordinalPosition = srcColumn.ordinalPosition;
+        this.ascending = srcColumn.ascending;
+        this.opClass = srcColumn.opClass;
+        this.nullable = srcColumn.nullable;
+    }
+
     @NotNull
     @Override
     public PostgreIndex getIndex()

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -35,32 +36,51 @@ import java.util.Properties;
  *
  * No-op model. Leaves all configuration as is.
  */
-public class AuthModelDatabaseNative implements DBAAuthModel {
+public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNativeCredentials> implements DBAAuthModel<CREDENTIALS> {
 
     public static final String ID = "native";
 
     public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
 
+    @NotNull
+    public CREDENTIALS createCredentials() {
+        return (CREDENTIALS) new AuthModelDatabaseNativeCredentials();
+    }
+
+    @NotNull
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
-        String userName;
-        String userPassword;
-        if (dataSource instanceof DBAUserCredentialsProvider) {
-            userName = ((DBAUserCredentialsProvider) dataSource).getConnectionUserName(configuration);
-            userPassword = ((DBAUserCredentialsProvider) dataSource).getConnectionUserPassword(configuration);
+    public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
+        CREDENTIALS credentials = createCredentials();
+        DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
+        if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
+            credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
+            credentials.setUserPassword(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));
         } else {
-            userName = configuration.getUserName();
-            userPassword = configuration.getUserPassword();
+            credentials.setUserName(configuration.getUserName());
+            credentials.setUserPassword(configuration.getUserPassword());
         }
-        boolean allowsEmptyPassword = dataSource.getContainer().getDriver().isAllowsEmptyPassword();
-        if (userPassword == null && allowsEmptyPassword) {
-            userPassword = "";
+        boolean allowsEmptyPassword = dataSource.getDriver().isAllowsEmptyPassword();
+        if (credentials.getUserPassword() == null && allowsEmptyPassword) {
+            credentials.setUserPassword("");
         }
+        return credentials;
+    }
+
+    @Override
+    public void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials) {
+        configuration.setUserName(credentials.getUserName());
+        configuration.setUserPassword(credentials.getUserPassword());
+    }
+
+    @Override
+    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+        String userName = credentials.getUserName();
+        String userPassword = credentials.getUserPassword();
 
         if (!CommonUtils.isEmpty(userName)) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
         }
-        if (!CommonUtils.isEmpty(userPassword) || (allowsEmptyPassword && !CommonUtils.isEmpty(userName))) {
+        if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
         }
     }

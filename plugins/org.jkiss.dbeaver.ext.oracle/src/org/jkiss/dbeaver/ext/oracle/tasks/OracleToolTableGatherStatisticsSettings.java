@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteSettings;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -49,11 +50,12 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
         config.put("sample_percent", samplePercent);
     }
 
-    private class OracleStatisticPercentLimiter implements IPropertyValueValidator<DBSObject, Integer> {
+    public static class OracleStatisticPercentLimiter implements IPropertyValueValidator<OracleToolTableGatherStatisticsSettings, Object> {
 
         @Override
-        public boolean isValidValue(DBSObject object, Integer value) throws IllegalArgumentException {
-            return 1 <= value && value <= 100;
+        public boolean isValidValue(OracleToolTableGatherStatisticsSettings object, Object value) throws IllegalArgumentException {
+            int valueInt = CommonUtils.toInt(value);
+            return 0 <= valueInt && valueInt <= 100;
         }
     }
 }

@@ -172,7 +172,7 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+    public DBPPropertyDescriptor[] getProperties() {
 	DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
 	int index = 0;
 	for (Map.Entry<String, String> attr : nodeProps.entrySet()) {
@@ -183,39 +183,34 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
     }
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
 	return nodeProps.get(id.toString());
     }
 
     @Override
-    public boolean isPropertySet(Object id) {
+    public boolean isPropertySet(String id) {
 	return nodeProps.containsKey(id.toString());
     }
 
     @Override
-    public boolean isPropertyResettable(Object id) {
+    public boolean isPropertyResettable(String id) {
 	return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
 	// don't allow setting/changing values
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
 	// don't allow setting/changing values
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value) {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
 	// don't allow setting/changing values
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-	return false;
     }
 
 }

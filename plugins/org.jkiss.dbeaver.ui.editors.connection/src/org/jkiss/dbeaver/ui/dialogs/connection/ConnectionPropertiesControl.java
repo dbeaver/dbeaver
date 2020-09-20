@@ -67,7 +67,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     PropertySourceCustom makeProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
-        Map<Object, Object> connectionProps = new HashMap<>();
+        Map<String, Object> connectionProps = new HashMap<>();
         connectionProps.putAll(driver.getConnectionProperties());
         connectionProps.putAll(connectionInfo.getProperties());
         driverProvidedProperties = null;
@@ -81,7 +81,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
             connectionProps);
     }
 
-    public PropertySourceCustom makeProperties(DBPDriver driver, Map<?, ?> properties)
+    public PropertySourceCustom makeProperties(DBPDriver driver, Map<String, ?> properties)
     {
         driverProvidedProperties = null;
         customProperties = null;

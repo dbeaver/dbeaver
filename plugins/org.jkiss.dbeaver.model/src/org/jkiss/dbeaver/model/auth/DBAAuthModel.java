@@ -29,18 +29,32 @@ import java.util.Properties;
 /**
  * Auth model.
  */
-public interface DBAAuthModel {
+public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
+
+    @NotNull
+    CREDENTIALS createCredentials();
+
+    /**
+     * Create credentials from datasource configuration
+     */
+    @NotNull
+    CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration);
+
+    /**
+     * Save credentials into connection configuration
+     */
+    void saveCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull CREDENTIALS credentials);
 
     /**
      * Called before connection opening. May modify any connection configuration properties
      *
-     *
-     * @param dataSource
-     * @param configuration connection configuration. Can be modified, changes will affect only current connection initiation.
+     * @param dataSource  data source
+     * @param credentials auth credentials
+     * @param configuration connection configuration
      * @param connProperties auth model specific options.
      * @throws DBException on error
      */
-    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
+    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
 
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 

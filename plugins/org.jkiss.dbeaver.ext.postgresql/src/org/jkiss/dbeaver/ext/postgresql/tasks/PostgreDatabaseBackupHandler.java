@@ -6,6 +6,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -113,7 +114,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
                 // Use explicit quotes in case of quoted identifiers (#5950)
-                cmd.add(escapeCLIIdentifier(schema.getName()));
+                cmd.add(escapeCLIIdentifier(DBUtils.getQuotedIdentifier(schema)));
             }
         }
     }

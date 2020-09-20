@@ -61,6 +61,10 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
         return searchCondition;
     }
 
+    public void setSearchCondition(String searchCondition) {
+        this.searchCondition = searchCondition;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)

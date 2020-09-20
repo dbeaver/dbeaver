@@ -341,19 +341,25 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
                 }
             }
             if (portText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                } else if (site.getDriver().getDefaultPort() != null) {
-                    portText.setText(site.getDriver().getDefaultPort());
-                } else {
-                    portText.setText(""); //$NON-NLS-1$
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
+                } else if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    portText.setText(connectionInfo.getHostPort());
                 }
             }
             if (serverText != null) {
-                serverText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getServerName())) {
+                    serverText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultServer()));
+                } else {
+                    serverText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+                }
             }
             if (dbText != null) {
-                dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    dbText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
+                } else {
+                    dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+                }
             }
             if (pathText != null) {
                 pathText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));

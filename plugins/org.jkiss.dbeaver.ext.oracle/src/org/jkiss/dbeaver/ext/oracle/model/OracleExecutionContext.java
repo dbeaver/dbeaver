@@ -139,11 +139,17 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
     }
 
     private void setCurrentSchema(DBRProgressMonitor monitor, String activeSchemaName) throws DBCException {
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            OracleUtils.setCurrentSchema(session, activeSchemaName);
-            this.activeSchemaName = activeSchemaName;
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
+        OracleSchema oldDefaultSchema = getDefaultSchema();
+        if (oldDefaultSchema == null || !oldDefaultSchema.getName().equals(activeSchemaName)) {
+            try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+                OracleUtils.setCurrentSchema(session, activeSchemaName);
+                this.activeSchemaName = activeSchemaName;
+
+                OracleSchema newDefaultSchema = getDefaultSchema();
+                DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema);
+            } catch (SQLException e) {
+                throw new DBCException(e, this);
+            }
         }
     }
 

@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,9 +74,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
     private UIServiceSQL serviceSQL;
 
     SQLToolTaskWizardPageSettings(SQLToolTaskWizard wizard) {
-        super(wizard.getTaskType().getName() + " parameters");
-        setTitle(wizard.getTaskType().getName() + " parameters");
-        setDescription("Parameters for " + wizard.getTaskType().getName());
+        super(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_name, wizard.getTaskType().getName()));
+        setTitle(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_title, wizard.getTaskType().getName()));
+        setDescription(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_description, wizard.getTaskType().getName()));
         this.sqlWizard = wizard;
     }
 
@@ -89,9 +91,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         previewSplitter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
-
+        Group objectsPanel;
         {
-            Group objectsPanel = UIUtils.createControlGroup(settingsPanel, "Objects", 2, GridData.FILL_BOTH, 0);
+            objectsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_objects, 2, GridData.FILL_BOTH, 0);
             objectsViewer = new TableViewer(objectsPanel, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             objectsViewer.setContentProvider(new ListContentProvider());
             objectsViewer.setLabelProvider(new ColumnLabelProvider() {
@@ -114,7 +116,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
             ToolBar buttonsToolbar = new ToolBar(objectsPanel, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, "Add script", UIIcon.ROW_ADD, new SelectionAdapter() {
+            UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_add_string, UIIcon.ROW_ADD, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
@@ -133,7 +135,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                     }
                 }
             });
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, "Remove script", UIIcon.ROW_DELETE, new SelectionAdapter() {
+            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_remove_string, UIIcon.ROW_DELETE, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ISelection selection = objectsViewer.getSelection();
@@ -149,7 +151,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 }
             });
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, "Move script up", UIIcon.ARROW_UP, new SelectionAdapter() {
+            ToolItem[] moveButtons = new ToolItem[2];
+            moveButtons[0] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = objectTable.getSelectionIndex();
@@ -159,9 +162,11 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                         selectedObjects.set(selectionIndex, prevScript);
                         refreshObjects();
                     }
+                    moveButtons[0].setEnabled(selectionIndex > 1);
+                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
                 }
             });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, "Move script down", UIIcon.ARROW_DOWN, new SelectionAdapter() {
+            moveButtons[1] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     int selectionIndex = objectTable.getSelectionIndex();
@@ -171,19 +176,24 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                         selectedObjects.set(selectionIndex, nextScript);
                         refreshObjects();
                     }
+                    moveButtons[0].setEnabled(selectionIndex > 0);
+                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 2);
                 }
             });
             objectsViewer.addSelectionChangedListener(event -> {
                 int selectionIndex = objectTable.getSelectionIndex();
                 deleteItem.setEnabled(selectionIndex >= 0);
-                moveUpItem.setEnabled(selectionIndex > 0);
-                moveDownItem.setEnabled(selectionIndex < objectTable.getItemCount() - 1);
+                moveButtons[0].setEnabled(selectionIndex > 0);
+                moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
             });
             deleteItem.setEnabled(false);
+
+            moveButtons[0].setEnabled(false);
+            moveButtons[1].setEnabled(false);
         }
 
         {
-            Group optionsPanel = UIUtils.createControlGroup(settingsPanel, "Settings", 1, GridData.FILL_BOTH, 0);
+            Group optionsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_settings, 1, GridData.FILL_BOTH, 0);
 
             taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.BORDER);
             taskOptionsViewer.addPropertyChangeListener(event -> updateScriptPreview());
@@ -198,17 +208,18 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                     UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
                     previewPanel,
                     this,
-                    "SQL Preview",
+                    TasksSQLUIMessages.sql_tool_task_wizard_page_settings_sql_panel_name,
                     true,
                     "");
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("SQL preview error", "Can't create SQL preview panel", e);
+                DBWorkbench.getPlatformUI().showError(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_title_sql_preview_error,
+                        TasksSQLUIMessages.sql_tool_task_wizard_page_settings_message_sql_preview_panel, e);
             }
         }
 
         Composite controlsPanel = UIUtils.createComposite(composite, 2);
 
-        UIUtils.createDialogButton(controlsPanel, "&Copy", new SelectionAdapter() {
+        UIUtils.createDialogButton(controlsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_dialog_button_label_copy, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String text = serviceSQL.getSQLPanelText(sqlPreviewPanel);
@@ -220,6 +231,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         getWizard().createTaskSaveButtons(controlsPanel, true, 1);
 
         loadSettings();
+
+        if (taskOptionsViewer.getTree().getItemCount() == 0) {
+            settingsPanel.setMaximizedControl(objectsPanel);
+        }
 
         setControl(composite);
     }
@@ -298,8 +313,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
-        if (!selectedObjects.isEmpty()) {
-            DBUtils.getDefaultContext(selectedObjects.get(0), false);
+        SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
+
+        if (settings != null && !settings.getObjectList().isEmpty()) {
+            return DBUtils.getDefaultContext(settings.getObjectList().get(0), false);
         }
         return null;
     }

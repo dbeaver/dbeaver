@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>7.1.1</dbeaver-version>
+        <dbeaver-version>7.2.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.7.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,9 +17,8 @@
 
         <!-- DBeaver Maven dependencies (see product/localRepository for details) -->
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
-        <!-- Eclipse release 2020-03 -->
+        <!-- Eclipse release 2020-03. 2020-06 is too buggy. -->
         <eclipse-p2-repo.url>https://download.eclipse.org/releases/2020-03/</eclipse-p2-repo.url>
-<!--        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2019-12/201911081000</eclipse-p2-repo.url>-->
 
         <!-- Orbit. From Photon because we need com.ibm.icu.base -->
         <!-- <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url> -->

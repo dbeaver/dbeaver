@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -90,6 +91,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Text driverClassText;
     private Text driverURLText;
     private Text driverPortText;
+    private Text driverUserText;
+    private Text driverDatabaseText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
     private final List<DBPDriverLibrary> origLibList;
@@ -245,11 +248,18 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverURLText.addModifyListener(e -> onChangeProperty());
             driverURLText.setEnabled(driver == null || driver.isUseURL());
 
-            UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port);
-            driverPortText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort());
+            driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, CommonUtils.notEmpty(driver.getDefaultPort()), SWT.BORDER | advStyle);
             driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverPortText.addModifyListener(e -> onChangeProperty());
+
+            driverDatabaseText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_database, CommonUtils.notEmpty(driver.getDefaultDatabase()), SWT.BORDER | advStyle);
+            driverDatabaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverDatabaseText.addModifyListener(e -> onChangeProperty());
+
+            driverUserText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_user, CommonUtils.notEmpty(driver.getDefaultUser()), SWT.BORDER | advStyle);
+            driverUserText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverUserText.addModifyListener(e -> onChangeProperty());
+
             UIUtils.createEmptyLabel(propsGroup, 2, 1);
 
             Composite optionsPanel = new Composite(propsGroup, SWT.NONE);
@@ -259,8 +269,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
             optionsPanel.setLayout(new RowLayout());
             embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
             anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
-            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_aloows_empty_password_label, UIConnectionMessages.dialog_edit_driver_aloows_empty_password_tip, driver.isAnonymousAccess(), 1);
-            nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, "Use legacy JDBC instantiation", "Do not instantiate driver directly, use DriverManager always.", !driver.isInstantiable(), 1);
+            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
+            nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_label, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_tip, !driver.isInstantiable(), 1);
 
             if (isReadOnly) {
                 embeddedDriverCheck.setEnabled(false);
@@ -299,8 +309,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             {
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-                Text idText = UIUtils.createLabelText(infoGroup, "ID", driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
-                idText.setToolTipText("Internal driver ID.\nCan be used in connections configurations and CLI commands.");
+                Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
+                idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
             }
 
             driverDescText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
@@ -393,7 +403,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
                         cell.setText(element.toString());
-                        cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        if (element instanceof DriverDescriptor.DriverFileInfo) {
+                            if (((DriverDescriptor.DriverFileInfo)element).getType() == DBPDriverLibrary.FileType.license) {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
+                            } else {
+                                cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                            }
+                        } else {
+                            cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
+                        }
                     }
                 }
 
@@ -503,7 +521,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             public void widgetSelected(SelectionEvent e) {
                 IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
                 if (selection != null && !selection.isEmpty()) {
-                    if (UIUtils.confirmAction(getShell(), "Delete library", "Are you sure you want to delete selected libraries?")) {
+                    if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_delete_library_title, UIConnectionMessages.dialog_edit_driver_dialog_delete_library_message)) {
                         for (Object obj : selection.toArray()) {
                             if (obj instanceof DriverLibraryAbstract) {
                                 driver.removeDriverLibrary((DriverLibraryAbstract) obj);
@@ -728,13 +746,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void loadSettings(boolean original) {
-        driverNameText.setText(original ? CommonUtils.notEmpty(driver.getOrigName()) : CommonUtils.notEmpty(driver.getName()));
-        driverDescText.setText(original ? CommonUtils.notEmpty(driver.getOrigDescription()) : CommonUtils.notEmpty(driver.getDescription()));
-        driverClassText.setText(original ? CommonUtils.notEmpty(driver.getOrigClassName()) : CommonUtils.notEmpty(driver.getDriverClassName()));
-        driverURLText.setText(original ? CommonUtils.notEmpty(driver.getOrigSampleURL()) : CommonUtils.notEmpty(driver.getSampleURL()));
-        driverPortText.setText(original ?
-            (driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()) : //$NON-NLS-1$
-            (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
+        driverNameText.setText(CommonUtils.notEmpty(original ? driver.getOrigName() : driver.getName()));
+        driverDescText.setText(CommonUtils.notEmpty(original ? driver.getOrigDescription() : driver.getDescription()));
+        driverClassText.setText(CommonUtils.notEmpty(original ? driver.getOrigClassName() : driver.getDriverClassName()));
+        driverURLText.setText(CommonUtils.notEmpty(original ? driver.getOrigSampleURL() : driver.getSampleURL()));
+        driverPortText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultPort() : driver.getDefaultPort()));
+        driverDatabaseText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultDatabase() : driver.getDefaultDatabase()));
+        driverUserText.setText(CommonUtils.notEmpty(original ? driver.getOrigDefaultUser() : driver.getDefaultUser()));
 
         embeddedDriverCheck.setSelection(original ? driver.isOrigEmbedded() : driver.isEmbedded());
         anonymousDriverCheck.setSelection(original ? driver.isOrigAnonymousAccess() : driver.isAnonymousAccess());
@@ -793,6 +811,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(driverPortText.getText());
+        driver.setDriverDefaultDatabase(driverDatabaseText.getText());
+        driver.setDriverDefaultUser(driverUserText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
         driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
         driver.setAllowsEmptyPassword(allowsEmptyPasswordCheck.getSelection());
@@ -801,8 +821,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
-        driver.setDriverParameters(CommonUtils.makeStringMap(driverPropertySource.getPropertiesWithDefaults()));
-        driver.setConnectionProperties(CommonUtils.makeStringMap(connectionPropertySource.getProperties()));
+        driver.setDriverParameters(driverPropertySource.getPropertiesWithDefaults());
+        driver.setConnectionProperties(connectionPropertySource.getPropertyValues());
 
         // Store client homes
         if (clientHomesPanel != null) {
@@ -811,7 +831,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
         if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
-            UIUtils.showMessageBox(getShell(), "Driver settings save", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_save_exists_title, NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_save_exists_message, driver.getName()), SWT.ICON_ERROR);
             return;
         }
 
@@ -828,7 +848,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         //log.debug(message);
         Runnable runnable = () -> {
             DBPDataSource dataSource = error.getDataSource();
-            String title = "Bad driver [" + dataSource.getContainer().getDriver().getName() + "] configuration";
+            String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration, dataSource.getContainer().getDriver().getName());
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
         UIUtils.syncExec(runnable);

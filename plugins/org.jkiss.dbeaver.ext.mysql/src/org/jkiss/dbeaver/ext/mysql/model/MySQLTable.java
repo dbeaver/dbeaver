@@ -153,7 +153,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
         // Copy constraints
         for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
             MySQLTableConstraint constr = new MySQLTableConstraint(monitor, this, srcConstr);
-            this.getContainer().constraintCache.cacheObject(constr);
+            this.getContainer().uniqueKeyCache.cacheObject(constr);
         }
 
         // Copy FKs
@@ -196,7 +196,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     @Override
     public long getStatObjectSize() {
-        return additionalInfo.dataLength;
+        return additionalInfo.dataLength + additionalInfo.indexLength;
     }
 
     @Nullable
@@ -229,13 +229,36 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
+        List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
+        if (getDataSource().supportsCheckConstraints()) {
+            List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
+            if (!CommonUtils.isEmpty(checkConstraintObjects)) {
+                constraintObjects.addAll(checkConstraintObjects);
+            }
+            return constraintObjects;
+        }
+        else {
+            return constraintObjects;
+        }
     }
 
-    public MySQLTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public MySQLTableConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
+        return getContainer().uniqueKeyCache.getObject(monitor, getContainer(), this, ukName);
+    }
+
+    @Association
+    public Collection<MySQLTableConstraint> getCheckConstraints(@NotNull DBRProgressMonitor monitor)
+            throws DBException
+    {
+         return getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
+    }
+
+    public MySQLTableConstraint getCheckConstraint(DBRProgressMonitor monitor, String constName)
+            throws DBException
+    {
+        return getContainer().checkConstraintCache.getObject(monitor, getContainer(), this, constName);
     }
 
     @Override
@@ -545,7 +568,10 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        getContainer().constraintCache.clearObjectCache(this);
+        getContainer().uniqueKeyCache.clearObjectCache(this);
+        if (getDataSource().supportsCheckConstraints()) {
+            getContainer().checkConstraintCache.clearObjectCache(this);
+        }
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
         this.referenceCache = null;
