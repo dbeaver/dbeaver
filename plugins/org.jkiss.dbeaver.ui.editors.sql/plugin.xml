@@ -397,7 +397,7 @@
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.editors.sql.convert.CopySourceCodeHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.edit.search.google" class="org.jkiss.dbeaver.ui.editors.sql.commands.OpenLinkInWindowHandler">
+        <handler commandId="org.jkiss.dbeaver.core.edit.search.web" class="org.jkiss.dbeaver.ui.editors.sql.commands.OpenLinkInWindowHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
 
@@ -735,7 +735,7 @@
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
-            <command commandId="org.jkiss.dbeaver.core.edit.search.google"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.search.web"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
