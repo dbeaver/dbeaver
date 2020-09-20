@@ -45,12 +45,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -60,8 +65,10 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+//fixme вытащить в поле активное workbench window
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
 
@@ -82,20 +89,24 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
         if (selection instanceof IStructuredSelection) {
             structSelection = (IStructuredSelection)selection;
-            for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
-                if (element instanceof DBNDatabaseNode) {
-                    deleteObject(activeWorkbenchWindow, (DBNDatabaseNode)element);
-                } else if (element instanceof DBNResource) {
-                    deleteResource(activeWorkbenchWindow, (DBNResource)element);
-                } else if (element instanceof DBNLocalFolder) {
-                    deleteLocalFolder(activeWorkbenchWindow, (DBNLocalFolder) element);
-                } else {
-                    log.warn("Don't know how to delete element '" + element + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            if (structSelection.size() < 2) {
+                for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
+                    Object element = iter.next();
+                    if (element instanceof DBNDatabaseNode) {
+                        deleteObject(activeWorkbenchWindow, (DBNDatabaseNode) element);
+                    } else if (element instanceof DBNResource) {
+                        deleteResource(activeWorkbenchWindow, (DBNResource) element);
+                    } else if (element instanceof DBNLocalFolder) {
+                        deleteLocalFolder(activeWorkbenchWindow, (DBNLocalFolder) element);
+                    } else {
+                        log.warn("Don't know how to delete element '" + element + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                    }
+                    if (deleteAll != null && !deleteAll) {
+                        break;
+                    }
                 }
-                if (deleteAll != null && !deleteAll) {
-                    break;
-                }
+            } else {
+                deleteMultipleObjects(activeWorkbenchWindow);
             }
         }
 
@@ -303,7 +314,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     }
 
-
     private class DeleteConfirmDialog extends MessageDialog {
         private final DBNNode node;
         private final boolean supportsCascade;
@@ -364,5 +374,322 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
             }
         }
+    }
+
+    //---------------------------------
+
+    private boolean showCascade = false;
+
+    private boolean showViewScript = false;
+
+    private static final Map<String, Object> OPTIONS_CASCADE;
+
+    static {
+        final Map<String, Object> map = new HashMap<>(1);
+        map.put(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
+        OPTIONS_CASCADE = Collections.unmodifiableMap(map);
+    }
+
+    private void deleteMultipleObjects(final IWorkbenchWindow window) {
+        resolveOptionalButtons(window);
+        final DeleteMultipleObjectsConfirmationDialog dialog =
+                new DeleteMultipleObjectsConfirmationDialog(window);
+        final int result = dialog.open();
+        if (result == IDialogConstants.YES_ID) {
+            deleteEverything(window, dialog.cascadeCheck);
+        } else if (result == IDialogConstants.DETAILS_ID) {
+            final boolean persistCheck = showScriptWindow(window, dialog.cascadeCheck);
+            if (persistCheck) {
+                deleteMultipleObjects(window);
+            }
+        }
+    }
+
+    private void resolveOptionalButtons(final IWorkbenchWindow window) {
+        for (Object obj: structSelection) {
+            if (!(obj instanceof DBNDatabaseNode)) {
+                continue;
+            }
+            final DBNDatabaseNode node = (DBNDatabaseNode) obj;
+            if (!(node.getParentNode() instanceof DBNContainer)) {
+                continue;
+            }
+            final DBSObject object = node.getObject();
+            if (object == null) {
+                continue;
+            }
+            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            if (objectMaker == null) {
+                continue;
+            }
+            showCascade |= (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
+            CommandTarget commandTarget;
+            try {
+                commandTarget = getCommandTarget(
+                        window,
+                        node.getParentNode(),
+                        object.getClass(),
+                        false
+                );
+            } catch (DBException e) {
+                continue;
+            }
+            if (deleteAll == null || !deleteAll) { //fixme: do I need this?
+                this.deleteOptions.clear();
+            }
+            if (object.isPersisted() && commandTarget.getEditor() == null) {
+                showViewScript = true;
+            }
+        }
+    }
+
+    private class DeleteMultipleObjectsConfirmationDialog extends MessageDialog {
+        private boolean cascadeCheck;
+
+        private boolean viewScriptCheck;
+
+        DeleteMultipleObjectsConfirmationDialog(final IWorkbenchWindow window) {
+            super(
+                    window.getShell(),
+                    "Title",
+                    DBeaverIcons.getImage(UIIcon.REJECT),
+                    "Message",
+                    MessageDialog.CONFIRM,
+                    null,
+                    0
+            );
+        }
+
+        @Override
+        protected Control createCustomArea(final Composite parent) {
+            setUpObjectsTable(parent);
+            setUpCascadeButton(parent);
+            return super.createCustomArea(parent);
+        }
+
+        private void setUpObjectsTable(final Composite parent) {
+            //todo
+        }
+
+        private void setUpCascadeButton(final Composite parent) {//fixme refactor
+            if (!showCascade) {
+                return;
+            }
+            final Composite ph = UIUtils.createPlaceholder(parent, 1, 5);
+            final Button cascadeCheckButton =
+                    UIUtils.createCheckbox(
+                            ph,
+                            "Cascade delete",
+                            "Delete all dependent/child objects",
+                            false,
+                            0
+                    );
+            cascadeCheckButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    cascadeCheck = cascadeCheckButton.getSelection();
+                }
+            });
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(final Composite parent) {
+            createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
+            createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
+            if (showViewScript) {
+                createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
+            }
+        }
+    }
+
+    private void deleteEverything(final IWorkbenchWindow window, final boolean cascadeCheck) {
+        for (Object obj: structSelection) {
+            if (obj instanceof DBNDatabaseNode) {
+                deleteObject2(window, (DBNDatabaseNode)obj, cascadeCheck);
+            } else if (obj instanceof DBNResource) {
+                deleteResource2(window, (DBNResource)obj);
+            } else if (obj instanceof DBNLocalFolder) {
+                deleteLocalFolder2(window, (DBNLocalFolder) obj);
+            } else {
+                log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+    }
+
+    private void deleteLocalFolder2(IWorkbenchWindow window, DBNLocalFolder folder) {
+        folder.getDataSourceRegistry().removeFolder(folder.getFolder(), false);
+        DBNModel.updateConfigAndRefreshDatabases(folder);
+    }
+
+    private void deleteResource2(IWorkbenchWindow window, DBNResource resource) {
+        final IResource iResource = resource.getResource();
+        try {
+            if (iResource instanceof IFolder) {
+                ((IFolder)iResource).delete(true, true, new NullProgressMonitor());
+            } else if (iResource instanceof IProject) {
+                // Delete project (with all contents)
+                final boolean deleteContent = UIUtils.confirmAction(window.getShell(), "Delete project", "Delete project '" + iResource.getName() + "' contents?");
+                ((IProject) iResource).delete(deleteContent, true, new NullProgressMonitor());
+            } else if (iResource != null) {
+                iResource.delete(IResource.FORCE | IResource.KEEP_HISTORY, new NullProgressMonitor());
+            }
+        } catch (CoreException e) {
+            DBWorkbench.getPlatformUI().showError("Resource delete error", "Error deleting '" + iResource.getFullPath().toString() + "'", e);
+        }
+    }
+
+    private void deleteObject2(final IWorkbenchWindow window, final DBNDatabaseNode node, final boolean cascadeCheck) {
+        try {
+            if (!(node.getParentNode() instanceof DBNContainer)) {
+                throw new DBException("Node '" + node + "' doesn't have a container");
+            }
+            final DBSObject object = node.getObject();
+            if (object == null) {
+                throw new DBException("Can't delete node with null object");
+            }
+            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            if (objectMaker == null) {
+                throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
+            }
+            final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
+            CommandTarget commandTarget = getCommandTarget(
+                    window,
+                    node.getParentNode(),
+                    object.getClass(),
+                    false
+            );
+            if (!object.isPersisted() || commandTarget.getEditor() != null) {
+                // Not a real object delete because it's not persisted
+                // There should be command context somewhere
+                if (deleteNewObject2(window, node)) {
+                    return;
+                }
+                // No direct editor host found for this object -
+                // try to find corresponding command context
+                // and execute command within it
+            }
+            Map<String, Object> deleteOptions = Collections.EMPTY_MAP;
+            if (cascadeCheck && supportsCascade) {
+                deleteOptions = OPTIONS_CASCADE;
+            }
+            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
+            if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
+                // Persist object deletion - only if there is no host editor and we have a command context
+                final ObjectSaver deleter = new ObjectSaver(commandTarget.getContext(), deleteOptions);
+                tasksToExecute.add(deleter);
+            }
+        } catch (Throwable e) {
+            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_delete_object_title, "Can't delete object '" + node.getNodeName() + "'", e);
+        }
+    }
+
+    private boolean deleteNewObject2(final IWorkbenchWindow window, final DBNDatabaseNode node) { //fixme remove UI and adapt
+        for (final IEditorReference editorRef : window.getActivePage().getEditorReferences()) {
+            final IEditorPart editor = editorRef.getEditor(false);
+            if (editor instanceof IDatabaseEditor) {
+                final IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput && ((IDatabaseEditorInput) editorInput).getDatabaseObject() == node.getObject()) {
+                    window.getActivePage().closeEditor(editor, false);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean showScriptWindow(final IWorkbenchWindow window, final boolean checkCascade) { //fixme
+//        final String sql = collectSQL(window, checkCascade);
+//        if (sql.length() > 0) {
+//            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+//            if (serviceSQL != null) {
+//                return serviceSQL.openSQLViewer(
+//                        commandContext.getExecutionContext(), "dialogTitle", UIIcon.SQL_PREVIEW, sql, true, false) == IDialogConstants.PROCEED_ID;
+//            }
+//        } else {
+//            return UIUtils.confirmAction(window.getShell(), "dialogTitle", "No SQL script available.\nAre you sure you want to proceed?");
+//        }
+        return false;
+    }
+
+    private String collectSQL(final IWorkbenchWindow window, final boolean checkCascade) {
+        final StringBuilder sql = new StringBuilder();
+        for (Object obj: structSelection) {
+            if (obj instanceof DBNDatabaseNode) {
+                appendScript(sql, (DBNDatabaseNode) obj, window, checkCascade);
+            }
+        }
+        return sql.toString();
+    }
+
+    private void appendScript(final StringBuilder sql, final DBNDatabaseNode node, final IWorkbenchWindow window, final boolean checkCascade) {
+        if (!(node.getParentNode() instanceof DBNContainer)) {
+            return;
+        }
+        // Try to delete object using object manager
+        final DBSObject object = node.getObject();
+        if (object == null) {
+            return;
+        }
+        final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+        if (objectMaker == null) {
+            return;
+        }
+        final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
+        final CommandTarget commandTarget;
+        try {
+            commandTarget = getCommandTarget(
+                    window,
+                    node.getParentNode(),
+                    object.getClass(),
+                    false
+            );
+        } catch (DBException e) {
+            log.warn(e);
+            return;
+        }
+        if (!object.isPersisted() || commandTarget.getEditor() != null) {
+            return;
+        }
+        final Map<String, Object> deleteOptions;
+        if (supportsCascade && checkCascade) {
+            deleteOptions = OPTIONS_CASCADE;
+        } else {
+            deleteOptions = Collections.EMPTY_MAP;
+        }
+        try {
+            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
+        } catch (DBException e) {
+            log.warn(e);
+            return;
+        }
+        final StringBuilder script = new StringBuilder();
+        final DBECommandContext commandContext = commandTarget.getContext();
+        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    for (DBECommand command : commands) {
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
+                        script.append(
+                                SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
+                                        persistActions,
+                                        false));
+                        if (script.length() == 0) {
+                            script.append(
+                                    SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
+                                            persistActions,
+                                            false));
+                        }
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Script generation error", "Error generating alter script", e.getTargetException());
+        } catch (InterruptedException ignored) {
+        }
+        commandTarget.getContext().resetChanges(true);
+        sql.append(script);
     }
 }
