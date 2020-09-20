@@ -41,6 +41,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
@@ -209,17 +210,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void changePage() {
+        TreeItem[] selection = pagesTree.getSelection();
+        if (selection.length != 1) {
+            return;
+        }
+        TreeItem newItem = selection[0];
+        if (prevPage == newItem.getData()) {
+            return;
+        }
+
         pageArea.setRedraw(false);
         try {
-            TreeItem[] selection = pagesTree.getSelection();
-            if (selection.length != 1) {
-                return;
-            }
-            TreeItem newItem = selection[0];
-            if (prevPage == newItem.getData()) {
-                return;
-            }
-
             GridData gd;
             if (prevPage != null) {
                 gd = (GridData) prevPage.getControl().getLayoutData();
@@ -306,7 +307,20 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (item.getData() == page) {
                 pagesTree.setSelection(item);
                 changePage();
-                break;
+                return;
+            }
+            if (item.getData() instanceof ICompositeDialogPageContainer) {
+                IDialogPage[] subPages = ((ICompositeDialogPageContainer) item.getData()).getSubPages(false, false);
+                if (!ArrayUtils.isEmpty(subPages)) {
+                    for (IDialogPage subPage : subPages) {
+                        if (subPage == page) {
+                            pagesTree.setSelection(item);
+                            changePage();
+                            ((ICompositeDialogPageContainer) item.getData()).showSubPage(page);
+                            return;
+                        }
+                    }
+                }
             }
             for (TreeItem child : item.getItems()) {
                 if (child.getData() == page) {
@@ -396,4 +410,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
+    protected void showPage(String pageName) {
+
+    }
 }
