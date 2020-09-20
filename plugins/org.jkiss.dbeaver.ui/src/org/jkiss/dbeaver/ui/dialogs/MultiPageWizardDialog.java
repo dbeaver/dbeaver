@@ -255,9 +255,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 gd = (GridData) pageControl.getLayoutData();
                 gd.exclude = false;
                 page.setVisible(true);
-                if (page instanceof ActiveWizardPage) {
-                    ((ActiveWizardPage) page).activatePage();
-                }
             }
 
             setTitle(page.getTitle());
