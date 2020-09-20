@@ -136,8 +136,26 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.setItemRenderer(new DefaultNavigatorNodeRenderer());
 
         {
-            //tree.addListener(SWT.EraseItem, event -> eraseItem(tree, event));
-            tree.addListener(SWT.PaintItem, event -> paintItem(tree, event));
+            //tree.addListener(SWT.EraseItem, event -> onEraseItem(tree, event));
+            tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
+            if (false) {
+                // See comments for StatisticsNavigatorNodeRenderer.PAINT_ACTION_HOVER
+                Listener mouseListener = e -> {
+                    TreeItem item = tree.getItem(new Point(e.x, e.y));
+                    if (item != null) {
+                        Rectangle itemBounds = item.getBounds();
+                        Point treeSize = tree.getSize();
+                        tree.redraw(itemBounds.x, itemBounds.y, treeSize.x, treeSize.y, false);
+                    }
+                };
+
+                tree.addListener(SWT.MouseMove, mouseListener);
+                //tree.addListener(SWT.MouseHover, mouseListener);
+                tree.addListener(SWT.MouseEnter, mouseListener);
+                tree.addListener(SWT.MouseExit, mouseListener);
+            }
+            tree.addListener(SWT.MouseDown, event -> onItemMouseDown(tree, event, false));
+            tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
         }
     }
 
@@ -178,7 +196,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.itemRenderer = itemRenderer;
     }
 
-    private void eraseItem(Tree tree, Event event) {
+    private void onEraseItem(Tree tree, Event event) {
         if (itemRenderer != null) {
             Object element = event.item.getData();
             if (element instanceof DBNNode) {
@@ -187,11 +205,23 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    private void paintItem(Tree tree, Event event) {
+    private void onPaintItem(Tree tree, Event event) {
         if (itemRenderer != null) {
             Object element = event.item.getData();
             if (element instanceof DBNNode) {
                 itemRenderer.paintNodeDetails((DBNNode) element, tree, event.gc, event);
+            }
+        }
+    }
+
+    private void onItemMouseDown(Tree tree, Event event, boolean defaultAction) {
+        if (itemRenderer != null) {
+            TreeItem item = tree.getItem(new Point(event.x, event.y));
+            if (item != null) {
+                Object element = item.getData();
+                if (element instanceof DBNNode) {
+                    itemRenderer.performAction((DBNNode) element, tree, event, defaultAction);
+                }
             }
         }
     }
