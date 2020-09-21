@@ -461,7 +461,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } catch (DBException e) {
                 continue;
             }
-            if (object.isPersisted() && commandTarget.getEditor() == null) {
+            if (object.isPersisted() && commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 showViewScript = true;
             }
         }
