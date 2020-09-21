@@ -178,7 +178,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     "-m", "PEM",
                     "-f", tmp.getAbsolutePath(),
                     "-q",
-                    "-N", CommonUtils.isEmpty(password) ? "\"\"" : password)
+                    "-N", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"')
                 .start();
 
             try {
