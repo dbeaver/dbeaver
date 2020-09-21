@@ -120,8 +120,8 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                                 : navigatorModel.getNodeByObject(selectedFunction);
                         DBNNode node = DBWorkbench.getPlatformUI().selectObject(parent.getShell(),
                                 "Select function for ", dsNode, curNode,
-                                new Class[]{DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
-                                new Class[]{PostgreProcedure.class}, null);
+                                new Class[]{ DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class },
+                                new Class[]{ PostgreProcedure.class }, null);
                         if (node instanceof DBNDatabaseNode
                                 && ((DBNDatabaseNode) node).getObject() instanceof PostgreProcedure) {
                             functionCombo.removeAll();

@@ -45,18 +45,19 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2 {
-    /* Bits within tgtype */
-    public static final int TRIGGER_TYPE_ROW = (1 << 0);
-    public static final int TRIGGER_TYPE_BEFORE = (1 << 1);
-    public static final int TRIGGER_TYPE_INSERT = (1 << 2);
-    public static final int TRIGGER_TYPE_DELETE = (1 << 3);
-    public static final int TRIGGER_TYPE_UPDATE = (1 << 4);
-    public static final int TRIGGER_TYPE_TRUNCATE = (1 << 5);
-    public static final int TRIGGER_TYPE_INSTEAD = (1 << 6);
+public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject, DBPScriptObjectExt2
+{
     private static final Log log = Log.getLog(PostgreTrigger.class);
-    protected String name;
-    protected String description;
+
+    /* Bits within tgtype */
+    public static final int TRIGGER_TYPE_ROW        = (1 << 0);
+    public static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
+    public static final int TRIGGER_TYPE_INSERT     = (1 << 2);
+    public static final int TRIGGER_TYPE_DELETE     = (1 << 3);
+    public static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
+    public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
+    public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
+
     private PostgreTableReal table;
     private long objectId;
     private String enabledState;
@@ -68,6 +69,8 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private PostgreTriggerType type;
     private boolean persisted;
     private PostgreTableColumn[] columnRefs;
+    protected String description;
+    protected String name;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
