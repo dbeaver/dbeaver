@@ -24,13 +24,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -50,7 +47,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
  * Postgre sequence configurator
  */
 public class PostgreTriggerConfigurator implements DBEObjectConfigurator<PostgreTrigger> {
-    
+
     protected static final Log log = Log.getLog(PostgreTriggerConfigurator.class);
 
     @Override
@@ -63,20 +60,8 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                 if (!editPage.edit()) {
                     return null;
                 }
-                try {
-                    trigger.setName(editPage.getEntityName());
-                    trigger.setFunction(editPage.selectedFunction);
-                    String procName = "X";
-                    PostgreProcedure function = trigger.getFunction(monitor);
-                    if (function != null) {
-                        procName = function.getFullQualifiedSignature();
-                    }
-                    trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
-                            + "BEFORE UPDATE" + " " + "\n" + "ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
-                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + (function == null ? procName : function.getFullyQualifiedName(DBPEvaluationContext.DDL))+ "()\n");
-                } catch (DBException e) {
-                    log.error(e);
-                }
+                trigger.setName(editPage.getEntityName());
+                trigger.setFunction(editPage.selectedFunction);
                 return trigger;
             }
         }.execute();
@@ -87,17 +72,10 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
         PostgreTrigger trigger;
         CSmartSelector functionCombo;
         PostgreProcedure selectedFunction;
-        Text processIdText;
-        
-        public TriggerEditPage editPage;
 
         public TriggerEditPage(PostgreTrigger trigger) {
             super(trigger.getDataSource(), DBSEntityType.TRIGGER);
             this.trigger = trigger;
-        }
-        
-        public TriggerEditPage getEditPage() {
-            return editPage;
         }
 
         @Override
@@ -142,8 +120,8 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                                 : navigatorModel.getNodeByObject(selectedFunction);
                         DBNNode node = DBWorkbench.getPlatformUI().selectObject(parent.getShell(),
                                 "Select function for ", dsNode, curNode,
-                                new Class[] { DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class },
-                                new Class[] { PostgreProcedure.class }, null);
+                                new Class[]{DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
+                                new Class[]{PostgreProcedure.class}, null);
                         if (node instanceof DBNDatabaseNode
                                 && ((DBNDatabaseNode) node).getObject() instanceof PostgreProcedure) {
                             functionCombo.removeAll();
@@ -151,13 +129,9 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                             functionCombo.addItem(selectedFunction);
                             functionCombo.select(selectedFunction);
                         }
-                        
                     }
                 }
-
             }
-            
         }
     }
-
 }
