@@ -22,14 +22,19 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants.AuthType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * SSH tunnel
@@ -51,15 +56,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             String autoTypeString = CommonUtils.toString(configuration.getProperty(SSHConstants.PROP_AUTH_TYPE));
             AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
-                (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
-                CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
+                    (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
+                    CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
 
             if (authType == AuthType.PUBLIC_KEY) {
-                if (!CommonUtils.isEmpty(configuration.getPassword())) {
-                    jsch.addIdentity(privKeyFile.getAbsolutePath(), configuration.getPassword());
-                } else {
-                    jsch.addIdentity(privKeyFile.getAbsolutePath());
-                }
+                addIdentityKey(privKeyFile, configuration.getPassword());
             } else if (authType == AuthType.AGENT) {
                 log.debug("Creating identityRepository");
                 IdentityRepository identityRepository = new DBeaverIdentityRepository(this, getAgentData());
@@ -148,6 +149,63 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         if (!isAlive) {
             closeTunnel(monitor);
             initTunnel(monitor, DBWorkbench.getPlatform(), savedConfiguration, savedConnectionInfo);
+        }
+    }
+
+    private void addIdentityKey(File key, String password) throws IOException, JSchException {
+        String header;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(key))) {
+            header = reader.readLine();
+        }
+
+        /*
+         * This code is workaround for JSCH because it cannot load
+         * newer private keys produced by ssh-keygen, so we need
+         * to do it manually. This algorithm will fail if the 'ssh-keygen'
+         * cannot be found (#5845)
+         */
+        if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
+            log.warn("Attempting to convert unsupported key");
+
+            File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "openssh-pkey");
+            File tmp = new File(dir, "key.pem");
+
+            Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+
+            try {
+                Process process = new ProcessBuilder()
+                        .command("ssh-keygen",
+                                "-p",
+                                "-m", "PEM",
+                                "-f", tmp.getAbsolutePath(),
+                                "-q",
+                                "-N", CommonUtils.isEmpty(password) ? "\"\"" : password)
+                        .redirectError(ProcessBuilder.Redirect.INHERIT)
+                        .start();
+
+                process.waitFor();
+            } catch (InterruptedException e) {
+                log.error(e);
+            } catch (IOException e) {
+                throw new IOException("Specified private key is not supported and cannot be converted", e);
+            }
+
+            addIdentityKey0(tmp, password);
+
+            if (!tmp.delete()) {
+                log.warn("Failed to delete private key file");
+            }
+        } else {
+            addIdentityKey0(key, password);
+        }
+    }
+
+    private void addIdentityKey0(File key, String password) throws JSchException {
+        if (!CommonUtils.isEmpty(password)) {
+            jsch.addIdentity(key.getAbsolutePath(), password);
+        } else {
+            jsch.addIdentity(key.getAbsolutePath());
         }
     }
 
