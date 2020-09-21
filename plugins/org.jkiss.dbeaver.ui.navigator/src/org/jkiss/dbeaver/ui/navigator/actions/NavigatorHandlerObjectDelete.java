@@ -476,7 +476,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     UINavigatorMessages.confirm_deleting_multiple_objects_title,
                     DBeaverIcons.getImage(UIIcon.REJECT),
                     UINavigatorMessages.confirm_deleting_multiple_objects_message,
-                    MessageDialog.CONFIRM,
+                    MessageDialog.WARNING,
                     null,
                     0
             );
@@ -507,10 +507,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 final DBNNode node = (DBNNode) obj;
                 final TableItem item = new TableItem(objectsTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-                item.setText(0, node.getNodeName());
+                item.setText(0, node.getNodeFullName());
                 item.setText(1, CommonUtils.toString(node.getNodeDescription()));
             }
-            UIUtils.packColumns(objectsTable);
+            UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
         }
 
         private void setUpCascadeButton(final Composite parent) {
