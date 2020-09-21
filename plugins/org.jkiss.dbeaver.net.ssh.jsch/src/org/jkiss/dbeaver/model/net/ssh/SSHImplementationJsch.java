@@ -19,22 +19,20 @@ package org.jkiss.dbeaver.model.net.ssh;
 import com.jcraft.jsch.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants.AuthType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.stream.Collectors;
 
 /**
  * SSH tunnel
@@ -58,9 +56,8 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             AuthType authType = CommonUtils.isEmpty(autoTypeString) ?
                     (privKeyFile == null ? AuthType.PASSWORD : AuthType.PUBLIC_KEY) :
                     CommonUtils.valueOf(AuthType.class, autoTypeString, AuthType.PASSWORD);
-
             if (authType == AuthType.PUBLIC_KEY) {
-                addIdentityKey(privKeyFile, configuration.getPassword());
+                addIdentityKey(monitor, configuration.getDataSource(), privKeyFile, configuration.getPassword());
             } else if (authType == AuthType.AGENT) {
                 log.debug("Creating identityRepository");
                 IdentityRepository identityRepository = new DBeaverIdentityRepository(this, getAgentData());
@@ -152,7 +149,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKey(File key, String password) throws IOException, JSchException {
+    private void addIdentityKey(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
         String header;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(key))) {
@@ -160,41 +157,49 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
 
         /*
-         * This code is workaround for JSCH because it cannot load
+         * This code is a workaround for JSCH because it cannot load
          * newer private keys produced by ssh-keygen, so we need
-         * to do it manually. This algorithm will fail if the 'ssh-keygen'
-         * cannot be found (#5845)
+         * to convert it to the older format manually. This
+         * algorithm will fail if the 'ssh-keygen' cannot be found (#5845)
          */
         if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
-            log.warn("Attempting to convert unsupported key");
+            log.debug("Attempting to convert unsupported key");
 
-            File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "openssh-pkey");
-            File tmp = new File(dir, "key.pem");
+            File dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
+            File tmp = new File(dir, dataSource.getId() + ".pem");
 
             Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
+            Process process = new ProcessBuilder()
+                .command(
+                    "ssh-keygen",
+                    "-p",
+                    "-m", "PEM",
+                    "-f", tmp.getAbsolutePath(),
+                    "-q",
+                    "-N", CommonUtils.isEmpty(password) ? "\"\"" : password)
+                .start();
+
             try {
-                Process process = new ProcessBuilder()
-                        .command("ssh-keygen",
-                                "-p",
-                                "-m", "PEM",
-                                "-f", tmp.getAbsolutePath(),
-                                "-q",
-                                "-N", CommonUtils.isEmpty(password) ? "\"\"" : password)
-                        .redirectError(ProcessBuilder.Redirect.INHERIT)
-                        .start();
+                int status = process.waitFor();
 
-                process.waitFor();
+                if (status != 0) {
+                    String message;
+
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                        message = reader.lines().collect(Collectors.joining());
+                    }
+
+                    throw new IOException("Specified private key cannot be converted:\n" + message);
+                }
+
+                addIdentityKey0(tmp, password);
             } catch (InterruptedException e) {
-                log.error(e);
-            } catch (IOException e) {
-                throw new IOException("Specified private key is not supported and cannot be converted", e);
-            }
-
-            addIdentityKey0(tmp, password);
-
-            if (!tmp.delete()) {
-                log.warn("Failed to delete private key file");
+                log.debug(e);
+            } finally {
+                if (!tmp.delete()) {
+                    log.debug("Failed to delete private key file");
+                }
             }
         } else {
             addIdentityKey0(key, password);
@@ -249,7 +254,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
             log.debug("JSCH keyboard interactive auth");
-            return new String[] { configuration.getPassword() } ;
+            return new String[]{configuration.getPassword()};
         }
     }
 
