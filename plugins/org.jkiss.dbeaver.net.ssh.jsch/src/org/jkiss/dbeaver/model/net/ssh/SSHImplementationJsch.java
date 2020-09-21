@@ -32,6 +32,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -181,7 +182,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 .start();
 
             try {
-                int status = process.waitFor();
+                if (!process.waitFor(5000, TimeUnit.MILLISECONDS)) {
+                    process.destroyForcibly();
+                }
+
+                int status = process.exitValue();
 
                 if (status != 0) {
                     String message;
@@ -195,7 +200,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
                 addIdentityKey0(tmp, password);
             } catch (InterruptedException e) {
-                log.debug(e);
+                throw new IOException(e);
             } finally {
                 if (!tmp.delete()) {
                     log.debug("Failed to delete private key file");
@@ -254,7 +259,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
             log.debug("JSCH keyboard interactive auth");
-            return new String[]{configuration.getPassword()};
+            return new String[]{ configuration.getPassword() };
         }
     }
 
