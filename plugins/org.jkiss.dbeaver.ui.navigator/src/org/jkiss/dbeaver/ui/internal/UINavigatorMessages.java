@@ -201,8 +201,8 @@ public class UINavigatorMessages extends NLS {
     public static String label_error_list;
     public static String label_instance;
 
-    public static String error_deleting_multiple_objects_title;
-    public static String error_deleting_multiple_objects_message;
+    public static String error_deleting_multiple_objects_from_different_datasources_title;
+    public static String error_deleting_multiple_objects_from_different_datasources_message;
     public static String confirm_deleting_multiple_objects_title;
     public static String confirm_deleting_multiple_objects_message;
     public static String confirm_deleting_multiple_objects_table_group_name;
