@@ -28,12 +28,12 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -44,6 +44,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -64,9 +65,11 @@ import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 //fixme вытащить в поле активное workbench window
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
@@ -382,6 +385,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private boolean showViewScript = false;
 
+    private boolean multipleDataSources = false;
+
+    private @Nullable DBECommandContext commandContext = null;
+
     private static final Map<String, Object> OPTIONS_CASCADE;
 
     static {
@@ -391,7 +398,16 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     private void deleteMultipleObjects(final IWorkbenchWindow window) {
-        resolveOptionalButtons(window);
+        resolveOptions(window);
+        if (multipleDataSources) {
+            DBWorkbench.getPlatformUI().
+                    showError(
+                            UINavigatorMessages.error_deleting_multiple_objects_title,
+                            UINavigatorMessages.error_deleting_multiple_objects_message
+                    );
+            resetHandler();
+            return;
+        }
         final DeleteMultipleObjectsConfirmationDialog dialog =
                 new DeleteMultipleObjectsConfirmationDialog(window);
         final int result = dialog.open();
@@ -400,17 +416,28 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         } else if (result == IDialogConstants.DETAILS_ID) {
             final boolean persistCheck = showScriptWindow(window, dialog.cascadeCheck);
             if (persistCheck) {
+                deleteEverything(window, dialog.cascadeCheck);
+            } else {
+                commandContext.resetChanges(true);
                 deleteMultipleObjects(window);
             }
         }
+        resetHandler();
     }
 
-    private void resolveOptionalButtons(final IWorkbenchWindow window) {
+    private void resolveOptions(final IWorkbenchWindow window) {
+        DBPDataSource dataSource = null;
         for (Object obj: structSelection) {
             if (!(obj instanceof DBNDatabaseNode)) {
                 continue;
             }
             final DBNDatabaseNode node = (DBNDatabaseNode) obj;
+            final DBPDataSource currentDatasource = node.getDataSource();
+            if (dataSource == null) {
+                dataSource = currentDatasource;
+            } else if (!dataSource.equals(currentDatasource)) {
+                multipleDataSources = true;
+            }
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 continue;
             }
@@ -423,7 +450,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 continue;
             }
             showCascade |= (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
-            CommandTarget commandTarget;
+            final CommandTarget commandTarget;
             try {
                 commandTarget = getCommandTarget(
                         window,
@@ -434,9 +461,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } catch (DBException e) {
                 continue;
             }
-            if (deleteAll == null || !deleteAll) { //fixme: do I need this?
-                this.deleteOptions.clear();
-            }
             if (object.isPersisted() && commandTarget.getEditor() == null) {
                 showViewScript = true;
             }
@@ -446,14 +470,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     private class DeleteMultipleObjectsConfirmationDialog extends MessageDialog {
         private boolean cascadeCheck;
 
-        private boolean viewScriptCheck;
-
         DeleteMultipleObjectsConfirmationDialog(final IWorkbenchWindow window) {
             super(
                     window.getShell(),
-                    "Title",
+                    UINavigatorMessages.confirm_deleting_multiple_objects_title,
                     DBeaverIcons.getImage(UIIcon.REJECT),
-                    "Message",
+                    UINavigatorMessages.confirm_deleting_multiple_objects_message,
                     MessageDialog.CONFIRM,
                     null,
                     0
@@ -468,10 +490,30 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
 
         private void setUpObjectsTable(final Composite parent) {
-            //todo
+            final Composite placeholder = UIUtils.createComposite(parent, 1);
+            placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            final Group tableGroup = UIUtils.createControlGroup(placeholder, UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name, 1, GridData.FILL_BOTH, 0);
+            tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            final Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            objectsTable.setHeaderVisible(false);
+            objectsTable.setLinesVisible(true);
+            objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
+            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
+            for (Object obj: structSelection) {
+                if (!(obj instanceof DBNNode)) {
+                    continue;
+                }
+                final DBNNode node = (DBNNode) obj;
+                final TableItem item = new TableItem(objectsTable, SWT.NONE);
+                item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
+                item.setText(0, node.getNodeName());
+                item.setText(1, CommonUtils.toString(node.getNodeDescription()));
+            }
+            UIUtils.packColumns(objectsTable);
         }
 
-        private void setUpCascadeButton(final Composite parent) {//fixme refactor
+        private void setUpCascadeButton(final Composite parent) {
             if (!showCascade) {
                 return;
             }
@@ -479,8 +521,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             final Button cascadeCheckButton =
                     UIUtils.createCheckbox(
                             ph,
-                            "Cascade delete",
-                            "Delete all dependent/child objects",
+                            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox,
+                            UINavigatorMessages.confirm_deleting_multiple_objects_cascade_checkbox_tooltip,
                             false,
                             0
                     );
@@ -528,13 +570,16 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 ((IFolder)iResource).delete(true, true, new NullProgressMonitor());
             } else if (iResource instanceof IProject) {
                 // Delete project (with all contents)
-                final boolean deleteContent = UIUtils.confirmAction(window.getShell(), "Delete project", "Delete project '" + iResource.getName() + "' contents?");
-                ((IProject) iResource).delete(deleteContent, true, new NullProgressMonitor());
+                ((IProject) iResource).delete(true, true, new NullProgressMonitor());
             } else if (iResource != null) {
                 iResource.delete(IResource.FORCE | IResource.KEEP_HISTORY, new NullProgressMonitor());
             }
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("Resource delete error", "Error deleting '" + iResource.getFullPath().toString() + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.error_deleting_resource_title,
+                    NLS.bind(UINavigatorMessages.error_deleting_multiple_objects_message, iResource.getFullPath().toString()),
+                    e
+            );
         }
     }
 
@@ -552,7 +597,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
             final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
-            CommandTarget commandTarget = getCommandTarget(
+            final CommandTarget commandTarget = getCommandTarget(
                     window,
                     node.getParentNode(),
                     object.getClass(),
@@ -579,11 +624,15 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 tasksToExecute.add(deleter);
             }
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_delete_object_title, "Can't delete object '" + node.getNodeName() + "'", e);
+            DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.actions_navigator_error_dialog_delete_object_title,
+                    NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message, node.getNodeName()),
+                    e
+            );
         }
     }
 
-    private boolean deleteNewObject2(final IWorkbenchWindow window, final DBNDatabaseNode node) { //fixme remove UI and adapt
+    private boolean deleteNewObject2(final IWorkbenchWindow window, final DBNDatabaseNode node) {
         for (final IEditorReference editorRef : window.getActivePage().getEditorReferences()) {
             final IEditorPart editor = editorRef.getEditor(false);
             if (editor instanceof IDatabaseEditor) {
@@ -598,16 +647,26 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     private boolean showScriptWindow(final IWorkbenchWindow window, final boolean checkCascade) { //fixme
-//        final String sql = collectSQL(window, checkCascade);
-//        if (sql.length() > 0) {
-//            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-//            if (serviceSQL != null) {
-//                return serviceSQL.openSQLViewer(
-//                        commandContext.getExecutionContext(), "dialogTitle", UIIcon.SQL_PREVIEW, sql, true, false) == IDialogConstants.PROCEED_ID;
-//            }
-//        } else {
-//            return UIUtils.confirmAction(window.getShell(), "dialogTitle", "No SQL script available.\nAre you sure you want to proceed?");
-//        }
+        final String sql = collectSQL(window, checkCascade);
+        if (sql.length() > 0) {
+            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+            if (serviceSQL != null) {
+                return serviceSQL.openSQLViewer(
+                        commandContext.getExecutionContext(),
+                        UINavigatorMessages.actions_navigator_delete_script,
+                        UIIcon.SQL_PREVIEW,
+                        sql,
+                        true,
+                        false
+                ) == IDialogConstants.PROCEED_ID;
+            }
+        } else {
+            return UIUtils.confirmAction(
+                    window.getShell(),
+                    UINavigatorMessages.actions_navigator_delete_script,
+                    UINavigatorMessages.question_no_sql_available
+            );
+        }
         return false;
     }
 
@@ -647,6 +706,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             log.warn(e);
             return;
         }
+        if (commandContext == null) {
+            commandContext = commandTarget.getContext();
+        }
         if (!object.isPersisted() || commandTarget.getEditor() != null) {
             return;
         }
@@ -664,12 +726,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
         final StringBuilder script = new StringBuilder();
         final DBECommandContext commandContext = commandTarget.getContext();
-        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        final Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         try {
             UIUtils.runInProgressService(monitor -> {
                 try {
                     for (DBECommand command : commands) {
-                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
+                        final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
                         script.append(
                                 SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
                                         persistActions,
@@ -686,10 +748,24 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Script generation error", "Error generating alter script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.error_sql_generation_title,
+                    UINavigatorMessages.error_sql_generation_message,
+                    e.getTargetException()
+            );
         } catch (InterruptedException ignored) {
         }
         commandTarget.getContext().resetChanges(true);
+        if (sql.length() != 0) {
+            sql.append("\n");
+        }
         sql.append(script);
+    }
+
+    private void resetHandler() {
+        showCascade = false;
+        showViewScript = false;
+        multipleDataSources = false;
+        commandContext = null;
     }
 }
