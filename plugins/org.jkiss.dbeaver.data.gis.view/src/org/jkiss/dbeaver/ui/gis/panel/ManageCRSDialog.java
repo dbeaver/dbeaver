@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.gis.GisConstants;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 
@@ -101,8 +101,7 @@ public class ManageCRSDialog extends BaseDialog {
                 return super.isLeafMatch(viewer, element);
             }
         };
-        FilteredTree filteredTree = new FilteredTree(dialogArea, SWT.BORDER | SWT.FULL_SELECTION, patternFilter, true);
-        TreeViewer treeViewer = filteredTree.getViewer();
+        TreeViewer treeViewer = DialogUtils.createFilteredTree(dialogArea, SWT.BORDER | SWT.FULL_SELECTION, patternFilter, null);
         Tree crsTree = treeViewer.getTree();
         crsTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         crsTree.setHeaderVisible(true);

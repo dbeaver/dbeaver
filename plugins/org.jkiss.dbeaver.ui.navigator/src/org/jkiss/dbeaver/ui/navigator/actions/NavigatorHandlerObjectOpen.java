@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -271,7 +270,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     public static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer) {
         UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
         if (serviceConnections != null) {
-            serviceConnections.openConnectionEditor(dataSourceContainer);
+            serviceConnections.openConnectionEditor(dataSourceContainer, null);
         }
     }
 

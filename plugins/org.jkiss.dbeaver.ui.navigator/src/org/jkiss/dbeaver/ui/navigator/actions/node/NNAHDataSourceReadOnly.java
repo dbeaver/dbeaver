@@ -49,7 +49,7 @@ public class NNAHDataSourceReadOnly extends NavigatorNodeActionHandlerAbstract {
     }
 
     @Override
-    public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event) {
+    public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction) {
 
     }
 }

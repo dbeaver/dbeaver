@@ -235,6 +235,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         final IWizardPage page = getPage(pageId);
         if (page != null) {
             getContainer().showPage(page);
+            return true;
         }
         return false;
     }
