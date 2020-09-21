@@ -192,7 +192,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     String message;
 
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                        message = reader.lines().collect(Collectors.joining());
+                        message = reader.lines().collect(Collectors.joining("\n"));
                     }
 
                     throw new IOException("Specified private key cannot be converted:\n" + message);
