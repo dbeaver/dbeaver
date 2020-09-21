@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
@@ -27,14 +29,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface UIServiceConnections {
 
-    void openConnectionEditor(DBPDataSourceContainer dataSourceContainer);
+    void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, @Nullable String defaultPageName);
 
-    void connectDataSource(DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish);
+    void connectDataSource(@NotNull DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish);
 
-    void disconnectDataSource(DBPDataSourceContainer dataSourceContainer);
+    void disconnectDataSource(@NotNull DBPDataSourceContainer dataSourceContainer);
 
-    void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn);
+    void closeActiveTransaction(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, boolean commitTxn);
 
-    boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts);
+    boolean checkAndCloseActiveTransaction(@NotNull DBCExecutionContext[] contexts);
 
 }

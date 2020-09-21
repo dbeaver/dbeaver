@@ -368,6 +368,11 @@ public class ContentUtils {
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
+    public static boolean isTextMime(String mimeType)
+    {
+        return mimeType != null && mimeType.toLowerCase(Locale.ENGLISH).startsWith("text");
+    }
+
     public static boolean isTextValue(Object value)
     {
         if (value == null) {

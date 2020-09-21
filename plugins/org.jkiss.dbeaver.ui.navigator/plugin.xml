@@ -228,6 +228,10 @@
         <command id="org.jkiss.dbeaver.core.object.move.down" name="%command.org.jkiss.dbeaver.core.object.move.down.name" description="%command.org.jkiss.dbeaver.core.object.move.down.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
+        <command id="org.jkiss.dbeaver.navigator.filter.connected" name="%command.org.jkiss.dbeaver.navigator.filter.connected.name" description="%command.org.jkiss.dbeaver.navigator.filter.connected.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.navigator.filter.object.type" name="%command.org.jkiss.dbeaver.navigator.filter.object.type.name" description="%command.org.jkiss.dbeaver.navigator.filter.object.type.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="type" name="Object type" optional="false"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.object.filter.config" name="%command.org.jkiss.dbeaver.core.object.filter.config.name" description="%command.org.jkiss.dbeaver.core.object.filter.config.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.exclude" name="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.include" name="%command.org.jkiss.dbeaver.core.object.filter.add.include.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.include.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -277,6 +281,7 @@
         <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_up.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_down.png"/>
 
+        <image commandId="org.jkiss.dbeaver.navigator.filter.connected" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_apply.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
@@ -329,6 +334,10 @@
 -->
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.navigator.filter.connected" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerConnectionFilter">
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.navigator.filter.object.type" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterObjectType">
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.object.filter.config" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig">
             <enabledWhen>
                 <with variable="selection">
@@ -745,6 +754,21 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <!-- Database navigator filter toolbar -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar?after=additions">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.connected" id="org.jkiss.dbeaver.navigator.connectionFilterMenu" style="pulldown"/>
+        </menuContribution>
+
+        <!-- Connection filter menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.connectionFilterMenu">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="connection"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="container"/></command>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="table"/></command>
+            <separator name="connected_toggle" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
+        </menuContribution>
+
+        <!-- Tools toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="dbeaver-tools" label="Database Tools Toolbar">
                 <separator name="additions" visible="false"/>

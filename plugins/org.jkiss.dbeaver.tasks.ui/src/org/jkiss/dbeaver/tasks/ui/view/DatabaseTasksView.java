@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.*;
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -112,9 +112,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     private void createTaskRunTable(Composite parent) {
-        FilteredTree filteredTree = new FilteredTree(parent, SWT.SINGLE | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true);
-        filteredTree.setInitialText(TaskUIMessages.db_tasks_view_filtered_tree_text_error_message);
-        taskRunViewer = filteredTree.getViewer();
+        taskRunViewer = DialogUtils.createFilteredTree(parent, SWT.SINGLE | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), TaskUIMessages.db_tasks_view_filtered_tree_text_error_message);
         Tree taskrunTree = taskRunViewer.getTree();
         taskrunTree.setHeaderVisible(true);
         taskrunTree.setLayoutData(new GridData(GridData.FILL_BOTH));

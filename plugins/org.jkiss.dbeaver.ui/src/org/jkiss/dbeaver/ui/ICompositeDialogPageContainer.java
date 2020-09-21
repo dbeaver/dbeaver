@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.navigator;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.widgets.Event;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.eclipse.jface.dialogs.IDialogPage;
 
 /**
- * Node action handler
+ * ICompositeDialogPageContainer
  */
-public interface INavigatorNodeActionHandler {
+public interface ICompositeDialogPageContainer extends ICompositeDialogPage {
 
-    boolean isEnabledFor(INavigatorModelView view, DBNNode node);
-
-    boolean isSticky(INavigatorModelView view, DBNNode node);
-
-    DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node);
-
-    String getNodeActionToolTip(INavigatorModelView view, DBNNode node);
-
-    void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction);
+    void showSubPage(IDialogPage subPage);
 
 }

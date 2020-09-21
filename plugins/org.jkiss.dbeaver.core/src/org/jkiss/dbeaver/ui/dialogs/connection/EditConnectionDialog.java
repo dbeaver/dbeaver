@@ -50,6 +50,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     private static String lastActivePage;
 
     private Button testButton;
+    private String defaultPageName;
 
     private EditConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard) {
         super(window, wizard);
@@ -74,8 +75,15 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
 
-        if (!CommonUtils.isEmpty(lastActivePage)) {
-            getWizard().openSettingsPage(lastActivePage);
+        String activePage = defaultPageName;
+        if (CommonUtils.isEmpty(activePage)) {
+            activePage = lastActivePage;
+        }
+        if (!CommonUtils.isEmpty(activePage)) {
+            String finalActivePage = activePage;
+            UIUtils.asyncExec(() -> {
+                getWizard().openSettingsPage(finalActivePage);
+            });
         }
 
         return contents;
@@ -132,15 +140,19 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         getWizard().testConnection();
     }
 
-    public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource) {
+    public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
         if (dialog != null) {
+            if (defaultPageName != null) {
+                dialog.showPage(defaultPageName);
+            }
             dialog.getShell().forceActive();
             return true;
         }
 
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
         dialog = new EditConnectionDialog(window, wizard);
+        dialog.defaultPageName = defaultPageName;
         openDialogs.put(dataSource, dialog);
         try {
             return dialog.open() == IDialogConstants.OK_ID;

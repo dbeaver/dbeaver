@@ -32,4 +32,6 @@ public interface INavigatorItemRenderer {
     void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event);
 
     void showDetailsToolTip(DBNNode node, Tree tree, Event event);
+
+    void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction);
 }

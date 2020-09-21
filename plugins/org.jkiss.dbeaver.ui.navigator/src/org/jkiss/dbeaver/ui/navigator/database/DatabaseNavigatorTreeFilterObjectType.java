@@ -14,26 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.navigator.database;
 
-package org.jkiss.dbeaver.ui.navigator;
-
-import org.eclipse.swt.widgets.Event;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-
-/**
- * Node action handler
- */
-public interface INavigatorNodeActionHandler {
-
-    boolean isEnabledFor(INavigatorModelView view, DBNNode node);
-
-    boolean isSticky(INavigatorModelView view, DBNNode node);
-
-    DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node);
-
-    String getNodeActionToolTip(INavigatorModelView view, DBNNode node);
-
-    void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction);
-
+public enum DatabaseNavigatorTreeFilterObjectType {
+    connection,
+    container,
+    table
 }
