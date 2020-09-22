@@ -18,11 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -33,161 +28,62 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.TasksJob;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"rawtypes"})
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
-    private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
-
-    private IStructuredSelection structSelection;
-
-    private final List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();
-
-    /**
-     * Active window.
-     */
-    private IWorkbenchWindow window;
-
-    /**
-     * {@code true} if 'Cascade delete' button should be shown
-     */
-    private boolean showCascade;
-
-    /**
-     * {@code true} if 'View Script' button should be shown
-     */
-    private boolean showViewScript;
-
-    /**
-     * {@code true} in case of attempt to delete database nodes which belong to different data sources
-     */
-    private boolean multipleDataSources;
-
-    private @Nullable DBECommandContext commandContext;
-
-    /**
-     * A map with delete option.
-     *
-     * <p>Only contains cascade option
-     */
-    private static final Map<String, Object> OPTIONS_CASCADE;
-
-    static {
-        final Map<String, Object> map = new HashMap<>(1);
-        map.put(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
-        OPTIONS_CASCADE = Collections.unmodifiableMap(map);
-    }
-
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
-        reset();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!(selection instanceof IStructuredSelection)) {
             return null;
         }
-        window = HandlerUtil.getActiveWorkbenchWindow(event);
-        structSelection = (IStructuredSelection)selection;
-        resolveOptions();
-        if (multipleDataSources) {
-            // attempt to delete database nodes from different databases
-            DBWorkbench.getPlatformUI().
-                    showError(
-                        UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
-                        UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
-                    );
-            return null;
-        }
-        final ConfirmationDialog dialog = ConfirmationDialog.of(window.getShell(), structSelection.toList(), showCascade, showViewScript);
-        final int result = dialog.open();
-        if (result == IDialogConstants.YES_ID) {
-            delete(dialog.cascadeCheck);
-        } else if (result == IDialogConstants.DETAILS_ID) {
-            final boolean persistCheck = showScriptWindow(dialog.cascadeCheck);
-            if (persistCheck) {
-                delete(dialog.cascadeCheck);
-            } else {
-                commandContext.resetChanges(true);
-                execute(event);
-            }
-        }
+        final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+        final List selectedObjects = ((IStructuredSelection)selection).toList();
+        final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
+        makeDeletionAttempt(window, selectedObjects, deleter);
         return null;
     }
 
-    /**
-     * Resolves boolean flags from this class.
-     *
-     * @see this.showViewScript, this.showCascade, this.multipleDataSources
-     */
-    private void resolveOptions() {
-        DBPDataSource dataSource = null;
-        for (Object obj: structSelection.toList()) {
-            if (!(obj instanceof DBNDatabaseNode)) {
-                continue;
-            }
-            final DBNDatabaseNode node = (DBNDatabaseNode) obj;
-            final DBPDataSource currentDatasource = node.getDataSource();
-            if (dataSource == null) {
-                dataSource = currentDatasource;
-            } else if (!dataSource.equals(currentDatasource)) {
-                multipleDataSources = true;
-            }
-            if (!(node.getParentNode() instanceof DBNContainer)) {
-                continue;
-            }
-            final DBSObject object = node.getObject();
-            if (object == null) {
-                continue;
-            }
-            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
-            if (objectMaker == null) {
-                continue;
-            }
-            showCascade |= (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
-            final CommandTarget commandTarget;
-            try {
-                commandTarget = getCommandTarget(
-                        window,
-                        node.getParentNode(),
-                        object.getClass(),
-                        false
-                );
-            } catch (DBException e) {
-                continue;
-            }
-            if (object.isPersisted() && commandTarget.getEditor() == null && commandTarget.getContext() != null) {
-                showViewScript = true;
+    private void makeDeletionAttempt(final IWorkbenchWindow window, final List selectedObjects, final NavigatorObjectsDeleter deleter) {
+        if (deleter.areSomeNodesFromDifferentDataSources()) {
+            // attempt to delete database nodes from different databases
+            DBWorkbench.getPlatformUI().
+                    showError(
+                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
+                            UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
+                    );
+            return;
+        }
+        final ConfirmationDialog dialog = ConfirmationDialog.of(
+                window.getShell(),
+                selectedObjects,
+                deleter.getShowCascade(),
+                deleter.getShowViewScript()
+        );
+        final int result = dialog.open();
+        deleter.setCheckCascade(dialog.cascadeCheck);
+        if (result == IDialogConstants.YES_ID) {
+            deleter.delete();
+        } else if (result == IDialogConstants.DETAILS_ID) {
+            final boolean persistCheck = deleter.showScriptWindow();
+            if (persistCheck) {
+                deleter.delete();
+            } else {
+                makeDeletionAttempt(window, selectedObjects, deleter);
             }
         }
     }
@@ -297,245 +193,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
             }
         }
-    }
-
-    /**
-     * Deletes all objects in selection.
-     *
-     * @param cascadeCheck {@code true} if Cascade Delete checkbox was checked
-     */
-    private void delete(final boolean cascadeCheck) {
-        for (Object obj: structSelection.toList()) {
-            if (obj instanceof DBNDatabaseNode) {
-                deleteDatabaseNode((DBNDatabaseNode)obj, cascadeCheck);
-            } else if (obj instanceof DBNResource) {
-                deleteResource((DBNResource)obj);
-            } else if (obj instanceof DBNLocalFolder) {
-                deleteLocalFolder((DBNLocalFolder) obj);
-            } else {
-                log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
-        if (!tasksToExecute.isEmpty()) {
-            TasksJob.runTasks(tasksToExecute.size() > 1 ? "Delete " + tasksToExecute.size() + " objects" : "Delete object", tasksToExecute);
-        }
-    }
-
-    private void deleteLocalFolder(final DBNLocalFolder folder) {
-        folder.getDataSourceRegistry().removeFolder(folder.getFolder(), false);
-        DBNModel.updateConfigAndRefreshDatabases(folder);
-    }
-
-    private void deleteResource(final DBNResource resource) {
-        final IResource iResource = resource.getResource();
-        try {
-            if (iResource instanceof IFolder) {
-                ((IFolder)iResource).delete(true, true, new NullProgressMonitor());
-            } else if (iResource instanceof IProject) {
-                // Delete project (with all contents)
-                ((IProject) iResource).delete(true, true, new NullProgressMonitor());
-            } else if (iResource != null) {
-                iResource.delete(IResource.FORCE | IResource.KEEP_HISTORY, new NullProgressMonitor());
-            }
-        } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.error_deleting_resource_title,
-                    NLS.bind(UINavigatorMessages.error_deleting_resource_message, iResource.getFullPath().toString()),
-                    e
-            );
-        }
-    }
-
-    private void deleteDatabaseNode(final DBNDatabaseNode node, final boolean cascadeCheck) {
-        try {
-            if (!(node.getParentNode() instanceof DBNContainer)) {
-                throw new DBException("Node '" + node + "' doesn't have a container");
-            }
-            final DBSObject object = node.getObject();
-            if (object == null) {
-                throw new DBException("Can't delete node with null object");
-            }
-            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
-            if (objectMaker == null) {
-                throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
-            }
-            final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
-            final CommandTarget commandTarget = getCommandTarget(
-                    window,
-                    node.getParentNode(),
-                    object.getClass(),
-                    false
-            );
-            if (!object.isPersisted() || commandTarget.getEditor() != null) {
-                // Not a real object delete because it's not persisted
-                // There should be command context somewhere
-                if (deleteNewObject(node)) {
-                    return;
-                }
-                // No direct editor host found for this object -
-                // try to find corresponding command context
-                // and execute command within it
-            }
-            Map<String, Object> deleteOptions = Collections.EMPTY_MAP;
-            if (cascadeCheck && supportsCascade) {
-                deleteOptions = OPTIONS_CASCADE;
-            }
-            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
-            if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
-                // Persist object deletion - only if there is no host editor and we have a command context
-                final ObjectSaver deleter = new ObjectSaver(commandTarget.getContext(), deleteOptions);
-                tasksToExecute.add(deleter);
-            }
-        } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.actions_navigator_error_dialog_delete_object_title,
-                    NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message, node.getNodeName()),
-                    e
-            );
-        }
-    }
-
-    private boolean deleteNewObject(final DBNDatabaseNode node) {
-        for (final IEditorReference editorRef : window.getActivePage().getEditorReferences()) {
-            final IEditorPart editor = editorRef.getEditor(false);
-            if (editor instanceof IDatabaseEditor) {
-                final IEditorInput editorInput = editor.getEditorInput();
-                if (editorInput instanceof IDatabaseEditorInput && ((IDatabaseEditorInput) editorInput).getDatabaseObject() == node.getObject()) {
-                    window.getActivePage().closeEditor(editor, false);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean showScriptWindow(final boolean checkCascade) {
-        final String sql = collectSQL(checkCascade);
-        if (sql.length() > 0) {
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                return serviceSQL.openSQLViewer(
-                        commandContext.getExecutionContext(),
-                        UINavigatorMessages.actions_navigator_delete_script,
-                        UIIcon.SQL_PREVIEW,
-                        sql,
-                        true,
-                        false
-                ) == IDialogConstants.PROCEED_ID;
-            }
-        } else {
-            return UIUtils.confirmAction(
-                    window.getShell(),
-                    UINavigatorMessages.actions_navigator_delete_script,
-                    UINavigatorMessages.question_no_sql_available
-            );
-        }
-        return false;
-    }
-
-    private String collectSQL(final boolean checkCascade) {
-        final StringBuilder sql = new StringBuilder();
-        for (Object obj: structSelection.toList()) {
-            if (obj instanceof DBNDatabaseNode) {
-                appendScript(sql, (DBNDatabaseNode) obj, checkCascade);
-            }
-        }
-        return sql.toString();
-    }
-
-    private void appendScript(final StringBuilder sql, final DBNDatabaseNode node, final boolean checkCascade) {
-        if (!(node.getParentNode() instanceof DBNContainer)) {
-            return;
-        }
-        // Try to delete object using object manager
-        final DBSObject object = node.getObject();
-        if (object == null) {
-            return;
-        }
-        final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
-        if (objectMaker == null) {
-            return;
-        }
-        final boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
-        final CommandTarget commandTarget;
-        try {
-            commandTarget = getCommandTarget(
-                    window,
-                    node.getParentNode(),
-                    object.getClass(),
-                    false
-            );
-        } catch (DBException e) {
-            log.warn(e);
-            return;
-        }
-        if (commandContext == null) {
-            commandContext = commandTarget.getContext();
-        }
-        if (!object.isPersisted() || commandTarget.getEditor() != null) {
-            return;
-        }
-        final Map<String, Object> deleteOptions;
-        if (supportsCascade && checkCascade) {
-            deleteOptions = OPTIONS_CASCADE;
-        } else {
-            deleteOptions = Collections.EMPTY_MAP;
-        }
-        try {
-            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
-        } catch (DBException e) {
-            log.warn(e);
-            return;
-        }
-        final StringBuilder script = new StringBuilder();
-        final DBECommandContext commandContext = commandTarget.getContext();
-        final Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
-        try {
-            UIUtils.runInProgressService(monitor -> {
-                try {
-                    for (DBECommand command : commands) {
-                        final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
-                        script.append(
-                                SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
-                                        persistActions,
-                                        false));
-                        if (script.length() == 0) {
-                            script.append(
-                                    SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
-                                            persistActions,
-                                            false));
-                        }
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.error_sql_generation_title,
-                    UINavigatorMessages.error_sql_generation_message,
-                    e.getTargetException()
-            );
-        } catch (InterruptedException ignored) {
-        }
-        commandTarget.getContext().resetChanges(true);
-        if (sql.length() != 0) {
-            sql.append("\n");
-        }
-        sql.append(script);
-    }
-
-    /**
-     * Zeroes all fields of the class, making it ready for reuse
-     */
-    private void reset() {
-        structSelection = null;
-        tasksToExecute.clear();
-        showCascade = false;
-        showViewScript = false;
-        multipleDataSources = false;
-        commandContext = null;
-        window = null;
     }
 
     @Override
