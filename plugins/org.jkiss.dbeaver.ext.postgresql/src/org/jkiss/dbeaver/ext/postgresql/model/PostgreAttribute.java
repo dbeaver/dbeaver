@@ -62,6 +62,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private boolean isLocal;
     private long collationId;
     private Object acl;
+    private String intervalTypeField;
 
     protected PostgreAttribute(
         OWNER table)
@@ -172,6 +173,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         setPrecision(maxLength);
         setScale(PostgreUtils.getScale(typeId, typeMod));
+        if (typeId == PostgreOid.INTERVAL) {
+            intervalTypeField = PostgreUtils.getIntervalField(typeMod);
+        }
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
@@ -291,6 +295,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public String getDefaultValue()
     {
         return super.getDefaultValue();
+    }
+
+    @Property(viewable = true, order = 31)
+    public String getIntervalTypeField() {
+        return intervalTypeField;
     }
 
     @Nullable
