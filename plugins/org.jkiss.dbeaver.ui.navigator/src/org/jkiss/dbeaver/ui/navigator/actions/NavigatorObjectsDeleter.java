@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
 class NavigatorObjectsDeleter {
     private static final Log log = Log.getLog(NavigatorObjectsDeleter.class);
 
@@ -56,7 +55,7 @@ class NavigatorObjectsDeleter {
     /**
      * A list containing objects to delete.
      */
-    private final List selection;
+    private final List<Object> selection;
 
     /**
      * {@code true} if 'Cascade delete' button should be shown
@@ -71,25 +70,26 @@ class NavigatorObjectsDeleter {
     /**
      * {@code true} in case of attempt to delete database nodes which belong to different data sources
      */
-    private final boolean areSomeNodesFromDifferentDataSources;
+    private final boolean hasNodesFromDifferentDataSources;
 
-    private @Nullable DBECommandContext commandContext;
+    @Nullable
+    private DBECommandContext commandContext;
 
     private boolean checkCascade = false;
 
-    private NavigatorObjectsDeleter(final List selection, final IWorkbenchWindow window,
-                                    final boolean areSomeNodesFromDifferentDataSources, final boolean showCascade,
+    private NavigatorObjectsDeleter(final List<Object> selection, final IWorkbenchWindow window,
+                                    final boolean hasNodesFromDifferentDataSources, final boolean showCascade,
                                     final boolean showViewScript) {
         this.selection = selection;
         this.window = window;
-        this.areSomeNodesFromDifferentDataSources = areSomeNodesFromDifferentDataSources;
+        this.hasNodesFromDifferentDataSources = hasNodesFromDifferentDataSources;
         this.showCascade = showCascade;
         this.showViewScript = showViewScript;
     }
 
-    static NavigatorObjectsDeleter of(final List selection, final IWorkbenchWindow window) {
+    static NavigatorObjectsDeleter of(final List<Object> selection, final IWorkbenchWindow window) {
         DBPDataSource dataSource = null;
-        boolean areSomeNodesFromDifferentDataSources = false;
+        boolean hasNodesFromDifferentDataSources = false;
         boolean showCascade = false;
         boolean showViewScript = false;
         for (Object obj: selection) {
@@ -101,7 +101,7 @@ class NavigatorObjectsDeleter {
             if (dataSource == null) {
                 dataSource = currentDatasource;
             } else if (!dataSource.equals(currentDatasource)) {
-                areSomeNodesFromDifferentDataSources = true;
+                hasNodesFromDifferentDataSources = true;
             }
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 continue;
@@ -110,7 +110,8 @@ class NavigatorObjectsDeleter {
             if (object == null) {
                 continue;
             }
-            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
+                    DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 continue;
             }
@@ -130,11 +131,11 @@ class NavigatorObjectsDeleter {
                 showViewScript = true;
             }
         }
-        return new NavigatorObjectsDeleter(selection, window, areSomeNodesFromDifferentDataSources, showCascade, showViewScript);
+        return new NavigatorObjectsDeleter(selection, window, hasNodesFromDifferentDataSources, showCascade, showViewScript);
     }
 
-    boolean areSomeNodesFromDifferentDataSources() {
-        return areSomeNodesFromDifferentDataSources;
+    boolean hasNodesFromDifferentDataSources() {
+        return hasNodesFromDifferentDataSources;
     }
 
     public boolean getShowCascade() {
@@ -196,7 +197,8 @@ class NavigatorObjectsDeleter {
             if (object == null) {
                 throw new DBException("Can't delete node with null object");
             }
-            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
+                    DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
@@ -218,7 +220,7 @@ class NavigatorObjectsDeleter {
                 // try to find corresponding command context
                 // and execute command within it
             }
-            Map<String, Object> deleteOptions = Collections.EMPTY_MAP;
+            @SuppressWarnings("unchecked") Map<String, Object> deleteOptions = Collections.EMPTY_MAP;
             if (checkCascade && supportsCascade) {
                 deleteOptions = OPTIONS_CASCADE;
             }
@@ -258,6 +260,7 @@ class NavigatorObjectsDeleter {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
                 result = serviceSQL.openSQLViewer(
+                        //command context is not null because sql is not empty, see appendSQL()
                         commandContext.getExecutionContext(),
                         UINavigatorMessages.actions_navigator_delete_script,
                         UIIcon.SQL_PREVIEW,
@@ -291,12 +294,12 @@ class NavigatorObjectsDeleter {
         if (!(node.getParentNode() instanceof DBNContainer)) {
             return;
         }
-        // Try to delete object using object manager
         final DBSObject object = node.getObject();
         if (object == null) {
             return;
         }
-        final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+        @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
+                DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
         if (objectMaker == null) {
             return;
         }
@@ -333,11 +336,11 @@ class NavigatorObjectsDeleter {
         }
         final StringBuilder script = new StringBuilder();
         final DBECommandContext commandContext = commandTarget.getContext();
-        final Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        final @SuppressWarnings("rawtypes") Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         try {
             UIUtils.runInProgressService(monitor -> {
                 try {
-                    for (DBECommand command : commands) {
+                    for(@SuppressWarnings("rawtypes") DBECommand command : commands) {
                         final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
                         script.append(
                                 SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),

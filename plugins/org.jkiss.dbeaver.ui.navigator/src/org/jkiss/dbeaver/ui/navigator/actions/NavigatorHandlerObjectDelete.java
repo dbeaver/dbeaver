@@ -43,7 +43,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 import java.util.List;
 
-@SuppressWarnings({"rawtypes"})
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
@@ -52,14 +51,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             return null;
         }
         final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        final List selectedObjects = ((IStructuredSelection)selection).toList();
+        @SuppressWarnings("unchecked") final List<Object> selectedObjects = ((IStructuredSelection) selection).toList();
         final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
         makeDeletionAttempt(window, selectedObjects, deleter);
         return null;
     }
 
-    private void makeDeletionAttempt(final IWorkbenchWindow window, final List selectedObjects, final NavigatorObjectsDeleter deleter) {
-        if (deleter.areSomeNodesFromDifferentDataSources()) {
+    private void makeDeletionAttempt(final IWorkbenchWindow window, final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
+        if (deleter.hasNodesFromDifferentDataSources()) {
             // attempt to delete database nodes from different databases
             DBWorkbench.getPlatformUI().
                     showError(
@@ -89,7 +88,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     private static class ConfirmationDialog extends MessageDialog {
-        private final List selectedObjects;
+        private final List<Object> selectedObjects;
 
         private final boolean showCascade;
 
@@ -98,7 +97,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         private boolean cascadeCheck;
 
         private ConfirmationDialog(final Shell shell, final String title, final String message,
-                                   final List selectedObjects, final boolean showCascade, final boolean showViewScript) {
+                                   final List<Object> selectedObjects, final boolean showCascade, final boolean showViewScript) {
             super(
                     shell,
                     title,
@@ -113,7 +112,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             this.showViewScript = showViewScript;
         }
 
-        static ConfirmationDialog of(final Shell shell, final List selectedObjects,
+        static ConfirmationDialog of(final Shell shell, final List<Object> selectedObjects,
                                      final boolean showCascade, final boolean showViewScript) {
             if (selectedObjects.size() > 1) {
                 return new ConfirmationDialog(
