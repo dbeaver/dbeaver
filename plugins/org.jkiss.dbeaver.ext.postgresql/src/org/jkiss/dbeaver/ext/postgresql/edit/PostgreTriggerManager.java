@@ -76,16 +76,29 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
 
     @Override
     protected void createOrReplaceTriggerQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
-        actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getBody(), true));
+        if (!create)
+            return;
+
+        try {
+            actions.add(new SQLDatabasePersistAction(
+                    "Create trigger",
+                    "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger)
+                            + "\n    AFTER INSERT"
+                            + "\n    ON " + trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+                            + "\n    FOR EACH ROW"
+                            + "\n        EXECUTE PROCEDURE " + trigger.getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "()",
+                    true
+            ));
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        actions.add(
-            new SQLDatabasePersistAction("Drop trigger",
-                "DROP TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
-        );
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        actions.add(new SQLDatabasePersistAction(
+                "Drop trigger",
+                "DROP TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+        ));
     }
-
 }
