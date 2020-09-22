@@ -111,7 +111,7 @@ class NavigatorObjectsDeleter {
             if (object == null) {
                 continue;
             }
-            @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
+            final DBEObjectMaker objectMaker =
                     DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 continue;
@@ -198,8 +198,7 @@ class NavigatorObjectsDeleter {
             if (object == null) {
                 throw new DBException("Can't delete node with null object");
             }
-            @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
-                    DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
@@ -221,7 +220,7 @@ class NavigatorObjectsDeleter {
                 // try to find corresponding command context
                 // and execute command within it
             }
-            @SuppressWarnings("unchecked") Map<String, Object> deleteOptions = Collections.EMPTY_MAP;
+            Map<String, Object> deleteOptions = Collections.emptyMap();
             if (checkCascade && supportsCascade) {
                 deleteOptions = OPTIONS_CASCADE;
             }
@@ -310,7 +309,7 @@ class NavigatorObjectsDeleter {
         if (object == null) {
             return;
         }
-        @SuppressWarnings("rawtypes") final DBEObjectMaker objectMaker =
+        final DBEObjectMaker objectMaker =
                 DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
         if (objectMaker == null) {
             return;
@@ -338,7 +337,7 @@ class NavigatorObjectsDeleter {
         if (supportsCascade && checkCascade) {
             deleteOptions = OPTIONS_CASCADE;
         } else {
-            deleteOptions = Collections.EMPTY_MAP;
+            deleteOptions = Collections.emptyMap();
         }
         try {
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
@@ -348,9 +347,9 @@ class NavigatorObjectsDeleter {
         }
         final StringBuilder script = new StringBuilder();
         final DBECommandContext commandContext = commandTarget.getContext();
-        final @SuppressWarnings("rawtypes") Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         try {
-            for(@SuppressWarnings("rawtypes") DBECommand command : commands) {
+            for(DBECommand command : commands) {
                 final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
                 script.append(
                         SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
