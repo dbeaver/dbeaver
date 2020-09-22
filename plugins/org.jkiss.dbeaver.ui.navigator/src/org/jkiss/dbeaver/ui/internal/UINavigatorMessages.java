@@ -64,6 +64,7 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_delete_script;
     public static String actions_navigator_edit;
     public static String actions_navigator_error_dialog_delete_object_title;
+    public static String actions_navigator_error_dialog_delete_object_message;
     public static String actions_navigator_error_dialog_open_entity_title;
     public static String actions_navigator_error_dialog_open_resource_title;
     public static String actions_navigator_open;
@@ -199,6 +200,22 @@ public class UINavigatorMessages extends NLS {
     public static String label_choose_catalog;
     public static String label_error_list;
     public static String label_instance;
+
+    public static String error_deleting_multiple_objects_from_different_datasources_title;
+    public static String error_deleting_multiple_objects_from_different_datasources_message;
+    public static String confirm_deleting_multiple_objects_title;
+    public static String confirm_deleting_multiple_objects_message;
+    public static String confirm_deleting_multiple_objects_table_group_name;
+    public static String confirm_deleting_multiple_objects_column_type;
+    public static String confirm_deleting_multiple_objects_column_name;
+    public static String confirm_deleting_multiple_objects_column_description;
+    public static String confirm_deleting_multiple_objects_cascade_checkbox;
+    public static String confirm_deleting_multiple_objects_cascade_checkbox_tooltip;
+    public static String error_deleting_resource_title;
+    public static String error_deleting_resource_message;
+    public static String question_no_sql_available;
+    public static String error_sql_generation_title;
+    public static String error_sql_generation_message;
 
     static {
         // initialize resource bundle
