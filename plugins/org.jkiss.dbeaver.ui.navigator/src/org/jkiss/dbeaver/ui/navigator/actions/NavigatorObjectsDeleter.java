@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -282,15 +283,26 @@ class NavigatorObjectsDeleter {
 
     private String collectSQL() {
         final StringBuilder sql = new StringBuilder();
-        for (Object obj: selection) {
-            if (obj instanceof DBNDatabaseNode) {
-                appendScript(sql, (DBNDatabaseNode) obj);
-            }
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                for (Object obj: selection) {
+                    if (obj instanceof DBNDatabaseNode) {
+                        appendScript(monitor, sql, (DBNDatabaseNode) obj);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.error_sql_generation_title,
+                    UINavigatorMessages.error_sql_generation_message,
+                    e.getTargetException()
+            );
+        } catch (InterruptedException ignored) {
         }
         return sql.toString();
     }
 
-    private void appendScript(final StringBuilder sql, final DBNDatabaseNode node) {
+    private void appendScript(final DBRProgressMonitor monitor, final StringBuilder sql, final DBNDatabaseNode node) throws InvocationTargetException {
         if (!(node.getParentNode() instanceof DBNContainer)) {
             return;
         }
@@ -338,32 +350,21 @@ class NavigatorObjectsDeleter {
         final DBECommandContext commandContext = commandTarget.getContext();
         final @SuppressWarnings("rawtypes") Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         try {
-            UIUtils.runInProgressService(monitor -> {
-                try {
-                    for(@SuppressWarnings("rawtypes") DBECommand command : commands) {
-                        final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
-                        script.append(
-                                SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
-                                        persistActions,
-                                        false));
-                        if (script.length() == 0) {
-                            script.append(
-                                    SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
-                                            persistActions,
-                                            false));
-                        }
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+            for(@SuppressWarnings("rawtypes") DBECommand command : commands) {
+                final DBEPersistAction[] persistActions = command.getPersistActions(monitor, commandContext.getExecutionContext(), deleteOptions);
+                script.append(
+                        SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
+                                persistActions,
+                                false));
+                if (script.length() == 0) {
+                    script.append(
+                            SQLUtils.generateComments(commandContext.getExecutionContext().getDataSource(),
+                                    persistActions,
+                                    false));
                 }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    UINavigatorMessages.error_sql_generation_title,
-                    UINavigatorMessages.error_sql_generation_message,
-                    e.getTargetException()
-            );
-        } catch (InterruptedException ignored) {
+            }
+        } catch (DBException e) {
+            throw new InvocationTargetException(e);
         }
         commandTarget.getContext().resetChanges(true);
         if (sql.length() != 0) {
