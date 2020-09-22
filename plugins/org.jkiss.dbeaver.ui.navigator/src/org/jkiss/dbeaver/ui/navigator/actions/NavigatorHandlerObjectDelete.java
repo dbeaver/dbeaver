@@ -51,7 +51,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             return null;
         }
         final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        @SuppressWarnings("unchecked") final List<Object> selectedObjects = ((IStructuredSelection) selection).toList();
+        @SuppressWarnings("unchecked")
+        final List<Object> selectedObjects = ((IStructuredSelection) selection).toList();
         final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
         makeDeletionAttempt(window, selectedObjects, deleter);
         return null;
