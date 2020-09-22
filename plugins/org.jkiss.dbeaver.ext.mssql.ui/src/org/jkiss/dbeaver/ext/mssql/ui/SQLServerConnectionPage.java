@@ -247,7 +247,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             if (getSite().isNew() && CommonUtils.isEmpty(databaseName)) {
                 databaseName = CommonUtils.notEmpty(site.getDriver().getDefaultDatabase());
             }
-            dbText.setText(databaseName);
+            dbText.setText(CommonUtils.notEmpty(databaseName));
         }
         if (userNameText != null) {
             if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getUserName())) {
