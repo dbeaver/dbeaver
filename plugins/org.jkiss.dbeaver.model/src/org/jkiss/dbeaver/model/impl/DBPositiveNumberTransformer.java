@@ -21,20 +21,23 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 /**
  * Object name case transformer
  */
-public class DBPositiveNumberTransformer implements IPropertyValueTransformer<Object, Number> {
+public class DBPositiveNumberTransformer implements IPropertyValueTransformer<Object, Object> {
 
 
     @Override
-    public Number transform(Object object, Number value) {
+    public Object transform(Object object, Object value) {
         if (value == null) {
             return null;
         }
-        if (value instanceof Double && value.doubleValue() <= 0.0) {
-            return null;
-        } else if (value instanceof Float && value.floatValue() <= 0.0) {
-            return null;
-        } else if (value.longValue() <= 0) {
-            return null;
+        if (value instanceof Number) {
+            Number numberValue = (Number) value;
+            if (value instanceof Double && numberValue.doubleValue() <= 0.0) {
+                return null;
+            } else if (value instanceof Float && numberValue.floatValue() <= 0.0) {
+                return null;
+            } else if (numberValue.longValue() <= 0) {
+                return null;
+            }
         }
 
         return value;

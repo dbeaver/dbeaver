@@ -62,6 +62,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private boolean isLocal;
     private long collationId;
     private Object acl;
+    private Object maxLength;
 
     protected PostgreAttribute(
         OWNER table)
@@ -154,23 +155,28 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setValueType(dataType.getTypeID());
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
-        int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
+        maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();
         if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
             setMaxLength(0);
         } else {
-            if (maxLength <= 0) {
-                maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
-            }
-            if (maxLength >= 0) {
-                setMaxLength(maxLength);
-            } else {
-                // TypeMod can be anything.
-                // It is often used in packed format and has no numeric meaning at all
-                //setMaxLength(typeMod);
+            if (maxLength instanceof Integer) {
+                int digitalMaxLength = CommonUtils.toInt(maxLength);
+                if (digitalMaxLength <= 0) {
+                    maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
+                }
+                if (digitalMaxLength >= 0) {
+                    setMaxLength(digitalMaxLength);
+                } else {
+                    // TypeMod can be anything.
+                    // It is often used in packed format and has no numeric meaning at all
+                    //setMaxLength(typeMod);
+                }
             }
         }
-        setPrecision(maxLength);
+        if (maxLength instanceof Integer) {
+            setPrecision(CommonUtils.toInt(maxLength));
+        }
         setScale(PostgreUtils.getScale(typeId, typeMod));
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
@@ -240,10 +246,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
+    //@Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
     public Integer getPrecision()
     {
         return super.getPrecision();
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
+    public Object getObjectPrecision()
+    {
+        return maxLength;
     }
 
     @Override
