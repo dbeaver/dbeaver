@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -297,12 +298,20 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return super.getDefaultValue();
     }
 
-    @Property(viewable = true, order = 31)
+    @Property(viewable = true, order = 31, visibleIf = PostgreTableHasIntervalTypeValidator.class)
     public String getIntervalTypeField() {
         if (typeId == PostgreOid.INTERVAL) {
             return PostgreUtils.getIntervalField(typeMod);
         }
         return null;
+    }
+
+    public long getTypeId() {
+        return typeId;
+    }
+
+    public int getTypeMod() {
+        return typeMod;
     }
 
     @Nullable
@@ -401,6 +410,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.error(e);
                 return new Object[0];
             }
+        }
+    }
+
+    public static class PostgreTableHasIntervalTypeValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+            return object.getTypeId() == PostgreOid.INTERVAL;
         }
     }
 }
