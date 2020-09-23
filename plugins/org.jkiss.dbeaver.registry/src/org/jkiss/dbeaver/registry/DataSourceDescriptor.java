@@ -89,7 +89,7 @@ public class DataSourceDescriptor
         {DBPConnectionConfiguration.VARIABLE_USER, "database user name"},
         {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
         {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
-        {DBPConnectionConfiguration.VARIABLE_TYPE, "connection type"},
+        {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
 
         {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
@@ -1397,7 +1397,7 @@ public class DataSourceDescriptor
                 case DBPConnectionConfiguration.VARIABLE_USER: return configuration.getUserName();
                 case DBPConnectionConfiguration.VARIABLE_PASSWORD: return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL: return configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_TYPE: return configuration.getConnectionType().getName();
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE: return configuration.getConnectionType().getName();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
