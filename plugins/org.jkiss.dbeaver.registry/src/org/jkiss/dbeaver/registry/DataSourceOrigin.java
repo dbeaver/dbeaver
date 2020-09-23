@@ -78,6 +78,11 @@ class DataSourceOrigin implements DBPDataSourceConfigurationStorage
         return isDefault;
     }
 
+    @Override
+    public boolean isDynamic() {
+        return false;
+    }
+
     public IFile getSourceFile() {
         return sourceFile;
     }

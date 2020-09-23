@@ -114,6 +114,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isExternallyProvided() {
+        return false;
+    }
+
+    @Override
     public boolean isTemplate() {
         return false;
     }

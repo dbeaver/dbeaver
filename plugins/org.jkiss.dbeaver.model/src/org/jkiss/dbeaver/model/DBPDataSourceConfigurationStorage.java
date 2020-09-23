@@ -33,6 +33,9 @@ public interface DBPDataSourceConfigurationStorage {
 
     boolean isDefault();
 
+    // Datasources provided by some dynamic service (e.gl. cloud)
+    boolean isDynamic();
+
     String getStatus();
 
     List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options)
