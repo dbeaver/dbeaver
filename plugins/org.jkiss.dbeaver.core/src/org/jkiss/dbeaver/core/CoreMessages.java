@@ -432,6 +432,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_delete_connection_type;
 	public static String pref_page_connection_types_label_delete_connection_type_description;
 	public static String pref_page_connection_types_group_settings;
+	public static String pref_page_connection_types_label_id;
 	public static String pref_page_connection_types_label_name;
 	public static String pref_page_connection_types_label_description;
 	public static String pref_page_connection_types_label_color;
