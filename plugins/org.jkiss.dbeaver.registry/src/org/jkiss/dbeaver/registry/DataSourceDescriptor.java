@@ -1397,7 +1397,7 @@ public class DataSourceDescriptor
                 case DBPConnectionConfiguration.VARIABLE_USER: return configuration.getUserName();
                 case DBPConnectionConfiguration.VARIABLE_PASSWORD: return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL: return configuration.getUrl();
-                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE: return configuration.getConnectionType().getName();
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE: return configuration.getConnectionType().getId();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };

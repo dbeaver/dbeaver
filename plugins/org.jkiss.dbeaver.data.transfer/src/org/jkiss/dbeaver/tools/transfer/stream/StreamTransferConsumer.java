@@ -543,7 +543,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     if (dataContainer == null) {
                         return null;
                     }
-                    return dataContainer.getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getName();
+                    return dataContainer.getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
             }
             return null;
         });
