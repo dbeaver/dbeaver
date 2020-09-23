@@ -2136,6 +2136,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
         }
+        refreshActions();
+
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
@@ -2163,8 +2165,6 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             resultsSash.setMaximizedControl(null);
         }
-
-        refreshActions();
 
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
