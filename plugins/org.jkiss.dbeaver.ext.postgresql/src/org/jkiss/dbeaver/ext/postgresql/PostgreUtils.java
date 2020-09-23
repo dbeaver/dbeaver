@@ -62,6 +62,30 @@ public class PostgreUtils {
 
     private static final int UNKNOWN_LENGTH = -1;
 
+    private static final Map<Integer, String> INTERVAL_TYPES_WITHOUT_SECOND = new HashMap<>();
+    private static final Map<Integer, String> INTERVAL_TYPES_WITH_SECOND = new HashMap<>();
+
+    static {
+        INTERVAL_TYPES_WITHOUT_SECOND.put(327679, "year");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(196607, "month");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(589823, "day");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(67174399, "hour");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(134283263, "minute");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(268500991, "second");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(458751, "year to month");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(67698687, "day to hour");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(201916415, "day to minute");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(470351871, "day to second");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(201392127, "hour to minute");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(469827583, "hour to second");
+        INTERVAL_TYPES_WITHOUT_SECOND.put(402718719, "minute to second");
+
+        INTERVAL_TYPES_WITH_SECOND.put(268435456, "second");
+        INTERVAL_TYPES_WITH_SECOND.put(470286336, "day to second");
+        INTERVAL_TYPES_WITH_SECOND.put(469762048, "hour to second");
+        INTERVAL_TYPES_WITH_SECOND.put(402653184, "minute to second");
+    }
+
     public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
             throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
@@ -291,6 +315,18 @@ public class PostgreUtils {
         }
     }
 
+    public static String getIntervalField(int typeMod) {
+        if (INTERVAL_TYPES_WITHOUT_SECOND.containsKey(typeMod)) {
+            return INTERVAL_TYPES_WITHOUT_SECOND.get(typeMod);
+        }
+        for (Map.Entry<Integer, String> intervalType : INTERVAL_TYPES_WITH_SECOND.entrySet()) {
+            if (typeMod >= intervalType.getKey() && typeMod <= (intervalType.getKey() + 6)) {
+                return intervalType.getValue();
+            }
+        }
+        return "";
+    }
+
     public static int getDisplaySize(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
         switch ((int) oid) {
@@ -401,7 +437,9 @@ public class PostgreUtils {
             case PostgreOid.INTERVAL:
                 if (typmod == -1)
                     return 6;
-                return typmod & 0xFFFF;
+                int intervalPrecision = typmod & 0xFFFF;
+                if (intervalPrecision == 65535) return UNKNOWN_LENGTH;
+                return intervalPrecision;
             default:
                 return 0;
         }

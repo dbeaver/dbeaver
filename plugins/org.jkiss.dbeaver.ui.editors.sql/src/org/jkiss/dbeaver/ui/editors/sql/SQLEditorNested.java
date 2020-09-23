@@ -280,6 +280,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                             });
                             return Status.OK_STATUS;
                         } catch (Exception e) {
+                            log.error(e);
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
                             return Status.CANCEL_STATUS;
                         } finally {

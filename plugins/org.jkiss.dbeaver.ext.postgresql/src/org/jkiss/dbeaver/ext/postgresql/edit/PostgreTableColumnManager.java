@@ -72,6 +72,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         } else {
             sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }
+        getColumnDataTypeModifiers(monitor, column, sql);
+    };
+
+    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, PostgreTableColumn column, StringBuilder sql) {
+        final PostgreDataType dataType = column.getDataType();
+        final PostgreDataType rawType = null;//dataType.getElementType(monitor);
         switch (dataType.getDataKind()) {
             case STRING:
                 final long length = column.getMaxLength();
@@ -106,6 +112,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                         sql.append('(').append(scale).append(')');
                     }
                 }
+                if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
+                    final String precision = column.getIntervalTypeField();
+                    sql.append(' ').append(precision);
+                    if (scale >= 0 && scale < 7) {
+                        sql.append('(').append(scale).append(')');
+                    }
+                }
         }
         if (PostgreUtils.isGISDataType(column.getTypeName())) {
             try {
@@ -126,7 +139,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (rawType != null) {
             sql.append("[]");
         }
-    };
+        return sql;
+    }
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
