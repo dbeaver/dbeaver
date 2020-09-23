@@ -587,6 +587,11 @@ public class DataSourceDescriptor
     }
 
     @Override
+    public boolean isExternallyProvided() {
+        return origin.isDynamic();
+    }
+
+    @Override
     public boolean isTemplate() {
         return template;
     }
