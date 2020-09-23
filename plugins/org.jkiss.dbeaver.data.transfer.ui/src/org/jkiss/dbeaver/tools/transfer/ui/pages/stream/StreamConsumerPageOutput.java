@@ -102,7 +102,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
                 StreamTransferConsumer.VARIABLE_INDEX,
-                StreamTransferConsumer.VARIABLE_PROJECT);
+                StreamTransferConsumer.VARIABLE_PROJECT,
+                StreamTransferConsumer.VARIABLE_TYPE);
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(e -> {
                 settings.setOutputFilePattern(fileNameText.getText());
@@ -119,6 +120,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_INDEX),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TYPE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
 
             {
@@ -218,7 +220,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
-                StreamTransferConsumer.VARIABLE_PROJECT);
+                StreamTransferConsumer.VARIABLE_PROJECT,
+                StreamTransferConsumer.VARIABLE_TYPE);
             ContentAssistUtils.installContentProposal(
                 execProcessText,
                 new SmartTextContentAdapter(),
@@ -227,6 +230,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TYPE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, null, getWizard().getSettings().isShowFinalMessage(), 4);

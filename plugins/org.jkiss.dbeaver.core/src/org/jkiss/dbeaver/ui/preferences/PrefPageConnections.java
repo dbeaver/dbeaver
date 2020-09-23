@@ -49,6 +49,7 @@ public class PrefPageConnections extends TargetPrefPage
         DBPConnectionConfiguration.VARIABLE_USER,
         DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
+        DBPConnectionConfiguration.VARIABLE_TYPE,
 
         DBConstants.VAR_CONTEXT_NAME,
         DBConstants.VAR_CONTEXT_ID,
