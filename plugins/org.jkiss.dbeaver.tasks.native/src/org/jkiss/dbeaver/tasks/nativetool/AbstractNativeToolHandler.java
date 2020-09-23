@@ -6,7 +6,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -83,10 +85,15 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
         if (isNativeClientHomeRequired()) {
             String clientHomeId = dataSourceContainer.getConnectionConfiguration().getClientHomeId();
-            List<DBPNativeClientLocation> nativeClientLocations = dataSourceContainer.getDriver().getNativeClientLocations();
+            final DBPDriver driver = dataSourceContainer.getDriver();
+            final List<DBPNativeClientLocation> clientLocations = driver.getNativeClientLocations();
+            final DBPNativeClientLocationManager locationManager = driver.getNativeClientManager();
+            if (locationManager != null) {
+                clientLocations.addAll(locationManager.findLocalClientLocations());
+            }
             if (clientHomeId == null) {
-                if (!nativeClientLocations.isEmpty()) {
-                    settings.setClientHome(nativeClientLocations.get(0));
+                if (!clientLocations.isEmpty()) {
+                    settings.setClientHome(clientLocations.get(0));
                 } else {
                     settings.setClientHome(null);
                 }
@@ -94,7 +101,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                     throw new DBCException("Client binaries location is not specified");
                 }
             } else {
-                DBPNativeClientLocation clientHome = DBUtils.findObject(nativeClientLocations, clientHomeId);
+                DBPNativeClientLocation clientHome = DBUtils.findObject(clientLocations, clientHomeId);
                 if (clientHome == null) {
                     clientHome = settings.findNativeClientHome(clientHomeId);
                 }
