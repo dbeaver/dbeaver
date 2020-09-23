@@ -45,6 +45,8 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 return configuration.getUserPassword();
             case DBPConnectionConfiguration.VARIABLE_URL:
                 return configuration.getUrl();
+            case DBPConnectionConfiguration.VARIABLE_TYPE:
+                return configuration.getConnectionType().getName();
             case DBPConnectionConfiguration.VAR_PROJECT_PATH:
                 return dataSourceContainer == null ? null : dataSourceContainer.getProject().getEclipseProject().getLocation().toOSString();
             case DBPConnectionConfiguration.VAR_PROJECT_NAME:
