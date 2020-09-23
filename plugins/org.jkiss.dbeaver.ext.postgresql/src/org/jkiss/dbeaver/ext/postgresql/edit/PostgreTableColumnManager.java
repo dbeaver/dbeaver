@@ -47,6 +47,7 @@ import java.util.Map;
  */
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase>
         implements DBEObjectRenamer<PostgreTableColumn>, DBPScriptObjectExt2 {
+    private static final long POSTGRE_MAX_VARCHAR_VALUE = 2147483647;
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
@@ -81,7 +82,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         switch (dataType.getDataKind()) {
             case STRING:
                 final long length = column.getMaxLength();
-                if (length > 0) {
+                if (length > 0 && length < POSTGRE_MAX_VARCHAR_VALUE) {
                     sql.append('(').append(length).append(')');
                 }
                 break;
