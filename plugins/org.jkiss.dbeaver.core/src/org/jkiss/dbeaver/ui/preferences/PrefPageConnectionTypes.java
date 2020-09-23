@@ -58,6 +58,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
 
     private Table typeTable;
+    private Text typeId;
     private Text typeName;
     private Text typeDescription;
     private ColorSelector colorPicker;
@@ -120,7 +121,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         }
                     }
                     DBPConnectionType newType = new DBPConnectionType(
-                        SecurityUtils.generateUniqueId(),
+                        name.toLowerCase(),
                         name,
                         "255,255,255",
                         "New type",
@@ -158,11 +159,15 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             Group groupSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_types_group_settings, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             groupSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            typeId = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_id, null);
+            typeId.addModifyListener(e -> {
+                getSelectedType().setId(typeId.getText());
+                updateTableInfo();
+            });
             typeName = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_name, null);
             typeName.addModifyListener(e -> {
                 getSelectedType().setName(typeName.getText());
                 updateTableInfo();
-
             });
             typeDescription = UIUtils.createLabelText(groupSettings, CoreMessages.pref_page_connection_types_label_description, null);
             typeDescription.addModifyListener(e -> {
@@ -274,6 +279,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
         }
 
+        typeId.setText(connectionType.getId());
+        typeId.setEnabled(changedInfo.get(connectionType) == connectionType);
         typeName.setText(connectionType.getName());
         typeDescription.setText(connectionType.getDescription());
         autocommitCheck.setSelection(connectionType.isAutocommit());
@@ -347,6 +354,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk()
     {
+        typeId.setEnabled(false);
+
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
         List<DBPConnectionType> toRemove = new ArrayList<>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
@@ -363,15 +372,27 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             changedSet.add(connectionType);
         }
 
-        for (DBPConnectionType changed : changedInfo.keySet()) {
+        for (Map.Entry<DBPConnectionType, DBPConnectionType> entry : changedInfo.entrySet()) {
             boolean hasChanges = false;
-            DBPConnectionType source = changedInfo.get(changed);
+            DBPConnectionType changed = entry.getKey();
+            DBPConnectionType source = entry.getValue();
             if (source == changed) {
                 // New type
+                if (CommonUtils.isEmpty(changed.getId())) {
+                    changed.setId(SecurityUtils.generateUniqueId());
+                }
+                for (DBPConnectionType type : changedInfo.keySet()) {
+                    if (type != changed &&  type.getId().equals(changed.getId())) {
+                        changed.setId(SecurityUtils.generateUniqueId());
+                        break;
+                    }
+                }
+                entry.setValue(new DBPConnectionType(source));
                 registry.addConnectionType(changed);
                 hasChanges = true;
             } else if (!source.equals(changed)) {
                 // Changed type
+                source.setId(changed.getId());
                 source.setName(changed.getName());
                 source.setDescription(changed.getDescription());
                 source.setAutocommit(changed.isAutocommit());
