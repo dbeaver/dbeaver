@@ -396,6 +396,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
         if (table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn()) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+            if (dataSource.isServerVersionAtLeast(8, 2) && table.getRelOptions() != null) {
+                for (String rOption : table.getRelOptions()) {
+                    withClauseBuilder.append(", ").append(rOption);
+                }
+            }
             withClauseBuilder.append("\n)");
         }
 
