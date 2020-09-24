@@ -393,18 +393,36 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
+        boolean hasExtraOptions = dataSource.isServerVersionAtLeast(8, 2) && table.getRelOptions() != null;
 
         if (table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn()) {
             withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-            if (dataSource.isServerVersionAtLeast(8, 2) && table.getRelOptions() != null) {
-                for (String rOption : table.getRelOptions()) {
-                    withClauseBuilder.append(",\n ").append(rOption);
-                }
+            if (hasExtraOptions) {
+                addExtraOptionsInDDL(table, withClauseBuilder, false);
             }
             withClauseBuilder.append("\n)");
+        } else if (hasExtraOptions) {
+            addExtraOptionsInDDL(table, withClauseBuilder, true);
         }
 
         return withClauseBuilder.toString();
+    }
+
+    private void addExtraOptionsInDDL(PostgreTableRegular table, StringBuilder withClauseBuilder, boolean fullEntry) {
+        String[] relOptions = table.getRelOptions();
+        if (fullEntry) {
+            withClauseBuilder.append("\nWITH (");
+        }
+        for (int i = 0; i < relOptions.length; i++) {
+            if (i == 0 && fullEntry) {
+                withClauseBuilder.append(relOptions[i]);
+            } else {
+                withClauseBuilder.append(",\n ").append(relOptions[i]);
+            }
+        }
+        if (fullEntry) {
+            withClauseBuilder.append("\n)");
+        }
     }
 
     @Override
