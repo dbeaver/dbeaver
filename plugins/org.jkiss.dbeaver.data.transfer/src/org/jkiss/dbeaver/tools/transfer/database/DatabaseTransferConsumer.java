@@ -134,7 +134,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             initExporter(session.getProgressMonitor());
         } catch (DBException e) {
-            throw new DBCException("Error initializing exporter");
+            throw new DBCException("Error initializing exporter", e);
         }
         if (containerMapping == null) {
             throw new DBCException("Internal error: consumer mappings not set");
