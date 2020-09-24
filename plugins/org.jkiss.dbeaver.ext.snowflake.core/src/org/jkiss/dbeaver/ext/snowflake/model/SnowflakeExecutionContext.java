@@ -7,8 +7,8 @@ import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -26,27 +26,26 @@ public class SnowflakeExecutionContext extends GenericExecutionContext {
         final DBPConnectionConfiguration connectionConfiguration = getDataSource().getContainer().getConnectionConfiguration();
         final String databaseName = connectionConfiguration.getDatabaseName();
         if (schema == null && catalog != null && catalog.getName().equals(databaseName)) {
-            setDefaultSchema(monitor);
+            useDefaultSchema(monitor);
         }
     }
 
-    void setDefaultSchema(final DBRProgressMonitor monitor) throws DBCException {
+    void useDefaultSchema(final DBRProgressMonitor monitor) throws DBCException {
         final String schemaName = getDefaultSchemaName();
         if (schemaName.equals("")) {
             return;
         }
-        setSchema(monitor, schemaName);
+        useSchemaWithName(monitor, schemaName);
     }
 
     private String getDefaultSchemaName() {
         return CommonUtils.notEmpty(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(SnowflakeConstants.PROP_SCHEMA));
     }
 
-    private void setSchema(final DBRProgressMonitor monitor, final String schemaName) throws DBCException {
+    private void useSchemaWithName(final DBRProgressMonitor monitor, final String schemaName) throws DBCException {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("USE SCHEMA " + schemaName)) {
-                dbStat.setString(1, schemaName);
-                dbStat.executeUpdate();
+            try (JDBCStatement dbStat = session.createStatement()) {
+                dbStat.executeUpdate("USE SCHEMA " + schemaName);
             }
         } catch (SQLException e) {
             throw new DBCException(e, this);
