@@ -134,7 +134,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             initExporter(session.getProgressMonitor());
         } catch (DBException e) {
-            throw new DBCException("Error initializing exporter");
+            throw new DBCException("Error initializing exporter", e);
         }
         if (containerMapping == null) {
             throw new DBCException("Internal error: consumer mappings not set");
@@ -527,6 +527,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
+        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New table creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
+        }
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");
@@ -544,6 +548,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
+        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New attribute creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
+        }
+
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
         try {
             DatabaseTransferUtils.executeDDL(session, new DBEPersistAction[] { DatabaseTransferUtils.generateTargetAttributeDDL(session.getDataSource(), attribute) } );
