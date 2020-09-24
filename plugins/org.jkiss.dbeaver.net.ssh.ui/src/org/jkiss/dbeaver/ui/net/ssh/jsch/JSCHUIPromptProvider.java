@@ -6,6 +6,7 @@ import org.eclipse.jsch.ui.UserInfoPrompter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
+import org.jkiss.utils.CommonUtils;
 
 public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
@@ -26,7 +27,7 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
-            if (configuration.isSavePassword()) {
+            if (shouldUsePassword()) {
                 setPassword(configuration.getPassword());
             }
             return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
@@ -34,7 +35,7 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public boolean promptPassword(String message) {
-            if (configuration.isSavePassword()) {
+            if (shouldUsePassword()) {
                 setPassword(configuration.getPassword());
                 return true;
             }
@@ -43,7 +44,7 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public boolean promptPassphrase(String message) {
-            if (configuration.isSavePassword()) {
+            if (shouldUsePassword()) {
                 setPassphrase(configuration.getPassword());
                 return true;
             }
@@ -57,5 +58,8 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
             log.debug(message);
         }
 
+        private boolean shouldUsePassword() {
+            return configuration.isSavePassword() || CommonUtils.isNotEmpty(configuration.getPassword());
+        }
     }
 }
