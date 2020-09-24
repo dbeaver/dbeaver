@@ -173,6 +173,15 @@ public class ModelMessages extends NLS {
     public static String dialog_connection_wizard_start_connection_monitor_thread;
     public static String dialog_connection_wizard_start_dialog_error_message;
 
+    public static String dbp_permission_edit_data_name;
+    public static String dbp_permission_edit_data_description;
+    public static String dbp_permission_edit_metadata_name;
+    public static String dbp_permission_edit_metadata_description;
+    public static String dbp_permission_execute_scripts_name;
+    public static String dbp_permission_execute_scripts_description;
+    public static String dbp_permission_import_data_name;
+    public static String dbp_permission_import_data_description;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
