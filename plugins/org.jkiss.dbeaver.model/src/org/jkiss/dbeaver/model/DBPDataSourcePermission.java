@@ -16,15 +16,17 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+
 /**
  * Data-source permissions
  */
 public enum DBPDataSourcePermission
 {
-    PERMISSION_EDIT_DATA("edit.data", "Restrict data edit", "Restrict and direct data modifications"),
-    PERMISSION_EDIT_METADATA("edit.meta", "Restrict structure edit", "Restrict structure (metadata) changes, like tables create/drop"),
-    PERMISSION_EXECUTE_SCRIPTS("edit.execute", "Restrict script execute", "Restruct custom user scripts (SQL) execution"),
-    PERMISSION_IMPORT_DATA("import.data", "Restrict data import", "Restrict importing data");
+    PERMISSION_EDIT_DATA("edit.data", ModelMessages.dbp_permission_edit_data_name, ModelMessages.dbp_permission_edit_data_description),
+    PERMISSION_EDIT_METADATA("edit.meta", ModelMessages.dbp_permission_edit_metadata_name, ModelMessages.dbp_permission_edit_metadata_description),
+    PERMISSION_EXECUTE_SCRIPTS("edit.execute", ModelMessages.dbp_permission_execute_scripts_name, ModelMessages.dbp_permission_execute_scripts_description),
+    PERMISSION_IMPORT_DATA("import.data", ModelMessages.dbp_permission_import_data_name, ModelMessages.dbp_permission_import_data_description);
 
     private final String id;
     private final String label;
