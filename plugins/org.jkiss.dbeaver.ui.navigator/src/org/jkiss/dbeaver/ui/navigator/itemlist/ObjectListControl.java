@@ -406,7 +406,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // Collect all properties
                 PropertySourceAbstract propertySource = getListPropertySource();
                 List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(propertySource, classList, propertyFilter);
-                if (!items.isEmpty()) {
+                if (!CommonUtils.isEmpty(items)) {
                     // Remove hidden properties (we need to check them against all items)
                     try {
                         allProps.removeIf(p -> {
