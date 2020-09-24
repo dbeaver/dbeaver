@@ -81,7 +81,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         switch (dataType.getDataKind()) {
             case STRING:
                 final long length = column.getMaxLength();
-                if (length > 0) {
+                if (length > 0 && length < Integer.MAX_VALUE) {
                     sql.append('(').append(length).append(')');
                 }
                 break;
