@@ -209,7 +209,8 @@ class ResultSetPersister {
         }
 
         RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, refreshRows);
-        job.schedule();
+        viewer.queueDataPump(job);
+        //job.schedule();
         return true;
     }
 
@@ -1006,14 +1007,14 @@ class ResultSetPersister {
         }
     }
 
-    private class RowRefreshJob extends DataSourceJob {
+    private class RowRefreshJob extends ResultSetJobAbstract {
 
         private DBSDataContainer dataContainer;
         private DBDRowIdentifier rowIdentifier;
         private List<ResultSetRow> rows;
 
         RowRefreshJob(DBCExecutionContext context, DBSDataContainer dataContainer, DBDRowIdentifier rowIdentifier, List<ResultSetRow> rows) {
-            super("Refresh rows", context);
+            super("Refresh rows", dataContainer, viewer, context);
             this.dataContainer = dataContainer;
             this.rowIdentifier = rowIdentifier;
             this.rows = new ArrayList<>(rows);
