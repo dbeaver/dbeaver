@@ -73,7 +73,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
     }
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
 
@@ -83,6 +83,8 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
         }
+
+        return credentials;
     }
 
     @Override
