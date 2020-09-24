@@ -1439,6 +1439,7 @@ public class DataSourceDescriptor
             }
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
+            dataSourceContainer.getConnectionConfiguration().updateHandler(networkHandler);
         } else {
             if (!passwordOnly) {
                 dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
