@@ -201,7 +201,7 @@ public class ResultSetViewer extends Viewer
 
     private final List<IResultSetListener> listeners = new ArrayList<>();
 
-    private final List<ResultSetJobDataRead> dataPumpJobQueue = new ArrayList<>();
+    private final List<ResultSetJobAbstract> dataPumpJobQueue = new ArrayList<>();
     private final AtomicBoolean dataPumpRunning = new AtomicBoolean();
 
     private final ResultSetModel model = new ResultSetModel();
@@ -2217,12 +2217,12 @@ public class ResultSetViewer extends Viewer
     }
 
     public void cancelJobs() {
-        List<ResultSetJobDataRead> dpjCopy;
+        List<ResultSetJobAbstract> dpjCopy;
         synchronized (dataPumpJobQueue) {
             dpjCopy = new ArrayList<>(this.dataPumpJobQueue);
             this.dataPumpJobQueue.clear();
         }
-        for (ResultSetJobDataRead dpj : dpjCopy) {
+        for (ResultSetJobAbstract dpj : dpjCopy) {
             if (dpj.isActiveTask()) {
                 dpj.cancel();
             }
@@ -3652,7 +3652,7 @@ public class ResultSetViewer extends Viewer
      * with references panel). We need to execute only current one and the last one. All
      * intrmediate data read requests must be ignored.
      */
-    private void queueDataPump(ResultSetJobDataRead dataPumpJob) {
+    void queueDataPump(ResultSetJobAbstract dataPumpJob) {
         synchronized (dataPumpJobQueue) {
             // Clear queue
             dataPumpJobQueue.clear();
@@ -3673,7 +3673,7 @@ public class ResultSetViewer extends Viewer
                             schedule(50);
                         } else {
                             if (!dataPumpJobQueue.isEmpty()) {
-                                ResultSetJobDataRead curJob = dataPumpJobQueue.get(0);
+                                ResultSetJobAbstract curJob = dataPumpJobQueue.get(0);
                                 dataPumpJobQueue.remove(curJob);
                                 curJob.schedule();
                             }
@@ -3685,7 +3685,7 @@ public class ResultSetViewer extends Viewer
         }.schedule();
     }
 
-    void removeDataPump(ResultSetJobDataRead dataPumpJob) {
+    void removeDataPump(ResultSetJobAbstract dataPumpJob) {
         synchronized (dataPumpJobQueue) {
             dataPumpJobQueue.remove(dataPumpJob);
             if (!dataPumpRunning.get()) {
