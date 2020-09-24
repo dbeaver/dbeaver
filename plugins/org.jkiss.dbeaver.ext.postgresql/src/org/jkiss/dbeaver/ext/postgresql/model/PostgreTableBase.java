@@ -129,7 +129,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(order = 90)
+    @Property(viewable = true, multiline = true, order = 90)
     @Nullable
     public String[] getRelOptions() {
         return relOptions;
