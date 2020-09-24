@@ -53,8 +53,9 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
      * @param configuration connection configuration
      * @param connProperties auth model specific options.
      * @throws DBException on error
+     * @return auth token. In most cases it is the same credentials object
      */
-    void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
+    Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException;
 
     void endAuthentication(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties);
 

@@ -51,9 +51,9 @@ public class OracleAuthOS extends AuthModelDatabaseNative<OracleAuthOSCredential
     }
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, OracleAuthOSCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, OracleAuthOSCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
-        super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
+        return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
 }
