@@ -32,7 +32,7 @@ public class SnowflakeExecutionContext extends GenericExecutionContext {
 
     void useDefaultSchema(final DBRProgressMonitor monitor) throws DBCException {
         final String schemaName = getDefaultSchemaName();
-        if (schemaName.equals("")) {
+        if (schemaName.isEmpty()) {
             return;
         }
         useSchemaWithName(monitor, schemaName);
