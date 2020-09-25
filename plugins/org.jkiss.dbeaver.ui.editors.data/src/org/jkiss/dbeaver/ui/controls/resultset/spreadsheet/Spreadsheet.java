@@ -246,7 +246,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 if (!ctrlPressed &&
                     (event.keyCode == SWT.CR ||
                     (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
-                    (event.keyCode == '-' || event.keyCode == '+') ||
+                    (event.keyCode == '-' || event.keyCode == '+' || event.keyCode == SWT.KEYPAD_ADD || event.keyCode == SWT.KEYPAD_SUBTRACT) ||
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9')))
                 {
