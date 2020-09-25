@@ -3695,6 +3695,26 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    void releaseDataReadLock() {
+        synchronized (dataPumpJobQueue) {
+            if (!dataPumpRunning.get()) {
+                log.debug("Internal error: data read status is empty");
+            }
+            dataPumpRunning.set(false);
+        }
+    }
+
+    boolean acquireDataReadLock() {
+        synchronized (dataPumpJobQueue) {
+            if (dataPumpRunning.get()) {
+                log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
+                return false;
+            }
+            dataPumpRunning.set(true);
+        }
+        return true;
+    }
+
     public void clearData()
     {
         this.model.releaseAllData();
@@ -4413,12 +4433,8 @@ public class ResultSetViewer extends Viewer
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            synchronized (dataPumpJobQueue) {
-                if (dataPumpRunning.get()) {
-                    log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
-                    return Status.CANCEL_STATUS;
-                }
-                dataPumpRunning.set(true);
+            if (!acquireDataReadLock()) {
+                return Status.CANCEL_STATUS;
             }
             beforeDataRead();
             try {
@@ -4426,12 +4442,7 @@ public class ResultSetViewer extends Viewer
                 afterDataRead();
                 return status;
             } finally {
-                synchronized (dataPumpJobQueue) {
-                    if (!dataPumpRunning.get()) {
-                        log.debug("Internal error: data read status is empty");
-                    }
-                    dataPumpRunning.set(false);
-                }
+                releaseDataReadLock();
             }
         }
 
@@ -4559,4 +4570,5 @@ public class ResultSetViewer extends Viewer
             });
         }
     }
+
 }
