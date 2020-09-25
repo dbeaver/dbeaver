@@ -719,7 +719,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private static boolean isTextPropertyType(Class<?> propertyType) {
-        return propertyType == null || CharSequence.class.isAssignableFrom(propertyType) || BeanUtils.isNumericType(propertyType);
+        return propertyType == null || CharSequence.class.isAssignableFrom(propertyType) ||
+                (propertyType.getComponentType() != null && CharSequence.class.isAssignableFrom(propertyType.getComponentType())) ||
+                BeanUtils.isNumericType(propertyType);
     }
 
     private List<DBPPropertyDescriptor> filterProperties(DBPPropertyDescriptor[] props) {
