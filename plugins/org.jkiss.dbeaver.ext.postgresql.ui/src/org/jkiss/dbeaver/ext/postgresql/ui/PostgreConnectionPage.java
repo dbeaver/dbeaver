@@ -49,6 +49,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
     private Text hostText;
     private Text portText;
     private Text dbText;
+    private Text roleText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -99,6 +100,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
         createAuthPanel(mainGroup, 1);
 
         Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+        roleText = UIUtils.createLabelText(advancedGroup, "Role", null, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+        roleText.setLayoutData(gd);
+        roleText.addModifyListener(textListener);
 
         homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
         gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -156,6 +162,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             }
             dbText.setText(databaseName);
         }
+        if (roleText != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
+        }
         homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
         activated = true;
@@ -174,6 +183,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
+        if (roleText != null) {
+            connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());
+        }
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
@@ -189,5 +201,4 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             new DriverPropertiesDialogPage(this)
         };
     }
-
 }
