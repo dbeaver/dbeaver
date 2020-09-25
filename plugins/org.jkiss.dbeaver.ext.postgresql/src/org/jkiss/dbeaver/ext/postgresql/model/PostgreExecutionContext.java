@@ -181,7 +181,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
-
+        setSessionRole(monitor);
         return true;
     }
 
@@ -242,9 +242,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    void useRoleWithName(final DBRProgressMonitor monitor, String roleName) throws DBCException {
-        if (roleName == null || roleName.isEmpty()) {
-            roleName = "NONE";
+    void setSessionRole(final DBRProgressMonitor monitor) throws DBCException {
+        final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);
+        if (CommonUtils.isEmpty(roleName)) {
+            return;
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active role")) {
             try (JDBCStatement dbStat = session.createStatement()) {

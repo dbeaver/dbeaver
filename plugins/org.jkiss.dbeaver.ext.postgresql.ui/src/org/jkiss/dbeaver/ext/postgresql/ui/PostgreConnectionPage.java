@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
@@ -29,35 +28,30 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreExecutionContext;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Locale;
 
 /**
  * PostgreConnectionPage
  */
-public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage, IDataSourceConnectionTester {
+public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
     private static final Log log = Log.getLog(PostgreConnectionPage.class);
 
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private Combo roleCombo;
+    private Text roleCombo; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -108,7 +102,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
         Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-        roleCombo = UIUtils.createLabelCombo(advancedGroup, PostgreMessages.dialog_setting_use_role, SWT.DROP_DOWN);
+        roleCombo = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
         roleCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
@@ -202,46 +196,5 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             new PostgreConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
-    }
-
-    @Override
-    public void testConnection(final DBCSession session) {
-        try {
-            updateRolesCombo(session);
-        } catch (DBCException e) {
-            log.error(e);
-        }
-    }
-
-    private void updateRolesCombo(final DBCSession session) throws DBCException {
-        final Collection<String> result = new ArrayList<>();
-        final String userName = ((PostgreExecutionContext)session.getExecutionContext()).getActiveUser();
-        session.getProgressMonitor().subTask("Exec finding roles query");
-        final String query = "WITH RECURSIVE cte AS (" +
-                "   SELECT oid FROM pg_roles WHERE rolname = '" + userName + "'" +
-                "   UNION ALL" +
-                "   SELECT m.roleid" +
-                "   FROM   cte" +
-                "   JOIN   pg_auth_members m ON m.member = cte.oid" +
-                "   )" +
-                "SELECT oid::regrole::text AS rolenames FROM cte;";
-        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {
-            dbStat.executeStatement();
-            try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                while (dbResult.nextRow()) {
-                    result.add(CommonUtils.toString(dbResult.getAttributeValue("rolenames"))); //$NON-NLS-1$
-                }
-            }
-        }
-        UIUtils.asyncExec(() -> {
-            String oldText = roleCombo.getText();
-            if (!result.contains("")) {
-                result.add("");
-            }
-            roleCombo.setItems(result.toArray(new String[0]));
-            if (!result.contains(oldText)) {
-                roleCombo.setText(userName);
-            }
-        });
     }
 }

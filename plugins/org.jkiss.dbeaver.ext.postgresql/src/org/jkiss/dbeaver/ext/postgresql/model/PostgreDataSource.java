@@ -231,8 +231,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 ((PostgreExecutionContext)context).setDefaultSchema(monitor, activeSchema);
             }
         }
-        final String roleName = getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);
-        ((PostgreExecutionContext)context).useRoleWithName(monitor, roleName);
     }
 
     public DatabaseCache getDatabaseCache()
