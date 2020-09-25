@@ -66,7 +66,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
         DataTransferPipe pipe,
         DatabaseMappingContainer mappingContainer,
         DataTransferSettings dtSettings) {
-        super(parentShell, DTMessages.data_transfer_wizard_page_preview_name + " - " + mappingContainer.getTargetName(), null);
+        super(parentShell, DTMessages.data_transfer_wizard_page_preview_title + " - " + mappingContainer.getTargetName(), null);
 
         this.pipe = pipe;
         this.mappingContainer = mappingContainer;
