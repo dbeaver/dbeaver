@@ -77,12 +77,17 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_page_input_files_name;
 	public static String data_transfer_wizard_page_input_files_title;
 	public static String data_transfer_wizard_page_input_files_description;
+	public static String data_transfer_wizard_page_ddl_name;
+	public static String data_transfer_wizard_page_ddl_title;
+	public static String data_transfer_wizard_page_ddl_description;
 	public static String data_transfer_wizard_page_preview_name;
 	public static String data_transfer_wizard_page_preview_title;
 	public static String data_transfer_wizard_page_preview_description;
 	public static String data_transfer_wizard_producers_title;
 	public static String data_transfer_wizard_producers_description;
 	public static String data_transfer_wizard_mappings_name;
+	public static String data_transfer_wizard_restricted_title;
+	public static String data_transfer_wizard_restricted_description;
 	public static String data_transfer_wizard_settings_group_input_files;
 	public static String data_transfer_wizard_settings_group_importer;
 	public static String data_transfer_wizard_settings_group_column_mappings;
