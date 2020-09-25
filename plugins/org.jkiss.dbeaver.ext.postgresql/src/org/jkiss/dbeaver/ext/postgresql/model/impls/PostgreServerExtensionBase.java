@@ -30,6 +30,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -394,8 +395,27 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
-        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn()) {
-            withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+        boolean hasExtraOptions = dataSource.isServerVersionAtLeast(8, 2) && table.getRelOptions() != null;
+        boolean tableSupportOids = table.getDataSource().getServerType().supportsOids() && table.isHasOids() && table.getDataSource().getServerType().supportsHasOidsColumn();
+
+        List<String> extraOptions = new ArrayList<>();
+
+        if (tableSupportOids) {
+            extraOptions.add("OIDS=TRUE");
+        }
+        if (hasExtraOptions) {
+            extraOptions.addAll(Arrays.asList(table.getRelOptions()));
+        }
+
+        if (!CommonUtils.isEmpty(extraOptions)) {
+            withClauseBuilder.append("\nWITH (\n\t");
+            for (int i = 0; i < extraOptions.size(); i++) {
+                if (i == 0) {
+                    withClauseBuilder.append(extraOptions.get(i));
+                } else {
+                    withClauseBuilder.append(",\n\t").append(extraOptions.get(i));
+                }
+            }
             withClauseBuilder.append("\n)");
         }
 
