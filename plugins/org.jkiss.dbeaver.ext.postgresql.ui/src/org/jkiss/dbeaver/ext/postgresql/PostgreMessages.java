@@ -130,6 +130,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_sql_dd_tag_tip;
     public static String dialog_setting_sql_dd_string;
     public static String dialog_setting_sql_dd_code_block;
+    public static String dialog_setting_use_role;
 
     /* PostgreCreateRoleDialog */
     public static String dialog_create_role_title;
