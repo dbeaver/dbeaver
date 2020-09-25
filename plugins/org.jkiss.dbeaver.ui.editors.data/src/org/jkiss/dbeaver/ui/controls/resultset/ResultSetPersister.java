@@ -1022,6 +1022,9 @@ class ResultSetPersister {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            if (!viewer.acquireDataReadLock()) {
+                return Status.CANCEL_STATUS;
+            }
             monitor.beginTask("Refresh updated rows", 1);
             try {
                 final Object[][] refreshValues = new Object[rows.size()][];
@@ -1090,6 +1093,7 @@ class ResultSetPersister {
                 }
             } finally {
                 monitor.done();
+                viewer.releaseDataReadLock();
             }
             return Status.OK_STATUS;
         }
