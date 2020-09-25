@@ -408,13 +408,13 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         if (!CommonUtils.isEmpty(extraOptions)) {
-            withClauseBuilder.append("\nWITH (\n\t");
+            withClauseBuilder.append("\nWITH (");
             for (int i = 0; i < extraOptions.size(); i++) {
-                if (i == 0) {
-                    withClauseBuilder.append(extraOptions.get(i));
-                } else {
-                    withClauseBuilder.append(",\n\t").append(extraOptions.get(i));
+                if (i > 0) {
+                    withClauseBuilder.append(",");
                 }
+                withClauseBuilder.append("\n\t");
+                withClauseBuilder.append(extraOptions.get(i));
             }
             withClauseBuilder.append("\n)");
         }
