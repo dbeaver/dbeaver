@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -38,6 +40,19 @@ public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValu
     public OracleTemporalAccessorValueHandler(DBDFormatSettings formatSettings)
     {
         super(formatSettings);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE && value instanceof String) {
+            if (!((String) value).startsWith("TIMESTAMP")) {
+                return "TIMESTAMP'" + value + "'";
+            } else {
+                return (String) value;
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     @Nullable
