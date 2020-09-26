@@ -100,6 +100,9 @@ public class OracleUIMessages extends NLS {
 	public static String edit_label_combo_territory;
 	public static String edit_label_combo_territory_tool_tip_text;
 	public static String edit_label_text_date_format;
+	public static String edit_label_text_timestamp_format;
+	public static String edit_label_text_length_format;
+	public static String edit_label_text_currency_format;
 	public static String dialog_controlgroup_content;
 	public static String edit_create_checkbox_hide_empty_schemas;
 	public static String edit_create_checkbox_hide_empty_schemas_tool_tip_text;
