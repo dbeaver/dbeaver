@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         int valueType = typedObject.getTypeID();
         DBPDataKind dataKind = typedObject.getDataKind();//JDBCUtils.resolveDataKind(dataSource, typedObject.getTypeName(), valueType);
@@ -44,9 +44,9 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                     return JDBCStringValueHandler.INSTANCE;
                 }
             case NUMERIC:
-                return new JDBCNumberValueHandler(typedObject, preferences.getDataFormatterProfile());
+                return new JDBCNumberValueHandler(typedObject, preferences);
             case DATETIME:
-                return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
+                return new JDBCDateTimeValueHandler(preferences);
             case BINARY:
             case CONTENT:
                 if ("UUID".equalsIgnoreCase(typedObject.getTypeName())) {

@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -46,8 +46,8 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     //private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
 
-    public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile) {
-        super(formatterProfile);
+    public OracleTimestampValueHandler(DBDFormatSettings formatSettings) {
+        super(formatSettings);
     }
 
     @Override

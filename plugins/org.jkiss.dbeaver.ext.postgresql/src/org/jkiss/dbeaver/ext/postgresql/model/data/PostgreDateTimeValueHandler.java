@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -36,8 +36,8 @@ import java.sql.Types;
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
 
-    public PostgreDateTimeValueHandler(DBDDataFormatterProfile formatterProfile) {
-        super(formatterProfile);
+    public PostgreDateTimeValueHandler(DBDFormatSettings formatSettings) {
+        super(formatSettings);
     }
 
     @Override

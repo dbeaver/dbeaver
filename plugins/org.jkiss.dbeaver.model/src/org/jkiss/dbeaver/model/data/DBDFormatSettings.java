@@ -14,20 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDFormatSettings;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValueHandler;
+package org.jkiss.dbeaver.model.data;
+
+import org.jkiss.code.NotNull;
 
 /**
- * PostgreTemporalAccessorValueHandler.
+ * Data preferences
  */
-public class PostgreTemporalAccessorValueHandler extends JDBCTemporalAccessorValueHandler {
+public interface DBDFormatSettings {
 
+    /**
+     * Gets current context's data formatter profile
+     * @return profile
+     */
+    DBDDataFormatterProfile getDataFormatterProfile();
 
-    public PostgreTemporalAccessorValueHandler(DBDFormatSettings formatterProfile) {
-        super(formatterProfile);
-    }
+    boolean isUseNativeDateTimeFormat();
 
+    boolean isUseNativeNumericFormat();
+
+    boolean isUseScientificNumericFormat();
+
+    /**
+     * Default value handler
+     * @return value handler instance
+     */
+    @NotNull
+    DBDValueHandler getDefaultValueHandler();
 
 }

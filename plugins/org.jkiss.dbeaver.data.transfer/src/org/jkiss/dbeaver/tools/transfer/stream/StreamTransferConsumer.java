@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -226,8 +223,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void initExporter(DBCSession session) throws DBCException {
-        if (settings.getFormatterProfile() != null) {
-            session.setDataFormatterProfile(settings.getFormatterProfile());
+        if (settings.getFormatterProfile() != null && session instanceof DBDFormatSettingsExt) {
+            ((DBDFormatSettingsExt)session).setDataFormatterProfile(settings.getFormatterProfile());
         }
 
         exportSite = new StreamExportSite();
