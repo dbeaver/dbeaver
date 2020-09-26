@@ -246,16 +246,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         log.warn("Can't set session territory", e);
                     }
                 }
-                String nlsDateFormat = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
-                if (nlsDateFormat != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_DATE_FORMAT='" + nlsDateFormat + "'");
-                    } catch (Throwable e) {
-                        log.warn("Can't set session NLS date format", e);
-                    }
-                }
+                setNLSParameter(session, connectionInfo, "NLS_DATE_FORMAT", OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
 
                 if (JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())) {
                     if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER))) {
@@ -269,6 +263,19 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void setNLSParameter(JDBCSession session, DBPConnectionConfiguration connectionInfo, String oraNlsName, String paramName) {
+        String paramValue = connectionInfo.getProviderProperty(paramName);
+        if (!CommonUtils.isEmpty(paramValue)) {
+            try {
+                JDBCUtils.executeSQL(
+                    session,
+                    "ALTER SESSION SET "+ oraNlsName + "='" + paramValue + "'");
+            } catch (Throwable e) {
+                log.warn("Can not set session NLS parameter " + oraNlsName, e);
             }
         }
     }

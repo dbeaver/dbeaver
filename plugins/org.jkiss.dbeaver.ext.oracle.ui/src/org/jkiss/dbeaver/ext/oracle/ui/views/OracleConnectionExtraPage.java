@@ -42,6 +42,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Combo languageCombo;
     private Combo territoryCombo;
     private Text nlsDateFormat;
+    private Text nlsTimestampFormat;
+    private Text nlsLengthFormat;
+    private Text nlsCurrencyFormat;
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
     private Button useDBAViewsCheckbox;
@@ -66,7 +69,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     public void createControl(Composite parent)
     {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
+        GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
         cfgGroup.setLayout(gl);
@@ -75,6 +78,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         {
             final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            ((GridData)sessionGroup.getLayoutData()).horizontalSpan = 2;
 
             languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
             languageCombo.setToolTipText(OracleUIMessages.edit_label_combo_language_tool_tip_text);
@@ -93,6 +97,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
 
             nlsDateFormat = UIUtils.createLabelText(sessionGroup, OracleUIMessages.edit_label_text_date_format, "");
+            nlsTimestampFormat = UIUtils.createLabelText(sessionGroup, OracleUIMessages.edit_label_text_timestamp_format, "");
+            nlsLengthFormat = UIUtils.createLabelText(sessionGroup, OracleUIMessages.edit_label_text_length_format, "");
+            nlsCurrencyFormat = UIUtils.createLabelText(sessionGroup, OracleUIMessages.edit_label_text_currency_format, "");
         }
 
         {
@@ -150,10 +157,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             territoryCombo.setText(nlsTerritory.toString());
         }
 
-        final Object dateFormat = providerProperties.get(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
-        if (dateFormat != null) {
-            nlsDateFormat.setText(dateFormat.toString());
-        }
+        nlsDateFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT)));
+        nlsTimestampFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT)));
+        nlsLengthFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT)));
+        nlsCurrencyFormat.setText(CommonUtils.toString(providerProperties.get(OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT)));
 
         final Object checkSchemaContent = providerProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
         if (checkSchemaContent != null) {
@@ -187,12 +194,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 providerProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
             }
 
-            String dateFormat = nlsDateFormat.getText().trim();
-            if (!dateFormat.isEmpty()) {
-                providerProperties.put(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, dateFormat);
-            } else {
-                providerProperties.remove(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
-            }
+            setOrRemoveProperty(nlsDateFormat, OracleConstants.PROP_SESSION_NLS_DATE_FORMAT, providerProperties);
+            setOrRemoveProperty(nlsTimestampFormat, OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT, providerProperties);
+            setOrRemoveProperty(nlsLengthFormat, OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT, providerProperties);
+            setOrRemoveProperty(nlsCurrencyFormat, OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT, providerProperties);
 
             providerProperties.put(
                 OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
@@ -222,6 +227,15 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
+    }
+
+    private static void setOrRemoveProperty(Text text, String propName, Map<String, String> providerProperties) {
+        String propValue = text.getText().trim();
+        if (!propValue.isEmpty()) {
+            providerProperties.put(propName, propValue);
+        } else {
+            providerProperties.remove(propName);
+        }
     }
 
 }
