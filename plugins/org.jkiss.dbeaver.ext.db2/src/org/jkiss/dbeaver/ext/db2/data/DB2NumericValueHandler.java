@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.data;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class DB2NumericValueHandler extends JDBCNumberValueHandler {
 
-    DB2NumericValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        super(type, formatterProfile);
+    DB2NumericValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        super(type, formatSettings);
     }
 
     @Override

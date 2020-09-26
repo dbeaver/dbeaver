@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.generic.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -32,9 +32,9 @@ public class GenericTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     private final GenericDataSource dataSource;
 
-    public GenericTimestampValueHandler(GenericDataSource dataSource, DBDDataFormatterProfile formatterProfile)
+    public GenericTimestampValueHandler(GenericDataSource dataSource, DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
 
         this.dataSource = dataSource;
     }

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -43,7 +43,7 @@ import java.util.Date;
 /**
  * DBPDataSourceContainer
  */
-public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2, DBPDataSourcePermissionOwner
+public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DBPNamedObject2, DBPDataSourcePermissionOwner
 {
     /**
      * Container unique ID

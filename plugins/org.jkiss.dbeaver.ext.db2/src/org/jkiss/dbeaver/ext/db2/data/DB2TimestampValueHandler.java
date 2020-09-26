@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.data;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.time.ExtendedDateFormat;
@@ -33,9 +33,9 @@ public class DB2TimestampValueHandler extends JDBCDateTimeValueHandler {
 
     private final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new ExtendedDateFormat("''yyyy-MM-dd HH:mm:ss.ffffff''");
 
-    public DB2TimestampValueHandler(DBDDataFormatterProfile formatterProfile)
+    public DB2TimestampValueHandler(DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
     }
 
     @Nullable

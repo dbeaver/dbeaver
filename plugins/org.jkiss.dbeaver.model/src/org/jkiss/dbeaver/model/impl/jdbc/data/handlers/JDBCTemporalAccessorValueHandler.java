@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -50,9 +50,9 @@ public class JDBCTemporalAccessorValueHandler extends TemporalAccessorValueHandl
     public static final DateTimeFormatter DEFAULT_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
     public static final DateTimeFormatter DEFAULT_TIMESTAMP_TZ_FORMAT = DateTimeFormatter.ofPattern("''" + DBConstants.DEFAULT_TIMESTAMP_TZ_FORMAT + "''");
 
-    public JDBCTemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile)
+    public JDBCTemporalAccessorValueHandler(DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
     }
 
     @Override
@@ -60,6 +60,15 @@ public class JDBCTemporalAccessorValueHandler extends TemporalAccessorValueHandl
         try {
             if (resultSet instanceof JDBCResultSet) {
                 JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+
+                if (session.isUseNativeDateTimeFormat()) {
+                    try {
+                        return dbResults.getString(index + 1);
+                    } catch (SQLException e) {
+                        log.debug("Can't read date/time value as string: " + e.getMessage());
+                    }
+                }
+
                 if (isZonedType(type)) {
                     return dbResults.getObject(index + 1, ZonedDateTime.class);
                 } else {

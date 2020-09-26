@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -33,7 +33,7 @@ import java.sql.Types;
 public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
@@ -45,9 +45,9 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
                 if (((OracleDataSource)dataSource).isDriverVersionAtLeast(12, 2)) {
-                    return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                    return new OracleTemporalAccessorValueHandler(preferences);
                 } else {
-                    return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+                    return new OracleTimestampValueHandler(preferences);
                 }
             case Types.STRUCT:
                 return OracleObjectValueHandler.INSTANCE;
@@ -63,7 +63,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+            return new OracleTimestampValueHandler(preferences);
         } else {
             return null;
         }

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -35,7 +35,7 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
 //        // FIXME: This doesn't work as data type information is not available during RS metadata reading
 //        DBSDataType dataType = DBUtils.getDataType(typedObject);
 //        if (dataType instanceof PostgreDataType && ((PostgreDataType) dataType).getTypeCategory() == PostgreTypeCategory.E) {
@@ -53,9 +53,9 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 if (((PostgreDataSource) dataSource).getServerType().supportsTemporalAccessor()) {
-                    return new PostgreTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                    return new PostgreTemporalAccessorValueHandler(preferences);
                 } else {
-                    return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
+                    return new PostgreDateTimeValueHandler(preferences);
                 }
             default:
                 switch (typedObject.getTypeName()) {

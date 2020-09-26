@@ -238,7 +238,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
                     // Null array of unknown type. Just make NULL read-only array
                     String defDataTypeName = dataSource.getDefaultDataTypeName(DBPDataKind.OBJECT);
                     DBSDataType defDataType = dataSource.getLocalDataType(defDataTypeName);
-                    DBDValueHandler defValueHandler = dataSource.getDefaultValueHandler();
+                    DBDValueHandler defValueHandler = session.getDefaultValueHandler();
                     return new JDBCCollection(defDataType, defValueHandler, null);
                 }
                 try {

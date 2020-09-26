@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -1140,17 +1140,26 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
-        this.formatterProfile = formatterProfile;
+    public boolean isUseNativeDateTimeFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+    }
+
+    @Override
+    public boolean isUseNativeNumericFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
+    }
+
+    @Override
+    public boolean isUseScientificNumericFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
-        if (dataSource instanceof DBDPreferences) {
-            return ((DBDPreferences) dataSource).getDefaultValueHandler();
+        if (dataSource instanceof DBDFormatSettings) {
+            return ((DBDFormatSettings) dataSource).getDefaultValueHandler();
         }
         return DefaultValueHandler.INSTANCE;
     }

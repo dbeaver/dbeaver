@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -35,9 +35,9 @@ public class OracleTemporalAccessorValueHandler extends JDBCTemporalAccessorValu
     private static final DateTimeFormatter DEFAULT_DATE_FORMAT = DateTimeFormatter.ofPattern("'DATE '''yyyy-MM-dd''");
     private static final DateTimeFormatter DEFAULT_TIME_FORMAT = DateTimeFormatter.ofPattern("'TIME '''HH:mm:ss.SSS''");
 
-    public OracleTemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile)
+    public OracleTemporalAccessorValueHandler(DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
     }
 
     @Nullable
