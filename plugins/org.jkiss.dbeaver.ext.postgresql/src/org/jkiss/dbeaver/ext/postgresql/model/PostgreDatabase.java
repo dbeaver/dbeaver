@@ -243,7 +243,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @NotNull
@@ -258,7 +258,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
@@ -279,6 +279,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
         
         return description;
+    }
+
+    public void setDescription(String description) {
+        if (description == null) {
+            this.description = "";
+        } else {
+            this.description = description;
+        }
     }
 
     @Override

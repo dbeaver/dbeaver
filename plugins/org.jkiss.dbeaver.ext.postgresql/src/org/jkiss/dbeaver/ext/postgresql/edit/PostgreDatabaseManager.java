@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -175,6 +176,14 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
                     log.error("Can't connect to the new database");
                 }
             }
+        }
+    }
+
+    @Override
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreDatabase, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            PostgreDatabase database = command.getObject();
+            actions.add(new SQLDatabasePersistAction("COMMENT ON DATABASE " + DBUtils.getQuotedIdentifier(database) + " IS " + SQLUtils.quoteString(database, database.getDescription(monitor))));
         }
     }
 
