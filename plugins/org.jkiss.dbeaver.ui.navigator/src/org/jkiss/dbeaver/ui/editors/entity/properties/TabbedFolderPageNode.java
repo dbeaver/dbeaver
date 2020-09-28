@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+
+import java.util.Collection;
 
 /**
  * EntityNodeEditor
@@ -162,9 +165,21 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         // Without this check editor will try to reload it's content and thus will reopen just closed connection
         // (by calling getChildren() on DBNNode)
         boolean loadNewData = true;
-        if (source instanceof DBNEvent) {
-            DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
-            if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
+        if (!force && source instanceof DBNEvent) {
+            DBNEvent event = (DBNEvent) source;
+            DBNEvent.NodeChange nodeChange = event.getNodeChange();
+            if (event.getAction() == DBNEvent.Action.UPDATE && nodeChange == DBNEvent.NodeChange.REFRESH) {
+                // Do not refresh if refreshed object is not in the list
+                Object itemsInput = itemControl.getItemsViewer().getInput();
+                if (event.getSource() instanceof DBPEvent &&
+                    itemsInput instanceof Collection &&
+                    ((Collection) itemsInput).contains(((DBPEvent) event.getSource()).getObject()))
+                {
+                    loadNewData = true;
+                } else{
+                    loadNewData = false;
+                }
+            } else if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
                 loadNewData = false;
             }
         }
