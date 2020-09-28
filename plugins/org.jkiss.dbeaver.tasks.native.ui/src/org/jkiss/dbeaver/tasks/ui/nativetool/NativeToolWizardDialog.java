@@ -96,7 +96,6 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
     }
 
     private static class NativeClientConfigDialog extends BaseDialog {
-
         private final DBPDataSourceContainer dataSource;
         private ClientHomesSelector homesSelector;
 
@@ -120,10 +119,8 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         protected void okPressed() {
             String selectedHome = homesSelector.getSelectedHome();
             dataSource.getConnectionConfiguration().setClientHomeId(selectedHome);
-            dataSource.getRegistry().flushConfig();
-
+            dataSource.persistConfiguration();
             super.okPressed();
         }
     }
-
 }
