@@ -51,7 +51,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private Text roleCombo; //TODO: make it a combo and fill it with appropriate roles
+    private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
@@ -102,8 +102,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
         Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-        roleCombo = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
-        roleCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
+        roleText.setLayoutData(gd);
 
         homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
         gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -160,8 +162,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             }
             dbText.setText(databaseName);
         }
-        if (roleCombo != null) {
-            roleCombo.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
+        if (roleText != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
         }
         homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
@@ -180,8 +182,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
-        if (roleCombo != null) {
-            connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleCombo.getText().trim());
+        if (roleText != null) {
+            connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());
         }
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
