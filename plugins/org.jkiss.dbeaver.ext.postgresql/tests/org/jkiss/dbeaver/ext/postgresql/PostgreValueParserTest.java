@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
@@ -83,6 +84,9 @@ public class PostgreValueParserTest {
     @Mock
     private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", new TestPreferenceStore());
 
+    @Mock
+    DBDFormatSettings dbdFormatSettings;
+
     @Before
     public void setUp() throws Exception {
         numberDataFormatter.init(doubleItemType, Locale.ENGLISH, new HashMap<>());
@@ -105,17 +109,18 @@ public class PostgreValueParserTest {
         Assert.assertNotEquals(new Integer[]{33333, 22},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayIntItemType, "{1,22}"));
 
+
         JDBCCollection innerCollection1 = new JDBCCollection(doubleItemType,
-                new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
+                new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
                 new Double[]{1.1, 22.22});
         JDBCCollection innerCollection2 = new JDBCCollection(doubleItemType,
-                new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
+                new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
                 new Double[]{3.3, 44.44});
         Assert.assertArrayEquals(new Object[]{innerCollection1, innerCollection2},
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{1.1,22.22},{3.3,44.44}}"));
 
         JDBCCollection innerCollection3 = new JDBCCollection(doubleItemType,
-                new JDBCNumberValueHandler(doubleItemType, dataFormatterProfile),
+                new JDBCNumberValueHandler(doubleItemType, dbdFormatSettings),
                 new Object[]{innerCollection1, innerCollection2});
         Assert.assertArrayEquals(new Object[]{ innerCollection3, innerCollection3 },
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}}"));
@@ -252,6 +257,8 @@ public class PostgreValueParserTest {
         Mockito.when(arrayBooleanItemType.getComponentType(session.getProgressMonitor())).thenReturn(booleanItemType);
 
         Mockito.when(dataFormatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, doubleItemType)).thenReturn(numberDataFormatter);
+
+        Mockito.when(dbdFormatSettings.getDataFormatterProfile()).thenReturn(dataFormatterProfile);
     }
 
 }
