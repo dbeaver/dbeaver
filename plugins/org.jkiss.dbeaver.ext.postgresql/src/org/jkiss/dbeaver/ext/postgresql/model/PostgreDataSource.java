@@ -186,7 +186,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
         props.put(PostgreConstants.PROP_SSL, "true");
 
         final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
@@ -213,7 +213,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
     }
 
-    private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+    private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
         // No special config
         //initServerSSL(props, sslConfig);
     }
@@ -282,24 +282,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public Collection<? extends PostgreDatabase> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Collection<? extends PostgreDatabase> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getDatabases();
     }
 
     @Override
-    public PostgreDatabase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException
-    {
+    public PostgreDatabase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getDatabase(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 
@@ -333,9 +327,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                     conConfig.setDatabaseName(instance.getName());
                     conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
-                } else {
+                } //else {
                     //String url = conConfig.getUrl();
-                }
+                //}
 
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
@@ -585,7 +579,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+\\s*: ([0-9]+)");
+    private final Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+\\s*: ([0-9]+)");
 
     @Nullable
     @Override
@@ -654,5 +648,4 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         return null;
     }
-
 }
