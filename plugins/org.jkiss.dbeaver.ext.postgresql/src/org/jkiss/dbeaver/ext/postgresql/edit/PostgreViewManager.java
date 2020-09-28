@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -82,13 +84,15 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actions, (PostgreViewBase) command.getObject());
+        createOrReplaceViewQuery(monitor, actions, (PostgreViewBase) command.getObject(), options);
         addObjectExtraActions(monitor, executionContext, actions, command, options);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actionList, (PostgreViewBase) command.getObject());
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) && command.getProperties().size() > 1) {
+            createOrReplaceViewQuery(monitor, actionList, (PostgreViewBase) command.getObject(), options);
+        }
     }
 
     @Override
@@ -104,8 +108,8 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         );
     }
 
-    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
-        if (CommonUtils.isEmpty(view.getSource())) {
+    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
+        if (CommonUtils.isEmpty(view.getObjectDefinitionText(monitor, options))) {
             throw new DBException("View '" + view.getName() + "' definition is empty");
         }
         // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
@@ -149,6 +153,17 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
                 "ALTER " + view.getViewType() + " " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
+    }
+
+    @Override
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+        PostgreViewBase viewBase = (PostgreViewBase) command.getObject();
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            actions.add(new SQLDatabasePersistAction(
+                    "Comment view",
+                    "COMMENT ON  " + viewBase.getViewType() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                            " IS " + SQLUtils.quoteString(viewBase, CommonUtils.notEmpty(viewBase.getDescription()))));
+        }
     }
 
 }
