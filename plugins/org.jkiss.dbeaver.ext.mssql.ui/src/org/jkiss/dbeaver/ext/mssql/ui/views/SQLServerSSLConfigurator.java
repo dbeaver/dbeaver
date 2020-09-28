@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
@@ -43,14 +44,14 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         createTrustStoreConfigGroup(composite);
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, -1);
+            Group advancedGroup = UIUtils.createControlGroup(composite, SQLServerUIMessages.dialog_setting_ssl_advanced_title, 2, GridData.FILL_HORIZONTAL, -1);
 
-            UIUtils.createControlLabel(settingsGroup, "Certificate hostname");
+            UIUtils.createControlLabel(advancedGroup, SQLServerUIMessages.dialog_setting_ssl_advanced_hostname_label);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            keystoreHostname = new Text(settingsGroup, SWT.BORDER);
+            keystoreHostname = new Text(advancedGroup, SWT.BORDER);
             keystoreHostname.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            keystoreHostname.setToolTipText("The host name to be used in validating the SQL Server TLS/SSL certificate.");
+            keystoreHostname.setToolTipText(SQLServerUIMessages.dialog_setting_ssl_advanced_hostname_tip);
         }
     }
 
