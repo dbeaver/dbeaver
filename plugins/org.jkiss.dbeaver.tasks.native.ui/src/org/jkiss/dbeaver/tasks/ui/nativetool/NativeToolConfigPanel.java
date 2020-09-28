@@ -181,7 +181,9 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
 
     @Override
     public void saveSettings() {
-
+        final String selectedHome = homesSelector.getSelectedHome();
+        curDataSource.getConnectionConfiguration().setClientHomeId(selectedHome);
+        curDataSource.persistConfiguration();
     }
 
     @Override
