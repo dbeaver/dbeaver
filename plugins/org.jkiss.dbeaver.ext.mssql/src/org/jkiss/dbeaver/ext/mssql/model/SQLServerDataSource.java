@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,7 +38,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -128,6 +131,26 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         SQLServerAuthentication authSchema = SQLServerUtils.detectAuthSchema(connectionInfo);
 
         authSchema.getInitializer().initializeAuthentication(connectionInfo, properties);
+
+        final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
+        if (sslConfig != null && sslConfig.isEnabled()) {
+            try {
+                SSLHandlerTrustStoreImpl.initializeTrustStore(monitor, this, sslConfig);
+                DBACertificateStorage certificateStorage = getContainer().getPlatform().getCertificateStorage();
+                String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
+
+                properties.setProperty("encrypt", "true");
+                properties.setProperty("trustStore", keyStorePath);
+                properties.setProperty("trustStoreType", "JKS");
+
+                final String keystoreHostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
+                if (!CommonUtils.isEmpty(keystoreHostnameProp)) {
+                    properties.put("hostNameInCertificate", keystoreHostnameProp);
+                }
+            } catch (Exception e) {
+                throw new DBCException("Error initializing SSL trust store", e);
+            }
+        }
 
         return properties;
     }
