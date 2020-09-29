@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQL Server UI Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql.ui;singleton:=true
-Bundle-Version: 1.0.40.qualifier
-Bundle-Release-Date: 20200921
+Bundle-Version: 1.0.41.qualifier
+Bundle-Release-Date: 20201004
 Bundle-Activator: org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
