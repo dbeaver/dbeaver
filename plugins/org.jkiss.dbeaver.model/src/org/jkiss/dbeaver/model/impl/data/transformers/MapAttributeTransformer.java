@@ -37,6 +37,8 @@ import java.util.Map;
  */
 public class MapAttributeTransformer implements DBDAttributeTransformer {
 
+    private static final boolean FILTER_SIMPLE_COLLECTIONS = false;
+
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         if (!CommonUtils.isEmpty(attribute.getNestedBindings()) ||
@@ -141,10 +143,17 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             }
         }
 
-        // Remove empty collection attributes from nested bindings
-        // They can't be used anyway
-        nestedBindings.removeIf(
-            attribute -> attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings()));
+        if (FILTER_SIMPLE_COLLECTIONS) {
+            // Remove empty collection attributes from nested bindings
+            // They can't be used anyway
+            nestedBindings.removeIf(
+                attribute -> {
+                    if (attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings())) {
+                        return true;
+                    }
+                    return false;
+                });
+        }
 
         if (!nestedBindings.isEmpty()) {
             topAttribute.setNestedBindings(nestedBindings);
