@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="datavirtuality" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualityMetaModel" driverClass="com.datavirtuality.dv.jdbc.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Data Virtuality -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityDataSourceProvider"
+                description="%datasource.datavirtuality.description"
+                id="datavirtuality"
+                parent="generic"
+                label="Data Virtuality"
+                icon="icons/datavirtuality_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="datavirtuality_jdbc"
+                        label="Data Virtuality"
+                        class="com.datavirtuality.dv.jdbc.Driver"
+                        icon="icons/datavirtuality_icon.png"
+                        iconBig="icons/datavirtuality_icon_big.png"
+                        sampleURL="jdbc:datavirtuality:{database}@mm//{host}:{port}"
+                        defaultPort="31000"
+                        description="Data Virtualtiy JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        categories="sql,analytic">
+                    <replace provider="generic" driver="datavirtuality_generic"/>
+                    <file type="jar" path="maven:/net.datavirtuality:datavirtuality-jdbc:RELEASE"/>
+
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE DATABASE ?"/>
+                    <parameter name="active-entity-type" value="catalog"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="datavirtuality" parent="generic" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualitySQLDialect" label="DataVirtuality" description="Data Virtuality SQL dialect." icon="icons/datavirtuality_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>
