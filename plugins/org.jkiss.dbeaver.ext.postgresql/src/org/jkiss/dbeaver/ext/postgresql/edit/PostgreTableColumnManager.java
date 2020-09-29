@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -75,69 +76,73 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         getColumnDataTypeModifiers(monitor, column, sql);
     };
 
-    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, PostgreTableColumn column, StringBuilder sql) {
-        final PostgreDataType dataType = column.getDataType();
-        final PostgreDataType rawType = null;//dataType.getElementType(monitor);
-        switch (dataType.getDataKind()) {
-            case STRING:
-                final long length = column.getMaxLength();
-                if (length > 0 && length < Integer.MAX_VALUE) {
-                    sql.append('(').append(length).append(')');
-                }
-                break;
-            case NUMERIC:
-                if (dataType.getTypeID() == Types.NUMERIC) {
-                    final int precision = CommonUtils.toInt(column.getPrecision());
-                    final int scale = CommonUtils.toInt(column.getScale());
-                    if (scale > 0 || precision > 0) {
-                        sql.append('(');
-                        if (precision > 0) {
-                            sql.append(precision);
-                        }
-                        if (scale > 0) {
+    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, DBSTypedObject column, StringBuilder sql) {
+        if (column instanceof PostgreTableColumn) {
+            PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
+            final PostgreDataType dataType = postgreColumn.getDataType();
+            final PostgreDataType rawType = null;//dataType.getElementType(monitor);
+            switch (dataType.getDataKind()) {
+                case STRING:
+                    final long length = postgreColumn.getMaxLength();
+                    if (length > 0 && length < Integer.MAX_VALUE) {
+                        sql.append('(').append(length).append(')');
+                    }
+                    break;
+                case NUMERIC:
+                    if (dataType.getTypeID() == Types.NUMERIC) {
+                        final int precision = CommonUtils.toInt(postgreColumn.getPrecision());
+                        final int scale = CommonUtils.toInt(postgreColumn.getScale());
+                        if (scale > 0 || precision > 0) {
+                            sql.append('(');
                             if (precision > 0) {
-                                sql.append(',');
+                                sql.append(precision);
                             }
-                            sql.append(scale);
+                            if (scale > 0) {
+                                if (precision > 0) {
+                                    sql.append(',');
+                                }
+                                sql.append(scale);
+                            }
+                            sql.append(')');
                         }
-                        sql.append(')');
                     }
-                }
-                break;
-            case DATETIME:
-                final int scale = CommonUtils.toInt(column.getScale());
-                String typeName = dataType.getName();
-                if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                    if (scale < 6) {
-                        sql.append('(').append(scale).append(')');
+                    break;
+                case DATETIME:
+                    final int scale = CommonUtils.toInt(postgreColumn.getScale());
+                    String typeName = dataType.getName();
+                    if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
+                        if (scale < 6) {
+                            sql.append('(').append(scale).append(')');
+                        }
                     }
-                }
-                if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
-                    final String precision = column.getIntervalTypeField();
-                    sql.append(' ').append(precision);
-                    if (scale >= 0 && scale < 7) {
-                        sql.append('(').append(scale).append(')');
+                    if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
+                        final String precision = postgreColumn.getIntervalTypeField();
+                        sql.append(' ').append(precision);
+                        if (scale >= 0 && scale < 7) {
+                            sql.append('(').append(scale).append(')');
+                        }
                     }
-                }
-        }
-        if (PostgreUtils.isGISDataType(column.getTypeName())) {
-            try {
-                String geometryType = column.getAttributeGeometryType(monitor);
-                int geometrySRID = column.getAttributeGeometrySRID(monitor);
-                if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
-                    // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
-                    sql.append("(").append(geometryType);
-                    if (geometrySRID > 0) {
-                        sql.append(", ").append(geometrySRID);
-                    }
-                    sql.append(")");
-                }
-            } catch (DBCException e) {
-                log.debug(e);
             }
-        }
-        if (rawType != null) {
-            sql.append("[]");
+            if (PostgreUtils.isGISDataType(postgreColumn.getTypeName())) {
+                try {
+                    String geometryType = postgreColumn.getAttributeGeometryType(monitor);
+                    int geometrySRID = postgreColumn.getAttributeGeometrySRID(monitor);
+                    if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
+                        // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
+                        sql.append("(").append(geometryType);
+                        if (geometrySRID > 0) {
+                            sql.append(", ").append(geometrySRID);
+                        }
+                        sql.append(")");
+                    }
+                } catch (DBCException e) {
+                    log.debug(e);
+                }
+            }
+            if (rawType != null) {
+                sql.append("[]");
+            }
+            return sql;
         }
         return sql;
     }
