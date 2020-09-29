@@ -142,5 +142,8 @@
         </tools>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerSSLConfigurator"/>
+    </extension>
 
 </plugin>
