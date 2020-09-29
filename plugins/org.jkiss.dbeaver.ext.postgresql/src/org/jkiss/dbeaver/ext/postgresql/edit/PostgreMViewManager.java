@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -47,8 +48,8 @@ public class PostgreMViewManager extends PostgreViewManager {
     }
 
     @Override
-    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
-        super.createOrReplaceViewQuery(monitor, actions, view);
+    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
+        super.createOrReplaceViewQuery(monitor, actions, view, options);
         // Indexes DDL
     }
 
@@ -71,12 +72,12 @@ public class PostgreMViewManager extends PostgreViewManager {
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreMaterializedView mView = (PostgreMaterializedView) command.getObject();
-        super.addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(mView, "Drop view"), options);
-        super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
-
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
+            super.addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(mView, "Drop view"), options);
+            super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
+        }
         if (command.hasProperty("tablespace")) {
             final String alterPrefix = "ALTER " + mView.getViewType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
-
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + mView.getTablespace(monitor).getName()));
         }
     }
