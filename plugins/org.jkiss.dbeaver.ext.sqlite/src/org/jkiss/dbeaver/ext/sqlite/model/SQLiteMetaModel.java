@@ -47,8 +47,7 @@ import java.util.regex.Pattern;
 /**
  * SQLiteMetaModel
  */
-public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
-{
+public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
     private static final Log log = Log.getLog(SQLiteMetaModel.class);
 
     private static final Pattern TYPE_WITH_LENGTH_PATTERN = Pattern.compile("(.+)\\s*\\(([0-9]+)\\)");
@@ -189,7 +188,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     public String getAutoIncrementClause(GenericTableColumn column) {
         if (column.isAutoIncrement()) {
-            return "AUTOINCREMENT";
+            return "PRIMARY KEY AUTOINCREMENT";
         }
         return null;
     }
