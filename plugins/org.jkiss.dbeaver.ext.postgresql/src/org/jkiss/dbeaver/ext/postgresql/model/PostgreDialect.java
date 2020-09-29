@@ -847,9 +847,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        StringBuilder columnModifier = PostgreTableColumnManager.getColumnDataTypeModifiers(new VoidProgressMonitor(), (PostgreTableColumn) column, new StringBuilder());
-        if (columnModifier.length() != 0) {
-            return columnModifier.toString();
+        if (column instanceof PostgreTableColumn) {
+            StringBuilder columnModifier = PostgreTableColumnManager.getColumnDataTypeModifiers(new VoidProgressMonitor(), (PostgreTableColumn) column, new StringBuilder());
+            if (columnModifier.length() != 0) {
+                return columnModifier.toString();
+            }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
