@@ -90,7 +90,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) && command.getProperties().size() > 1) {
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             createOrReplaceViewQuery(monitor, actionList, (PostgreViewBase) command.getObject(), options);
         }
     }

@@ -72,7 +72,7 @@ public class PostgreMViewManager extends PostgreViewManager {
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreMaterializedView mView = (PostgreMaterializedView) command.getObject();
-        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) && command.getProperties().size() > 1) {
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
             super.addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(mView, "Drop view"), options);
             super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
         }
