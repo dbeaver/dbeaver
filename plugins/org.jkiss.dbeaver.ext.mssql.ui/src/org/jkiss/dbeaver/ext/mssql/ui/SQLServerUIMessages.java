@@ -37,6 +37,9 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_setting_trust_server_certificate;
     public static String dialog_setting_trust_server_certificate_tip;
     public static String dialog_setting_ssl_advanced_title;
+    public static String dialog_setting_ssl_advanced_keystore_title;
+    public static String dialog_setting_ssl_advanced_keystore_label;
+    public static String dialog_setting_ssl_advanced_keystore_password_label;
     public static String dialog_setting_ssl_advanced_hostname_label;
     public static String dialog_setting_ssl_advanced_hostname_tip;
 
