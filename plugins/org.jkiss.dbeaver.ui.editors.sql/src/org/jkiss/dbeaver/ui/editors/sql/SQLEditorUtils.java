@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -190,14 +191,15 @@ public class SQLEditorUtils {
         if (resource instanceof IFolder) {
             return "";
         } else if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-            String description = SQLUtils.getScriptDescription((IFile) resource);
-            if (CommonUtils.isEmptyTrimmed(description)) {
-                description = "<empty>";
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)) {
+                String description = SQLUtils.getScriptDescription((IFile) resource);
+                if (CommonUtils.isEmptyTrimmed(description)) {
+                    description = "<empty>";
+                }
+                return description;
             }
-            return description;
-        } else {
-            return "";
         }
+        return "";
     }
 
     public static class ResourceInfo {
