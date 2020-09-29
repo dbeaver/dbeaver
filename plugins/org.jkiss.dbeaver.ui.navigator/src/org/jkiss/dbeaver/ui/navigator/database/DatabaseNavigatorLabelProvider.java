@@ -180,6 +180,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @Override
     public String getToolTipText(Object element) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)) {
+            return null;
+        }
         if (element instanceof DBNDataSource) {
             final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
             if (ds != null) {
@@ -224,6 +227,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @Override
     public Image getToolTipImage(Object element) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)) {
+            return null;
+        }
         if (element instanceof DBNNode) {
             return DBeaverIcons.getImage(((DBNNode) element).getNodeIconDefault());
         }
