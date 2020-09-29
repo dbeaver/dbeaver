@@ -151,11 +151,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(rowDelimiter);
                 }
             }
-            if (upperCase) {
-                sqlBuffer.append(KEYWORD_INSERT_INTO);
-            } else {
-                sqlBuffer.append(KEYWORD_INSERT_INTO.toLowerCase(Locale.ENGLISH));
-            }
+            sqlBuffer.append(upperCase ? KEYWORD_INSERT_INTO : KEYWORD_INSERT_INTO.toLowerCase(Locale.ENGLISH));
             sqlBuffer.append(" ").append(tableName).append(" (");
             boolean hasColumn = false;
             for (int i = 0; i < columnsSize; i++) {
@@ -169,19 +165,13 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 hasColumn = true;
                 sqlBuffer.append(DBUtils.getQuotedIdentifier(column));
             }
-            sqlBuffer.append(")");
-            if (lineBeforeValues) {
+            sqlBuffer.append(") ");
+            if (lineBeforeValues && insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
                 sqlBuffer.append(rowDelimiter).append("\t");
-            } else {
-                sqlBuffer.append(" ");
             }
-            if (upperCase) {
-                sqlBuffer.append(KEYWORD_VALUES);
-            } else {
-                sqlBuffer.append(KEYWORD_VALUES.toLowerCase(Locale.ENGLISH));
-            }
+            sqlBuffer.append(upperCase ? KEYWORD_VALUES : KEYWORD_VALUES.toLowerCase(Locale.ENGLISH));
             if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
-                sqlBuffer.append("\t(");
+                sqlBuffer.append(" (");
             }
             if (rowsInStatement > 1 && lineBeforeRows) {
                 sqlBuffer.append(rowDelimiter);
