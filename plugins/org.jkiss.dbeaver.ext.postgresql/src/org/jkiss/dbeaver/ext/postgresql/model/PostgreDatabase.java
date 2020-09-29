@@ -282,11 +282,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     public void setDescription(String description) {
-        if (description == null) {
-            this.description = "";
-        } else {
-            this.description = description;
-        }
+        this.description = description;
     }
 
     @Override
