@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver DataVirtuality UI
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.datavirtuality.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20200921
+Bundle-Activator: org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityUIActivator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.views,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.workbench.texteditor,
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ext.generic.ui,
+ org.jkiss.dbeaver.ext.datavirtuality.core
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Vendor: JKISS
+Bundle-Localization: plugin
+Automatic-Module-Name: org.jkiss.dbeaver.ext.datavirtuality.ui
