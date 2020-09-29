@@ -332,7 +332,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Update controls
             controller.updateEditControls();
             controller.updateStatusMessage();
-            controller.updatePanelsContent(true);
+            controller.updatePanelsContent(false);
 
             if (recordMode) {
                 // Refresh meta if we are in record mode
