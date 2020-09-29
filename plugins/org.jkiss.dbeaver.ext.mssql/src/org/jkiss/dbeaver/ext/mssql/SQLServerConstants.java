@@ -33,6 +33,10 @@ public class SQLServerConstants {
     public static final String DRIVER_JTDS = "mssql_jdbc_jtds";
     public static final String DRIVER_MS = "mssql_jdbc_ms";
 
+    public static final String HANDLER_SSL = "mssql_ssl";
+
+    public static final String PROP_SSL_KEYSTORE_HOSTNAME = "sslKeyStoreHostname";
+
     public static final boolean USE_GSS = false;
 
     public static final String DEFAULT_SCHEMA_NAME = "dbo";
