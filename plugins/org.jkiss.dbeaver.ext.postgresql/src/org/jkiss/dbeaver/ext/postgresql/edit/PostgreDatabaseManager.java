@@ -183,11 +183,8 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreDatabase, PropertyHandler> command, Map<String, Object> options) throws DBException {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             PostgreDatabase database = command.getObject();
-            String description = database.getDescription();
-            if (description == null) {
-                description = "";
-            }
-            actions.add(new SQLDatabasePersistAction("COMMENT ON DATABASE " + DBUtils.getQuotedIdentifier(database) + " IS " + SQLUtils.quoteString(database, description)));
+            actions.add(new SQLDatabasePersistAction("COMMENT ON DATABASE " + DBUtils.getQuotedIdentifier(database) +
+                    " IS " + SQLUtils.quoteString(database, CommonUtils.notEmpty(database.getDescription()))));
         }
     }
 
