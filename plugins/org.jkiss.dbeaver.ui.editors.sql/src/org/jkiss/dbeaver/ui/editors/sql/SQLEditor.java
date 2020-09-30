@@ -2588,13 +2588,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
-            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, makeDefault);
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, getMaxResultsTabIndex() + 1, makeDefault);
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
 
         private QueryResultsContainer createResultsProvider(DBSDataContainer dataContainer) {
-            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultContainers.size(), dataContainer);
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultContainers.size(), getMaxResultsTabIndex(), dataContainer);
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
@@ -2836,6 +2836,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
         private final int resultSetNumber;
+        private final int resultSetIndex;
         private SQLScriptElement query = null;
         private SQLScriptElement lastGoodQuery = null;
         // Data container and filter are non-null only in case of associations navigation
@@ -2843,10 +2844,11 @@ public class SQLEditor extends SQLEditorBase implements
         private CTabItem resultsTab;
         private String tabName;
 
-        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, boolean makeDefault)
+        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, boolean makeDefault)
         {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
+            this.resultSetIndex = resultSetIndex;
 
             boolean detachedViewer = false;
             SQLResultsView sqlView = null;
@@ -2879,7 +2881,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
                 int queryIndex = queryProcessors.indexOf(queryProcessor);
-                String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
+                String tabName = getResultsTabName(resultSetNumber, queryIndex, getMaxResultsTabIndex() + 1, null);
                 resultsTab.setText(tabName);
                 resultsTab.setImage(IMG_DATA_GRID);
                 resultsTab.setData(this);
@@ -2899,14 +2901,18 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
 
-        QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, DBSDataContainer dataContainer) {
-            this(queryProcessor, resultSetNumber, false);
+        QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, DBSDataContainer dataContainer) {
+            this(queryProcessor, resultSetNumber, resultSetIndex, false);
             this.dataContainer = dataContainer;
-            updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
+            updateResultsName(getResultsTabName(resultSetNumber, 0, resultSetIndex, dataContainer.getName()), null);
         }
 
         private CTabItem getTabItem() {
             return resultsTab;
+        }
+
+        public int getResultSetIndex() {
+            return resultSetIndex;
         }
 
         void updateResultsName(String resultSetName, String toolTip) {
@@ -3269,16 +3275,25 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
+    private int getMaxResultsTabIndex() {
+        int maxIndex = 0;
+        for (CTabItem tab : resultTabs.getItems()) {
+            if (tab.getData() instanceof QueryResultsContainer) {
+                maxIndex = Math.max(maxIndex, ((QueryResultsContainer) tab.getData()).getResultSetIndex());
+            }
+        }
+        return maxIndex;
+    }
+
+    private String getResultsTabName(int resultSetNumber, int queryIndex, int tabIndex, String name) {
         String tabName = name;
         if (CommonUtils.isEmpty(tabName)) {
             tabName = SQLEditorMessages.editors_sql_data_grid;
         }
-        if (resultSetNumber > 0) {
-            tabName += " - " + (resultSetNumber + 1);
-        } else if (queryIndex > 0) {
-            tabName += " - " + (queryIndex + 1);
+        if (tabIndex > 1) {
+            tabName += " - " + tabIndex;
         }
+
         return tabName;
     }
 
@@ -3426,7 +3441,7 @@ public class SQLEditor extends SQLEditorBase implements
                             SQLQueryResult.ExecuteResult executeResult = result.getExecuteResults(resultsIndex, true);
                             String resultSetName = results.tabName;
                             if (CommonUtils.isEmpty(resultSetName)) {
-                                resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
+                                resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, results.getResultSetIndex(), executeResult.getResultSetName());
                                 results.updateResultsName(resultSetName, null);
                             }
                             ResultSetViewer resultSetViewer = results.getResultSetController();
