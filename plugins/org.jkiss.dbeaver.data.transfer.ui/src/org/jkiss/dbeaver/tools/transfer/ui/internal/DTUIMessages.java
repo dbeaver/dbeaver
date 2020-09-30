@@ -102,6 +102,7 @@ public class DTUIMessages extends NLS {
 	public static String stream_consumer_page_settings_title;
 	public static String stream_consumer_page_settings_description;
 	public static String stream_consumer_page_settings_item_text_none;
+	public static String stream_consumer_page_warning_not_enough_sources_chosen;
 
 	public static String data_transfer_task_configurator_group_label_export_tables;
 	public static String data_transfer_task_configurator_group_label_import_into;
