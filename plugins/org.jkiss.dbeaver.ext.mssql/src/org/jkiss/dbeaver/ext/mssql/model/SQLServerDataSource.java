@@ -50,6 +50,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable {
@@ -134,25 +135,39 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
-            try {
-                SSLHandlerTrustStoreImpl.initializeTrustStore(monitor, this, sslConfig);
-                DBACertificateStorage certificateStorage = getContainer().getPlatform().getCertificateStorage();
-                String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
-
-                properties.setProperty("encrypt", "true");
-                properties.setProperty("trustStore", keyStorePath);
-                properties.setProperty("trustStoreType", "JKS");
-
-                final String keystoreHostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
-                if (!CommonUtils.isEmpty(keystoreHostnameProp)) {
-                    properties.put("hostNameInCertificate", keystoreHostnameProp);
-                }
-            } catch (Exception e) {
-                throw new DBCException("Error initializing SSL trust store", e);
-            }
+            initSSL(monitor, properties, sslConfig);
         }
 
         return properties;
+    }
+
+    private void initSSL(DBRProgressMonitor monitor, Properties properties, DBWHandlerConfiguration sslConfig) throws DBCException {
+        monitor.subTask("Install SSL certificates");
+
+        try {
+//            SSLHandlerTrustStoreImpl.initializeTrustStore(monitor, this, sslConfig);
+//            DBACertificateStorage certificateStorage = getContainer().getPlatform().getCertificateStorage();
+//            String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
+
+            properties.setProperty("encrypt", "true");
+
+            final String keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
+            if (!CommonUtils.isEmpty(keystoreFileProp)) {
+                properties.put("trustStore", keystoreFileProp);
+            }
+
+            final String keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
+            if (!CommonUtils.isEmpty(keystorePasswordProp)) {
+                properties.put("trustStorePassword", keystorePasswordProp);
+            }
+
+            final String keystoreHostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
+            if (!CommonUtils.isEmpty(keystoreHostnameProp)) {
+                properties.put("hostNameInCertificate", keystoreHostnameProp);
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error initializing SSL trust store", e);
+        }
     }
 
     @Override
