@@ -1124,7 +1124,7 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setChecked(false);
                 viewItem.redraw();
                 item.dispose();
-                return;
+                break;
             }
         }
 
