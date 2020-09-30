@@ -89,6 +89,20 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         columns.add(column);
     }
 
+    public boolean hasColumn(MySQLTableForeignKeyColumn column) {
+        if (columns != null) {
+            String columnName = column.getName();
+            String refName = column.getReferencedColumn().getName();
+            for (MySQLTableForeignKeyColumn col : columns) {
+                if (columnName.equals(col.getName()) &&
+                    refName.equals(col.getReferencedColumn().getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
