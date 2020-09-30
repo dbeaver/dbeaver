@@ -117,7 +117,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
                         final String precision = postgreColumn.getIntervalTypeField();
-                        sql.append(' ').append(precision);
+                        if (!CommonUtils.isEmpty(precision)) {
+                            sql.append(' ').append(precision);
+                        }
                         if (scale >= 0 && scale < 7) {
                             sql.append('(').append(scale).append(')');
                         }
