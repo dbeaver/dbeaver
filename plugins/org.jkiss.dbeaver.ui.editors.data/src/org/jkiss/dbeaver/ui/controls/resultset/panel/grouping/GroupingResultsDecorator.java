@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDecoratorBase;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -91,16 +93,17 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     @Override
     public void registerDragAndDrop(@NotNull IResultSetPresentation presentation) {
+        Control presentationControl = presentation.getControl();
         final DropTargetListener[] gridDropListeners;
         // Register drop target to accept columns dropping
-        Object oldDropTarget = presentation.getControl().getData(DND.DROP_TARGET_KEY);
+        Object oldDropTarget = presentationControl.getData(DND.DROP_TARGET_KEY);
         if (oldDropTarget instanceof DropTarget) {
             gridDropListeners = ((DropTarget) oldDropTarget).getDropListeners();
             ((DropTarget) oldDropTarget).dispose();
         } else {
             gridDropListeners = null;
         }
-        DropTarget dropTarget = new DropTarget(presentation.getControl(), DND.DROP_MOVE | DND.DROP_COPY);
+        DropTarget dropTarget = new DropTarget(presentationControl, DND.DROP_MOVE | DND.DROP_COPY);
         dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
@@ -168,7 +171,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
                         if (ArrayUtils.contains(container.getResultSetController().getModel().getAttributes(), binding)) {
                             // Check for group function - can't move function columns
-                            if (!container.getGroupFunctions().contains(attrName)) {
+                            if (container.getGroupAttributes().contains(attrName)) {
                                 // It is column move, not new binding
                                 movedBindings.add(binding);
                             }
@@ -177,21 +180,37 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                         }
                     }
                 }
+                if (movedBindings.isEmpty() && newBindings.isEmpty()) {
+                    return;
+                }
                 if (!movedBindings.isEmpty()) {
                     if (gridDropListeners != null) {
                         // Do visual reordering if needed
-                        dropElements.clear();
-                        dropElements.addAll(movedBindings);
-                        for (DropTargetListener listener : gridDropListeners) {
-                            listener.drop(event);
-                        }
+//                        dropElements.clear();
+//                        dropElements.addAll(movedBindings);
+//                        for (DropTargetListener listener : gridDropListeners) {
+//                            listener.drop(event);
+//                        }
                     }
+
                     // Reorder columns
                     List<String> curAttributes = new ArrayList<>(container.getGroupAttributes());
+                    if (!(presentation.getControl() instanceof Spreadsheet)) {
+                        return;
+                    }
+
+                    int overColumnIndex = ((Spreadsheet)presentationControl).getColumnIndex(event.x, event.y);
+                    if (overColumnIndex < 0) {
+                        return;
+                    }
+                    if (overColumnIndex >= curAttributes.size()) {
+                        overColumnIndex = curAttributes.size() - 1;
+                    }
+
                     for (DBDAttributeBinding mb : movedBindings) {
                         String attrName = getAttributeBindingName(mb);
                         curAttributes.remove(attrName);
-                        curAttributes.add(0, attrName);
+                        curAttributes.add(overColumnIndex, attrName);
                     }
                     container.clearGroupingAttributes();
                     container.addGroupingAttributes(curAttributes);
