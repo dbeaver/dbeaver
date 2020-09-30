@@ -62,7 +62,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWizard> {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
@@ -314,14 +313,18 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     protected boolean determinePageCompletion() {
-        int filesCount = 0;
+        int producerCount = 0;
+        int consumerCount = 0;
         for (int i = 0; i < filesTable.getItemCount(); i++) {
-            final String name = filesTable.getItem(i).getText();
-            if (!CommonUtils.isEmpty(name) && !Objects.equals(name, "<none>")) {
-                filesCount++;
+            final DataTransferPipe pipe = (DataTransferPipe) filesTable.getItem(i).getData();
+            if (pipe.getProducer() != null && pipe.getProducer().getObjectName() != null) {
+                producerCount++;
+            }
+            if (pipe.getConsumer() != null) {
+                consumerCount++;
             }
         }
-        if (getWizard().getCurrentSelection().size() != filesCount) {
+        if (producerCount != consumerCount) {
             return false;
         }
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
