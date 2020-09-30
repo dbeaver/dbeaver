@@ -170,6 +170,9 @@
                     <property id="lineBeforeValues" label="%dataTransfer.processor.sql.property.lineBeforeValues.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeValues.description" defaultValue="false" />
                     <property id="lineBeforeRows" label="%dataTransfer.processor.sql.property.lineBeforeRows.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeRows.description" defaultValue="true" />
                     <property id="keywordCase" label="%dataTransfer.processor.sql.property.keywordCase.name" type="string" description="%dataTransfer.processor.sql.property.keywordCase.description" defaultValue="upper" required="true" validValues="upper,lower"/>
+                    <property id="keywordUpdate" label="%dataTransfer.processor.sql.property.keywordUpdate.name" type="boolean" description="%dataTransfer.processor.sql.property.keywordUpdate.description" defaultValue="false" />
+                    <property id="insertOnDuplicateKey" label="%dataTransfer.processor.sql.property.insertOnDuplicateKey.name" type="string" description="%dataTransfer.processor.sql.property.insertOnDuplicateKey.description" defaultValue="" required="true"/>
+                    <property id="insertOnConflict" label="%dataTransfer.processor.sql.property.insertOnConflict.name" type="string" description="%dataTransfer.processor.sql.property.insertOnConflict.description" defaultValue="" required="true"/>
 
                 </propertyGroup>
             </processor>
