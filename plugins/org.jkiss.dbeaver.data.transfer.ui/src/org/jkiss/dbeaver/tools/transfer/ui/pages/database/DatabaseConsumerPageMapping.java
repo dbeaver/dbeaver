@@ -244,10 +244,13 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     public void widgetSelected(SelectionEvent e)
                     {
                         DatabaseMappingObject selectedMapping = getSelectedMapping();
-                        DBPDataSourceContainer dataSourceContainer = selectedMapping.getTarget().getDataSource().getContainer();
-                        if(!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
-                            UIUtils.showMessageBox(getShell(), DTMessages.data_transfer_wizard_restricted_title, NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()), SWT.ICON_WARNING);
-                            return;
+                        DBSObject mappingTarget = selectedMapping.getTarget();
+                        if (mappingTarget != null) {
+                            DBPDataSourceContainer dataSourceContainer = mappingTarget.getDataSource().getContainer();
+                            if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+                                UIUtils.showMessageBox(getShell(), DTMessages.data_transfer_wizard_restricted_title, NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()), SWT.ICON_WARNING);
+                                return;
+                            }
                         }
                         showPreview(selectedMapping instanceof DatabaseMappingContainer ?
                             (DatabaseMappingContainer) selectedMapping :
