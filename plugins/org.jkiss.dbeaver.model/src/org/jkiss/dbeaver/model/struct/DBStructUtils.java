@@ -236,7 +236,7 @@ public final class DBStructUtils {
                 // Let's try to find something similar
                 Map<String, DBSDataType> possibleTypes = new HashMap<>();
                 for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
-                    if (type.getDataKind() == dataKind) {
+                    if (DBPDataKind.canConsume(type.getDataKind(), dataKind)) {
                         possibleTypes.put(type.getTypeName().toLowerCase(Locale.ENGLISH), type);
                     }
                 }
