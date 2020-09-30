@@ -76,6 +76,8 @@ public class SQLQueryJob extends DataSourceJob
 
     public static final Object STATS_RESULTS = new Object();
 
+    public static final String DEFAULT_RESULSET_NAME = "Results";
+
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
     private final SQLScriptContext scriptContext;
@@ -644,7 +646,7 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(updateCount, query.getText(), new Date());
 
-            executeResult.setResultSetName("Result");
+            executeResult.setResultSetName(DEFAULT_RESULSET_NAME);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
@@ -700,7 +702,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
-                    sourceName = "Result";
+                    sourceName = DEFAULT_RESULSET_NAME;
                 }
                 executeResult.setResultSetName(sourceName);
             }
