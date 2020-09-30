@@ -62,9 +62,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWizard> {
-
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
 
     private PropertyTreeViewer propsEditor;
@@ -79,7 +79,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     public void createControl(Composite parent) {
-
         initializeDialogUnits(parent);
 
         SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
@@ -125,7 +124,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         updatePageCompletion();
     }
 
-    private boolean chooseSourceFile(DataTransferPipe pipe) {
+    private void chooseSourceFile(DataTransferPipe pipe) {
         List<String> extensions = new ArrayList<>();
         String extensionProp = CommonUtils.toString(propertySource.getPropertyValue(null, "extension"));
         for (String ext : extensionProp.split(",")) {
@@ -150,17 +149,16 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
                 getWizard().getRunnableContext().run(true, true, initializer);
             } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError("Column mappings error", "Error reading column mappings from stream", e.getTargetException());
-                return false;
+                return;
             } catch (InterruptedException e) {
                 // ignore
             }
         }
         reloadPipes();
         updatePageCompletion();
-        return false;
     }
 
-    private boolean updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, File file) {
+    private void updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, File file) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
         StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
@@ -183,11 +181,9 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
             ((DatabaseConsumerSettings) consumerSettings).addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
         }
-
-        return true;
     }
 
-    private boolean updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, File[] files) {
+    private void updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, File[] files) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         IDataTransferConsumer originalConsumer = pipe.getConsumer();
 
@@ -232,7 +228,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         dtSettings.setDataPipes(newPipes, true);
         dtSettings.setPipeChangeRestricted(true);
-        return true;
     }
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
@@ -319,12 +314,21 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     protected boolean determinePageCompletion() {
+        int filesCount = 0;
+        for (int i = 0; i < filesTable.getItemCount(); i++) {
+            final String name = filesTable.getItem(i).getText();
+            if (!CommonUtils.isEmpty(name) && !Objects.equals(name, "<none>")) {
+                filesCount++;
+            }
+        }
+        if (getWizard().getCurrentSelection().size() != filesCount) {
+            return false;
+        }
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getConsumer() == null || pipe.getProducer() == null) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -376,6 +380,4 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
         return name.toString();
     }
-
-
 }
