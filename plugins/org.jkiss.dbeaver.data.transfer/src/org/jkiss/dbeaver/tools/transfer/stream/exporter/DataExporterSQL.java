@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -67,6 +68,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private DBDAttributeBinding[] columns;
     private final String KEYWORD_INSERT_INTO = "INSERT INTO";
     private final String KEYWORD_VALUES = "VALUES";
+    private DBPIdentifierCase identifierCase = DBPIdentifierCase.LOWER;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
     private transient long rowCount;
@@ -97,7 +99,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             omitSchema = CommonUtils.toBoolean(properties.get(PROP_OMIT_SCHEMA));
         }
         try {
-            rowsInStatement = Integer.parseInt(String.valueOf(properties.get(PROP_ROWS_IN_STATEMENT)));
+            rowsInStatement = CommonUtils.toInt(properties.get(PROP_ROWS_IN_STATEMENT));
         } catch (NumberFormatException e) {
             rowsInStatement = 10;
         }
@@ -107,7 +109,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         dialect = SQLUtils.getDialectFromObject(site.getSource());
 
-        keywordCase = CommonUtils.valueOf(KeywordCase.class, String.valueOf(properties.get(PROP_KEYWORD_CASE)), KeywordCase.upper);
+        keywordCase = CommonUtils.valueOf(KeywordCase.class, CommonUtils.toString(properties.get(PROP_KEYWORD_CASE)), KeywordCase.upper);
     }
 
     @Override
@@ -151,7 +153,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(rowDelimiter);
                 }
             }
-            sqlBuffer.append(upperCase ? KEYWORD_INSERT_INTO : KEYWORD_INSERT_INTO.toLowerCase(Locale.ENGLISH));
+            sqlBuffer.append(upperCase ? KEYWORD_INSERT_INTO : identifierCase.transform(KEYWORD_INSERT_INTO));
             sqlBuffer.append(" ").append(tableName).append(" (");
             boolean hasColumn = false;
             for (int i = 0; i < columnsSize; i++) {
@@ -169,7 +171,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             if (lineBeforeValues && insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
                 sqlBuffer.append(rowDelimiter).append("\t");
             }
-            sqlBuffer.append(upperCase ? KEYWORD_VALUES : KEYWORD_VALUES.toLowerCase(Locale.ENGLISH));
+            sqlBuffer.append(upperCase ? KEYWORD_VALUES : identifierCase.transform(KEYWORD_VALUES));
             if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
                 sqlBuffer.append(" (");
             }
@@ -243,7 +245,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             out.write(")");
         }
         if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED) {
-            out.write(";" + rowDelimiter);
+            out.write(";");
         }
     }
 
