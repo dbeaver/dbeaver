@@ -596,7 +596,7 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
+        if (statistics.getStatementsCount() > 1 || (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) {
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
