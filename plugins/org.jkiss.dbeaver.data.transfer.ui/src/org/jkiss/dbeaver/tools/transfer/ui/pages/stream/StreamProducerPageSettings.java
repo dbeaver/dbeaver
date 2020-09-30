@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -36,10 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
@@ -184,7 +182,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     private void updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, File[] files) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
-        IDataTransferConsumer originalConsumer = pipe.getConsumer();
+        IDataTransferConsumer<?, ?> originalConsumer = pipe.getConsumer();
 
         DataTransferSettings dtSettings = getWizard().getSettings();
         List<DataTransferPipe> newPipes = new ArrayList<>(dtSettings.getDataPipes());
@@ -192,7 +190,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         for (File file : files) {
             StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
-            IDataTransferConsumer consumer = new DatabaseTransferConsumer();
+            IDataTransferConsumer<?, ?> consumer = new DatabaseTransferConsumer();
 
             DataTransferPipe singlePipe = new DataTransferPipe(producer, consumer);
             try {
@@ -230,20 +228,24 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     }
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
-        if (pipe.getProducer() == null || pipe.getProducer().getObjectName() == null) {
+        if (isInvalidDataTransferNode(pipe.getProducer())) {
             item.setImage(0, null);
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
             item.setText(0, String.valueOf(pipe.getProducer().getObjectName()));
         }
-        if (pipe.getConsumer() == null) {
+        if (isInvalidDataTransferNode(pipe.getConsumer())) {
             item.setImage(1, null);
             item.setText(1, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
             item.setText(1, String.valueOf(pipe.getConsumer().getObjectName()));
         }
+    }
+
+    private boolean isInvalidDataTransferNode(final IDataTransferNode<?> node) {
+        return node == null || node.getObjectName() == null;
     }
 
     @Override
@@ -313,25 +315,14 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     protected boolean determinePageCompletion() {
-        int producerCount = 0;
-        int consumerCount = 0;
         for (int i = 0; i < filesTable.getItemCount(); i++) {
             final DataTransferPipe pipe = (DataTransferPipe) filesTable.getItem(i).getData();
-            if (pipe.getProducer() != null && pipe.getProducer().getObjectName() != null) {
-                producerCount++;
-            }
-            if (pipe.getConsumer() != null) {
-                consumerCount++;
-            }
-        }
-        if (producerCount != consumerCount) {
-            return false;
-        }
-        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-            if (pipe.getConsumer() == null || pipe.getProducer() == null) {
+            if (isInvalidDataTransferNode(pipe.getConsumer()) || isInvalidDataTransferNode(pipe.getProducer())) {
+                setMessage(DTUIMessages.stream_consumer_page_warning_not_enough_sources_chosen, IMessageProvider.WARNING);
                 return false;
             }
         }
+        setMessage(null);
         return true;
     }
 
