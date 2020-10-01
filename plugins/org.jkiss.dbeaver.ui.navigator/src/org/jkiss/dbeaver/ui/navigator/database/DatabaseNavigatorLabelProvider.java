@@ -216,6 +216,11 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
             }
         } else if (element instanceof DBNNode) {
+            if (element instanceof DBNResource &&
+                !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP))
+            {
+                return null;
+            }
             final String description = ((DBNNode) element).getNodeDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
