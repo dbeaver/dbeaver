@@ -39,15 +39,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * MySQLUserEditorGeneral
  */
-public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
-{
-    //static final Log log = Log.getLog(MySQLUserEditorGeneral.class);
+public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract {
     public static final String DEF_PASSWORD_VALUE = "**********"; //$NON-NLS-1$
 
     private PageControl pageControl;
@@ -58,9 +55,16 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     private Text hostText;
     private CommandListener commandlistener;
 
+    private Text passwordText;
+    private Text confirmText;
+
+    private Spinner maxQueriesSpinner;
+    private Spinner maxUpdatesSpinner;
+    private Spinner maxConnectionsSpinner;
+    private Spinner maxUserConnectionsSpinner;
+
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         pageControl = new PageControl(parent);
 
         Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
@@ -68,6 +72,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         container.setLayoutData(gd);
 
         newUser = !getDatabaseObject().isPersisted();
+
         {
             Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
@@ -83,30 +88,29 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
             }
 
-            String password = newUser ? "" : DEF_PASSWORD_VALUE; //$NON-NLS-1$
-            Text passwordText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_password, password, SWT.BORDER | SWT.PASSWORD);
+            String password = getPasswordPlaceholder();
+            passwordText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_password, password, SWT.BORDER | SWT.PASSWORD);
             ControlPropertyCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
-            Text confirmText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_confirm, password, SWT.BORDER | SWT.PASSWORD);
+            confirmText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_confirm, password, SWT.BORDER | SWT.PASSWORD);
             ControlPropertyCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 
         {
             Composite limitsGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
-            ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
+            maxQueriesSpinner = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
+            ControlPropertyCommandListener.create(this, maxQueriesSpinner, UserPropertyHandler.MAX_QUERIES);
 
-            Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_updates,  getDatabaseObject().getMaxUpdates(), 0, Integer.MAX_VALUE);
-            ControlPropertyCommandListener.create(this, maxUpdatesText, UserPropertyHandler.MAX_UPDATES);
+            maxUpdatesSpinner = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_updates,  getDatabaseObject().getMaxUpdates(), 0, Integer.MAX_VALUE);
+            ControlPropertyCommandListener.create(this, maxUpdatesSpinner, UserPropertyHandler.MAX_UPDATES);
 
-            Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_connections, getDatabaseObject().getMaxConnections(), 0, Integer.MAX_VALUE);
-            ControlPropertyCommandListener.create(this, maxConnectionsText, UserPropertyHandler.MAX_CONNECTIONS);
+            maxConnectionsSpinner = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_connections, getDatabaseObject().getMaxConnections(), 0, Integer.MAX_VALUE);
+            ControlPropertyCommandListener.create(this, maxConnectionsSpinner, UserPropertyHandler.MAX_CONNECTIONS);
 
-            Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_user_connections, getDatabaseObject().getMaxUserConnections(), 0, Integer.MAX_VALUE);
-            ControlPropertyCommandListener.create(this, maxUserConnectionsText, UserPropertyHandler.MAX_USER_CONNECTIONS);
+            maxUserConnectionsSpinner = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_user_connections, getDatabaseObject().getMaxUserConnections(), 0, Integer.MAX_VALUE);
+            ControlPropertyCommandListener.create(this, maxUserConnectionsSpinner, UserPropertyHandler.MAX_USER_CONNECTIONS);
         }
-
 
         {
             privTable = new PrivilegeTableControl(container, MySQLUIMessages.editors_user_editor_general_control_dba_privileges, true);
@@ -141,7 +145,6 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                         }
                     });
             });
-
         }
         pageControl.createProgressPanel();
 
@@ -150,8 +153,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (commandlistener != null) {
             getEditorInput().getCommandContext().removeCommandListener(commandlistener);
         }
@@ -159,8 +161,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void activatePart()
-    {
+    public void activatePart() {
         if (isLoaded) {
             return;
         }
@@ -168,24 +169,19 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges, getExecutionContext()) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
-                        for (Iterator<MySQLPrivilege> iterator = privList.iterator(); iterator.hasNext(); ) {
-                            MySQLPrivilege priv = iterator.next();
-                            // Remove proxy (it is not singleton)
-                            if (priv.getName().equalsIgnoreCase("proxy")) {
-                                iterator.remove();
-                            }
-                        }
+                        // Remove proxy (it is not singleton)
+                        privList.removeIf(priv -> priv.getName().equalsIgnoreCase("proxy"));
                         return privList;
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
                 }
             },
-            pageControl.createLoadVisualizer())
-            .schedule();
+            pageControl.createLoadVisualizer()
+        ).schedule();
     }
 
     @Override
@@ -201,15 +197,19 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
-    {
+    public void refreshPart(Object source, boolean force) {
         // do nothing
+    }
+
+    private String getPasswordPlaceholder() {
+        return newUser ? "" : DEF_PASSWORD_VALUE; //$NON-NLS-1$
     }
 
     private class PageControl extends UserPageControl {
         public PageControl(Composite parent) {
             super(parent);
         }
+
         public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
             return new ProgressVisualizer<List<MySQLPrivilege>>() {
                 @Override
@@ -220,23 +220,32 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 }
             };
         }
-
     }
 
     private class CommandListener extends DBECommandAdapter {
         @Override
-        public void onSave()
-        {
+        public void onSave() {
             if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        userNameText.setEditable(false);
-                        hostText.setEditable(false);
-                    }
+                UIUtils.asyncExec(() -> {
+                    userNameText.setEditable(false);
+                    hostText.setEditable(false);
                 });
             }
+        }
+
+        @Override
+        public void onReset() {
+            newUser = !getDatabaseObject().isPersisted();
+            final String password = getPasswordPlaceholder();
+            userNameText.setText(getDatabaseObject().getUserName());
+            hostText.setText(getDatabaseObject().getHost());
+            passwordText.setText(password);
+            confirmText.setText(password);
+            maxQueriesSpinner.setSelection(getDatabaseObject().getMaxQuestions());
+            maxUpdatesSpinner.setSelection(getDatabaseObject().getMaxUpdates());
+            maxConnectionsSpinner.setSelection(getDatabaseObject().getMaxConnections());
+            maxUserConnectionsSpinner.setSelection(getDatabaseObject().getMaxUserConnections());
         }
     }
 }
