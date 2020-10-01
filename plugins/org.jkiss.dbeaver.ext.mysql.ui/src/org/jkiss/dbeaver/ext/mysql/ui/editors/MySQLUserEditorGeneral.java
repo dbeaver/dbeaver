@@ -236,16 +236,17 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract {
 
         @Override
         public void onReset() {
-            newUser = !getDatabaseObject().isPersisted();
+            if (newUser) {
+                return;
+            }
+            final MySQLUser mySQLUser = getDatabaseObject();
             final String password = getPasswordPlaceholder();
-            userNameText.setText(getDatabaseObject().getUserName());
-            hostText.setText(getDatabaseObject().getHost());
             passwordText.setText(password);
             confirmText.setText(password);
-            maxQueriesSpinner.setSelection(getDatabaseObject().getMaxQuestions());
-            maxUpdatesSpinner.setSelection(getDatabaseObject().getMaxUpdates());
-            maxConnectionsSpinner.setSelection(getDatabaseObject().getMaxConnections());
-            maxUserConnectionsSpinner.setSelection(getDatabaseObject().getMaxUserConnections());
+            maxQueriesSpinner.setSelection(mySQLUser.getMaxQuestions());
+            maxUpdatesSpinner.setSelection(mySQLUser.getMaxUpdates());
+            maxConnectionsSpinner.setSelection(mySQLUser.getMaxConnections());
+            maxUserConnectionsSpinner.setSelection(mySQLUser.getMaxUserConnections());
         }
     }
 }
