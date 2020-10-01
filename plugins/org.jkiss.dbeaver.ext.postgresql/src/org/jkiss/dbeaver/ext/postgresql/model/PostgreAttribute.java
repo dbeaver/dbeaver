@@ -140,6 +140,19 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
+        setDefaultValue(defValue);
+        //set serial types manually
+        if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
+                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval"))) {
+            if (typeId == PostgreOid.INT4) {
+                typeId = PostgreOid.SERIAL;
+            } else if (typeId == PostgreOid.INT2) {
+                typeId = PostgreOid.SMALLSERIAL;
+            } else if (typeId == PostgreOid.INT8) {
+                typeId = PostgreOid.BIGSERIAL;
+            }
+        }
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
@@ -157,7 +170,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();

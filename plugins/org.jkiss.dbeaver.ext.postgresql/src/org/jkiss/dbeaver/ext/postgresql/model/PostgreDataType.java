@@ -104,6 +104,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private String canonicalName;
     private String constraintText;
     private String description;
+    private boolean extraDataType;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
@@ -254,6 +255,18 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     public boolean isAlias() {
         return alias;
+    }
+
+    public void setTypeId(long typeId) {
+        this.typeId = typeId;
+    }
+
+    public boolean isExtraDataType() {
+        return extraDataType;
+    }
+
+    public void setExtraDataType(boolean extraDataType) {
+        this.extraDataType = extraDataType;
     }
 
     private void readEnumValues(JDBCSession session) throws DBException {
