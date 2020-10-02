@@ -521,4 +521,29 @@ public class ContentUtils {
             log.error("Error creating backup copy of " + file.getFullPath(), e);
         }
     }
+
+    public static void makeFileBackup(File file) {
+        if (!file.exists()) {
+            return;
+        }
+        String backupFileName = file.getName() + ".bak";
+        if (!backupFileName.startsWith(".")) {
+            backupFileName = "." + backupFileName;
+        }
+        File backupFile = new File(file.getParent(), backupFileName);
+        if (backupFile.exists()) {
+            Date backupTime = new Date(backupFile.lastModified());
+            if (CommonUtils.isSameDay(backupTime, new Date())) {
+                return;
+            }
+        }
+        try (InputStream fis = new FileInputStream(file)) {
+            try (OutputStream fos = new FileOutputStream(backupFile)) {
+                IOUtils.copyStream(fis, fos);
+            }
+        } catch (Exception e) {
+            log.error("Error creating backup copy of " + file.getAbsolutePath(), e);
+        }
+    }
+
 }
