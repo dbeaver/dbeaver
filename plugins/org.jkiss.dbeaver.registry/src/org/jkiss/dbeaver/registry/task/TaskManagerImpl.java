@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.registry.task;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.registry.ProjectMetadata;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -209,11 +209,11 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private void loadConfiguration() {
-        IFile configFile = getConfigFile(false);
+        File configFile = getConfigFile(false);
         if (!configFile.exists()) {
             return;
         }
-        try (InputStream is = configFile.getContents()) {
+        try (InputStream is = new FileInputStream(configFile)) {
             try (Reader configReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
 
@@ -254,13 +254,15 @@ public class TaskManagerImpl implements DBTTaskManager {
     private void saveConfiguration() {
         IProgressMonitor monitor = new NullProgressMonitor();
 
-        IFile configFile = getConfigFile(true);
+        File configFile = getConfigFile(true);
         try {
             if (configFile.exists()) {
                 ContentUtils.makeFileBackup(configFile);
             }
             if (tasks.isEmpty()) {
-                configFile.delete(true, false, monitor);
+                if (!configFile.delete()) {
+                    log.error("Error deleting file " + configFile.getAbsolutePath());
+                }
                 return;
             }
         } catch (Exception e) {
@@ -278,17 +280,11 @@ public class TaskManagerImpl implements DBTTaskManager {
             log.error(e);
             return;
         }
-        InputStream ifs = new ByteArrayInputStream(dsConfigBuffer.toByteArray());
 
         try {
-            if (!configFile.exists()) {
-                configFile.create(ifs, true, monitor);
-                configFile.setHidden(true);
-            } else {
-                configFile.setContents(ifs, true, false, monitor);
-            }
+            IOUtils.writeFileFromBuffer(configFile, dsConfigBuffer.toByteArray());
         } catch (Exception e) {
-            log.error("Error saving configuration to a file " + configFile.getFullPath(), e);
+            log.error("Error saving configuration to a file " + configFile.getAbsolutePath(), e);
         }
     }
 
@@ -309,8 +305,8 @@ public class TaskManagerImpl implements DBTTaskManager {
         jsonWriter.endObject();
     }
 
-    private IFile getConfigFile(boolean create) {
-        return projectMetadata.getMetadataFolder(create).getFile(CONFIG_FILE);
+    private File getConfigFile(boolean create) {
+        return new File(projectMetadata.getMetadataFolder(create), CONFIG_FILE);
     }
 
 }

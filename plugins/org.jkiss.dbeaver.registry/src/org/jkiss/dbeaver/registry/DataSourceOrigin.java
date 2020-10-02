@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +31,11 @@ import java.util.Map;
  */
 class DataSourceOrigin implements DBPDataSourceConfigurationStorage
 {
-    private final IFile sourceFile;
+    private final File sourceFile;
     private final boolean isDefault;
     private final String configSuffix;
 
-    DataSourceOrigin(IFile sourceFile, boolean isDefault) {
+    DataSourceOrigin(File sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
 
@@ -52,7 +52,7 @@ class DataSourceOrigin implements DBPDataSourceConfigurationStorage
 
     @Override
     public String getStorageId() {
-        return "file://" + sourceFile.getFullPath().toString();
+        return "file://" + sourceFile.getAbsolutePath();
     }
 
     @Override
@@ -83,7 +83,7 @@ class DataSourceOrigin implements DBPDataSourceConfigurationStorage
         return false;
     }
 
-    public IFile getSourceFile() {
+    public File getSourceFile() {
         return sourceFile;
     }
 
@@ -94,6 +94,6 @@ class DataSourceOrigin implements DBPDataSourceConfigurationStorage
 
     @Override
     public String toString() {
-        return sourceFile.getFullPath().toString();
+        return sourceFile.getAbsolutePath();
     }
 }
