@@ -142,6 +142,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         boolean emptyWord = wordPart.length() == 0;
 
         SQLCompletionRequest.QueryType queryType = request.getQueryType();
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        if (!request.isSimpleMode() &&
+                (queryType ==  SQLCompletionRequest.QueryType.EXEC ||
+                        (queryType == SQLCompletionRequest.QueryType.COLUMN && request.getContext().isSearchProcedures()))) {
+            parameters.put(SQLCompletionProposalBase.PARAM_EXEC, true);
+        } else {
+            parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
+        }
         if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
@@ -179,14 +187,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     // Try to get from active object
                     DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
                     if (selectedObject != null) {
-                        makeProposalsFromChildren(selectedObject, null, false);
+                        makeProposalsFromChildren(selectedObject, null, false, parameters);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
                     } else {
                         rootObject = dataSource;
                     }
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, null, false);
+                    makeProposalsFromChildren(rootObject, null, false, parameters);
                 }
                 if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                     // Filter out non-joinable tables
@@ -243,7 +251,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, wordPart, false);
+                    makeProposalsFromChildren(rootObject, wordPart, false, parameters);
                 } else {
                     // Get root object or objects from active database (if any)
                     if (queryType != SQLCompletionRequest.QueryType.COLUMN && queryType != SQLCompletionRequest.QueryType.EXEC) {
@@ -691,10 +699,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         if (lastToken == null) {
             // Get all children objects as proposals
-            makeProposalsFromChildren(childObject, null, false);
+            makeProposalsFromChildren(childObject, null, false, Collections.emptyMap());
         } else {
             // Get matched children
-            makeProposalsFromChildren(childObject, lastToken, false);
+            makeProposalsFromChildren(childObject, lastToken, false, Collections.emptyMap());
             if (tokens.length == 1) {
                 // Get children from selected object
             }
@@ -702,7 +710,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // Try in active object
                 for (int k = 0; k < selectedContainers.length; k++) {
                     if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
-                        makeProposalsFromChildren(selectedContainers[k], lastToken, true);
+                        makeProposalsFromChildren(selectedContainers[k], lastToken, true, Collections.emptyMap());
                     }
                 }
 
@@ -822,7 +830,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return "([\\p{L}0-9_$§#@\\.\\-" + quotes.toString() + "]+)";
     }
 
-    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst) throws DBException {
+    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst, Map<String, Object> params) throws DBException {
         if (request.getQueryType() == SQLCompletionRequest.QueryType.EXEC) {
             return;
         }
@@ -873,7 +881,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     continue;
                 }
                 if (DBUtils.isVirtualObject(child)) {
-                    makeProposalsFromChildren(child, startPart, addFirst);
+                    makeProposalsFromChildren(child, startPart, addFirst, Collections.emptyMap());
                     continue;
                 }
                 if (allObjects) {
@@ -927,7 +935,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
                 List<SQLCompletionProposalBase> childProposals = new ArrayList<>(matchedObjects.size());
                 for (DBSObject child : matchedObjects) {
-                    SQLCompletionProposalBase proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource));
+                    SQLCompletionProposalBase proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource), params);
                     if (!scoredMatches.isEmpty()) {
                         int proposalScore = scoredMatches.get(child.getName());
                         proposal.setProposalScore(proposalScore);
@@ -978,7 +986,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName)
+    private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params)
     {
         DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
 
@@ -986,7 +994,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         if (objectIcon == null) {
             objectIcon = DBValueFormatting.getObjectImage(object);
         }
-        return makeProposalsFromObject(object, useShortName, objectIcon, Collections.emptyMap());
+        return makeProposalsFromObject(object, useShortName, objectIcon, params);
     }
 
     private SQLCompletionProposalBase makeProposalsFromObject(

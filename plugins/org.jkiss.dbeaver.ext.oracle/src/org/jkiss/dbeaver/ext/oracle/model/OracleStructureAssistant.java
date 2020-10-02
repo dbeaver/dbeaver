@@ -233,6 +233,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                 }
             } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
+                oracleObjectTypes.add(OracleObjectType.PROCEDURE);
             }
         }
         oracleObjectTypes.add(OracleObjectType.SYNONYM);
