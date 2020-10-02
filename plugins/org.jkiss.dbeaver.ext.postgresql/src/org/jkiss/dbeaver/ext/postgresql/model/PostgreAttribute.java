@@ -141,10 +141,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
-        setDefaultValue(defValue);
+        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq'";
         //set serial types manually
         if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
-                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval"))) {
+                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
             if (typeId == PostgreOid.INT4) {
                 typeId = PostgreOid.SERIAL;
             } else if (typeId == PostgreOid.INT2) {
@@ -152,7 +152,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             } else if (typeId == PostgreOid.INT8) {
                 typeId = PostgreOid.BIGSERIAL;
             }
+            defValue = null;
         }
+        setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
