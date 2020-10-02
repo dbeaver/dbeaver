@@ -53,7 +53,7 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
                 tasksTree.setGroupByType(!tasksTree.isGroupByType());
                 break;
         }
-        tasksTree.regroupTasks();
+        tasksTree.regroupTasks(true);
 
         return null;
     }
