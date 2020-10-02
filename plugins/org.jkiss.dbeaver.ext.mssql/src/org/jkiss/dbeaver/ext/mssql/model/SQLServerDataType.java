@@ -340,11 +340,11 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 return DBPDataKind.STRING;
 
             case SQLServerConstants.TYPE_BINARY:
+            case SQLServerConstants.TYPE_VARBINARY:
             case SQLServerConstants.TYPE_TIMESTAMP:
                 return DBPDataKind.BINARY;
 
             case SQLServerConstants.TYPE_IMAGE:
-            case SQLServerConstants.TYPE_VARBINARY:
                 return DBPDataKind.CONTENT;
 
             case SQLServerConstants.TYPE_UNIQUEIDENTIFIER:
