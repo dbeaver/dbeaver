@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -97,7 +98,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
                     syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
                 {
-                    updateKeywordCase(document, command);
+                    IRegion lineRegion = document.getLineInformationOfOffset(command.offset);
+                    String line = document.get(lineRegion.getOffset(), lineRegion.getLength()).trim();
+
+                    if (!SQLUtils.isCommentLine(syntaxManager.getDialect(), line)) {
+                        updateKeywordCase(document, command);
+                    }
                 }
             } catch (BadLocationException e) {
                 log.debug(e);
