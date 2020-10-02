@@ -306,8 +306,8 @@ public class DatabaseTasksTree {
 
     public void refresh() {
         refreshTasks();
-        regroupTasks();
-        taskViewer.refresh(true);
+        regroupTasks(false);
+        //taskViewer.refresh(true);
         if (refreshScheduledTasks()) {
             taskViewer.refresh(true);
         }
@@ -317,10 +317,10 @@ public class DatabaseTasksTree {
         refreshTasks();
         refreshScheduledTasks();
 
-        regroupTasks();
+        regroupTasks(true);
     }
 
-    public void regroupTasks() {
+    public void regroupTasks(boolean expandAll) {
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -339,7 +339,9 @@ public class DatabaseTasksTree {
             }
 
             taskViewer.setInput(rootObjects);
-            taskViewer.expandAll();
+            if (expandAll) {
+                taskViewer.expandAll();
+            }
             taskColumnController.repackColumns();
         } finally {
             taskViewer.getTree().setRedraw(true);
