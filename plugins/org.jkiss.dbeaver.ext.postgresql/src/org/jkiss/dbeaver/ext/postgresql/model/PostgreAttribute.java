@@ -141,7 +141,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
-        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq'";
+        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq";
         //set serial types manually
         if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
                 (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
