@@ -274,7 +274,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             case NUMERIC: return "int";
             case STRING: return "varchar";
             case DATETIME: return SQLServerConstants.TYPE_DATETIME;
-            case BINARY: return "binary";
+            case BINARY:
             case CONTENT: return "varbinary";
             case ROWID: return "uniqueidentifier";
             default:
