@@ -39,6 +39,12 @@ public interface DBPProject extends DBPObject
     @NotNull
     DBPWorkspace getWorkspace();
 
+    // In multi-use environment virtual project is a project owned by user
+    boolean isVirtual();
+
+    // Project with no persistent state
+    boolean isInMemory();
+
     @NotNull
     String getName();
 

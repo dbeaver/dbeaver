@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -249,6 +250,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     }
 
     private class WorkspaceSession implements DBASession {
+        @NotNull
         @Override
         public String getSessionId() {
             return getWorkspace().getWorkspaceId();
@@ -257,6 +259,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         @Override
         public boolean isApplicationSession() {
             return true;
+        }
+
+        @Nullable
+        @Override
+        public DBPProject getSingletonProject() {
+            return null;
         }
     }
 }

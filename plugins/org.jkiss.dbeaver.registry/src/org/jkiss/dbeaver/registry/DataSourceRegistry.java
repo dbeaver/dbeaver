@@ -49,7 +49,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry {
@@ -87,27 +86,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
         loadDataSources(true);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-
-        addDataSourceListener(modelChangeListener);
-    }
-
-    /**
-     * Create copy
-     */
-    public DataSourceRegistry(DataSourceRegistry source, ProjectMetadata project, Function<DBPDataSourceContainer, Boolean> filter) {
-        this.platform = source.platform;
-        this.project = project;
-        {
-            // Copy all or only template datasources.
-            // Provided and template datasources are needed for global model mode
-            // FIXME: we don't need to copy provided datasources. It is a temporary workaround for CB, replaced with templates
-            for (DataSourceDescriptor ds : source.dataSources.values()) {
-                if (filter == null || filter.apply(ds)) {
-                    DataSourceDescriptor dsCopy = new DataSourceDescriptor(ds, this, false);
-                    dataSources.put(dsCopy.getId(), dsCopy);
-                }
-            }
-        }
 
         addDataSourceListener(modelChangeListener);
     }
@@ -312,11 +290,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             }
         }
         dataSourceFolders.remove(folderImpl);
-    }
-
-    @Override
-    public DBPDataSourceRegistry createCopy(DBPProject project, Function<DBPDataSourceContainer, Boolean> filter) {
-        return new DataSourceRegistry(this, (ProjectMetadata) project, filter);
     }
 
     private DataSourceFolder findRootFolder(String name) {
@@ -528,6 +501,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Override
     public void flushConfig() {
+        if (project.isInMemory()) {
+            return;
+        }
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
         if (configSaver == null) {
             configSaver = new ConfigSaver();
@@ -733,6 +709,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void saveDataSources() {
+        if (project.isInMemory()) {
+            return;
+        }
+
         updateProjectNature();
         final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;

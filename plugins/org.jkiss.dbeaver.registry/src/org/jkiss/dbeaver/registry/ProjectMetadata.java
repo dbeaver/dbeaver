@@ -81,6 +81,7 @@ public class ProjectMetadata implements DBPProject {
     private DBASecureStorage secureStorage;
     private UUID projectID;
     private final Object metadataSync = new Object();
+    private boolean inMemory;
 
     public ProjectMetadata(DBPWorkspace workspace, IProject project) {
         this.workspace = workspace;
@@ -88,18 +89,29 @@ public class ProjectMetadata implements DBPProject {
         this.metadataSyncJob = new ProjectSyncJob();
     }
 
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
+    public ProjectMetadata(DBPWorkspace workspace, String name, File path) {
+        this(workspace, workspace.getActiveProject().getEclipseProject());
+        this.projectName = name;
+        this.projectPath = path;
     }
 
-    public void setProjectPath(File projectPath) {
-        this.projectPath = projectPath;
+    public void setInMemory(boolean inMemory) {
+        this.inMemory = inMemory;
+    }
+
+    public boolean isInMemory() {
+        return inMemory;
     }
 
     @NotNull
     @Override
     public DBPWorkspace getWorkspace() {
         return workspace;
+    }
+
+    @Override
+    public boolean isVirtual() {
+        return projectName != null;
     }
 
     @NotNull
@@ -171,6 +183,10 @@ public class ProjectMetadata implements DBPProject {
                 log.error("Error opening project", e);
                 return;
             }
+        }
+        if (inMemory) {
+            format = ProjectFormat.MODERN;
+            return;
         }
 
         File mdFolder = getMetadataFolder(false);
@@ -494,6 +510,9 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void flushMetadata() {
+        if (inMemory) {
+            return;
+        }
         synchronized (metadataSync) {
             metadataSyncJob.schedule(100);
         }

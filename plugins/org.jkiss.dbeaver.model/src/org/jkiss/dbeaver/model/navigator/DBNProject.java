@@ -72,7 +72,15 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
+    public String getNodeName() {
+        return project.getName();
+    }
+
+    @Override
     public String getNodeDescription() {
+        if (project.isVirtual()) {
+            return null;
+        }
         project.ensureOpen();
         try {
             return project.getEclipseProject().getDescription().getComment();
@@ -107,7 +115,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public boolean supportsRename() {
-        return true;
+        return !project.isVirtual();
     }
 
     @Override

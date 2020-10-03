@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.io.File;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Datasource registry.
@@ -99,8 +98,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
-
-    DBPDataSourceRegistry createCopy(DBPProject project, Function<DBPDataSourceContainer, Boolean> filter);
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);

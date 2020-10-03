@@ -162,7 +162,7 @@ public abstract class JDBCDataSource
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
                 authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
-                throw new DBCException("Authentication error", e);
+                throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
