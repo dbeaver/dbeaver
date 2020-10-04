@@ -134,6 +134,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return sql;
     }
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
+        String defaultValue = column.getDefaultValue();
+        DefaultModifier.appendModifier(monitor, column, sql, command);
+    };
+
     protected final ColumnModifier<PostgreTableColumn> PostgreIdentityModifier = (monitor, column, sql, command) -> {
         PostgreAttributeIdentity identity = column.getIdentity();
         if (identity != null) {
@@ -168,7 +173,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreIdentityModifier, PostgreCollateModifier};
+        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier};
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }
