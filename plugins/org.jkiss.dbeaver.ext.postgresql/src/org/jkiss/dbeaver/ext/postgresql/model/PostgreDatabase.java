@@ -698,6 +698,22 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 return dataType;
             }
         }
+        // Unfortunately, serial types are not real data type and cannot be found in the system tables, and in the cache it does not always have time to be loaded
+        // Update Catalog Schema cache manually
+        if (typeId >= PostgreOid.BIGSERIAL) {
+            PostgreSchema catalogSchema = getCatalogSchema();
+            if (catalogSchema != null) {
+                PostgreDataTypeCache catalogDataTypeCache = catalogSchema.getDataTypeCache();
+                if (catalogDataTypeCache != null) {
+                    catalogDataTypeCache.reloadCacheToSetSerialDataTypes(monitor, catalogSchema);
+                    dataType = catalogDataTypeCache.getDataType(typeId);
+                    if (dataType != null) {
+                        dataTypeCache.put(typeId, dataType);
+                        return dataType;
+                    }
+                }
+            }
+        }
         // Type not found. Let's resolve it
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);

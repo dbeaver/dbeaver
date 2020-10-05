@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -40,6 +41,9 @@ import java.util.Map;
  */
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
+
+    private static final Log log = Log.getLog(PostgreDataTypeCache.class);
+
     private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     PostgreDataTypeCache() {
@@ -86,6 +90,16 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                     serialType.setExtraDataType(true);
                 }
                 cacheObject(serialType);
+            }
+        }
+    }
+
+    void reloadCacheToSetSerialDataTypes(DBRProgressMonitor monitor, PostgreSchema schema) {
+        if (getDataType(PostgreOid.SERIAL) == null && getDataType(PostgreOid.INT4) == null) {
+            try {
+                loadObjects(monitor, schema);
+            } catch (DBException e) {
+                log.debug("Data type cache cannot be loaded in schema " + schema.getName());
             }
         }
     }

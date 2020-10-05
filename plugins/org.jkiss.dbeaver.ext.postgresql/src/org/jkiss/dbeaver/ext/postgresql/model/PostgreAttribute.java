@@ -149,7 +149,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 typeId = PostgreOid.SERIAL;
             } else if (typeId == PostgreOid.INT2) {
                 typeId = PostgreOid.SMALLSERIAL;
-            } else if (typeId == PostgreOid.INT8) {
+            } else {
                 typeId = PostgreOid.BIGSERIAL;
             }
             defValue = null;
