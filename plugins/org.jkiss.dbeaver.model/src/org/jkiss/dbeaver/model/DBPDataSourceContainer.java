@@ -85,6 +85,15 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
 
     boolean isProvided();
 
+    /*
+     * Returns true if datasource can be managed (edited or deleted).
+     * Datasource is manageable if it belongs to its owner registry.
+     */
+    boolean isManageable();
+
+    /**
+     * @return true if datasource is provided by some dynamic DS provider. E.g. cloud configuration.
+     */
     boolean isExternallyProvided();
 
     boolean isTemplate();

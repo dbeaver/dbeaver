@@ -87,10 +87,10 @@ public class CommonUtils {
         return res.toString();
     }
 
-    @Nullable
+    @NotNull
     public static String escapeFileName(@Nullable String str) {
         if (str == null) {
-            return null;
+            return "";
         }
         StringBuilder res = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {

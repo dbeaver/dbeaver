@@ -106,6 +106,7 @@ public class DataSourceDescriptor
     private final DBPDataSourceRegistry registry;
     @NotNull
     private final DBPDataSourceConfigurationStorage origin;
+    private final boolean manageable;
     @NotNull
     private DBPDriver driver;
     @NotNull
@@ -169,6 +170,7 @@ public class DataSourceDescriptor
     {
         this.registry = registry;
         this.origin = origin;
+        this.manageable = origin.isDefault();
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
@@ -190,6 +192,7 @@ public class DataSourceDescriptor
     {
         this.registry = registry;
         this.origin = setDefaultOrigin ? ((DataSourceRegistry)registry).getDefaultOrigin() : source.origin;
+        this.manageable = setDefaultOrigin && ((DataSourceRegistry)registry).getDefaultOrigin().isDefault();
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -580,6 +583,14 @@ public class DataSourceDescriptor
     @NotNull
     DBPDataSourceConfigurationStorage getOrigin() {
         return origin;
+    }
+
+    public boolean isDetached() {
+        return hidden || temporary;
+    }
+
+    public boolean isManageable() {
+        return manageable;
     }
 
     @Override
@@ -1369,10 +1380,6 @@ public class DataSourceDescriptor
             CommonUtils.equalObjects(this.folder, source.folder) &&
             CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
             CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
-    }
-
-    public boolean isDetached() {
-        return hidden || temporary;
     }
 
     public static class ContextInfo implements DBPObject {
