@@ -22,18 +22,21 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.util.List;
+import java.util.Map;
 
-public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer,DBPNamedObject2 {
+public class SQLiteTable extends GenericTable implements DBDPseudoAttributeContainer, DBPNamedObject2, DBPScriptObject {
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
@@ -72,5 +75,10 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
             }
         }
         return false;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 }
