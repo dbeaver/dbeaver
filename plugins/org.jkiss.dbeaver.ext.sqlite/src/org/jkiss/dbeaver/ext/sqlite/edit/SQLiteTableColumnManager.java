@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.sqlite.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -25,10 +26,12 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * SQLiteTableColumnManager
@@ -36,6 +39,36 @@ import java.util.Map;
 public class SQLiteTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn>
 {
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        final GenericTableColumn column = command.getObject();
+        final GenericTableBase table = column.getTable();
+        final String attributes;
+
+        try {
+            attributes = table.getAttributes(monitor).stream()
+                    .filter(x -> x != column)
+                    .map(JDBCTableColumn::getName)
+                    .collect(Collectors.joining(", "));
+        } catch (DBException e) {
+            throw new RuntimeException(e);
+        }
+
+        final String tableName = DBUtils.getQuotedIdentifier(table);
+
+        StringBuilder ddl = new StringBuilder()
+                .append("-- Drop column ").append(DBUtils.getQuotedIdentifier(column)).append("\n")
+                .append("CREATE TEMPORARY TABLE temp AS SELECT ").append(attributes).append(" FROM ").append(tableName).append(";\n")
+                .append("DROP TABLE ").append(tableName).append(";\n")
+                .append("CREATE TABLE ").append(tableName).append(" AS SELECT ").append(attributes).append(" FROM temp;\n")
+                .append("DROP TABLE temp;\n");
+
+        actions.add(new SQLDatabasePersistAction(
+                "Drop table column",
+                ddl.toString()
+        ));
+    }
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
