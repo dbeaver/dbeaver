@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -57,16 +58,25 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
 
         final String tableName = DBUtils.getQuotedIdentifier(table);
 
-        StringBuilder ddl = new StringBuilder()
-                .append("-- Drop column ").append(DBUtils.getQuotedIdentifier(column)).append("\n")
-                .append("CREATE TEMPORARY TABLE temp AS SELECT ").append(attributes).append(" FROM ").append(tableName).append(";\n")
-                .append("DROP TABLE ").append(tableName).append(";\n")
-                .append("CREATE TABLE ").append(tableName).append(" AS SELECT ").append(attributes).append(" FROM temp;\n")
-                .append("DROP TABLE temp;\n");
-
+        actions.add(new SQLDatabasePersistActionComment(
+                table.getDataSource(),
+                "Drop column " + DBUtils.getQuotedIdentifier(column)
+        ));
         actions.add(new SQLDatabasePersistAction(
-                "Drop table column",
-                ddl.toString()
+                "Create temporary table from original table",
+                "CREATE TEMPORARY TABLE temp AS SELECT " + attributes + " FROM " + tableName
+        ));
+        actions.add(new SQLDatabasePersistAction(
+                "Drop original table",
+                "DROP TABLE " + tableName
+        ));
+        actions.add(new SQLDatabasePersistAction(
+                "Create original table from temporary table",
+                "CREATE TABLE " + tableName + " AS SELECT " + attributes + " FROM temp"
+        ));
+        actions.add(new SQLDatabasePersistAction(
+                "Drop temporary table",
+                "DROP TABLE temp"
         ));
     }
 
