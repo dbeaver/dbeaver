@@ -72,5 +72,8 @@ public class PostgreOid {
     public static final int POINT = 600;
     public static final int BOX = 603;
     public static final int JSONB_ARRAY = 3807;
+    public static final int SMALLSERIAL = 4444;
+    public static final int SERIAL = 4443;
+    public static final int BIGSERIAL = 4442;
 
 }
