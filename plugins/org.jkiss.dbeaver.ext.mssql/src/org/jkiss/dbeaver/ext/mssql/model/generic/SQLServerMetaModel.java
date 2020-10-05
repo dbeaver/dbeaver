@@ -256,7 +256,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     mdQuery = "SELECT sc.text\n" +
                         "FROM " + systemSchema + ".sysobjects so, " + systemSchema + ".syscomments sc\n" +
                         "WHERE user_name(so.uid)=? AND so.name=? and sc.id = so.id\n" +
-			"ORDER BY sc.colid";
+                        "ORDER BY sc.colid";
                 }
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
