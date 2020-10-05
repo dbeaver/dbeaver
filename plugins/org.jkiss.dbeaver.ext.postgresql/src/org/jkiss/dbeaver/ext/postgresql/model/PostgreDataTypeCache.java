@@ -57,17 +57,34 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
         // Cache aliases
         if (schema.isCatalogSchema()) {
-            mapDataTypeAliases(schema.getDataSource().getServerType().getDataTypeAliases());
-            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES);
+            mapDataTypeAliases(schema.getDataSource().getServerType().getDataTypeAliases(), false);
+            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
         }
     }
 
-    private void mapDataTypeAliases(Map<String, String> aliases) {
+    private void mapDataTypeAliases(Map<String, String> aliases, boolean isSerialType) {
         // Add serial data types
         for (Map.Entry<String,String> aliasMapping : aliases.entrySet()) {
-            PostgreDataType realType = getCachedObject(aliasMapping.getValue());
+            String value = aliasMapping.getValue();
+            PostgreDataType realType = getCachedObject(value);
             if (realType != null) {
                 PostgreDataType serialType = new PostgreDataType(realType, aliasMapping.getKey());
+                int typeId = -1;
+                if (isSerialType) {
+                    switch (value) {
+                        case PostgreConstants.TYPE_INT4:
+                            typeId = PostgreOid.SERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT2:
+                            typeId = PostgreOid.SMALLSERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT8:
+                            typeId = PostgreOid.BIGSERIAL;
+                            break;
+                    }
+                    serialType.setTypeId(typeId);
+                    serialType.setExtraDataType(true);
+                }
                 cacheObject(serialType);
             }
         }
@@ -92,7 +109,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
         } else {
             super.cacheObject(object);
-            if (!object.isAlias()) {
+            if (!object.isAlias() || object.isExtraDataType()) {
                 dataTypeMap.put(object.getObjectId(), object);
             }
         }
