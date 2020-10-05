@@ -84,8 +84,9 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actions, (PostgreViewBase) command.getObject(), options);
-        addObjectExtraActions(monitor, executionContext, actions, command, options);
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
+            createOrReplaceViewQuery(monitor, actions, (PostgreViewBase) command.getObject(), options);
+        }
     }
 
     @Override
@@ -161,7 +162,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment view",
-                    "COMMENT ON  " + viewBase.getViewType() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    "COMMENT ON " + viewBase.getViewType() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                             " IS " + SQLUtils.quoteString(viewBase, CommonUtils.notEmpty(viewBase.getDescription()))));
         }
     }
