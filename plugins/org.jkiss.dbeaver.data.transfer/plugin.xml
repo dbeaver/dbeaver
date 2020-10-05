@@ -167,6 +167,8 @@
                     <property id="nativeFormat" label="%dataTransfer.processor.sql.property.nativeFormat.name" type="boolean" description="%dataTransfer.processor.sql.property.nativeFormat.description" defaultValue="true" />
                     <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
+                </propertyGroup>
+                <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.formatting.label">
                     <property id="lineBeforeRows" label="%dataTransfer.processor.sql.property.lineBeforeRows.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeRows.description" defaultValue="true" />
                     <property id="keywordCase" label="%dataTransfer.processor.sql.property.keywordCase.name" type="string" description="%dataTransfer.processor.sql.property.keywordCase.description" defaultValue="upper" required="true" validValues="upper,lower"/>
                     <property id="upsertKeyword" label="%dataTransfer.processor.sql.property.upsertKeyword.name" type="string" description="%dataTransfer.processor.sql.property.upsertKeyword.description" defaultValue="INSERT" required="true" validValues="INSERT,UPDATE OR,UPSERT INTO,ON DUPLICATE KEY UPDATE,ON CONFLICT"/>
