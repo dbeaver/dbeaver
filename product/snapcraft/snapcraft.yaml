@@ -46,6 +46,8 @@ parts:
       - xdg-utils
       - mariadb-client
       - mysql-client
+      - ibus-gtk3
+      - libibus-1.0-5
     override-build: |
       set -e
       snapcraftctl build
