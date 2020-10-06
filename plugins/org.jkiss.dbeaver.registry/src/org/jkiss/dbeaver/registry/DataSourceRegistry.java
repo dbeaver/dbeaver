@@ -668,7 +668,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
             for (DataSourceDescriptor ds : dataSources.values()) {
                 if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
-                    !ds.isProvided() && !ds.getOrigin().isDynamic())
+                    !ds.isProvided() && !ds.getOrigin().isDynamic() && !ds.isDetached())
                 {
                     removedDataSource.add(ds);
                 }
