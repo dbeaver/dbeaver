@@ -43,7 +43,7 @@ public class CommonUtilsTest {
 
   @Test
   public void testEscapeFileName() {
-    Assert.assertNull(CommonUtils.escapeFileName(null));
+    Assert.assertEquals("", CommonUtils.escapeFileName(null));
     Assert.assertEquals("_", CommonUtils.escapeFileName("\\"));
     Assert.assertEquals("_", CommonUtils.escapeFileName("\u0013"));
     Assert.assertEquals("_", CommonUtils.escapeFileName("/"));
