@@ -194,6 +194,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
+            cacheDataTypes(monitor, true);
         }
     }
 
