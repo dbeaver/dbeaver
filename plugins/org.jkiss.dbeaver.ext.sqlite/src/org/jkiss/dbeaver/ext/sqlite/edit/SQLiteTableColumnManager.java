@@ -42,41 +42,36 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
 {
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
         final GenericTableColumn column = command.getObject();
         final GenericTableBase table = column.getTable();
-        final String attributes;
 
-        try {
-            attributes = table.getAttributes(monitor).stream()
-                    .filter(x -> x != column)
-                    .map(JDBCTableColumn::getName)
-                    .collect(Collectors.joining(", "));
-        } catch (DBException e) {
-            throw new RuntimeException(e);
-        }
+        final String tableColumns = table.getAttributes(monitor).stream()
+            .filter(x -> x != column)
+            .map(JDBCTableColumn::getName)
+            .collect(Collectors.joining(", "));
 
         final String tableName = DBUtils.getQuotedIdentifier(table);
 
         actions.add(new SQLDatabasePersistActionComment(
-                table.getDataSource(),
-                "Drop column " + DBUtils.getQuotedIdentifier(column)
+            table.getDataSource(),
+            "Drop column " + DBUtils.getQuotedIdentifier(column)
         ));
         actions.add(new SQLDatabasePersistAction(
-                "Create temporary table from original table",
-                "CREATE TEMPORARY TABLE temp AS SELECT " + attributes + " FROM " + tableName
+            "Create temporary table from original table",
+            "CREATE TEMPORARY TABLE temp AS SELECT " + tableColumns + " FROM " + tableName
         ));
         actions.add(new SQLDatabasePersistAction(
-                "Drop original table",
-                "DROP TABLE " + tableName
+            "Drop original table",
+            "DROP TABLE " + tableName
         ));
         actions.add(new SQLDatabasePersistAction(
-                "Create original table from temporary table",
-                "CREATE TABLE " + tableName + " AS SELECT " + attributes + " FROM temp"
+            "Create original table from temporary table",
+            "CREATE TABLE " + tableName + " AS SELECT " + tableColumns + " FROM temp"
         ));
         actions.add(new SQLDatabasePersistAction(
-                "Drop temporary table",
-                "DROP TABLE temp"
+            "Drop temporary table",
+            "DROP TABLE temp"
         ));
     }
 
