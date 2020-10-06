@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.sqlite.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -25,10 +26,13 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * SQLiteTableColumnManager
@@ -36,6 +40,40 @@ import java.util.Map;
 public class SQLiteTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn>
 {
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+        final GenericTableColumn column = command.getObject();
+        final GenericTableBase table = column.getTable();
+
+        final String tableColumns = table.getAttributes(monitor).stream()
+            .filter(x -> x != column)
+            .map(JDBCTableColumn::getName)
+            .collect(Collectors.joining(", "));
+
+        final String tableName = DBUtils.getQuotedIdentifier(table);
+
+        actions.add(new SQLDatabasePersistActionComment(
+            table.getDataSource(),
+            "Drop column " + DBUtils.getQuotedIdentifier(column)
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Create temporary table from original table",
+            "CREATE TEMPORARY TABLE temp AS SELECT " + tableColumns + " FROM " + tableName
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop original table",
+            "DROP TABLE " + tableName
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Create original table from temporary table",
+            "CREATE TABLE " + tableName + " AS SELECT " + tableColumns + " FROM temp"
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop temporary table",
+            "DROP TABLE temp"
+        ));
+    }
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
