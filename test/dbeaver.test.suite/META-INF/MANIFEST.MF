@@ -5,5 +5,8 @@ Bundle-SymbolicName: org.jkiss.dbeaver.test.suite
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.junit,
- org.jkiss.dbeaver.model
+Require-Bundle: org.eclipse.core.runtime,
+ org.junit,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.headless

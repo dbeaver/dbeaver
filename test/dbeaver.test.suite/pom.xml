@@ -23,6 +23,7 @@
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
+                    <application>org.jkiss.dbeaver.headless.application</application>
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
                 </configuration>
