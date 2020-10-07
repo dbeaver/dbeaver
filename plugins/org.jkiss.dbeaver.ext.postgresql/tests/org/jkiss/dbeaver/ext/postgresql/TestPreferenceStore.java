@@ -4,7 +4,7 @@ import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 
 import java.io.IOException;
 
-class TestPreferenceStore extends SimplePreferenceStore {
+public class TestPreferenceStore extends SimplePreferenceStore {
 
     @Override
     public void save() throws IOException {}
