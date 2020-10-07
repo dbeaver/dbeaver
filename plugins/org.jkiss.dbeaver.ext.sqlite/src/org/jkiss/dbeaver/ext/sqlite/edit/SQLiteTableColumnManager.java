@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,14 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
         final GenericTableColumn column = command.getObject();
-        final GenericTableBase table = column.getTable();
+        final GenericTableBase table = (GenericTableBase) column.getTable().refreshObject(monitor);
+
+        if (table == null || CommonUtils.isEmpty(table.getAttributes(monitor))) {
+            throw new DBException("Table was deleted");
+        }
 
         final String tableColumns = table.getAttributes(monitor).stream()
-            .filter(x -> x != column)
+            .filter(x -> !x.getName().equals(column.getName()) && x.isPersisted())
             .map(JDBCTableColumn::getName)
             .collect(Collectors.joining(", "));
 
