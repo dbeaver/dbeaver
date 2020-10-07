@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -32,7 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Execute batch.
@@ -243,7 +247,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         session.getDataSource(),
                         attributes[paramIndex],
                         handlers[paramIndex],
-                        rowValues[paramIndex]);
+                        rowValues[paramIndex],
+                        DBDDisplayFormat.NATIVE);
                     formatted.append(paramValue);
                     continue;
                 }
