@@ -50,10 +50,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * ColumnsMappingDialog
@@ -284,8 +281,10 @@ class ColumnsMappingDialog extends BaseDialog {
                         }
                     }
                     types.add(attrMapping.getTargetType(dataSource, true));
+                    ArrayList<String> sortedTypes = new ArrayList<>(types);
+                    Collections.sort(sortedTypes);
 
-                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[0]), SWT.BORDER);
+                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), sortedTypes.toArray(new String[0]), SWT.BORDER);
                 }
                 @Override
                 protected boolean canEdit(Object element)
