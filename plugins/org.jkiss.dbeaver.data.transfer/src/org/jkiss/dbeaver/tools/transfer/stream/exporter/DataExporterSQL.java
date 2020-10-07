@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -276,7 +277,23 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 out.write("@");
                 out.write(((File) value).getAbsolutePath());
             } else {
-                out.write(SQLUtils.convertValueToSQL(session.getDataSource(), column, row[i]));
+                // If we have disabled "Native Date/Time format" option then we
+                // use UI format + enquote value
+                boolean needQuotes = false;
+                DBDDisplayFormat displayFormat = DBDDisplayFormat.NATIVE;
+                if (!useNativeDataFormat && column.getDataKind() == DBPDataKind.DATETIME) {
+                    displayFormat = DBDDisplayFormat.UI;
+                    needQuotes = true;
+                }
+                String sqlValue = SQLUtils.convertValueToSQL(
+                    session.getDataSource(),
+                    column,
+                    column.getValueHandler(),
+                    row[i],
+                    displayFormat);
+                if (needQuotes) out.write('\'');
+                out.write(sqlValue);
+                if (needQuotes) out.write('\'');
             }
         }
         if (insertMode != SQLDialect.MultiValueInsertMode.PLAIN) {
