@@ -269,14 +269,14 @@ public class ComplexObjectEditor extends TreeViewer {
                 copyNameAction.setEnabled(false);
                 copyValueAction.setEnabled(false);
                 removeElementAction.setEnabled(false);
-                addElementAction.setEnabled(getInput() instanceof DBDCollection);
+                addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
             } else {
                 copyNameAction.setEnabled(true);
                 copyValueAction.setEnabled(true);
                 final Object element = selection.getFirstElement();
                 if (element instanceof ArrayItem) {
-                    removeElementAction.setEnabled(true);
-                    addElementAction.setEnabled(true);
+                    removeElementAction.setEnabled(getInput() instanceof DBDComplexValue);
+                    addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
                 }
             }
         });
@@ -314,6 +314,8 @@ public class ComplexObjectEditor extends TreeViewer {
             this.childrenMap.clear();
             setInput(value);
             expandToLevel(2);
+
+            addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
         } finally {
             getTree().setRedraw(true);
         }
@@ -389,6 +391,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
                 ((DBDCollection) complexValue).setContents(newValues);
             }
+//        } else if (complexValue instanceof List) {
+//            ((List) complexValue).clear();
+//            if (items != null) {
+//                for (int i = 0; i < items.length; i++) {
+//                    ((List) complexValue).add(items[i].value);
+//                }
+//            }
         }
         return complexValue;
     }
@@ -453,7 +462,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 ArrayItem arrayItem = (ArrayItem) this.item;
                 valueHandler = arrayItem.array.valueHandler;
                 type = arrayItem.array.componentType;
-                name = type.getTypeName() + "["  + arrayItem.index + "]";
+                name = (type == null ? "?" : type.getTypeName()) + "["  + arrayItem.index + "]";
                 value = arrayItem.value;
             } else if (this.item instanceof MapEntry) {
                 valueHandler = DefaultValueHandler.INSTANCE;
@@ -722,9 +731,9 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     @NotNull
-    private ArrayInfo makeArrayInfo(DBDCollection array) {
+    private ArrayInfo makeArrayInfo(@Nullable DBDCollection array) {
         ArrayInfo arrayInfo = new ArrayInfo();
-        arrayInfo.componentType = array.getComponentType();
+        arrayInfo.componentType = array == null ? null : array.getComponentType();
         if (arrayInfo.componentType == null) {
             arrayInfo.valueHandler = parentController.getExecutionContext().getDataSource().getContainer().getDefaultValueHandler();;
         } else {
@@ -808,21 +817,21 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void run() {
             disposeOldEditor();
-            DBDCollection collection = (DBDCollection) getInput();
-            ComplexElement[] arrayItems = childrenMap.get(collection);
-            if (collection == null) {
+            Object input = getInput();
+            if (input == null) {
                 try {
-                    collection = DBUtils.createNewAttributeValue(
+                    input = DBUtils.createNewAttributeValue(
                         parentController.getExecutionContext(),
                         parentController.getValueHandler(),
                         parentController.getValueType(),
-                        DBDCollection.class);
-                    setInput(collection);
+                        Object.class);
+                    setInput(input);
                 } catch (DBCException e) {
                     DBWorkbench.getPlatformUI().showError("New object create", "Error creating new collection", e);
                     return;
                 }
             }
+            ComplexElement[] arrayItems = childrenMap.get(input);
             if (arrayItems == null) {
                 arrayItems = new ComplexElement[0];
                 //log.error("Can't find children items for add");
@@ -831,14 +840,14 @@ public class ComplexObjectEditor extends TreeViewer {
             final IStructuredSelection selection = getStructuredSelection();
             ArrayItem newItem;
             if (selection.isEmpty()) {
-                newItem = new ArrayItem(makeArrayInfo(collection), arrayItems.length, null);
+                newItem = new ArrayItem(makeArrayInfo(input instanceof DBDCollection ? (DBDCollection) input : null), arrayItems.length, null);
             } else {
                 ArrayItem curItem = (ArrayItem) selection.getFirstElement();
                 newItem = new ArrayItem(curItem.array, curItem.index + 1, null);
             }
             shiftArrayItems(arrayItems, newItem.index, 1);
             arrayItems = ArrayUtils.insertArea(ComplexElement.class, arrayItems, newItem.index, new ComplexElement[] {newItem} );
-            childrenMap.put(collection, arrayItems);
+            childrenMap.put(input, arrayItems);
 
             refresh();
 
