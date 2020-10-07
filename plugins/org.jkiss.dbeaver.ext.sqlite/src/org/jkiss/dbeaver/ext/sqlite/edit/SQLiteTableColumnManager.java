@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -46,9 +46,14 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         final GenericTableColumn column = command.getObject();
         final GenericTableBase table = column.getTable();
 
-        final String tableColumns = table.getAttributes(monitor).stream()
-            .filter(x -> x != column)
-            .map(JDBCTableColumn::getName)
+        final List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
+        if (CommonUtils.isEmpty(attributes)) {
+            throw new DBException("Table was deleted");
+        }
+
+        final String tableColumns = attributes.stream()
+            .filter(x -> !x.getName().equals(column.getName()) && x.isPersisted())
+            .map(DBUtils::getQuotedIdentifier)
             .collect(Collectors.joining(", "));
 
         final String tableName = DBUtils.getQuotedIdentifier(table);
