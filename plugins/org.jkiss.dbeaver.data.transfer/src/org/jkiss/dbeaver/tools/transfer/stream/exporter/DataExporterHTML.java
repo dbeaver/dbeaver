@@ -42,7 +42,8 @@ import java.util.Map;
  */
 public class DataExporterHTML extends StreamExporterAbstract {
 
-    private static final String PROP_HEADER = "header";
+    private static final String PROP_HEADER = "tableHeader";
+    private static final String PROP_COLUMN_HEADERS = "columnHeaders";
 
     private String name;
     private static final int IMAGE_FRAME_SIZE = 200;
@@ -51,6 +52,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     private int rowCount = 0;
 
     private boolean outputHeader = true;
+    private boolean outputColumnHeaders = true;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
@@ -58,6 +60,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
         Map<String, Object> properties = site.getProperties();
         outputHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), outputHeader);
+        outputColumnHeaders = CommonUtils.getBoolean(properties.get(PROP_COLUMN_HEADERS), outputColumnHeaders);
     }
 
     @Override
@@ -101,6 +104,8 @@ public class DataExporterHTML extends StreamExporterAbstract {
             writeTableTitle(name, columns.length);
             out.write("</tr>");
             out.write("<tr>");
+        }
+        if (outputColumnHeaders) {
             for (DBDAttributeBinding column : columns) {
                 String colName = column.getLabel();
                 if (CommonUtils.isEmpty(colName)) {
