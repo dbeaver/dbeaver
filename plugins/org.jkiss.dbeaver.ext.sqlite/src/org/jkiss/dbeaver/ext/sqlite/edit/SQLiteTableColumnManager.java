@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,15 +44,16 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
         final GenericTableColumn column = command.getObject();
-        final GenericTableBase table = (GenericTableBase) column.getTable().refreshObject(monitor);
+        final GenericTableBase table = column.getTable();
 
-        if (table == null || CommonUtils.isEmpty(table.getAttributes(monitor))) {
+        final List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
+        if (CommonUtils.isEmpty(attributes)) {
             throw new DBException("Table was deleted");
         }
 
-        final String tableColumns = table.getAttributes(monitor).stream()
+        final String tableColumns = attributes.stream()
             .filter(x -> !x.getName().equals(column.getName()) && x.isPersisted())
-            .map(JDBCTableColumn::getName)
+            .map(DBUtils::getQuotedIdentifier)
             .collect(Collectors.joining(", "));
 
         final String tableName = DBUtils.getQuotedIdentifier(table);
