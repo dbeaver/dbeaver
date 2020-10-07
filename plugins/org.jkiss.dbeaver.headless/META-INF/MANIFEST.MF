@@ -11,5 +11,5 @@ Bundle-ClassPath: .
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.app,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.registry
 Automatic-Module-Name: org.jkiss.dbeaver.headless
