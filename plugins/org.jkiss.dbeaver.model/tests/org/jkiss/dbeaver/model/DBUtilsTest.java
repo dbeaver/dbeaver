@@ -48,4 +48,16 @@ public class DBUtilsTest {
         Assert.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "TableName"), "\"TableName\"");
     }
 
+
+    @Test
+    public void testMainServices() {
+
+/*
+        org.eclipse.equinox.launcher.Main.main(new String[] {
+            "-product", "org.jkiss.dbeaver.product"}
+        );
+        System.out.println("OSGI started");
+*/
+    }
+
 }

@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.junit.Assert;
@@ -36,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -263,13 +261,3 @@ public class PostgreValueParserTest {
 
 }
 
-class TestPreferenceStore extends SimplePreferenceStore{
-
-    @Override
-    public void save() throws IOException {}
-
-    @Override
-    public String getString(String name) {
-        return "";
-    }
-}
