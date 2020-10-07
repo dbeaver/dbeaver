@@ -29,10 +29,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -143,6 +140,8 @@ public class ResultSetViewer extends Viewer
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
+
+    private static final int MIN_SEGMENT_SIZE = 100;
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -1627,6 +1626,15 @@ public class ResultSetViewer extends Viewer
             resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
             resultSetSize.setBackground(UIStyles.getDefaultTextBackground());
             resultSetSize.setToolTipText(DataEditorsMessages.resultset_segment_size);
+            resultSetSize.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    String realValue = String.valueOf(getSegmentMaxRows());
+                    if (!realValue.equals(resultSetSize.getText())) {
+                        resultSetSize.setText(realValue);
+                    }
+                }
+            });
             resultSetSize.addModifyListener(e -> {
                 DBSDataContainer dataContainer = getDataContainer();
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
@@ -1882,7 +1890,7 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
-            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
         }
     }
 
@@ -3566,10 +3574,16 @@ public class ResultSetViewer extends Viewer
         if (getDataContainer() == null) {
             return 0;
         }
+        int size;
         if (segmentFetchSize != null && segmentFetchSize > 0) {
-            return segmentFetchSize;
+            size = segmentFetchSize;
+        } else {
+            size = getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
-        return getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
+        if (size < MIN_SEGMENT_SIZE) {
+            size = MIN_SEGMENT_SIZE;
+        }
+        return size;
     }
 
     @NotNull
