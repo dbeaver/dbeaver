@@ -49,9 +49,8 @@
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObjectContainer">
-                                <test property="org.jkiss.dbeaver.model.childOfType" value="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                            </adapt>
+                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSCatalog"/>
                         </or>
                     </iterate>
                 </with>
