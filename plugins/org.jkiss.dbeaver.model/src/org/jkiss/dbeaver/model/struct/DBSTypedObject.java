@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObject extends DBPObject
 {
+    // Number is unsigned and don't have a sign
+    int TYPE_MOD_NUMBER_UNSIGNED            = 1 << 5;
+
     // Numbers must be formatted with leading zeroes
     int TYPE_MOD_NUMBER_LEADING_ZEROES      = 1 << 10;
 
