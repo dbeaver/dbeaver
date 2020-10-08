@@ -126,7 +126,7 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 }
             }
             if (nestedBinding == null) {
-                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute);
+                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute, nestedBindings.size());
                 nestedBindings.add(nestedBinding);
             }
             if (attribute.getDataKind().isComplex()) {

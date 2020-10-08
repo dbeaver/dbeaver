@@ -759,7 +759,7 @@ public final class DBUtils {
                         Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
                         if (!CommonUtils.isEmpty(entityAttrs)) {
                             for (DBSEntityAttribute ea : entityAttrs) {
-                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea));
+                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
                             }
                         }
                     }
