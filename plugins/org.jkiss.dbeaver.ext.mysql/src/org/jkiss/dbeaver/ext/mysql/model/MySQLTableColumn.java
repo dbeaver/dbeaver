@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
@@ -74,6 +75,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private KeyType keyType;
     private String extraInfo;
     private String genExpression;
+    private long modifiers;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -179,6 +181,17 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
             genExpression = JDBCUtils.safeGetString(dbResult, "GENERATION_EXPRESSION");
         }
+
+        for (String modifier : CommonUtils.notEmpty(fullTypeName).toLowerCase().split(" ")) {
+            switch (modifier) {
+                case "zerofill":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES;
+                    break;
+                case "unsigned":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_UNSIGNED;
+                    break;
+            }
+        }
     }
 
     private static List<String> parseEnumValues(String typeName) {
@@ -245,6 +258,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public boolean isTypeEnum() {
         return typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM);
+    }
+
+    @Override
+    public long getTypeModifiers() {
+        return super.getTypeModifiers() | modifiers;
     }
 
     //@Property(viewable = true, editable = true, updatable = true, order = 40)
