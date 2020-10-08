@@ -151,6 +151,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     }
 
     @Override
+    public long getTypeModifiers() {
+        return attribute.getTypeModifiers();
+    }
+
+    @Override
     public String toString() {
         return attribute.toString();
     }

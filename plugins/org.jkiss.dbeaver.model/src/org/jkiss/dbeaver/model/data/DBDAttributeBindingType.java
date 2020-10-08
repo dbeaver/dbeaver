@@ -214,6 +214,11 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     }
 
     @Override
+    public long getTypeModifiers() {
+        return attribute.getTypeModifiers();
+    }
+
+    @Override
     public String toString() {
         return attribute.toString();
     }

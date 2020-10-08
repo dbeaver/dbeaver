@@ -217,6 +217,11 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return attribute.getMaxLength();
         }
 
+        @Override
+        public long getTypeModifiers() {
+            return attribute.getTypeModifiers();
+        }
+
         /**
          * Implements qualified object to avoid attribute name quoting
          */

@@ -199,6 +199,11 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     @Property(viewable = true, order = 6)
     public Integer getScale()
     {

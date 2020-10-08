@@ -145,8 +145,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         }
         this.comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT);
         this.required = !"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE));
-        this.scale = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE);
-        this.precision = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION);
+        this.setScale(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
+        this.setPrecision(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         String defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         if (defaultValue != null) {
             switch (getDataKind()) {
