@@ -47,11 +47,9 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <or>
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
-                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSCatalog"/>
-                        </or>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <test property="org.jkiss.dbeaver.model.isTableContainer"/>
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>

@@ -628,7 +628,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (!CommonUtils.isEmpty(schemas)) {
@@ -850,7 +850,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
         @NotNull
         @Override
-        public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
             return GenericTable.class;
         }
 

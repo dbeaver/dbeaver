@@ -371,7 +371,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleTable.class;

@@ -78,7 +78,7 @@
             class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
             namespace="org.jkiss.dbeaver.model"
-            properties="childOfType"
+            properties="childOfType,isTableContainer"
             type="org.jkiss.dbeaver.model.struct.DBSObject"/>
     </extension>
 

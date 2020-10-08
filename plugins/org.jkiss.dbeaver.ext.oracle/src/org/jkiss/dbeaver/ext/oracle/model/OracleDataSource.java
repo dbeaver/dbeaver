@@ -484,7 +484,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public Class<? extends OracleSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         return OracleSchema.class;
     }
