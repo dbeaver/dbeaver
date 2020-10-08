@@ -1579,10 +1579,10 @@ public class SQLEditor extends SQLEditorBase implements
             .append(" \nURL: ").append(dataSourceContainer.getConnectionConfiguration().getUrl());
 
         Map<String, Object> vars = getScriptVariables(null, scriptPath);
-        if (vars.containsKey(VAR_ACTIVE_DATABASE)) {
+        if (vars.get(VAR_ACTIVE_DATABASE) != null) {
             tip.append(" \nDatabase: ").append(vars.get(VAR_ACTIVE_DATABASE));
         }
-        if (vars.containsKey(VAR_ACTIVE_SCHEMA)) {
+        if (vars.get(VAR_ACTIVE_SCHEMA) != null) {
             tip.append(" \nSchema: ").append(vars.get(VAR_ACTIVE_SCHEMA));
         }
 
