@@ -21,21 +21,31 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Scheduler
  */
 public interface DBTScheduler {
-
     String FEATURE_START_TIME = "start.time";
-    String FEATURE_FREQUENCY_MINUTE = "frequency.minute";
-    String FEATURE_FREQUENCY_HOUR = "frequency.hour";
+    String FEATURE_FREQUENCY_MINUTELY = "frequency.minutely";
+    String FEATURE_FREQUENCY_HOURLY = "frequency.hourly";
+    String FEATURE_FREQUENCY_DAILY = "frequency.daily";
+    String FEATURE_FREQUENCY_WEEKLY = "frequency.weekly";
+    String FEATURE_FREQUENCY_MONTHLY = "frequency.monthly";
+    String FEATURE_FREQUENCY_ONETIME = "frequency.onetime";
+    String FEATURE_FREQUENCY_EVENT = "frequency.event";
+    String FEATURE_FREQUENCY_WEEKLY_RECURRENCE = FEATURE_FREQUENCY_WEEKLY + ".recurrence";
+    String FEATURE_FREQUENCY_MONTHLY_LAST_DAY = FEATURE_FREQUENCY_MONTHLY + ".last_day";
+    String FEATURE_FREQUENCY_HOURLY_RECURRENCE_GREATER_THAN_23 = FEATURE_FREQUENCY_HOURLY + ".recurrence.greater_than_23";
+    String FEATURE_FREQUENCY_MINUTELY_RECURRENCE_GREATER_THAN_59 = FEATURE_FREQUENCY_MINUTELY + ".recurrence.greater_than_59";
+    String FEATURE_FREQUENCY_MINUTELY_RECURRENCE_GREATER_THAN_31 = FEATURE_FREQUENCY_DAILY + ".recurrence.greater_than_31";
 
     @NotNull
     String getSchedulerName();
 
-    String[] getSchedulerSupportedFeatures();
+    Collection<String> getSchedulerSupportedFeatures();
 
     @NotNull
     List<DBTTaskScheduleInfo> getAllScheduledTasks();
