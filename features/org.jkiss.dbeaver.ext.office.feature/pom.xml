@@ -9,7 +9,7 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.office.feature</artifactId>
-  <version>1.1.79-SNAPSHOT</version>
+  <version>1.1.80-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
   <groupId>org.jkiss.dbeaver</groupId>
 </project>
