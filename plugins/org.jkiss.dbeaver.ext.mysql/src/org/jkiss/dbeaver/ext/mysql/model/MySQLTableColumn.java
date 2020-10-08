@@ -182,8 +182,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             genExpression = JDBCUtils.safeGetString(dbResult, "GENERATION_EXPRESSION");
         }
 
-        if (CommonUtils.notEmpty(fullTypeName).contains("zerofill")) {
-            this.modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES;
+        for (String modifier : CommonUtils.notEmpty(fullTypeName).toLowerCase().split(" ")) {
+            switch (modifier) {
+                case "zerofill":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES;
+                    break;
+                case "unsigned":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_UNSIGNED;
+                    break;
+            }
         }
     }
 
