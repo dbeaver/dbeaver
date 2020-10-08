@@ -678,7 +678,7 @@ public final class SQLUtils {
     public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, DBPDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
-            if (ContentUtils.isTextContent(content)) {
+            if (!content.isNull() && ContentUtils.isTextContent(content)) {
                 String strValue = ContentUtils.getContentStringValue(monitor, content);
                 return dataSource.getSQLDialect().escapeString(strValue);
             } else {

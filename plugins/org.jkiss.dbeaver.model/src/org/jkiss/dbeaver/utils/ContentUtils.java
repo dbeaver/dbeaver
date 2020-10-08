@@ -401,8 +401,11 @@ public class ContentUtils {
         return MimeTypes.TEXT_JSON.equalsIgnoreCase(content.getContentType());
     }
 
-    @NotNull
+    @Nullable
     public static String getContentStringValue(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent object) throws DBCException {
+        if (object.isNull()) {
+            return null;
+        }
         DBDContentStorage data = object.getContents(monitor);
         if (data != null) {
             if (data instanceof DBDContentCached) {
