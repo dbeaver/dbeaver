@@ -46,6 +46,11 @@ public interface DBTScheduler {
 
     void refreshScheduledTasks(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void openSchedulerSettings() throws DBException;
+    /**
+     * Opens scheduler settings.
+     * @return settings informsation to show in DBeaver UI. Null if scheduler uses some proprietary way to show settings.
+     */
+    @Nullable
+    DBTSchedulerExternalSettings openSchedulerSettings() throws DBException;
 
 }
