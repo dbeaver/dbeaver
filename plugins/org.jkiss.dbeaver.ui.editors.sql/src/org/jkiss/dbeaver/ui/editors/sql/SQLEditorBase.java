@@ -376,6 +376,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         handleInputChange(getEditorInput());
     }
 
+    protected void doTextEditorSave(DBRProgressMonitor monitor) {
+        super.doSave(monitor.getNestedMonitor());
+    }
+
     @Override
     protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
         fAnnotationAccess = getAnnotationAccess();
