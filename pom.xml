@@ -156,7 +156,7 @@
                         <phase>test</phase>
                         <configuration>
                             <includes>
-                                <include>tests/**/*Test.java</include>
+                                <include>**/*Test.java</include>
                             </includes>
                         </configuration>
                         <goals>
