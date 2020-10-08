@@ -24,11 +24,14 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObject extends DBPObject
 {
+    // Number is unsigned and don't have a sign
+    int TYPE_MOD_NUMBER_UNSIGNED            = 1 << 5;
+
     // Numbers must be formatted with leading zeroes
-    int TYPE_MOD_NUMBER_LEADING_ZEROES      = 1 >> 10;
+    int TYPE_MOD_NUMBER_LEADING_ZEROES      = 1 << 10;
 
     // String must be formatted with trailing spaces
-    int TYPE_MOD_CHAR_TRAILING_SPACES        = 1 >> 12;
+    int TYPE_MOD_CHAR_TRAILING_SPACES       = 1 << 12;
 
     /**
      * Database specific type name
