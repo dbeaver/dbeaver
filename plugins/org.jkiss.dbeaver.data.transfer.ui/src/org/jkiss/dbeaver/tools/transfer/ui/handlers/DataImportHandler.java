@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -111,7 +110,7 @@ public class DataImportHandler extends DataTransferHandler {
 
     public static boolean isObjectContainerSupportsImport(DBSObjectContainer object) {
         try {
-            Class<? extends DBSObject> childType = object.getPrimaryChildType(new VoidProgressMonitor());
+            Class<? extends DBSObject> childType = object.getPrimaryChildType(null);
             return DBSDataContainer.class.isAssignableFrom(childType);
         } catch (DBException e) {
             log.error(e);
