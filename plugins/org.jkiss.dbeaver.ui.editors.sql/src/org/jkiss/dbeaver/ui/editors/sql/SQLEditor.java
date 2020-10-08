@@ -26,6 +26,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -198,6 +199,20 @@ public class SQLEditor extends SQLEditorBase implements
     private VerticalFolder presentationSwitchFolder;
 
     private final List<SQLEditorListener> listeners = new ArrayList<>();
+    private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
+    private ScriptAutoSaveJob scriptAutoSavejob;
+
+    private static class ServerOutputInfo {
+        private final DBCServerOutputReader outputReader;
+        private final DBCExecutionContext executionContext;
+        private final DBCExecutionResult result;
+
+        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext, DBCExecutionResult result) {
+            this.outputReader = outputReader;
+            this.executionContext = executionContext;
+            this.result = result;
+        }
+    }
 
     private DisposeListener resultTabDisposeListener = new DisposeListener() {
         @Override
@@ -807,14 +822,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
-        //toolTipAction.setEnabled(false);
 
-/*
-        resultsSash.setSashBorders(new boolean[]{true, true});
-        if (presentationSash != null) {
-            presentationSash.setSashBorders(new boolean[]{true, true});
+        SourceViewer viewer = getViewer();
+        if (viewer != null) {
+            StyledText textWidget = viewer.getTextWidget();
+            if (textWidget != null) {
+                textWidget.addModifyListener(this::onTextChange);
+            }
         }
-*/
 
         SQLEditorFeatures.SQL_EDITOR_OPEN.use();
 
@@ -825,6 +840,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         UIExecutionQueue.queueExec(this::onDataSourceChange);
+    }
+
+    private void onTextChange(ModifyEvent e) {
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
+            doScriptAutoSave();
+        }
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
@@ -2337,6 +2358,15 @@ public class SQLEditor extends SQLEditorBase implements
         saveToExternalFile();
     }
 
+    private synchronized void doScriptAutoSave() {
+        if (scriptAutoSavejob == null) {
+            scriptAutoSavejob = new ScriptAutoSaveJob();
+        } else {
+            scriptAutoSavejob.cancel();
+        }
+        scriptAutoSavejob.schedule(1000);
+    }
+
     @Override
     public int promptToSaveOnClose()
     {
@@ -3624,6 +3654,31 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private class ScriptAutoSaveJob extends AbstractJob {
+        ScriptAutoSaveJob() {
+            super("Save '" + getPartName() + "' script");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (EditorUtils.isInAutoSaveJob()) {
+                return Status.CANCEL_STATUS;
+            }
+            monitor.beginTask("Auto-save SQL script", 1);
+            try {
+                UIUtils.asyncExec(() -> {
+                    SQLEditor.this.doTextEditorSave(monitor);
+                });
+            } catch (Throwable e) {
+                log.debug(e);
+            } finally {
+                monitor.done();
+            }
+            return Status.OK_STATUS;
+        }
+    }
+
     private class SaveJob extends AbstractJob {
         private transient Boolean success = null;
         SaveJob() {
@@ -3658,20 +3713,6 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     }
-
-    private static class ServerOutputInfo {
-        private final DBCServerOutputReader outputReader;
-        private final DBCExecutionContext executionContext;
-        private final DBCExecutionResult result;
-
-        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext, DBCExecutionResult result) {
-            this.outputReader = outputReader;
-            this.executionContext = executionContext;
-            this.result = result;
-        }
-    }
-
-    private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
 
     private class ServerOutputReader extends AbstractJob {
 

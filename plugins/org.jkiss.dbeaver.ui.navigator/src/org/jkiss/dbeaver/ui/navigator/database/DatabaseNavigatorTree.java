@@ -547,6 +547,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (curSelection != null && curSelection == newSelection && (renameJob == null || renameJob.selection == null)) {
                 if (renameJob == null) {
                     renameJob = new RenameJob();
+                } else {
+                    renameJob.cancel();
                 }
                 renameJob.selection = curSelection;
                 renameJob.schedule(1000);
