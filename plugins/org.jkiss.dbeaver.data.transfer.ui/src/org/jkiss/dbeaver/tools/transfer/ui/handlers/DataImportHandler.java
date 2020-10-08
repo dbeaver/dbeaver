@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -65,8 +66,12 @@ public class DataImportHandler extends DataTransferHandler {
                 }
             }
 
-            if (objectContainer != null && isObjectContainerSupportsImport(objectContainer)) {
-                return new DatabaseTransferConsumer(objectContainer);
+            if (objectContainer != null) {
+                if (isObjectContainerSupportsImport(objectContainer)) {
+                    return new DatabaseTransferConsumer(objectContainer);
+                } else {
+                    DBWorkbench.getPlatformUI().showError("Wrong container", objectContainer.getName() + " doesn't support direct data import");
+                }
             }
             return null;
         }

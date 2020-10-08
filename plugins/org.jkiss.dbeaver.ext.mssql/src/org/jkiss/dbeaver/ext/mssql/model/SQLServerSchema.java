@@ -262,7 +262,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 

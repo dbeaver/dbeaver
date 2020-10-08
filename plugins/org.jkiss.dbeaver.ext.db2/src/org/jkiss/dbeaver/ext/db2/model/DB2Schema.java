@@ -262,7 +262,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     @NotNull
     @Override
-    public Class<DB2Table> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<DB2Table> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return DB2Table.class;
     }

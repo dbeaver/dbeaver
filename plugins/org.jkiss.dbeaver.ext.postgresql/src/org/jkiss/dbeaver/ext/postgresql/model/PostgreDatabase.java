@@ -601,7 +601,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
