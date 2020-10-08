@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
+    private static final boolean LONGVARCHAR_AS_LOB = false;
+
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
@@ -37,7 +39,7 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case BOOLEAN:
                 return new JDBCBooleanValueHandler();
             case STRING:
-                if (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR) {
+                if (LONGVARCHAR_AS_LOB && (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR)) {
                     // Eval long varchars as LOBs
                     return JDBCContentValueHandler.INSTANCE;
                 } else {
