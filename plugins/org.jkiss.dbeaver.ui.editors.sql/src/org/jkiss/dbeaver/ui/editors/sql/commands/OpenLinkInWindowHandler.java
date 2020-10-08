@@ -34,7 +34,7 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         }
 
         ISelection selection = editor.getSelectionProvider().getSelection();
-        if (selection.isEmpty() || !(selection instanceof TextSelection)) {
+        if (isSelectedTextNullOrEmpty(selection)) {
             DBWorkbench.getPlatformUI().showError(TITLE, "No text was selected");
             return null;
         }
@@ -53,6 +53,20 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
             DBWorkbench.getPlatformUI().showError(TITLE, "Desktop is not supported.");
         }
         return null;
+    }
+    
+    private boolean isSelectedTextNullOrEmpty(ISelection selection) {
+        if (selection == null) {
+            return true;
+        }
+        
+        if (selection.isEmpty() ||  !(selection instanceof TextSelection)) {
+            return true;
+        }
+        
+        TextSelection textSelection = (TextSelection)selection;
+        String selectedText = textSelection.getText();
+        return selectedText.isBlank() || selectedText.isEmpty();
     }
     
     @Override

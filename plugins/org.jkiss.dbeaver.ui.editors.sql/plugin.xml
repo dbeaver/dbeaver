@@ -234,7 +234,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-
+        <command id="org.jkiss.dbeaver.core.edit.search.web" name="%command.org.jkiss.dbeaver.ui.editors.sql.web.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.web.description" categoryId="org.jkiss.dbeaver.core.sql"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
