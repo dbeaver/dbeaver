@@ -31,7 +31,7 @@ public class DBTTaskScheduleConfiguration {
         WEEKLY,
         MONTHLY,
         ONE_TIME,
-        EVENT
+        EVENT // TODO: event-based schedulers not supported yet
     }
 
     public static final int DAYS_LAST = 32;
