@@ -28,8 +28,14 @@ import java.util.List;
  */
 public interface DBTScheduler {
 
+    String FEATURE_START_TIME = "start.time";
+    String FEATURE_FREQUENCY_MINUTE = "frequency.minute";
+    String FEATURE_FREQUENCY_HOUR = "frequency.hour";
+
     @NotNull
     String getSchedulerName();
+
+    String[] getSchedulerSupportedFeatures();
 
     @NotNull
     List<DBTTaskScheduleInfo> getAllScheduledTasks();
@@ -48,7 +54,7 @@ public interface DBTScheduler {
 
     /**
      * Opens scheduler settings.
-     * @return settings informsation to show in DBeaver UI. Null if scheduler uses some proprietary way to show settings.
+     * @return settings information to show in DBeaver UI. Null if scheduler uses some proprietary way to show settings.
      */
     @Nullable
     DBTSchedulerExternalSettings openSchedulerSettings() throws DBException;
