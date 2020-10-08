@@ -138,10 +138,9 @@ public class ResultSetViewer extends Viewer
     public static final String DEFAULT_QUERY_TEXT = "SQL";
     public static final String CUSTOM_FILTER_VALUE_STRING = "..";
 
+
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
-
-    private static final int MIN_SEGMENT_SIZE = 100;
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -3580,8 +3579,8 @@ public class ResultSetViewer extends Viewer
         } else {
             size = getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
-        if (size < MIN_SEGMENT_SIZE) {
-            size = MIN_SEGMENT_SIZE;
+        if (size < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+            size = ResultSetPreferences.MIN_SEGMENT_SIZE;
         }
         return size;
     }
