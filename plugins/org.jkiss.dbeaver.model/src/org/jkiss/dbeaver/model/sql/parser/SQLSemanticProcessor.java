@@ -270,6 +270,17 @@ public class SQLSemanticProcessor {
     }
 
     @Nullable
+    public static Table getTableFromSelect(Select select) {
+        if (select.getSelectBody() instanceof PlainSelect) {
+            FromItem fromItem = ((PlainSelect) select.getSelectBody()).getFromItem();
+            if (fromItem instanceof Table) {
+                return (Table) fromItem;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     private static Table findTableInFrom(FromItem fromItem, String tableName) {
         if (fromItem instanceof Table && tableName.equals(((Table) fromItem).getName())) {
             return (Table) fromItem;
