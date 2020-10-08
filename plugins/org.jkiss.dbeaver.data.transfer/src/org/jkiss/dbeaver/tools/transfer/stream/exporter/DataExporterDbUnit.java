@@ -19,15 +19,14 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
@@ -82,17 +81,11 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
 
     private String getTableName()
     {
-        String result = "UNKNOWN_TABLE_NAME";
-        if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().length == 0) {
-            return result;
-        }
-        DBSAttributeBase metaAttribute = getSite().getAttributes()[0].getMetaAttribute();
-        if (metaAttribute != null && metaAttribute instanceof JDBCColumnMetaData) {
-            JDBCColumnMetaData metaData = (JDBCColumnMetaData) metaAttribute;
-            result = metaData.getEntityName();
-        }
+        DBPNamedObject sourceObject = getSite().getSource();
+        String result = sourceObject.getName();
+        result = CommonUtils.escapeIdentifier(result);
         if (upperCaseTableName) {
-            result = result == null ? null : result.toUpperCase();
+            result = result.toUpperCase();
         }
         return result;
     }
