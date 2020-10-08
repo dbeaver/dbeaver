@@ -118,7 +118,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public void setMaxLength(long maxLength) {
         super.setMaxLength(maxLength);
-        if (getDataKind() == DBPDataKind.STRING && this.precision != null) {
+        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
             this.precision = (int)maxLength;
         }
     }

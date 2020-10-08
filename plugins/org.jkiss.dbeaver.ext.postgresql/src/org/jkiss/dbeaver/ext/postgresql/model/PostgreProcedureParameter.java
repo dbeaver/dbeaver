@@ -148,6 +148,11 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
         return dataType.getMaxLength();
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
     @Property(viewable = true, order = 5)
     public String getDefaultValue() {
         return defaultValue;

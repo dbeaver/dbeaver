@@ -54,4 +54,9 @@ public class SQLServerTypedObject implements DBSTypedObject {
     public long getMaxLength() {
         return maxLength;
     }
+
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
 }

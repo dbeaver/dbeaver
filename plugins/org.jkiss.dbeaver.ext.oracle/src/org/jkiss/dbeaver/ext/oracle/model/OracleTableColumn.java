@@ -91,8 +91,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         String charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
-        this.scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
-        if (this.scale == null) {
+        this.setScale(JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE"));
+        if (this.scale < 0) {
             if (this.type != null && this.type.getScale() != null) {
                 this.scale = this.type.getScale();
             }

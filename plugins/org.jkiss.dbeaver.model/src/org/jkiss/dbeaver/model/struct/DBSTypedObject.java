@@ -24,6 +24,12 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObject extends DBPObject
 {
+    // Numbers must be formatted with leading zeroes
+    int TYPE_MOD_NUMBER_LEADING_ZEROES      = 1 >> 10;
+
+    // String must be formatted with trailing spaces
+    int TYPE_MOD_CHAR_TRAILING_SPACES        = 1 >> 12;
+
     /**
      * Database specific type name
      * @return type name
@@ -65,5 +71,11 @@ public interface DBSTypedObject extends DBPObject
      * @return max length
      */
     long getMaxLength();
+
+    /**
+     * Type-specific modifiers.
+     * See TYPE_MOD_ constants.
+     */
+    long getTypeModifiers();
 
 }
