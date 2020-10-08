@@ -540,6 +540,8 @@ public abstract class JDBCDataSource
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return DBPDataKind.STRING;
             case Types.BIGINT:
             case Types.DECIMAL:
@@ -570,8 +572,6 @@ public abstract class JDBCDataSource
             case Types.BLOB:
             case Types.CLOB:
             case Types.NCLOB:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
                 return DBPDataKind.CONTENT;
             case Types.SQLXML:
                 return DBPDataKind.CONTENT;
