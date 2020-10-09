@@ -12,3 +12,5 @@ Bundle-Vendor: JKISS
 Bundle-Authors: Bert Herngreen
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.informix
+Export-Package: org.jkiss.dbeaver.ext.informix,
+ org.jkiss.dbeaver.ext.informix.model
