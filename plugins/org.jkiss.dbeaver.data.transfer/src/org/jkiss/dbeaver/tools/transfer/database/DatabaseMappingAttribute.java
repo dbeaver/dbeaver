@@ -124,7 +124,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     this.target = DBUtils.findObject(
-                        targetEntity.getAttributes(monitor), DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName));
+                        targetEntity.getAttributes(monitor), DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                     if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
