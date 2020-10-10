@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -179,6 +176,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 throw new DBException("You can't set empty password");
             }
             Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+            connectProps.setProperty(JDBCConstants.PROP_USER, passwordInfo.getUserName());
+            connectProps.setProperty(JDBCConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
