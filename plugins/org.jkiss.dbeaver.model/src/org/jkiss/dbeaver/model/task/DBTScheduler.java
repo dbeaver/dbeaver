@@ -28,6 +28,7 @@ import java.util.List;
  * Scheduler
  */
 public interface DBTScheduler {
+    String FEATURE_START_TIME = "startTime";
     String FEATURE_FREQUENCY_MINUTELY = "frequency.minutely";
     String FEATURE_FREQUENCY_MINUTELY_START_DATETIME = FEATURE_FREQUENCY_MINUTELY + "start_datetime";
     String FEATURE_FREQUENCY_HOURLY = "frequency.hourly";
