@@ -136,7 +136,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
 
     public void testConnection() {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
-        DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource);
+        DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
 
         saveSettings(testDataSource);
         testDataSource.setTemporary(true);

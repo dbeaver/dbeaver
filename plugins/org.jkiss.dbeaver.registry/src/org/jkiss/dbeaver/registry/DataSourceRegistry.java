@@ -238,7 +238,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(DBPDataSourceContainer source) {
-        DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source);
+        DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source, this);
         newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
         return newDS;
     }

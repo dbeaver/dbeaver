@@ -180,8 +180,8 @@ public class DataSourceDescriptor
     }
 
     // Copy constructor
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source) {
-        this(source, source.registry, true);
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry) {
+        this(source, registry, true);
     }
 
     /**
