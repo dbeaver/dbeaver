@@ -28,13 +28,18 @@ import java.util.List;
  * Scheduler
  */
 public interface DBTScheduler {
-    String FEATURE_START_TIME = "start.time";
     String FEATURE_FREQUENCY_MINUTELY = "frequency.minutely";
+    String FEATURE_FREQUENCY_MINUTELY_START_DATETIME = FEATURE_FREQUENCY_MINUTELY + "start_datetime";
     String FEATURE_FREQUENCY_HOURLY = "frequency.hourly";
+    String FEATURE_FREQUENCY_HOURLY_START_DATETIME = FEATURE_FREQUENCY_HOURLY + "start_datetime";
     String FEATURE_FREQUENCY_DAILY = "frequency.daily";
+    String FEATURE_FREQUENCY_DAILY_START_DATE = "frequency.daily.start_date";
     String FEATURE_FREQUENCY_WEEKLY = "frequency.weekly";
+    String FEATURE_FREQUENCY_WEEKLY_START_DATE = FEATURE_FREQUENCY_WEEKLY + ".start_date";
     String FEATURE_FREQUENCY_MONTHLY = "frequency.monthly";
+    String FEATURE_FREQUENCY_MONTHLY_START_DATE = FEATURE_FREQUENCY_MONTHLY + ".start_date";
     String FEATURE_FREQUENCY_ONETIME = "frequency.onetime";
+    String FEATURE_FREQUENCY_ONETIME_START_DATETIME = "frequency.onetime.start_datetime";
     String FEATURE_FREQUENCY_EVENT = "frequency.event";
     String FEATURE_FREQUENCY_WEEKLY_RECURRENCE = FEATURE_FREQUENCY_WEEKLY + ".recurrence";
     String FEATURE_FREQUENCY_MONTHLY_LAST_DAY = FEATURE_FREQUENCY_MONTHLY + ".last_day";
