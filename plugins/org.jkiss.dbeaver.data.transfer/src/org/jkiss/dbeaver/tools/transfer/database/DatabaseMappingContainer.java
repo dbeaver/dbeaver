@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -130,6 +131,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             if (target != null) {
                 targetTableName = target.getName();
             } else if (source != null) {
+                if (source instanceof IAdaptable) {
+                    DBSDataContainer adapterSource = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                    if (adapterSource != null) {
+                        source = adapterSource;
+                    }
+                }
                 if (source instanceof SQLQueryContainer) {
                     final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) source;
                     if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
