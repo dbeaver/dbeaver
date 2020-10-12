@@ -599,7 +599,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void loadDataSources(boolean refresh) {
-        if (!project.isOpen()) {
+        if (!project.isOpen() || project.isInMemory()) {
             return;
         }
         // Clear filters before reload
