@@ -18,6 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 public interface CommandLineParameterHandler {
 
-    void handleParameter(String name, String value);
+    void handleParameter(String name, String[] value);
 
 }
