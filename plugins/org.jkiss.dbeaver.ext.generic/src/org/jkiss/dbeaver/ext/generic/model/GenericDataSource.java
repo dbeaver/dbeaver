@@ -810,6 +810,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return null;
     }
 
+    public boolean supportsCatalogChangeInTransaction() {
+        return true;
+    }
+
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @NotNull
         @Override
