@@ -275,7 +275,7 @@ public class DBeaverCommandLine
                 try {
                     param.handler.handleParameter(
                         param.name,
-                        param.hasArg ? commandLine.getOptionValue(param.name) : null);
+                        param.hasArg ? commandLine.getOptionValues(param.name) : null);
                 } catch (Exception e) {
                     log.error("Error evaluating parameter '" + param.name + "'", e);
                 }
