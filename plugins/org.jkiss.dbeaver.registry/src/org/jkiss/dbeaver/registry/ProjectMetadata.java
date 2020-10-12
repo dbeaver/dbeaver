@@ -380,6 +380,9 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void loadMetadata() {
+        if (isInMemory()) {
+            return;
+        }
         ensureOpen();
         synchronized (metadataSync) {
             if (resourceProperties != null) {
