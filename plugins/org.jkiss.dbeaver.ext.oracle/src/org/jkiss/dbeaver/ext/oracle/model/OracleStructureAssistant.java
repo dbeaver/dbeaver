@@ -245,7 +245,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             return;
         }
         // Always search for synonyms
-        objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
+        //objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'"); //extra SYNONYM type. May be unnecessary
 
         // Seek for objects (join with public synonyms)
         OracleDataSource dataSource = (OracleDataSource) session.getDataSource();
@@ -260,6 +260,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                         OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " O\n" +
                     "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND " +
                     (!caseSensitive ? "UPPER(S.SYNONYM_NAME)" : "S.SYNONYM_NAME") + "  LIKE ?)" +
+                    (schema == null ? "" : "\nWHERE OWNER=?") +
                 "\nORDER BY OBJECT_NAME")) {
             if (!caseSensitive) {
                 objectNameMask = objectNameMask.toUpperCase();
@@ -267,6 +268,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             dbStat.setString(1, objectNameMask);
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
+                dbStat.setString(4, schema.getName());
             }
             dbStat.setString(schema != null ? 3 : 2, objectNameMask);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
