@@ -44,11 +44,13 @@ public class DBWHandlerConfiguration {
     private String password;
     private boolean savePassword = true;
     private final Map<String, Object> properties;
+    private final Map<String, Object> resolvedProperties;
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDataSourceContainer dataSource) {
         this.descriptor = descriptor;
         this.dataSource = dataSource;
         this.properties = new HashMap<>();
+        this.resolvedProperties = new HashMap<>();
     }
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration) {
@@ -59,6 +61,7 @@ public class DBWHandlerConfiguration {
         this.password = configuration.password;
         this.savePassword = configuration.savePassword;
         this.properties = new HashMap<>(configuration.properties);
+        this.resolvedProperties = new HashMap<>();
     }
 
     @NotNull
@@ -137,16 +140,36 @@ public class DBWHandlerConfiguration {
 
     @Nullable
     public Object getProperty(@NotNull String name) {
+        return this.getProperty(name, true);
+    }
+
+    @Nullable
+    public Object getProperty(@NotNull String name, boolean allowResolved) {
+        if (allowResolved) {
+            Object resolved = this.resolvedProperties.get(name);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
         return this.properties.get(name);
     }
 
     @Nullable
     public String getStringProperty(@NotNull String name) {
-        return CommonUtils.toString(this.properties.get(name), null);
+        return this.getStringProperty(name, true);
+    }
+
+    @Nullable
+    public String getStringProperty(@NotNull String name, boolean allowResolved) {
+        return CommonUtils.toString(this.getProperty(name, allowResolved), null);
     }
 
     public int getIntProperty(@NotNull String name) {
-        return CommonUtils.toInt(this.properties.get(name));
+        return this.getIntProperty(name, true);
+    }
+
+    public int getIntProperty(@NotNull String name, boolean allowResolved) {
+        return CommonUtils.toInt(this.getProperty(name, allowResolved));
     }
 
     public boolean getBooleanProperty(@NotNull String name) {
@@ -154,7 +177,11 @@ public class DBWHandlerConfiguration {
     }
 
     public boolean getBooleanProperty(@NotNull String name, boolean defValue) {
-        return CommonUtils.getBoolean(this.properties.get(name), defValue);
+        return this.getBooleanProperty(name, defValue, true);
+    }
+
+    public boolean getBooleanProperty(@NotNull String name, boolean defValue, boolean allowResolved) {
+        return CommonUtils.getBoolean(this.getProperty(name, allowResolved), defValue);
     }
 
     public void setProperty(@NotNull String name, @Nullable Object value) {
@@ -197,7 +224,10 @@ public class DBWHandlerConfiguration {
         for (String prop : this.properties.keySet()) {
             Object value = this.properties.get(prop);
             if (value instanceof String && !CommonUtils.isEmpty((String)value)) {
-                this.properties.put(prop, GeneralUtils.replaceVariables((String)value, variableResolver));
+                String resolvedValue = GeneralUtils.replaceVariables((String)value, variableResolver);
+                if (!resolvedValue.equals(value)) {
+                    this.resolvedProperties.put(prop, resolvedValue);
+                }
             }
         }
     }
