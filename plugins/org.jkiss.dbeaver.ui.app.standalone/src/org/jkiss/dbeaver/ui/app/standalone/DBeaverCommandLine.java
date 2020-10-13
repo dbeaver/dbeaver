@@ -273,9 +273,17 @@ public class DBeaverCommandLine
         for (ParameterDescriptor param : customParameters.values()) {
             if (commandLine.hasOption(param.name)) {
                 try {
-                    param.handler.handleParameter(
-                        param.name,
-                        param.hasArg ? commandLine.getOptionValue(param.name) : null);
+                    if (param.hasArg) {
+                        for (String optValue : commandLine.getOptionValues(param.name)) {
+                            param.handler.handleParameter(
+                                    param.name,
+                                    optValue);
+                        }
+                    } else {
+                        param.handler.handleParameter(
+                                param.name,
+                                null);
+                    }
                 } catch (Exception e) {
                     log.error("Error evaluating parameter '" + param.name + "'", e);
                 }
