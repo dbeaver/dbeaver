@@ -170,15 +170,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
             DBNEvent.NodeChange nodeChange = event.getNodeChange();
             if (event.getAction() == DBNEvent.Action.UPDATE && nodeChange == DBNEvent.NodeChange.REFRESH) {
                 // Do not refresh if refreshed object is not in the list
-                Object itemsInput = itemControl.getItemsViewer().getInput();
-                if (event.getSource() instanceof DBPEvent &&
-                    itemsInput instanceof Collection &&
-                    ((Collection) itemsInput).contains(((DBPEvent) event.getSource()).getObject()))
-                {
-                    loadNewData = true;
-                } else{
-                    loadNewData = false;
-                }
+                loadNewData = isRefreshingEvent(event);
             } else if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
                 loadNewData = false;
             }
@@ -186,6 +178,24 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         if (loadNewData) {
             itemControl.loadData(false);
         }
+    }
+
+    private boolean isRefreshingEvent(DBNEvent event) {
+        if (!(event.getSource() instanceof DBPEvent)) {
+            return false;
+        }
+
+        DBPEvent dbEvent = (DBPEvent)event.getSource();
+        if (dbEvent.getData() == DBPEvent.REORDER) {
+            DBNNode rootNode = getRootNode();
+            // Reorder of child elements
+            return rootNode instanceof DBNDatabaseNode &&
+                dbEvent.getObject() == ((DBNDatabaseNode) rootNode).getValueObject();
+        }
+        Object itemsInput = itemControl.getItemsViewer().getInput();
+
+        return itemsInput instanceof Collection &&
+            ((Collection) itemsInput).contains(dbEvent.getObject());
     }
 
     @Override
