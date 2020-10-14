@@ -1299,11 +1299,13 @@ public final class DBUtils {
             }
         }
 
+        boolean doScrollable = hasLimits;
         String queryText;
         try {
             if (hasLimits && limitTransformer != null) {
                 limitTransformer.setParameters(offset, maxRows);
                 queryText = limitTransformer.transformQueryString(sqlQuery);
+                doScrollable = false;
             } else if (fetchAllTransformer != null) {
                 queryText = fetchAllTransformer.transformQueryString(sqlQuery);
             } else {
@@ -1315,8 +1317,8 @@ public final class DBUtils {
         }
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
-            createStatement(session, queryText, hasLimits) :
-            makeStatement(session, queryText, hasLimits);
+            createStatement(session, queryText, doScrollable) :
+            makeStatement(session, queryText, doScrollable);
         dbStat.setStatementSource(executionSource);
 
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
