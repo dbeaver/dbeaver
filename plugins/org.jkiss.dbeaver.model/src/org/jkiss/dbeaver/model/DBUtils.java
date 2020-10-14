@@ -1289,7 +1289,8 @@ public final class DBUtils {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
-                    if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)) {
+                    if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
+                            (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
                 } else {

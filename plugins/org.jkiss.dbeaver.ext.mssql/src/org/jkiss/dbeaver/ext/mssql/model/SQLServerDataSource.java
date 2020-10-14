@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -41,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -51,7 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable {
+public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable, DBCQueryTransformProviderExt {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
 
@@ -421,6 +419,19 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         } finally {
             hasStatistics = true;
         }
+    }
+
+    @Override
+    public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        try {
+            SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
+            if (table.isClustered(session.getProgressMonitor())) {
+                return true;
+            }
+        } catch (DBException e) {
+            log.debug("Table not found. ", e);
+        }
+        return false;
     }
 
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
