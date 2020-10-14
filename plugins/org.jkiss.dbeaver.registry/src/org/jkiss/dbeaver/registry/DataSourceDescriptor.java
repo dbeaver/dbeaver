@@ -772,7 +772,7 @@ public class DataSourceDescriptor
                     if (profile != null) {
                         for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                             if (handlerCfg.isEnabled()) {
-                                resolvedConnectionInfo.updateHandler(handlerCfg);
+                                resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
                             }
                         }
                     }
