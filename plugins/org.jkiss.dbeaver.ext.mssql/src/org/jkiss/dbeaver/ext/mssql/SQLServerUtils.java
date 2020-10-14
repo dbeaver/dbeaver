@@ -246,9 +246,14 @@ public class SQLServerUtils {
 
     public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException {
         DBCEntityMetaData singleSource = sqlQuery.getSingleSource();
-        return dataSource.getDatabase(singleSource.getCatalogName()).
-                getSchema(singleSource.getSchemaName()).
-                getTable(session.getProgressMonitor(), singleSource.getEntityName());
+        SQLServerDatabase database = dataSource.getDatabase(singleSource.getCatalogName());
+        if (database != null) {
+            SQLServerSchema schema = database.getSchema(singleSource.getSchemaName());
+            if (schema != null) {
+                return schema.getTable(session.getProgressMonitor(), singleSource.getEntityName());
+            }
+        }
+        return null;
     }
 
 }

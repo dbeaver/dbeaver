@@ -425,9 +425,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
         try {
             SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
-            if (table.isClustered(session.getProgressMonitor())) {
-                return true;
-            }
+            return table != null && table.isClustered(session.getProgressMonitor());
         } catch (DBException e) {
             log.debug("Table not found. ", e);
         }
