@@ -166,8 +166,9 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
             log.debug("Attempting to convert unsupported key");
 
+            String id = dataSource != null ? dataSource.getId() : "profile";
             File dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
-            File tmp = new File(dir, dataSource.getId() + ".pem");
+            File tmp = new File(dir, id + ".pem");
 
             Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
