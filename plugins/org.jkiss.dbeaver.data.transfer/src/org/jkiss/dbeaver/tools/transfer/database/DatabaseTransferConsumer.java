@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -212,7 +214,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
             DBSEntityAttribute targetAttr = columnMapping.targetAttr.getTarget();
             if (targetAttr == null) {
-                if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
+                if (isPreview) {
+                    targetAttr = new PreviewColumnInfo(null, columnMapping.sourceAttr, columnMapping.targetIndex);
+                } else if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
                     // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
                     targetAttr = (DBSEntityAttribute) columnMapping.targetAttr.getSource();
                 } else {
@@ -703,6 +707,43 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         @Override
         public void close() {
 
+        }
+    }
+
+    /*
+     * This class is only suitable for data transfer preview.
+     */
+    private static class PreviewColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
+        private final DBSEntity entity;
+        private final DBDAttributeBinding binding;
+
+        public PreviewColumnInfo(DBSEntity entity, DBDAttributeBinding binding, int index) {
+            super(binding.getName(), binding.getTypeName(), -1, index, binding.getMaxLength(), null, null, false, false);
+            this.entity = entity;
+            this.binding = binding;
+        }
+
+        @Nullable
+        @Override
+        public String getDefaultValue() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public DBSEntity getParentObject() {
+            return entity;
+        }
+
+        @NotNull
+        @Override
+        public DBPDataSource getDataSource() {
+            return this.binding.getDataSource();
+        }
+
+        @Override
+        public DBPDataKind getDataKind() {
+            return this.binding.getDataKind();
         }
     }
 }
