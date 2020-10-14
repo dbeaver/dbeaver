@@ -144,8 +144,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         SQLCompletionRequest.QueryType queryType = request.getQueryType();
         Map<String, Object> parameters = new LinkedHashMap<>();
         List<String> prevWords = wordDetector.getPrevWords();
+        String previousWord = "";
+        if (!CommonUtils.isEmpty(prevWords)) {
+            previousWord = prevWords.get(0).toUpperCase(Locale.ENGLISH);
+        }
         if (!CommonUtils.isEmpty(prevWords) &&
-                (SQLConstants.KEYWORD_PROCEDURE.equalsIgnoreCase(prevWords.get(0)) || SQLConstants.KEYWORD_FUNCTION.equalsIgnoreCase(prevWords.get(0)))) {
+                (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
         } else {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, true);
@@ -268,12 +272,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             }
         } else {
             if (!request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
-                if (SQLConstants.KEYWORD_PROCEDURE.equalsIgnoreCase(prevWords.get(0)) || SQLConstants.KEYWORD_FUNCTION.equalsIgnoreCase(prevWords.get(0))) {
+                if (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord)) {
                     makeProceduresProposals(dataSource, wordPart, false);
                 }
-                if (SQLConstants.BLOCK_BEGIN.equalsIgnoreCase(prevWords.get(0))) {
+                //may be useful in the future for procedures autocomplete
+                /*if (SQLConstants.BLOCK_BEGIN.equalsIgnoreCase(prevWords.get(0))) {
                     makeProceduresProposals(dataSource, wordPart, true);
-                }
+                }*/
             }
         }
 
