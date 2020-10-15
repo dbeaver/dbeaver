@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -61,7 +62,7 @@ public class ResultSetModel {
     private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
-    private volatile boolean updateInProgress = false;
+    private volatile DataSourceJob updateInProgress = null;
 
     // Coloring
     private Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new HashMap<>();
@@ -814,11 +815,15 @@ public class ResultSetModel {
     }
 
     public boolean isUpdateInProgress() {
+        return updateInProgress != null;
+    }
+
+    public DataSourceJob getUpdateJob() {
         return updateInProgress;
     }
 
-    void setUpdateInProgress(boolean updateInProgress) {
-        this.updateInProgress = updateInProgress;
+    void setUpdateInProgress(DataSourceJob updateService) {
+        this.updateInProgress = updateService;
     }
 
     @NotNull
