@@ -72,6 +72,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private PostgreTableColumn[] columnRefs;
     protected String description;
     protected String name;
+    private String body;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
@@ -258,15 +259,18 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
                 .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
                 .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-            String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
-            if (triggerSource != null) {
-                triggerSource = SQLFormatUtils.formatSQL(getDataSource(), triggerSource);
-                ddl.append(triggerSource).append(";");
+        if (body == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                if (body != null) {
+                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
             }
-        } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
         }
+
+        ddl.append(body).append(';');
 
         if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
