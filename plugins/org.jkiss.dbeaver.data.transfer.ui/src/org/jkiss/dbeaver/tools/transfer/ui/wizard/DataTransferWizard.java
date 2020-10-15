@@ -200,8 +200,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         super.addPages();
         if ((!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional())) {
             addPage(new DataTransferPagePipes());
-        } else {
-            settings.setNodeUpdateRestricted(true);
         }
         addWizardPages(this);
         addPage(new DataTransferPageFinal());
@@ -570,7 +568,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                         new DialogSettingsMap(getWizardDialogSettings()),
                         new DataTransferState(),
                         true,
-                        CommonUtils.isEmpty(consumers));
+                        CommonUtils.isEmpty(consumers),
+                        false);
                 }
             });
 
