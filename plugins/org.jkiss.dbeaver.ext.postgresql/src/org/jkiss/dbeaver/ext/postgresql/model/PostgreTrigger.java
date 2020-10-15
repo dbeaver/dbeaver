@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -71,6 +72,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private PostgreTableColumn[] columnRefs;
     protected String description;
     protected String name;
+    private String body;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
@@ -257,11 +259,18 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
                 .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
                 .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
 
-        ddl.append("CREATE TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                .append("\n    AFTER INSERT")
-                .append("\n    ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                .append("\n    FOR EACH ROW")
-                .append("\n        EXECUTE PROCEDURE ").append(getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL)).append("();\n");
+        if (body == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                if (body != null) {
+                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+
+        ddl.append(body).append(';');
 
         if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
