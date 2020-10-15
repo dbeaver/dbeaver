@@ -200,6 +200,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         super.addPages();
         if ((!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional())) {
             addPage(new DataTransferPagePipes());
+        } else {
+            settings.setNodeUpdateRestricted(true);
         }
         addWizardPages(this);
         addPage(new DataTransferPageFinal());
