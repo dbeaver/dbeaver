@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -78,7 +79,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private boolean pipeChangeRestricted;
     // Hacky flag too. Skip nodes (producer and consumer) update
     // if it's not required -- e.g., when we're editing an exiting task
-    private boolean nodeUpdateRestricted;
+    private final boolean nodeUpdateRestricted;
 
     public DataTransferSettings(
         @NotNull DBRProgressMonitor monitor,
@@ -87,8 +88,10 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         @NotNull Map<String, Object> configuration,
         @NotNull DataTransferState state,
         boolean selectDefaultNodes,
-        boolean isExport) {
+        boolean isExport,
+        boolean isExitingTask) {
         this.state = state;
+        this.nodeUpdateRestricted = isExitingTask;
         initializePipes(producers, consumers, isExport);
         loadSettings(monitor, configuration);
 
@@ -113,7 +116,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             getTaskOrSavedSettings(task, configuration),
             state,
             !task.getProperties().isEmpty(),
-            isExportTask(task)
+            isExportTask(task),
+            DBTaskUtils.isTaskExists(task)
         );
     }
 
@@ -140,14 +144,6 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
 
     public void setPipeChangeRestricted(boolean pipeChangeRestricted) {
         this.pipeChangeRestricted = pipeChangeRestricted;
-    }
-
-    public boolean isNodeUpdateRestricted() {
-        return nodeUpdateRestricted;
-    }
-
-    public void setNodeUpdateRestricted(boolean nodeUpdateRestricted) {
-        this.nodeUpdateRestricted = nodeUpdateRestricted;
     }
 
     public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
