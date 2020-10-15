@@ -426,7 +426,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         try {
             SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
             return table != null && table.isClustered(session.getProgressMonitor());
-        } catch (DBException e) {
+        } catch (DBException | SQLException e) {
             log.debug("Table not found. ", e);
         }
         return false;
