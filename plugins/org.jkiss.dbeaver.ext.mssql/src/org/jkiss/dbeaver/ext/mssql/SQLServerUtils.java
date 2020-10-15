@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -244,13 +246,31 @@ public class SQLServerUtils {
         return table instanceof SQLServerTableType;
     }
 
-    public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException {
+    public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException, SQLException {
         DBCEntityMetaData singleSource = sqlQuery.getSingleSource();
-        if (singleSource != null && singleSource.getCatalogName() != null) {
-            SQLServerDatabase database = dataSource.getDatabase(singleSource.getCatalogName());
-            if (database != null && singleSource.getSchemaName() != null) {
-                SQLServerSchema schema = database.getSchema(singleSource.getSchemaName());
-                if (schema != null) {
+        String catalogName = null;
+        if (singleSource != null) {
+            catalogName = singleSource.getCatalogName();
+        }
+        Connection original = null;
+        if (session instanceof JDBCConnectionImpl) {
+            original = ((JDBCConnectionImpl) session).getOriginal();
+        }
+        if (catalogName == null && original != null) {
+            catalogName = original.getCatalog();
+        }
+        if (catalogName != null) {
+            SQLServerDatabase database = dataSource.getDatabase(catalogName);
+            String schemaName = null;
+            if (singleSource != null) {
+                schemaName = singleSource.getSchemaName();
+            }
+            if (schemaName == null && original != null) {
+                schemaName = original.getSchema();
+            }
+            if (database != null && schemaName != null) {
+                SQLServerSchema schema = database.getSchema(schemaName);
+                if (schema != null && singleSource != null) {
                     return schema.getTable(session.getProgressMonitor(), singleSource.getEntityName());
                 }
             }
