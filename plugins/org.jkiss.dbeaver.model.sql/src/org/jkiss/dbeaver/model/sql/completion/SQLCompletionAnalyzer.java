@@ -143,12 +143,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
         SQLCompletionRequest.QueryType queryType = request.getQueryType();
         Map<String, Object> parameters = new LinkedHashMap<>();
-        if (!request.isSimpleMode() &&
-                (queryType ==  SQLCompletionRequest.QueryType.EXEC ||
-                        (queryType == SQLCompletionRequest.QueryType.COLUMN && request.getContext().isSearchProcedures()))) {
-            parameters.put(SQLCompletionProposalBase.PARAM_EXEC, true);
-        } else {
+        List<String> prevWords = wordDetector.getPrevWords();
+        String previousWord = "";
+        if (!CommonUtils.isEmpty(prevWords)) {
+            previousWord = prevWords.get(0).toUpperCase(Locale.ENGLISH);
+        }
+        if (!CommonUtils.isEmpty(prevWords) &&
+                (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord))) {
             parameters.put(SQLCompletionProposalBase.PARAM_EXEC, false);
+        } else {
+            parameters.put(SQLCompletionProposalBase.PARAM_EXEC, true);
         }
         if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
@@ -171,7 +175,6 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             case SQLConstants.KEYWORD_AND:
                             case SQLConstants.KEYWORD_OR:
                                 if (!request.isSimpleMode()) {
-                                    List<String> prevWords = wordDetector.getPrevWords();
                                     boolean waitsForValue = rootObject instanceof DBSEntity &&
                                         !CommonUtils.isEmpty(prevWords) &&
                                         !CommonUtils.isEmpty(prevDelimiter) &&
@@ -268,11 +271,14 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 makeProceduresProposals(dataSource, wordPart, true);
             }
         } else {
-            List<String> prevWords = wordDetector.getPrevWords();
-            if (!request.isSimpleMode() && prevWords != null && !prevWords.isEmpty() &&
-                (SQLConstants.KEYWORD_PROCEDURE.equalsIgnoreCase(prevWords.get(0)) || SQLConstants.KEYWORD_FUNCTION.equalsIgnoreCase(prevWords.get(0))))
-            {
-                makeProceduresProposals(dataSource, wordPart, false);
+            if (!request.isSimpleMode() && !CommonUtils.isEmpty(prevWords)) {
+                if (SQLConstants.KEYWORD_PROCEDURE.equals(previousWord) || SQLConstants.KEYWORD_FUNCTION.equals(previousWord)) {
+                    makeProceduresProposals(dataSource, wordPart, false);
+                }
+                //may be useful in the future for procedures autocomplete
+                /*if (SQLConstants.BLOCK_BEGIN.equalsIgnoreCase(prevWords.get(0))) {
+                    makeProceduresProposals(dataSource, wordPart, true);
+                }*/
             }
         }
 
