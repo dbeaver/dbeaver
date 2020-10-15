@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -257,11 +258,15 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
                 .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
                 .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
 
-        ddl.append("CREATE TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                .append("\n    AFTER INSERT")
-                .append("\n    ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                .append("\n    FOR EACH ROW")
-                .append("\n        EXECUTE PROCEDURE ").append(getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL)).append("();\n");
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+            String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+            if (triggerSource != null) {
+                triggerSource = SQLFormatUtils.formatSQL(getDataSource(), triggerSource);
+                ddl.append(triggerSource).append(";");
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, getDataSource());
+        }
 
         if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
