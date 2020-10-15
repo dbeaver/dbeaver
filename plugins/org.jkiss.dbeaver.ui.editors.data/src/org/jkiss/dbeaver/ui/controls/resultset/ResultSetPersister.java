@@ -619,14 +619,14 @@ class ResultSetPersister {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            model.setUpdateInProgress(true);
+            model.setUpdateInProgress(this);
             updateStats = new DBCStatistics();
             insertStats = new DBCStatistics();
             deleteStats = new DBCStatistics();
             try {
                 error = executeStatements(monitor);
             } finally {
-                model.setUpdateInProgress(false);
+                model.setUpdateInProgress(null);
             }
 
             if (!generateScript) {

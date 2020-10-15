@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
@@ -2233,6 +2234,10 @@ public class ResultSetViewer extends Viewer
             if (dpj.isActiveTask()) {
                 dpj.cancel();
             }
+        }
+        DataSourceJob updateJob = model.getUpdateJob();
+        if (updateJob != null) {
+            updateJob.cancel();
         }
     }
 
@@ -4473,7 +4478,7 @@ public class ResultSetViewer extends Viewer
             // Set explicit target container
             dataReceiver.setTargetDataContainer(dataContainer);
 
-            model.setUpdateInProgress(true);
+            model.setUpdateInProgress(this);
             model.setStatistics(null);
             model.releaseAllData();
             if (filtersPanel != null) {
@@ -4492,7 +4497,7 @@ public class ResultSetViewer extends Viewer
                     if (control1.isDisposed()) {
                         return;
                     }
-                    model.setUpdateInProgress(false);
+                    model.setUpdateInProgress(null);
 
                     // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
                     if (saveHistory && error == null) {
