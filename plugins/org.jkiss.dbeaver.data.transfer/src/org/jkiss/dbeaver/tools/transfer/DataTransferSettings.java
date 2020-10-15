@@ -76,6 +76,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     // Hacky flag. Says that pipe selection is frozen.
     // Makes sense for special case like multi-file import
     private boolean pipeChangeRestricted;
+    // Hacky flag too. Skip nodes (producer and consumer) update
+    // if it's not required -- e.g., when we're editing an exiting task
+    private boolean nodeUpdateRestricted;
 
     public DataTransferSettings(
         @NotNull DBRProgressMonitor monitor,
@@ -137,6 +140,14 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
 
     public void setPipeChangeRestricted(boolean pipeChangeRestricted) {
         this.pipeChangeRestricted = pipeChangeRestricted;
+    }
+
+    public boolean isNodeUpdateRestricted() {
+        return nodeUpdateRestricted;
+    }
+
+    public void setNodeUpdateRestricted(boolean nodeUpdateRestricted) {
+        this.nodeUpdateRestricted = nodeUpdateRestricted;
     }
 
     public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
@@ -592,12 +603,15 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         this.consumerOptional = isExport;
         this.producerOptional = !isExport;
 
-        this.producer = null;
-        this.consumer = null;
-        if (!dataPipes.isEmpty()) {
-            DataTransferPipe pipe = dataPipes.get(0);
-            this.producer = pipe.getProducer() == null ? null : registry.getNodeByType(pipe.getProducer().getClass());
-            this.consumer = pipe.getConsumer() == null ? null : registry.getNodeByType(pipe.getConsumer().getClass());
+        // Don't update producer and consumer if it's not required (#9687)
+        if (!nodeUpdateRestricted) {
+            this.producer = null;
+            this.consumer = null;
+            if (!dataPipes.isEmpty()) {
+                DataTransferPipe pipe = dataPipes.get(0);
+                this.producer = pipe.getProducer() == null ? null : registry.getNodeByType(pipe.getProducer().getClass());
+                this.consumer = pipe.getConsumer() == null ? null : registry.getNodeByType(pipe.getConsumer().getClass());
+            }
         }
 
         DataTransferProcessorDescriptor savedProcessor = this.processor;
