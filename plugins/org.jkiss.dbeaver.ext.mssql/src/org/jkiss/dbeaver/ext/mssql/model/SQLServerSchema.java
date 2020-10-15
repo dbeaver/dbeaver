@@ -503,8 +503,12 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             DBSIndexType indexType;
             switch (indexTypeNum) {
                 case 0: indexType = SQLServerConstants.INDEX_TYPE_HEAP; break;
-                case 1: indexType = DBSIndexType.CLUSTERED; break;
-                case 2: indexType = SQLServerConstants.INDEX_TYPE_NON_CLUSTERED; break;
+                case 1:
+                case 5:
+                    indexType = DBSIndexType.CLUSTERED; break;
+                case 2:
+                case 6:
+                    indexType = SQLServerConstants.INDEX_TYPE_NON_CLUSTERED; break;
                 default:
                     indexType = DBSIndexType.OTHER;
                     break;
