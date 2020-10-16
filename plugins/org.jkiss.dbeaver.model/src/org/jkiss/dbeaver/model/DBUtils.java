@@ -2063,6 +2063,9 @@ public final class DBUtils {
             schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
             entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
         }
+        if (CommonUtils.isEmpty(entityName)) {
+            return null;
+        }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
         if (entityObject instanceof DBSAlias && !(entityObject instanceof DBSEntity)) {
             entityObject = ((DBSAlias) entityObject).getTargetObject(monitor);
