@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDDLFormat;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -57,7 +58,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS))) {
+        if (CommonUtils.isEmpty(command.getObject().getMViewText())) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -74,6 +75,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     {
         OracleMaterializedView newView = new OracleMaterializedView((OracleSchema) container, "NewView"); //$NON-NLS-1$
         newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
+        newView.setCurrentDDLFormat(OracleDDLFormat.COMPACT);
         return newView;
     }
 
@@ -105,7 +107,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            String mViewDefinition = view.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS).trim();
+            String mViewDefinition = view.getMViewText().trim();
             if (mViewDefinition.startsWith("CREATE MATERIALIZED VIEW")) {
                 if (mViewDefinition.endsWith(";")) mViewDefinition = mViewDefinition.substring(0, mViewDefinition.length() - 1);
                 decl.append(mViewDefinition);
