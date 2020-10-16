@@ -215,7 +215,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     private void onItemMouseDown(Tree tree, Event event, boolean defaultAction) {
-        if (itemRenderer != null) {
+        if (itemRenderer != null && event.button == 1) {
             TreeItem item = tree.getItem(new Point(event.x, event.y));
             if (item != null) {
                 Object element = item.getData();
