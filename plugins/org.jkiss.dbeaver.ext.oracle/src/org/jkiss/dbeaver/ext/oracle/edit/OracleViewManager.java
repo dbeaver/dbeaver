@@ -111,7 +111,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
 
     private void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, DBECommandComposite<OracleView, PropertyHandler> command) throws DBException {
         final OracleView view = command.getObject();
-        boolean hasComment = command.getProperty("comment") != null;
+        boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
             String viewText = view.getViewText().trim();
             while (viewText.endsWith(";")) {
@@ -119,12 +119,12 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
             }
             actions.add(new SQLDatabasePersistAction("Create view", viewText));
         }
-        String comment = view.getComment(monitor);
-        if (!CommonUtils.isEmpty(comment)) {
+        
+        if (hasComment) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS '" + view.getComment() + "'"));
+                    " IS '" + CommonUtils.notEmpty(view.getComment()) + "'"));
         }
     }
 

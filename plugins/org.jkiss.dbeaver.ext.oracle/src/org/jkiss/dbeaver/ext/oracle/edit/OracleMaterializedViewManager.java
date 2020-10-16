@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -58,7 +57,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getMViewText())) {
+        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, options))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -105,7 +104,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
 
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        boolean hasComment = command.getProperty("comment") != null;
+        boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
             String mViewDefinition = view.getMViewText().trim();
             if (mViewDefinition.startsWith("CREATE MATERIALIZED VIEW")) {
