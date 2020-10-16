@@ -123,6 +123,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+//        if (CommonUtils.isEmpty(serverTZ) && getContainer().getDriver().getId().equals(MySQLConstants.DRIVER_ID_MYSQL8)) {
+//            serverTZ = "UTC";
+//        }
         if (!CommonUtils.isEmpty(serverTZ)) {
             props.put("serverTimezone", serverTZ);
         }
