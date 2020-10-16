@@ -136,4 +136,10 @@ public class DBTaskUtils {
         }
     }
 
+    public static boolean isTaskExists(DBTTask task) {
+        if (task == null) {
+            return false;
+        }
+        return task.getProject().getTaskManager().getTaskById(task.getId()) != null;
+    }
 }
