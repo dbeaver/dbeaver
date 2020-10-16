@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.MissingDataSourceProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -166,7 +167,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
-        this.implType = new ObjectType(DBPDataSourceProvider.class.getName());
+        this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeDescriptor = new DBXTreeItem(this, null, null, id, id, false, true, false, false, true, null, null);
         this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
