@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class MissingDataSourceProvider implements DBPDataSourceProvider {
 
-    private final String providerId;
-
-    public MissingDataSourceProvider(String providerId) {
-        this.providerId = providerId;
+    public MissingDataSourceProvider() {
     }
 
     @Override
@@ -56,7 +53,7 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider {
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        throw new DBException("Data source provider '" + providerId + "' not found");
+        throw new DBException("Data source provider not found");
     }
 
     @Override
@@ -64,8 +61,4 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider {
         return connectionInfo.getUrl();
     }
 
-    @Override
-    public String toString() {
-        return providerId;
-    }
 }
