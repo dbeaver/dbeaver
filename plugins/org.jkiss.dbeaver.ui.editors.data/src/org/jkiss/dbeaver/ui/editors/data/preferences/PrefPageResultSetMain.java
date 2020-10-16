@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -121,9 +122,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetSize.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
-                    String realValue = String.valueOf(ResultSetPreferences.MIN_SEGMENT_SIZE);
-                    if (!realValue.equals(resultSetSize.getText())) {
-                        resultSetSize.setText(realValue);
+                    int newValue = CommonUtils.toInt(resultSetSize.getText());
+                    if (newValue < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+                        resultSetSize.setText(String.valueOf(ResultSetPreferences.MIN_SEGMENT_SIZE));
                     }
                 }
             });
