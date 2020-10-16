@@ -81,6 +81,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     private String viewText;
     // Generated from ALL_VIEWS
     private String viewSourceText;
+    private OracleDDLFormat currentDDLFormat;
 
     public OracleView(OracleSchema schema, String name)
     {
@@ -119,12 +120,11 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (viewText == null) {
-            OracleDDLFormat format = OracleDDLFormat.COMPACT;
-            if (CommonUtils.getOption(options, OPTION_INCLUDE_COMMENTS)) {
-                format = OracleDDLFormat.FULL;
-            }
+             currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
+        }
+        if (viewText == null || currentDDLFormat != OracleDDLFormat.getCurrentFormat(getDataSource())) {
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, format, options);
+                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
             }
