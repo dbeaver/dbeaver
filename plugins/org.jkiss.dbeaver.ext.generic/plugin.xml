@@ -417,16 +417,30 @@
                 <driver
                     id="cache"
                     label="Cache"
-                    icon="icons/cache_icon.png"
-                    iconBig="icons/cache_icon_big.png"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
-                    description="Intersystems Cache"
+                    description="InterSystems Cache"
                     categories="sql,object">
                     <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
                     <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="iris"
+                    label="InterSystems IRIS"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
+                    class="com.intersystems.jdbc.IRISDriver"
+                    sampleURL="jdbc:IRIS://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/iris/"
+                    description="InterSystems IRIS"
+                    categories="sql,object">
+                    <replace provider="generic" driver="cache"/>
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
                 </driver>
                 <driver
                     id="ingres"
