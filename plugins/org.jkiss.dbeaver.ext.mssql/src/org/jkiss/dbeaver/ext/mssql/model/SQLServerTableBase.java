@@ -266,10 +266,15 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (isView()) {
+            return false;
+        }
         Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
-        for (SQLServerTableIndex index : indexes) {
-            if (index.getIndexType() == DBSIndexType.CLUSTERED) {
-                return true;
+        if (!CommonUtils.isEmpty(indexes)) {
+            for (SQLServerTableIndex index : indexes) {
+                if (index.getIndexType() == DBSIndexType.CLUSTERED) {
+                    return true;
+                }
             }
         }
         return false;
