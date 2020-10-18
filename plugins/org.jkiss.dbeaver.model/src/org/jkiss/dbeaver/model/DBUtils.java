@@ -1299,7 +1299,7 @@ public final class DBUtils {
             }
         }
 
-        boolean doScrollable = hasLimits;
+        boolean doScrollable = (offset > 0);
         String queryText;
         try {
             if (hasLimits && limitTransformer != null) {
