@@ -60,11 +60,11 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
         Object from, Map<String, Object> options)
     {
         GenericTableBase tableBase = (GenericTableBase)container;
-        return new GenericUniqueKey(
+        return tableBase.getDataSource().getMetaModel().createConstraintImpl(
             tableBase,
             null,
-            null,
             DBSEntityConstraintType.PRIMARY_KEY,
+            null,
             false);
     }
 

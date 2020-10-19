@@ -83,11 +83,11 @@ class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, Gen
     protected GenericUniqueKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        return new GenericUniqueKey(
+        return owner.getDataSource().getMetaModel().createConstraintImpl(
             parent,
             pkName,
-            null,
             owner.getDataSource().getMetaModel().getUniqueConstraintType(dbResult),
+            dbResult,
             true);
     }
 
