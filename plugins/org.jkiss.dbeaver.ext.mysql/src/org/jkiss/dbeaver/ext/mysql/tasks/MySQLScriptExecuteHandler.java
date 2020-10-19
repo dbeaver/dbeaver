@@ -43,7 +43,9 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
         if (settings.isVerbose()) {
             cmd.add("-v");
         }
-
+        if (settings.isForeignKeyCheckDisabled()) {
+            cmd.add("--init-command=SET SESSION FOREIGN_KEY_CHECKS=0;");
+        }
         cmd.add(arg.getName());
         return cmd;
     }
