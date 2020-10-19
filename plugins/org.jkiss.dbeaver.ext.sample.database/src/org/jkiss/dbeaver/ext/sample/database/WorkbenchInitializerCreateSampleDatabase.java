@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.sample.database;
 
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -61,23 +63,31 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // No active project
             return;
         }
-        if (activeProject.getDataSourceRegistry().getDataSource(SAMPLE_DB1_ID) != null) {
+        DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
+        if (isSampleDatabaseExists(registry)) {
             // Already exist
             return;
         }
-        if (!UIUtils.confirmAction(window.getShell(),
-            "Create Sample Database",
-            "Do you want to create sample database?\nIt can be used as an example to explore basic " + GeneralUtils.getProductName() + " features."))
-        {
+        if (!showCreateSampleDatabasePrompt(window.getShell())) {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
             return;
         }
-
-        createSampleDatabase(activeProject);
+        createSampleDatabase(registry);
     }
 
-    private void createSampleDatabase(DBPProject project) {
-        DBPDataSourceRegistry dsRegistry = project.getDataSourceRegistry();
+    static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
+        return registry.getDataSource(SAMPLE_DB1_ID) != null;
+    }
+
+    static boolean showCreateSampleDatabasePrompt(Shell shell) {
+        return UIUtils.confirmAction(
+                shell,
+                SampleDatabaseMessages.dialog_create_title,
+                NLS.bind(SampleDatabaseMessages.dialog_create_description, GeneralUtils.getProductName())
+        );
+    }
+
+    static void createSampleDatabase(DBPDataSourceRegistry dsRegistry) {
         DataSourceDescriptor dataSource = (DataSourceDescriptor)dsRegistry.getDataSource(SAMPLE_DB1_ID);
         if (dataSource != null) {
             return;
@@ -101,7 +111,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             }
         }
         File dbFile = new File(dbFolder, SAMPLE_DB_FILE_NAME);
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
+        try (InputStream is = WorkbenchInitializerCreateSampleDatabase.class.getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
             try (OutputStream os = new FileOutputStream(dbFile)) {
                 IOUtils.copyStream(is, os);
             }
