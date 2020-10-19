@@ -546,6 +546,7 @@
             <type name="GEOMETRY"/>
             <type name="GEOGRAPHY"/>
             <type name="INTERVAL"/>
+            <type name="UUID"/>
         </provider>
     </extension>
 
