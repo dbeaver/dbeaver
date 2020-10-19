@@ -23,12 +23,15 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         handler.fillProcessParameters(settings, arg, cmd);
 
         String toolUserName = settings.getToolUserName();
+        String toolUserPassword = settings.getToolUserPassword();
+
+        /*
+         * Use credentials derived from connection configuration
+         * if no username was specified by export configuration itself.
+         * This is needed to avoid overriding empty password.
+         */
         if (CommonUtils.isEmpty(toolUserName)) {
             toolUserName = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserName();
-        }
-
-        String toolUserPassword = settings.getToolUserPassword();
-        if (CommonUtils.isEmpty(toolUserPassword)) {
             toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
         }
 
@@ -58,7 +61,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
      */
     private static String createCredentialsFile(String username, String password) throws IOException {
         File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
-        File cnf = new File(dir, "my.cnf"); //$NON-NLS-1$
+        File cnf = new File(dir, ".my.cnf"); //$NON-NLS-1$
 
         try (Writer writer = new FileWriter(cnf)) {
             writer.write("[client]"); //$NON-NLS-1$
