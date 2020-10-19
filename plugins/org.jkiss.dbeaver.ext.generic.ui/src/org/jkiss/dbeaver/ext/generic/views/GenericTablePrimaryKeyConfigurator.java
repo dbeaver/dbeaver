@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericCheckConstraint;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -35,19 +36,25 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
     @Override
     public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey) {
+        boolean isSupportCheckConstraint = primaryKey.getDataSource().getMetaModel().supportsCheckConstraints();
         return new UITask<GenericUniqueKey>() {
             @Override
             protected GenericUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
                     primaryKey,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                    isSupportCheckConstraint ?
+                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY, DBSEntityConstraintType.CHECK} :
+                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
                 if (!editPage.edit()) {
                     return null;
                 }
 
                 primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
+                if (primaryKey instanceof GenericCheckConstraint) {
+                    ((GenericCheckConstraint)primaryKey).setCheckConstraintExpression(editPage.getConstraintExpression());
+                }
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     primaryKey.addColumn(
