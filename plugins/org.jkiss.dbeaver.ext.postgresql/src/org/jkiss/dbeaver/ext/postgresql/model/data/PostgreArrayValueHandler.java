@@ -70,7 +70,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
-                    return convertStringArrayToCollection(session, arrayType, strValue);
+                    return convertStringArrayToCollection(session, arrayType, itemType, strValue);
                 } else if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
@@ -120,8 +120,8 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         }
     }
 
-    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
-        Object parsedArray = PostgreValueParser.convertStringToValue(session, itemType, strValue);
+    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType arrayType, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
+        Object parsedArray = PostgreValueParser.convertStringToValue(session, arrayType, strValue);
         if (parsedArray instanceof Object[]){
             return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
         } else {
