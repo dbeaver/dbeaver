@@ -882,8 +882,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public boolean isVirtual() {
         for (DBNNode node = this; node != null; node = node.getParentNode()) {
-            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getMeta().isVirtual()) {
-                return true;
+            if (node instanceof DBNDatabaseNode) {
+                DBXTreeNode meta = ((DBNDatabaseNode) node).getMeta();
+                if (meta != null && meta.isVirtual()) {
+                    return true;
+                }
             }
         }
         return false;
