@@ -9,8 +9,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import static org.jkiss.dbeaver.ext.sample.database.WorkbenchInitializerCreateSampleDatabase.*;
-
 public class SampleDatabaseHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
@@ -21,12 +19,12 @@ public class SampleDatabaseHandler extends AbstractHandler {
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
         Shell shell = UIUtils.getActiveWorkbenchShell();
-        if (isSampleDatabaseExists(registry)) {
+        if (WorkbenchInitializerCreateSampleDatabase.isSampleDatabaseExists(registry)) {
             UIUtils.showMessageBox(shell, SampleDatabaseMessages.dialog_already_created_title, SampleDatabaseMessages.dialog_already_created_description, SWT.ICON_WARNING);
             return null;
         }
-        if (showCreateSampleDatabasePrompt(shell)) {
-            createSampleDatabase(registry);
+        if (WorkbenchInitializerCreateSampleDatabase.showCreateSampleDatabasePrompt(shell)) {
+            WorkbenchInitializerCreateSampleDatabase.createSampleDatabase(registry);
         }
         return null;
     }
