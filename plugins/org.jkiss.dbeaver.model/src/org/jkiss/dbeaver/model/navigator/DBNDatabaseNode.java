@@ -82,7 +82,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     @Override
     public String getNodeType() {
-        return getObject() == null ? "" : getMeta().getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
+        if (getObject() == null) {
+            return "";
+        }
+        DBXTreeNode meta = getMeta();
+        return meta == null ? "" : meta.getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
     @Override
