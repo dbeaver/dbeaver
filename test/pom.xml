@@ -14,7 +14,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>dbeaver.test.suite</module>
+        <module>org.jkiss.dbeaver.headless</module>
+        <module>org.jkiss.dbeaver.test.platform</module>
+        <module>org.jkiss.dbeaver.ext.postgresql.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
 
     </modules>
