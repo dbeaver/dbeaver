@@ -45,9 +45,11 @@ public class PostgreTableBaseTest {
     @Mock
     PostgreDataSource mockDataSource;
 
-    PostgreDatabase mockDatabase;
-    PostgreRole mockUser;
-    PostgreSchema mockSchema;
+    PostgreDatabase testDatabase;
+    PostgreRole testUSer;
+    PostgreSchema testSchema;
+    private PostgreView testView;
+
     @Mock
     JDBCResultSet mockResults;
     @Mock
@@ -57,20 +59,19 @@ public class PostgreTableBaseTest {
     @Mock
     DBPDataSourceContainer mockDataSourceContainer;
 
-    private PostgreView postgreView;
     private final long sampleId = 111111;
 
     @Before
     public void setUp() throws Exception {
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
-        Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
+        Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(testDatabase);
         Mockito.when(mockDataSource.getServerType()).thenReturn(mockPostgreServer);
         Mockito.when(mockDataSource.getContainer()).thenReturn(mockDataSourceContainer);
 
-        mockUser = new PostgreRole(null, "tester", "test", true);
-        mockDatabase = new PostgreDatabase(new VoidProgressMonitor(), mockDataSource, "testdb", mockUser, null, null, null);
-        mockSchema = new PostgreSchema(mockDatabase, "test", mockUser);
+        testUSer = new PostgreRole(null, "tester", "test", true);
+        testDatabase = new PostgreDatabase(new VoidProgressMonitor(), mockDataSource, "testdb", testUSer, null, null, null);
+        testSchema = new PostgreSchema(testDatabase, "test", testUSer);
 
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
 
@@ -78,21 +79,21 @@ public class PostgreTableBaseTest {
         Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
         Mockito.when(mockResults.getLong("relowner")).thenReturn(sampleId);
 
-        postgreView = new PostgreView(mockSchema);
-        postgreView.setName("sampleView");
+        testView = new PostgreView(testSchema);
+        testView.setName("sampleView");
     }
 
     @Test
     public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
-        Assert.assertEquals("ALTER TABLE sampleSchema.sampleView OWNER TO someOwner",
-                postgreView.generateChangeOwnerQuery("someOwner"));
+        Assert.assertEquals("ALTER TABLE " + testSchema.getName() + "." + testView.getName() + " OWNER TO someOwner",
+                testView.generateChangeOwnerQuery("someOwner"));
     }
 
     @Test
     public void generateTableDDL_whenTableHasOneColumn_returnDDLForASingleColumn() throws Exception {
         PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
         List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
-        PostgreTableRegular tableRegular = new PostgreTableRegular(mockSchema);
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema);
         tableRegular.setPartition(false);
         addMockColumnsToTableCache(tableColumns, tableRegular);
         String expectedDDL =
@@ -111,7 +112,7 @@ public class PostgreTableBaseTest {
 
     @Test
     public void generateExtensionDDL_whenExtensionHasPublicSchemaAndNoVersion_returnDDLForExtensionWithPublicSchemaAndWithoutVersion() throws Exception {
-        PostgreExtension postgreExtension = new PostgreExtension(mockDatabase);
+        PostgreExtension postgreExtension = new PostgreExtension(testDatabase);
         postgreExtension.setName("extName");
         String expectedDDL = "-- Extension: extName\n\n" +
                                 "-- DROP EXTENSION extName;\n\n" +
@@ -132,7 +133,7 @@ public class PostgreTableBaseTest {
 
     private void addMockColumnsToTableCache(List<PostgreTableColumn> tableColumns, PostgreTableRegular table)
             throws DBException {
-        Mockito.when(mockTableCache.getChildren(monitor, mockSchema, table)).thenReturn(tableColumns);
+        Mockito.when(mockTableCache.getChildren(monitor, testSchema, table)).thenReturn(tableColumns);
     }
 
 }
