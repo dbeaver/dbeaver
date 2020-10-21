@@ -47,11 +47,11 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
     {
         final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
         if (connectionInfo != null) {
-            Group securityGroup = UIUtils.createControlGroup(parent, MySQLUIMessages.tools_db_export_wizard_page_settings_security_group, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Group securityGroup = UIUtils.createControlGroup(parent, MySQLUIMessages.tools_db_export_wizard_page_settings_security_group, 3, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
             infoLabel.setText(NLS.bind(MySQLUIMessages.tools_db_export_wizard_page_settings_security_label_info, connectionInfo.getUserName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 3;
             infoLabel.setLayoutData(gd);
             Button authButton = new Button(securityGroup, SWT.PUSH);
             authButton.setText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_button_auth);
@@ -76,6 +76,15 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
                 public void widgetSelected(SelectionEvent e) {
                     wizard.getSettings().setToolUserName(null);
                     wizard.getSettings().setToolUserPassword(null);
+                }
+            });
+
+            Button checkbox = UIUtils.createCheckbox(securityGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials, wizard.getSettings().isToolOverrideCredentials());
+            checkbox.setToolTipText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials_tip);
+            checkbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.getSettings().setToolOverrideCredentials(checkbox.getSelection());
                 }
             });
         }

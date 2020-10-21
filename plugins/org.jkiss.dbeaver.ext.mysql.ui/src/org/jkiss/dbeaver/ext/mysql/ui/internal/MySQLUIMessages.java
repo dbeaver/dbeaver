@@ -143,5 +143,7 @@ public class MySQLUIMessages extends NLS {
 	public static String tools_db_export_wizard_page_settings_security_label_info;
 	public static String tools_db_export_wizard_page_settings_security_button_auth;
 	public static String tools_db_export_wizard_page_settings_security_button_reset;
+	public static String tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials;
+	public static String tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials_tip;
 	public static String tools_db_export_wizard_page_settings_auth_title;
 }
