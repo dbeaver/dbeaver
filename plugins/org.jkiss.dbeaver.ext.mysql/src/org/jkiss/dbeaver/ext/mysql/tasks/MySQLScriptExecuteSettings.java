@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.utils.CommonUtils;
 
-public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<MySQLCatalog> {
+public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<MySQLCatalog> implements MySQLNativeCredentialsSettings {
     private static final String PREFERENCE_PREFIX = "MySQL.script.";
     private static final String PREFERENCE_IS_IMPORT = PREFERENCE_PREFIX + ".import";
     private static final String PREFERENCE_LOG_LEVEL = PREFERENCE_PREFIX + "logLevel";
@@ -45,6 +45,8 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
     private boolean isImport;
 
     private boolean isForeignKeyCheckDisabled;
+
+    private boolean overrideCredentials;
 
     public LogLevel getLogLevel() {
         return logLevel;
@@ -83,6 +85,16 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
     }
 
     @Override
+    public boolean isOverrideCredentials() {
+        return overrideCredentials;
+    }
+
+    @Override
+    public void setOverrideCredentials(boolean value) {
+        this.overrideCredentials = value;
+    }
+
+    @Override
     public MySQLServerHome findNativeClientHome(String clientHomeId) {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
@@ -95,6 +107,7 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
         logLevel = CommonUtils.valueOf(LogLevel.class, preferenceStore.getString(PREFERENCE_LOG_LEVEL), LogLevel.Normal);
         noBeep = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_NO_BEEP));
         isForeignKeyCheckDisabled = CommonUtils.toBoolean(preferenceStore.getString(PREFERENCE_DISABLE_FOREIGN_KEY));
+        overrideCredentials = CommonUtils.toBoolean(preferenceStore.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME));
     }
 
     @Override
@@ -105,5 +118,6 @@ public class MySQLScriptExecuteSettings extends AbstractScriptExecuteSettings<My
         preferenceStore.setValue(PREFERENCE_LOG_LEVEL, logLevel.name());
         preferenceStore.setValue(PREFERENCE_NO_BEEP, noBeep);
         preferenceStore.setValue(PREFERENCE_DISABLE_FOREIGN_KEY, isForeignKeyCheckDisabled);
+        preferenceStore.setValue(MySQLNativeCredentialsSettings.PREFERENCE_NAME, overrideCredentials);
     }
 }

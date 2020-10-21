@@ -51,7 +51,6 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
     private String toolUserName;
     private String toolUserPassword;
-    private boolean toolOverrideCredentials;
     private String extraCommandArgs;
 
     private DBPDataSourceContainer dataSourceContainer;
@@ -120,14 +119,6 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
     public void setToolUserPassword(String toolUserPassword) {
         this.toolUserPassword = toolUserPassword;
-    }
-
-    public boolean isToolOverrideCredentials() {
-        return toolOverrideCredentials;
-    }
-
-    public void setToolOverrideCredentials(boolean toolOverrideCredentials) {
-        this.toolOverrideCredentials = toolOverrideCredentials;
     }
 
     public String getExtraCommandArgs() {
@@ -207,7 +198,6 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         clientHomeName = preferenceStore.getString("clientHomeName");
         toolUserName  = preferenceStore.getString("tool.user");
         toolUserPassword = preferenceStore.getString("tool.password");
-        toolOverrideCredentials = preferenceStore.getBoolean("tool.overrideCredentials");
 
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
@@ -239,8 +229,6 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         if (clientHomeName != null) {
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
-
-        preferenceStore.setValue("tool.overrideCredentials", toolOverrideCredentials);
 
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
