@@ -64,6 +64,9 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
 								<!-- DBCP -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
+
+								<!-- Tests -->
+								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
