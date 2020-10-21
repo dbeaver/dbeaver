@@ -1,8 +1,12 @@
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
@@ -17,6 +21,32 @@ import java.util.List;
 
 public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
+
+    private File config;
+
+    @Override
+    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
+        try {
+            return super.doExecute(monitor, task, settings, log);
+        } finally {
+            if (config != null && !config.delete()) {
+                log.debug("Failed to delete configuration file");
+            }
+        }
+    }
+
+    @Override
+    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG process_arg, ProcessBuilder process) {
+        if (!settings.isToolOverrideCredentials()) {
+            String toolUserPassword = settings.getToolUserPassword();
+
+            if (CommonUtils.isEmpty(settings.getToolUserName())) {
+                toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
+            }
+
+            process.environment().put("MYSQL_PWD", toolUserPassword);
+        }
+    }
 
     protected List<String> getMySQLToolCommandLine(AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> handler, SETTINGS settings, PROCESS_ARG arg) throws IOException {
         List<String> cmd = new ArrayList<>();
@@ -35,13 +65,12 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
         }
 
-        /*
-         * Let's assume that if username is not set, then
-         * native tool must search for credentials on its own.
-         */
-        if (!CommonUtils.isEmpty(toolUserName)) {
-            String credentialsFile = createCredentialsFile(toolUserName, toolUserPassword);
-            cmd.add(1, "--defaults-file=" + credentialsFile);
+        if (settings.isToolOverrideCredentials()) {
+            config = createCredentialsFile(toolUserName, toolUserPassword);
+            cmd.add(1, "--defaults-file=" + config.getAbsolutePath());
+        } else {
+            cmd.add("-u");
+            cmd.add(toolUserName);
         }
 
         DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
@@ -53,22 +82,17 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
-    /*
-     * Native tools like mysqldump doesn't read password set in
-     * MYSQL_PWD (also it's deprecated since MySQL 8.0) and prefer
-     * to grab credentials from my.cnf (that is located somewhere in the system),
-     * so we'll generate our own my.cnf with required credentials (#5350)
-     */
-    private static String createCredentialsFile(String username, String password) throws IOException {
+    private static File createCredentialsFile(String username, String password) throws IOException {
         File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
         File cnf = new File(dir, ".my.cnf"); //$NON-NLS-1$
+        cnf.deleteOnExit();
 
         try (Writer writer = new FileWriter(cnf)) {
             writer.write("[client]"); //$NON-NLS-1$
-            writer.write("\nuser=" + (CommonUtils.isEmpty(username) ? "" : username)); //$NON-NLS-1$
-            writer.write("\npassword=" + (CommonUtils.isEmpty(password) ? "" : password)); //$NON-NLS-1$
+            writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
+            writer.write("\npassword=" + CommonUtils.notEmpty(password)); //$NON-NLS-1$
         }
 
-        return cnf.getPath();
+        return cnf;
     }
 }
