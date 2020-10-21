@@ -1,6 +1,5 @@
 package org.jkiss.utils;
 
-import org.jkiss.utils.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
