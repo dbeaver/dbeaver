@@ -123,7 +123,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 @Override
                 public void focusLost(FocusEvent e) {
                     int newValue = CommonUtils.toInt(resultSetSize.getText());
-                    if (newValue < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+                    if (newValue > 0 && newValue < ResultSetPreferences.MIN_SEGMENT_SIZE) {
                         resultSetSize.setText(String.valueOf(ResultSetPreferences.MIN_SEGMENT_SIZE));
                     }
                 }
