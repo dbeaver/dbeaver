@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.ext.mysql.tasks.MySQLNativeCredentialsSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
@@ -79,14 +80,18 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
                 }
             });
 
-            Button checkbox = UIUtils.createCheckbox(securityGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials, wizard.getSettings().isToolOverrideCredentials());
-            checkbox.setToolTipText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials_tip);
-            checkbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    wizard.getSettings().setToolOverrideCredentials(checkbox.getSelection());
-                }
-            });
+            if (wizard.getSettings() instanceof MySQLNativeCredentialsSettings) {
+                MySQLNativeCredentialsSettings settings = (MySQLNativeCredentialsSettings) wizard.getSettings();
+
+                Button overrideCredentials = UIUtils.createCheckbox(securityGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials, settings.isOverrideCredentials());
+                overrideCredentials.setToolTipText(MySQLUIMessages.tools_db_export_wizard_page_settings_security_checkbox_override_host_credentials_tip);
+                overrideCredentials.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setOverrideCredentials(overrideCredentials.getSelection());
+                    }
+                });
+            }
         }
     }
 

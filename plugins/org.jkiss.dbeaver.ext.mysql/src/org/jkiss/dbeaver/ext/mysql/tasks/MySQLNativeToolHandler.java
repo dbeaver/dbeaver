@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.mysql.tasks;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -36,21 +37,22 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     }
 
     @Override
-    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG process_arg, ProcessBuilder process) {
-        if (!settings.isToolOverrideCredentials()) {
+    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+        if (!isOverrideCredentials(settings)) {
             String toolUserPassword = settings.getToolUserPassword();
 
             if (CommonUtils.isEmpty(settings.getToolUserName())) {
                 toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
             }
 
-            process.environment().put("MYSQL_PWD", toolUserPassword);
+            process.environment().put(MySQLConstants.ENV_VAR_MYSQL_PWD, toolUserPassword);
         }
     }
 
-    protected List<String> getMySQLToolCommandLine(AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> handler, SETTINGS settings, PROCESS_ARG arg) throws IOException {
+    @Override
+    protected List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg) throws IOException {
         List<String> cmd = new ArrayList<>();
-        handler.fillProcessParameters(settings, arg, cmd);
+        fillProcessParameters(settings, arg, cmd);
 
         String toolUserName = settings.getToolUserName();
         String toolUserPassword = settings.getToolUserPassword();
@@ -65,7 +67,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
         }
 
-        if (settings.isToolOverrideCredentials()) {
+        if (isOverrideCredentials(settings)) {
             config = createCredentialsFile(toolUserName, toolUserPassword);
             cmd.add(1, "--defaults-file=" + config.getAbsolutePath());
         } else {
@@ -94,5 +96,12 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         }
 
         return cnf;
+    }
+
+    private boolean isOverrideCredentials(SETTINGS settings) {
+        if (settings instanceof MySQLNativeCredentialsSettings) {
+            return ((MySQLNativeCredentialsSettings) settings).isOverrideCredentials();
+        }
+        return false;
     }
 }
