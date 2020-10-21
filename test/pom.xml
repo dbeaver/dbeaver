@@ -38,6 +38,7 @@
                     <application>org.jkiss.dbeaver.headless.application</application>
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
+<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=host.docker.internal:5006,suspend=y</argLine>-->
                 </configuration>
             </plugin>
         </plugins>

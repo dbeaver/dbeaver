@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,7 +32,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,9 +44,9 @@ public class PostgreTableBaseTest {
     DBRProgressMonitor monitor;
     @Mock
     PostgreDataSource mockDataSource;
-    @Mock
+
     PostgreDatabase mockDatabase;
-    @Mock
+    PostgreRole mockUser;
     PostgreSchema mockSchema;
     @Mock
     JDBCResultSet mockResults;
@@ -61,22 +61,18 @@ public class PostgreTableBaseTest {
     private final long sampleId = 111111;
 
     @Before
-    public void setUp() throws SQLException {
+    public void setUp() throws Exception {
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
         Mockito.when(mockDataSource.getServerType()).thenReturn(mockPostgreServer);
         Mockito.when(mockDataSource.getContainer()).thenReturn(mockDataSourceContainer);
 
+        mockUser = new PostgreRole(null, "tester", "test", true);
+        mockDatabase = new PostgreDatabase(new VoidProgressMonitor(), mockDataSource, "testdb", mockUser, null, null, null);
+        mockSchema = new PostgreSchema(mockDatabase, "test", mockUser);
+
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
-
-        Mockito.when(mockDatabase.getName()).thenReturn("sampleDatabase");
-
-        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
-        Mockito.when(mockSchema.getSchema()).thenReturn(mockSchema);
-        Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
-        Mockito.when(mockSchema.getName()).thenReturn("sampleSchema");
-        Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
 
         Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
         Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
