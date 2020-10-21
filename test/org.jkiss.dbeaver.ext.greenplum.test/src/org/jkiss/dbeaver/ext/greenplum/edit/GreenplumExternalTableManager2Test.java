@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GreenplumExternalTableManagerTest {
+public class GreenplumExternalTableManager2Test {
     @Mock
     private GreenplumSchema mockSchema;
 

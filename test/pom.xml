@@ -16,9 +16,31 @@
     <modules>
         <module>org.jkiss.dbeaver.headless</module>
         <module>org.jkiss.dbeaver.test.platform</module>
+        <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
         <module>org.jkiss.dbeaver.ext.test</module>
 
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-surefire-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <useUIHarness>false</useUIHarness>
+                    <useUIThread>false</useUIThread>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <application>org.jkiss.dbeaver.headless.application</application>
+                    <product>org.jkiss.dbeaver.headless.product</product>
+                    <testRuntime>default</testRuntime>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>
