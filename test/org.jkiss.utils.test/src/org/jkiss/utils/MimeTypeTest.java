@@ -1,6 +1,5 @@
 package org.jkiss.utils;
 
-import org.jkiss.utils.MimeType;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
