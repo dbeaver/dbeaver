@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
@@ -63,7 +64,7 @@ import java.util.Properties;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication extends BaseApplicationImpl {
+public class DBeaverApplication extends BaseApplicationImpl implements DBPApplicationController {
 
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
@@ -592,6 +593,11 @@ public class DBeaverApplication extends BaseApplicationImpl {
     @Override
     public boolean isHeadlessMode() {
         return headlessMode;
+    }
+
+    @Override
+    public void setHeadlessMode(boolean headlessMode) {
+        this.headlessMode = headlessMode;
     }
 
     @NotNull
