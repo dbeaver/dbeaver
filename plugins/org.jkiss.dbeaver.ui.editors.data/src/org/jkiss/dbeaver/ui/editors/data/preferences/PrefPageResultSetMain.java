@@ -193,7 +193,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
             rereadOnScrollingCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING));
             int rsSegmentSize = store.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
-            if (rsSegmentSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+            if (rsSegmentSize > 0 && rsSegmentSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
                 rsSegmentSize = ResultSetPreferences.MIN_SEGMENT_SIZE;
             }
             resultSetSize.setText(String.valueOf(rsSegmentSize));
