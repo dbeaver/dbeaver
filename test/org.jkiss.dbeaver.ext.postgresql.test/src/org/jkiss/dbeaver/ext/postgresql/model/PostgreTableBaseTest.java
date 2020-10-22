@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -91,20 +90,19 @@ public class PostgreTableBaseTest {
 
     @Test
     public void generateTableDDL_whenTableHasOneColumn_returnDDLForASingleColumn() throws Exception {
-        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
-        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
         PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema);
         tableRegular.setPartition(false);
-        addMockColumnsToTableCache(tableColumns, tableRegular);
+        addColumn(tableRegular, "column1", "int4", 1);
+        addColumn(tableRegular, "column2", "varchar", 1);
+
         String expectedDDL =
                 "CREATE TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n";
         //DBStructUtils.generateTableDDL asks for a lot of objects that is not easy to mock
         //Assert.assertEquals(expectedDDL, tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap()));
 
         try {
-            if (tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap()) == null) {
-                log.warn("Table DDL is empty");
-            }
+            String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
+            Assert.assertNotNull(tableDDL);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -123,17 +121,14 @@ public class PostgreTableBaseTest {
         Assert.assertEquals(expectedDDL, actualDDL);
     }
 
-    private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
-        PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
-        Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);
-        Mockito.when(mockPostgreTableColumn.getTypeName()).thenReturn(columnType);
-        Mockito.when(mockPostgreTableColumn.getOrdinalPosition()).thenReturn(ordinalPosition);
-        return mockPostgreTableColumn;
-    }
-
-    private void addMockColumnsToTableCache(List<PostgreTableColumn> tableColumns, PostgreTableRegular table)
-            throws DBException {
-        Mockito.when(mockTableCache.getChildren(monitor, testSchema, table)).thenReturn(tableColumns);
+    private PostgreTableColumn addColumn(PostgreTableBase table, String columnName, String columnType, int ordinalPosition) {
+        PostgreTableColumn column = new PostgreTableColumn(table);
+        column.setName(columnName);
+        column.setTypeName(columnType);
+        column.setOrdinalPosition(ordinalPosition);
+        List<PostgreTableColumn> cachedAttributes = (List<PostgreTableColumn>) table.getCachedAttributes();
+        cachedAttributes.add(column);
+        return column;
     }
 
 }
