@@ -28,13 +28,16 @@ import java.util.List;
  * Scheduler
  */
 public interface DBTScheduler {
+    enum RecurrenceType {
+        Interval,
+        Cron
+    }
+
     String FEATURE_FREQUENCY_MINUTELY = "frequency.minutely";
     String FEATURE_FREQUENCY_MINUTELY_START_DATETIME = FEATURE_FREQUENCY_MINUTELY + ".startDatetime";
-    String FEATURE_FREQUENCY_MINUTELY_STRICT_LIST = FEATURE_FREQUENCY_MINUTELY + ".strictList";
     String FEATURE_FREQUENCY_HOURLY = "frequency.hourly";
     String FEATURE_FREQUENCY_HOURLY_EXECUTION_MINUTE = FEATURE_FREQUENCY_HOURLY + ".executionMinute";
     String FEATURE_FREQUENCY_HOURLY_START_DATETIME = FEATURE_FREQUENCY_HOURLY + ".startDatetime";
-    String FEATURE_FREQUENCY_HOURLY_STRICT_LIST = FEATURE_FREQUENCY_HOURLY + ".strictList";
     String FEATURE_FREQUENCY_DAILY = "frequency.daily";
     String FEATURE_FREQUENCY_DAILY_START_DATE = FEATURE_FREQUENCY_DAILY + ".startDate";
     String FEATURE_FREQUENCY_DAILY_RECURRENCE = FEATURE_FREQUENCY_DAILY + ".recurrence";
@@ -56,7 +59,7 @@ public interface DBTScheduler {
 
     boolean supportsFeature(String feature);
 
-    List<Integer> getSupportedRecurrences(DBTTaskScheduleConfiguration.Frequency frequency);
+    RecurrenceType getRecurrenceType();
 
     @NotNull
     List<DBTTaskScheduleInfo> getAllScheduledTasks();
