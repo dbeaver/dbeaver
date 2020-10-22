@@ -174,9 +174,17 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
         if (query == null) {
             currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
         }
-        if (query == null || (currentDDLFormat != OracleDDLFormat.getCurrentFormat(getDataSource()) && isPersisted())) {
+        OracleDDLFormat newFormat = OracleDDLFormat.FULL;
+        if (options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT)) {
+            newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
+        }
+        if (query == null || currentDDLFormat != newFormat) {
             try {
-                query = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
+                if (query == null) {
+                    query = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
+                } else {
+                    query = OracleUtils.getDDL(monitor, getTableTypeName(), this, newFormat, options);
+                }
             } catch (DBException e) {
                 String message = e.getMessage();
                 if (message != null) {

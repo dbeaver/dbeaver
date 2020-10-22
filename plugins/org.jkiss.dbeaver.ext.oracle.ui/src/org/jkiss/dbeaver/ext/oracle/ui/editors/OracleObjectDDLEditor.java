@@ -20,11 +20,16 @@ package org.jkiss.dbeaver.ext.oracle.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * OracleObjectDDLEditor
  */
-public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> {
+public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> implements OracleDDLOptions{
+    private Map<String, Object> oracleDDLOptions = new HashMap<>();
 
     public OracleObjectDDLEditor()
     {
@@ -38,4 +43,16 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> {
         OracleEditorUtils.addDDLControl(contributionManager, sourceObject, this);
     }
 
+    public void putDDLOptions(String name, Object value) {
+        oracleDDLOptions.put(name, value);
+    }
+
+    @Override
+    protected Map<String, Object> getSourceOptions() {
+        Map<String, Object> options = super.getSourceOptions();
+        if (!CommonUtils.isEmpty(oracleDDLOptions)) {
+            options.putAll(oracleDDLOptions);
+        }
+        return options;
+    }
 }
