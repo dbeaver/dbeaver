@@ -60,4 +60,5 @@ public class DBTTaskScheduleConfiguration {
     // Specifies the duration to run the task (in seconds)
     public int maxDuration;
 
+    public int executionMinute;
 }
