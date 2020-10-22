@@ -55,8 +55,10 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         final PostgreDataType rawType = null;//dataType.getElementType(monitor);
         if (rawType != null) {
             sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else {
+        } else if (dataType != null) {
             sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        } else {
+            sql.append(column.getFullTypeName());
         }
         getColumnDataTypeModifiers(monitor, column, sql);
     };
@@ -64,9 +66,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, DBSTypedObject column, StringBuilder sql) {
         if (column instanceof PostgreTableColumn) {
             PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
-            final PostgreDataType dataType = postgreColumn.getDataType();
             final PostgreDataType rawType = null;//dataType.getElementType(monitor);
-            switch (dataType.getDataKind()) {
+            switch (postgreColumn.getDataKind()) {
                 case STRING:
                     final long length = postgreColumn.getMaxLength();
                     if (length > 0 && length < Integer.MAX_VALUE) {
@@ -74,7 +75,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     break;
                 case NUMERIC:
-                    if (dataType.getTypeID() == Types.NUMERIC) {
+                    if (column.getTypeID() == Types.NUMERIC) {
                         final int precision = CommonUtils.toInt(postgreColumn.getPrecision());
                         final int scale = CommonUtils.toInt(postgreColumn.getScale());
                         if (scale > 0 || precision > 0) {
@@ -94,7 +95,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     break;
                 case DATETIME:
                     final int scale = CommonUtils.toInt(postgreColumn.getScale());
-                    String typeName = dataType.getName();
+                    String typeName = column.getTypeName();
                     if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
                         if (scale < 6) {
                             sql.append('(').append(scale).append(')');

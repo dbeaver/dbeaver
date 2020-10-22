@@ -51,7 +51,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
-    @NotNull
+    @Nullable
     private PostgreDataType dataType;
     private String comment;
     private long charLength;
