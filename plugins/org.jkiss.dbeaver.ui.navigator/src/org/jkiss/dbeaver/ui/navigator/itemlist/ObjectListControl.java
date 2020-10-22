@@ -1069,7 +1069,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public String getToolTipText(Object element) {
-            String text = getText(element, false);
+            String text = getText(element, true);
             if (CommonUtils.isEmpty(text)) {
                 return null;
             }
