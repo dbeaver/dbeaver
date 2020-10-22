@@ -122,9 +122,18 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
         if (viewText == null) {
              currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
         }
-        if (viewText == null || currentDDLFormat != OracleDDLFormat.getCurrentFormat(getDataSource())) {
+        OracleDDLFormat newFormat = OracleDDLFormat.FULL;
+        if (options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT)) {
+            newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
+        }
+
+        if (viewText == null || currentDDLFormat != newFormat) {
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
+                if (viewText == null) {
+                    viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
+                } else {
+                    viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, newFormat, options);
+                }
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
             }

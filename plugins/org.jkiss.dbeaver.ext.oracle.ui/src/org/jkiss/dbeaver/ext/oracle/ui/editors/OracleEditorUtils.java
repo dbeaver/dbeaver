@@ -51,6 +51,9 @@ public class OracleEditorUtils {
                     public void widgetSelected(SelectionEvent e) {
                         for (OracleDDLFormat format : OracleDDLFormat.values()) {
                             if (format.ordinal() == ddlFormatCombo.getSelectionIndex()) {
+                                if (source instanceof OracleDDLOptions) {
+                                    ((OracleDDLOptions)source).putDDLOptions(OracleConstants.PREF_KEY_DDL_FORMAT, format);
+                                }
                                 sourceObject.getDataSource().getContainer().getPreferenceStore().setValue(
                                         OracleConstants.PREF_KEY_DDL_FORMAT, format.name());
                                 source.refreshPart(this, true);
