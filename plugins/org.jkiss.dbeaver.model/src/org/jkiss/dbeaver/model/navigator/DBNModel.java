@@ -679,6 +679,10 @@ public class DBNModel implements IResourceChangeListener {
         return true;
     }
 
+    public static void disposeNode(DBNNode node, boolean reflect) {
+        node.dispose(reflect);
+    }
+
     private class EventProcessingJob extends Job {
 
         EventProcessingJob() {
