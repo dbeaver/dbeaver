@@ -61,7 +61,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
                 toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
             }
 
-            process.environment().put(MySQLConstants.ENV_VAR_MYSQL_PWD, toolUserPassword);
+            process.environment().put(MySQLConstants.ENV_VAR_MYSQL_PWD, CommonUtils.notEmpty(toolUserPassword));
         }
     }
 
