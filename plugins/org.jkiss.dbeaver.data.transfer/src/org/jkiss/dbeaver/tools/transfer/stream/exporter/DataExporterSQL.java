@@ -71,6 +71,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final String KEYWORD_VALUES = "VALUES";
     private final String KEYWORD_INTO = "INTO";
     private final String KEYWORD_INSERT_ALL = "INSERT ALL";
+    private final String KEYWORD_SELECT_FROM_DUAL = "SELECT 1 FROM DUAL";
     private final static String KEYWORD_UPDATE_OR = "UPDATE OR";
     private final static String KEYWORD_UPSERT = "UPSERT INTO";
     private final static String KEYWORD_DUPLICATE_KEY = "ON DUPLICATE KEY UPDATE";
@@ -164,10 +165,6 @@ public class DataExporterSQL extends StreamExporterAbstract {
         tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
 
         rowCount = 0;
-
-        if (getMultiValueInsertMode() == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
-            getWriter().append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
-        }
     }
 
     @Override
@@ -192,6 +189,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
                         addOnConflictExpression(out);
                     }
                     sqlBuffer.append(";");
+                } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL && rowCount % rowsInStatement == 0) {
+                    sqlBuffer.append("\n").append(identifierCase.transform(KEYWORD_SELECT_FROM_DUAL)).append(";");
                 }
                 if (lineBeforeRows) {
                     sqlBuffer.append(rowDelimiter);
@@ -203,6 +202,9 @@ public class DataExporterSQL extends StreamExporterAbstract {
             if (insertKeyword == InsertKeyword.UPSERT) {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT));
             } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+                if (rowCount % rowsInStatement == 0) {
+                    sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
+                }
                 sqlBuffer.append("\t").append(identifierCase.transform(KEYWORD_INTO));
             } else {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
@@ -343,7 +345,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 break;
             case INSERT_ALL:
                 if (rowCount > 0) {
-                    out.write("\nSELECT 1 FROM DUAL;");
+                    out.write("\n" + identifierCase.transform(KEYWORD_SELECT_FROM_DUAL) + ";");
                 }
                 break;
             default:
