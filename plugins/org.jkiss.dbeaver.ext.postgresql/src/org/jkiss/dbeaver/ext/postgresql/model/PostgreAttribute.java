@@ -152,7 +152,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             } else if (typeId == PostgreOid.INT8) {
                 typeId = PostgreOid.BIGSERIAL;
             }
-            defValue = null;
         }
         setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
