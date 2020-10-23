@@ -69,6 +69,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
 
     private final String KEYWORD_INSERT_INTO = "INSERT INTO";
     private final String KEYWORD_VALUES = "VALUES";
+    private final String KEYWORD_INTO = "INTO";
+    private final String KEYWORD_INSERT_ALL = "INSERT ALL";
     private final static String KEYWORD_UPDATE_OR = "UPDATE OR";
     private final static String KEYWORD_UPSERT = "UPSERT INTO";
     private final static String KEYWORD_DUPLICATE_KEY = "ON DUPLICATE KEY UPDATE";
@@ -162,6 +164,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
         tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
 
         rowCount = 0;
+
+        if (getMultiValueInsertMode() == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+            getWriter().append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
+        }
     }
 
     @Override
@@ -173,7 +179,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
         int columnsSize = columns.length;
         boolean firstRow = false;
-        if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || rowCount % rowsInStatement == 0) {
+        if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+            sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL));
+        }
+        if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL || rowCount % rowsInStatement == 0) {
             sqlBuffer.setLength(0);
             if (rowCount > 0) {
                 if (insertMode == SQLDialect.MultiValueInsertMode.PLAIN) {
@@ -193,6 +202,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
             }
             if (insertKeyword == InsertKeyword.UPSERT) {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT));
+            } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+                sqlBuffer.append("\t").append(identifierCase.transform(KEYWORD_INTO));
             } else {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
             }
@@ -214,7 +225,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
                 sqlBuffer.append(" (");
             }
-            if (rowsInStatement > 1 && lineBeforeRows) {
+            if (rowsInStatement > 1 && lineBeforeRows && insertMode != SQLDialect.MultiValueInsertMode.INSERT_ALL) {
                 sqlBuffer.append(rowDelimiter);
             }
             out.write(sqlBuffer.toString());
@@ -328,6 +339,11 @@ public class DataExporterSQL extends StreamExporterAbstract {
             case PLAIN:
                 if (rowCount > 0) {
                     out.write(");");
+                }
+                break;
+            case INSERT_ALL:
+                if (rowCount > 0) {
+                    out.write("\nSELECT 1 FROM DUAL;");
                 }
                 break;
             default:
