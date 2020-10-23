@@ -21,10 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -56,7 +53,7 @@ import java.util.Map;
  * OracleTable base
  */
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
-    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject
+    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject, DBPObjectWithLazyDescription
 {
     private static final Log log = Log.getLog(OracleTableBase.class);
 
@@ -144,9 +141,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
-    public String getComment(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
                 comment = queryTableComment(session);
@@ -158,6 +153,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             }
         }
         return comment;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription(DBRProgressMonitor monitor) {
+        return getComment(monitor);
     }
 
     protected String queryTableComment(JDBCSession session) throws SQLException {

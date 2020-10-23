@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -53,6 +54,13 @@ public class ERDContentProviderDefault implements ERDContentProvider {
 
     protected void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, ERDEntity erdEntity, ERDAttributeVisibility attributeVisibility) {
         DBSEntity entity = erdEntity.getObject();
+        if (entity instanceof DBPObjectWithLazyDescription) {
+            try {
+                ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
+            } catch (DBException e) {
+                log.warn("Unable to load lazy description when filling ERDEntity from object");
+            }
+        }
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = new HashSet<>();
             try {

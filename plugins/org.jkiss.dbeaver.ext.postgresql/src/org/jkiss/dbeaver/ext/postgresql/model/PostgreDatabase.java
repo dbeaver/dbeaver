@@ -62,7 +62,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreObject,
         DBPDataTypeProvider,
         DBSInstanceLazy,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPObjectWithLazyDescription
+{
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -268,6 +270,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
+    @Override
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
