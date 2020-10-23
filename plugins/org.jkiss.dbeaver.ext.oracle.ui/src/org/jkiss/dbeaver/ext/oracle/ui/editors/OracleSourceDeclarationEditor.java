@@ -17,15 +17,23 @@
 
 package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Oracle source declaration editor
  */
-public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceObject> {
+public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceObject> implements OracleDDLOptions {
+    private Map<String, Object> oracleDDLOptions = new HashMap<>();
+
     @Override
     protected String getCompileCommandId()
     {
@@ -43,5 +51,29 @@ public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceO
     @Override
     protected boolean isReadOnly() {
         return false;
+    }
+
+    @Override
+    protected void contributeEditorCommands(IContributionManager toolBarManager) {
+        super.contributeEditorCommands(toolBarManager);
+
+        if (getSourceObject() instanceof OracleTableBase) {
+            OracleTableBase sourceObject = (OracleTableBase) getSourceObject();
+            OracleEditorUtils.addDDLControl(toolBarManager, sourceObject, this);
+        }
+    }
+
+    @Override
+    public void putDDLOptions(String name, Object value) {
+        oracleDDLOptions.put(name, value);
+    }
+
+    @Override
+    protected Map<String, Object> getSourceOptions() {
+        Map<String, Object> options = super.getSourceOptions();
+        if (!CommonUtils.isEmpty(oracleDDLOptions)) {
+            options.putAll(oracleDDLOptions);
+        }
+        return options;
     }
 }
