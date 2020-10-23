@@ -142,12 +142,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
-        return getDescription();
-    }
-
-    @Nullable
-    @Override
-    public String getDescription(DBRProgressMonitor monitor) {
         if (comment == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
                 comment = queryTableComment(session);
@@ -159,6 +153,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             }
         }
         return comment;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription(DBRProgressMonitor monitor) {
+        return getComment(monitor);
     }
 
     protected String queryTableComment(JDBCSession session) throws SQLException {

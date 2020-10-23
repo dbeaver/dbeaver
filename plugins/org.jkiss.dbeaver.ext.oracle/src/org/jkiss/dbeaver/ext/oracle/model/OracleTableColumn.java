@@ -197,17 +197,17 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     @Nullable
     @Override
     public String getDescription(DBRProgressMonitor monitor) {
-        if (comment == null) {
-            // Load comments for all table columns
-            getTable().loadColumnComments(monitor);
-        }
-        return comment;
+        return getComment(monitor);
     }
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @LazyProperty(cacheValidator = CommentLoadValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
-        return getDescription(monitor);
+        if (comment == null) {
+            // Load comments for all table columns
+            getTable().loadColumnComments(monitor);
+        }
+        return comment;
     }
 
     public void setComment(String comment)
