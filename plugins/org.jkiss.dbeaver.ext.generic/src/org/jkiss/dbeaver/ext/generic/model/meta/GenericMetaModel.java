@@ -656,6 +656,10 @@ public class GenericMetaModel {
             persisted);
     }
 
+    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+        return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
+    }
+
     //////////////////////////////////////////////////////
     // Sequences
 
@@ -717,5 +721,9 @@ public class GenericMetaModel {
 
     public boolean hasFunctionSupport() {
         return true;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return false;
     }
 }
