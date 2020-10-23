@@ -66,7 +66,7 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         
         TextSelection textSelection = (TextSelection)selection;
         String selectedText = textSelection.getText();
-        return selectedText.isBlank() || selectedText.isEmpty();
+        return selectedText == "" || selectedText.isEmpty();
     }
     
     @Override
