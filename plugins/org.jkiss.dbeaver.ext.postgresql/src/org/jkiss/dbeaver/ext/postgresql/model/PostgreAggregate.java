@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,7 +32,7 @@ import java.util.List;
 /**
  * PostgreAggregate
  */
-public class PostgreAggregate implements PostgreObject {
+public class PostgreAggregate implements PostgreObject, DBPObjectWithLazyDescription {
 
     private long oid;
     private PostgreSchema schema;
@@ -114,6 +115,7 @@ public class PostgreAggregate implements PostgreObject {
         return null;
     }
 
+    @Override
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         PostgreProcedure function = getFunction(monitor);

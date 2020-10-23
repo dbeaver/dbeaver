@@ -22,8 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DBPObjectWithLazyDescription extends DBPObjectWithDescription {
     /**
-     * Loads description and returns it. Consequent calls of getDescription()
-     * will return loaded description.
+     * Loads description and returns it.
      *
      * @return object description or null
      */

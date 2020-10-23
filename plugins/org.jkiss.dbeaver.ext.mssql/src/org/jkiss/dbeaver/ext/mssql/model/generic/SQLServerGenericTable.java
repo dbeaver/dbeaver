@@ -65,6 +65,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPOverloaded
         return super.getDescription();
     }
 
+    @Override
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         String description = getDescription();
