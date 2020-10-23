@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -44,7 +45,13 @@ public class PostgreMViewManager extends PostgreViewManager {
         PostgreSchema schema = (PostgreSchema)container;
         PostgreMaterializedView newMV = new PostgreMaterializedView(schema);
         newMV.setName("new_mview"); //$NON-NLS-1$
+        setNewObjectName(monitor, schema, newMV);
         return newMV;
+    }
+
+    @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;
     }
 
     @Override
