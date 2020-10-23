@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
@@ -179,11 +181,28 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         for (String epp : getExcludedPreferencePageIds()) {
             pm.remove(epp);
         }
+        patchPreferencePages(pm);
     }
 
     @NotNull
     protected String[] getExcludedPreferencePageIds() {
         return EXCLUDE_PREF_PAGES;
+    }
+
+    protected void patchPreferencePages(PreferenceManager pm) {
+        String[] UI_PREF_PAGES = {
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage"
+        };
+        for (String pageId : UI_PREF_PAGES)  {
+            IPreferenceNode uiPage = pm.remove(pageId);
+            if (uiPage != null) {
+                pm.addTo(PrefPageDatabaseUserInterface.PAGE_ID, uiPage);
+            }
+        }
     }
 
     private void startVersionChecker() {
