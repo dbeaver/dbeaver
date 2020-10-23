@@ -62,7 +62,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreObject,
         DBPDataTypeProvider,
         DBSInstanceLazy,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPObjectWithLazyDescription
+{
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
