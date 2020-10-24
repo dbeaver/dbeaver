@@ -3149,6 +3149,13 @@ public class SQLEditor extends SQLEditorBase implements
                                         }
                                     }
                                 }
+                                if (countValue instanceof Map && ((Map<?, ?>) countValue).size() == 1) {
+                                    // For document-based DBs
+                                    Object singleValue = ((Map<?, ?>) countValue).values().iterator().next();
+                                    if (singleValue instanceof Number) {
+                                        countValue = singleValue;
+                                    }
+                                }
                                 if (countValue instanceof Number) {
                                     return ((Number) countValue).longValue();
                                 } else {
