@@ -67,6 +67,20 @@ public class HANAMetaModel extends GenericMetaModel
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
+        if (schemas == null) {
+            // GenericDataSource.initialize ignores errors when reading schema, as some databases do not support schemas.
+            // instead of showing an empty schema list with no indication that there was an error,
+            // try to provoke the error again (e.g. alter password required) and show as pseudo schema.
+            schemas = new ArrayList<>();
+            try {
+                session.prepareStatement("SELECT * FROM SYS.DUMMY").execute();
+            } catch(SQLException e) {
+                schemas.add(new GenericSchema(dataSource, catalog, "<error: "+e.getMessage()+">"));
+                return schemas;
+            }
+            schemas.add(new GenericSchema(dataSource, catalog, "<see error log window>>"));
+            return schemas;
+        }
         GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
         int i;
         for (i = 0; i < schemas.size(); i++)
