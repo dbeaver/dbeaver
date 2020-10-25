@@ -107,7 +107,11 @@ public class DataSourceDescriptor
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
-    private final DBPDataSourceConfigurationStorage origin;
+    private final DBPDataSourceConfigurationStorage storage;
+    // Origin
+    @NotNull
+    private DBPDataSourceOrigin origin;
+
     private final boolean manageable;
     @NotNull
     private DBPDriver driver;
@@ -160,19 +164,21 @@ public class DataSourceDescriptor
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
-        this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
+        this(registry, ((DataSourceRegistry)registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
     }
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
-        @NotNull DBPDataSourceConfigurationStorage origin,
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.registry = registry;
+        this.storage = storage;
         this.origin = origin;
-        this.manageable = origin.isDefault();
+        this.manageable = storage.isDefault();
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
@@ -188,13 +194,14 @@ public class DataSourceDescriptor
 
     /**
      * Copies datasource configuration
-     * @param setDefaultOrigin sets origin to default (in order to allow connection copy-paste with following save in default configuration)
+     * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultOrigin)
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage)
     {
         this.registry = registry;
-        this.origin = setDefaultOrigin ? ((DataSourceRegistry)registry).getDefaultOrigin() : source.origin;
-        this.manageable = setDefaultOrigin && ((DataSourceRegistry)registry).getDefaultOrigin().isDefault();
+        this.storage = setDefaultStorage ? ((DataSourceRegistry)registry).getDefaultStorage() : source.storage;
+        this.origin = source.origin;
+        this.manageable = setDefaultStorage && ((DataSourceRegistry)registry).getDefaultStorage().isDefault();
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -271,6 +278,15 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DBPDataSourceConfigurationStorage getConfigurationStorage() {
+        return storage;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceOrigin getOrigin() {
+        if (origin instanceof DataSourceOriginLazy) {
+            origin = ((DataSourceOriginLazy) origin).resolveRealOrigin();
+        }
         return origin;
     }
 
@@ -583,8 +599,8 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    DBPDataSourceConfigurationStorage getOrigin() {
-        return origin;
+    DBPDataSourceConfigurationStorage getStorage() {
+        return storage;
     }
 
     public boolean isDetached() {
@@ -597,12 +613,12 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isProvided() {
-        return !origin.isDefault();
+        return !storage.isDefault();
     }
 
     @Override
     public boolean isExternallyProvided() {
-        return origin.isDynamic();
+        return storage.isDynamic();
     }
 
     @Override

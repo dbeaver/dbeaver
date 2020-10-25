@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.model;
 
-/**
- * Credentials provider
- */
-public interface DBACredentialsProvider<CREDENTIALS> {
+import java.util.Map;
 
-    CREDENTIALS getCredentials();
+/**
+ * Configuration origin provider.
+ */
+public interface DBPDataSourceOriginProvider {
+
+    DBPDataSourceOrigin getOrigin(Map<String, Object> configuration);
 
 }
