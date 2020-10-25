@@ -618,7 +618,7 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isExternallyProvided() {
-        return storage.isDynamic();
+        return origin.isDynamic();
     }
 
     @Override
