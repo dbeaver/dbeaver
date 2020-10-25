@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
@@ -54,8 +55,11 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
             return null;
         }
 
-        if (navigatorView instanceof ProjectExplorerView) {
-            showFileFromEditorInput(activeEditor, navigatorView);
+        if (navigatorView instanceof ProjectExplorerView || navigatorView instanceof ProjectNavigatorView) {
+            IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+            if (file != null) {
+                showResourceInNavigator(navigatorView, file);
+            }
         } else if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
                 DBNNode dbnNode = editorInput.getNavigatorNode();
@@ -63,10 +67,6 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                     navigatorView.showNode(dbnNode);
                 }
         } else if (activeEditor instanceof IDataSourceContainerProvider) {
-            if (navigatorView.getPartName().equals("Projects")) {
-                showFileFromEditorInput(activeEditor, navigatorView);
-                return null;
-            }
             DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             @NotNull
             DBSObject activeObject = null;
@@ -118,13 +118,6 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         activePage.activate(navigatorView);
 
         return null;
-    }
-
-    private void showFileFromEditorInput(IEditorPart activeEditor, NavigatorViewBase navigatorView) {
-        IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-        if (file != null) {
-            showResourceInNavigator(navigatorView, file);
-        }
     }
 
     private void showResourceInNavigator(NavigatorViewBase activePart, IFile editorFile) {
