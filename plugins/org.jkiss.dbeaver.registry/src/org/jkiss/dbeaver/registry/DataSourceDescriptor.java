@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -745,26 +746,34 @@ public class DataSourceDescriptor
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
-        //final String oldName = getConnectionConfiguration().getUserName();
-        //final String oldPassword = getConnectionConfiguration().getUserPassword();
-        if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
-            // Ask for password
-            if (!askForPassword(this, null, false)) {
-                updateDataSourceObject(this);
-                return false;
+        resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
+
+        // Update auth properties if possible
+        boolean authProvided = true;
+        DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+        if (authProvider != null) {
+            authProvided = authProvider.provideAuthParameters(this, resolvedConnectionInfo);
+        } else {
+            // Legacy password provider
+            if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                // Ask for password
+                authProvided = askForPassword(this, null, false);
             }
+        }
+        if (!authProvided) {
+            // Auth parameters were canceled
+            updateDataSourceObject(this);
+            return false;
         }
 
         processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
         connecting = true;
-        resolvedConnectionInfo = null;
         try {
             // Resolve variables
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
                 !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()))
             {
-                this.resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
                 // Update config from profile
                 if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
                     // Update config from profile
@@ -783,9 +792,6 @@ public class DataSourceDescriptor
                         this, this.resolvedConnectionInfo);
                     this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
                 }
-
-            } else {
-                resolvedConnectionInfo = connectionInfo;
             }
 
             // Handle tunnelHandler
