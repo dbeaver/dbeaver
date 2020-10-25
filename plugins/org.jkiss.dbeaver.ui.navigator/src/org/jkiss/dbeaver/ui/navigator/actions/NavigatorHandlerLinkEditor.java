@@ -66,6 +66,13 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                     navigatorView.showNode(dbnNode);
                 }
         } else if (activeEditor instanceof IDataSourceContainerProvider) {
+            if (navigatorView.getPartName().equals("Projects")) {
+                IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+                if (file != null) {
+                    showResourceInNavigator(navigatorView, file);
+                }
+                return null;
+            }
             DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             @NotNull
             DBSObject activeObject = null;
