@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -79,6 +80,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
+    private DBAAuthCredentialsProvider authCredentialsProvider;
 
     public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
         this.platform = platform;
@@ -565,6 +567,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @NotNull
     public ISecurePreferences getSecurePreferences() {
         return platform.getApplication().getSecureStorage().getSecurePreferences().node("datasources");
+    }
+
+    @Nullable
+    @Override
+    public DBAAuthCredentialsProvider getAuthCredentialsProvider() {
+        return authCredentialsProvider;
+    }
+
+    public void setAuthCredentialsProvider(DBAAuthCredentialsProvider authCredentialsProvider) {
+        this.authCredentialsProvider = authCredentialsProvider;
     }
 
     /**

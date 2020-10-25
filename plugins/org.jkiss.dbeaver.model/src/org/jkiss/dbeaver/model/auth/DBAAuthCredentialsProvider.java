@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+
+package org.jkiss.dbeaver.model.auth;
+
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 /**
- * Credentials provider
+ * Auth credentials.
  */
-public interface DBPCredentialsProvider<CREDENTIALS> {
+public interface DBAAuthCredentialsProvider {
 
-    CREDENTIALS getCredentials();
+    boolean provideAuthParameters(DBPDataSourceContainer dataSourceContainer, DBPConnectionConfiguration configuration);
 
 }
