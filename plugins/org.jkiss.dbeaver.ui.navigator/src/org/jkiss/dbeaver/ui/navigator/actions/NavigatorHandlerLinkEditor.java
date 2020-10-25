@@ -55,10 +55,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         }
 
         if (navigatorView instanceof ProjectExplorerView) {
-            IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-            if (file != null) {
-                showResourceInNavigator(navigatorView, file);
-            }
+            showFileFromEditorInput(activeEditor, navigatorView);
         } else if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
                 DBNNode dbnNode = editorInput.getNavigatorNode();
@@ -67,10 +64,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 }
         } else if (activeEditor instanceof IDataSourceContainerProvider) {
             if (navigatorView.getPartName().equals("Projects")) {
-                IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (file != null) {
-                    showResourceInNavigator(navigatorView, file);
-                }
+                showFileFromEditorInput(activeEditor, navigatorView);
                 return null;
             }
             DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
@@ -124,6 +118,13 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         activePage.activate(navigatorView);
 
         return null;
+    }
+
+    private void showFileFromEditorInput(IEditorPart activeEditor, NavigatorViewBase navigatorView) {
+        IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+        if (file != null) {
+            showResourceInNavigator(navigatorView, file);
+        }
     }
 
     private void showResourceInNavigator(NavigatorViewBase activePart, IFile editorFile) {
