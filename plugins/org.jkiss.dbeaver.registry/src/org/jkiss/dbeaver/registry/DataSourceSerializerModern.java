@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
+import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
@@ -66,6 +67,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
     static final String ATTR_NAVIGATOR_HIDE_SCHEMAS = "navigator-hide-schemas"; //$NON-NLS-1$
     static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
     static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
+
+    public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
+    private static final String ATTR_ORIGIN_ID = "_id"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -111,7 +115,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (configurationStorage.isDefault()) {
                     jsonWriter.name("folders");
                     jsonWriter.beginObject();
-                    // Folders (only for default origin)
+                    // Folders (only for default storage)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(jsonWriter, folder);
                     }
@@ -306,8 +310,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveSecureCredentialsFile(IProgressMonitor monitor, File parent, DBPDataSourceConfigurationStorage origin) {
-        File credFile = new File(parent, DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + origin.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+    private void saveSecureCredentialsFile(IProgressMonitor monitor, File parent, DBPDataSourceConfigurationStorage storage) {
+        File credFile = new File(parent, DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         try {
             ContentUtils.makeFileBackup(credFile);
             if (secureProperties.isEmpty()) {
@@ -461,9 +465,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
                 if (newDataSource) {
+                    DBPDataSourceOrigin origin;
+                    Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
+                    if (CommonUtils.isEmpty(originProperties) || !originProperties.containsKey(ATTR_ORIGIN_ID)) {
+                        origin = DataSourceOriginLocal.INSTANCE;
+                    } else {
+                        String originID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_ID));
+                        origin = new DataSourceOriginLazy(originID, originProperties);
+                    }
                     dataSource = new DataSourceDescriptor(
                         registry,
                         configurationStorage,
+                        origin,
                         id,
                         driver,
                         new DBPConnectionConfiguration());
@@ -725,6 +738,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
         JSONUtils.field(json, RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
+        DBPDataSourceOrigin origin = dataSource.getOrigin();
+        if (origin != DataSourceOriginLocal.INSTANCE) {
+            Map<String, Object> originProps = new LinkedHashMap<>();
+            originProps.put(ATTR_ORIGIN_ID, origin.getId());
+            originProps.putAll(origin.getConfiguration());
+            JSONUtils.serializeProperties(json, TAG_ORIGIN, originProps);
+        }
         JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
         JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());

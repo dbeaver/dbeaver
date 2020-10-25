@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DataSourceOrigin
+ * DataSourceStorage
  */
-class DataSourceOrigin implements DBPDataSourceConfigurationStorage
+class DataSourceStorage implements DBPDataSourceConfigurationStorage
 {
     private final File sourceFile;
     private final boolean isDefault;
     private final String configSuffix;
 
-    DataSourceOrigin(File sourceFile, boolean isDefault) {
+    DataSourceStorage(File sourceFile, boolean isDefault) {
         this.sourceFile = sourceFile;
         this.isDefault = isDefault;
 

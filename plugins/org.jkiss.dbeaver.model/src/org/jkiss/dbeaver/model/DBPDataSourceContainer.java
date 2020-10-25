@@ -63,6 +63,9 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
     DBPDataSourceConfigurationStorage getConfigurationStorage();
 
     @NotNull
+    DBPDataSourceOrigin getOrigin();
+
+    @NotNull
     DBPPlatform getPlatform();
 
     /**

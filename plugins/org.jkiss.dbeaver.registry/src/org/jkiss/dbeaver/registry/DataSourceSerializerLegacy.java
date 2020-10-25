@@ -56,7 +56,6 @@ import java.util.Map;
 /**
  * Legacy datasource serialization (xml)
  */
-@Deprecated
 class DataSourceSerializerLegacy implements DataSourceSerializer
 {
     private static final Log log = Log.getLog(DataSourceSerializerLegacy.class);
@@ -65,7 +64,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
     private final DataSourceRegistry registry;
 
-    public DataSourceSerializerLegacy(DataSourceRegistry registry) {
+    DataSourceSerializerLegacy(DataSourceRegistry registry) {
         this.registry = registry;
     }
 
@@ -74,7 +73,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources,
-        File configFile) throws DBException, IOException
+        File configFile) throws IOException
     {
         // Save in temp memory to be safe (any error during direct write will corrupt configuration)
         ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
@@ -83,7 +82,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             xml.setButify(true);
             try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
                 if (configurationStorage.isDefault()) {
-                    // Folders (only for default origin)
+                    // Folders (only for default storage)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
                         saveFolder(xml, folder);
                     }
@@ -402,7 +401,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     private class DataSourcesParser implements SAXListener {
         DataSourceRegistry registry;
         DataSourceDescriptor curDataSource;
-        DBPDataSourceConfigurationStorage origin;
+        DBPDataSourceConfigurationStorage storage;
         boolean refresh;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -412,9 +411,9 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         private DataSourceRegistry.ParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage origin, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, boolean refresh, DataSourceRegistry.ParseResults parseResults) {
             this.registry = registry;
-            this.origin = origin;
+            this.storage = storage;
             this.refresh = refresh;
             this.parseResults = parseResults;
         }
@@ -465,7 +464,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     if (newDataSource) {
                         curDataSource = new DataSourceDescriptor(
                             registry,
-                            origin,
+                            storage,
+                            DataSourceOriginLocal.INSTANCE,
                             id,
                             driver,
                             new DBPConnectionConfiguration());

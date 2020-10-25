@@ -222,7 +222,7 @@ public class ObjectPropertyTester extends PropertyTester
                 // Can't create virtual objects
                 return false;
             }
-            if (isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
+            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
                 return false;
             }
         }
