@@ -89,13 +89,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
     private static String[] EDITORS_PREF_PAGES = {
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
     };
 
     @Override
@@ -198,8 +198,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         for (String epp : getExcludedPreferencePageIds()) {
             pm.remove(epp);
         }
-        patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
+        patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
 
     }
 
