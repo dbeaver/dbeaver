@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
@@ -55,7 +56,8 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
             return null;
         }
 
-        if (navigatorView instanceof ProjectExplorerView || navigatorView instanceof ProjectNavigatorView) {
+        if (navigatorView instanceof ProjectExplorerView ||
+                (navigatorView instanceof ProjectNavigatorView && activeEditor instanceof BaseTextEditor)) {
             IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
             if (file != null) {
                 showResourceInNavigator(navigatorView, file);
