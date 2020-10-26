@@ -110,7 +110,9 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         store.setValue("pg.restore.inputFile", inputFile);
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);
-        store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
+        if (restoreInfo != null) {
+            store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
+        }
     }
 
 }
