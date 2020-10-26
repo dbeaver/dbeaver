@@ -352,6 +352,7 @@
 
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
+            <type name="REFCURSOR"/>
             <type kind="CONTENT"/>
             <type kind="DATETIME"/>
             <type name="TIMESTAMP"/>
