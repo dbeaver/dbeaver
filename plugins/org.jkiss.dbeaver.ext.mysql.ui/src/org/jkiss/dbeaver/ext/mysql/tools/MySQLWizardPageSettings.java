@@ -63,6 +63,8 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
                     authDialog.setUserName(wizard.getSettings().getToolUserName());
                     authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
                     authDialog.setSavePassword(true);
+                    authDialog.setSavePasswordText(MySQLUIMessages.tools_db_export_wizard_page_settings_auth_save_password_checkbox);
+                    authDialog.setSavePasswordToolTipText(MySQLUIMessages.tools_db_export_wizard_page_settings_auth_save_password_checkbox_tip);
                     if (authDialog.open() == IDialogConstants.OK_ID) {
                         wizard.getSettings().setToolUserName(authDialog.getUserName());
                         wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());
