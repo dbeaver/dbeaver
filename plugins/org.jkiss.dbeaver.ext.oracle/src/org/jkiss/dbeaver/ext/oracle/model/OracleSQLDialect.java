@@ -359,7 +359,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
-        return MultiValueInsertMode.NOT_SUPPORTED;
+        return MultiValueInsertMode.INSERT_ALL;
     }
 
     @Override

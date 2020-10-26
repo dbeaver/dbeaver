@@ -51,7 +51,8 @@ public interface SQLDialect {
     enum MultiValueInsertMode {
         NOT_SUPPORTED,
         GROUP_ROWS,
-        PLAIN
+        PLAIN,
+        INSERT_ALL
     }
 
     /**
