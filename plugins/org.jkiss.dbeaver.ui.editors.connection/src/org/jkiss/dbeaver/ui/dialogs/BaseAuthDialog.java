@@ -37,6 +37,8 @@ public class BaseAuthDialog extends BaseDialog
     private boolean passwordOnly;
     private boolean showSavePassword;
     private DBPAuthInfo authInfo = new DBPAuthInfo();
+    private String savePasswordText;
+    private String savePasswordToolTipText;
 
     private Text usernameText;
     private Text passwordText;
@@ -81,6 +83,22 @@ public class BaseAuthDialog extends BaseDialog
 
     public void setSavePassword(boolean savePassword) {
         this.authInfo.setSavePassword(savePassword);
+    }
+
+    public String getSavePasswordText() {
+        return savePasswordText;
+    }
+
+    public void setSavePasswordText(String text) {
+        this.savePasswordText = text;
+    }
+
+    public String getSavePasswordToolTipText() {
+        return savePasswordToolTipText;
+    }
+
+    public void setSavePasswordToolTipText(String text) {
+        this.savePasswordToolTipText = text;
     }
 
     @Override
@@ -135,7 +153,8 @@ public class BaseAuthDialog extends BaseDialog
         {
             savePasswordCheck = new Button(addrGroup, SWT.CHECK);
             savePasswordCheck.setEnabled(showSavePassword);
-            savePasswordCheck.setText(UIConnectionMessages.dialog_connection_auth_checkbox_save_password);
+            savePasswordCheck.setText(CommonUtils.toString(savePasswordText, UIConnectionMessages.dialog_connection_auth_checkbox_save_password));
+            savePasswordCheck.setToolTipText(savePasswordToolTipText);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             savePasswordCheck.setLayoutData(gd);
             savePasswordCheck.setSelection(authInfo.isSavePassword());

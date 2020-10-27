@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> implements DBTTaskSettings<BASE_OBJECT> {
 
@@ -196,17 +197,19 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
         extraCommandArgs = preferenceStore.getString(PROP_NAME_EXTRA_ARGS);
         clientHomeName = preferenceStore.getString("clientHomeName");
-        toolUserName  = preferenceStore.getString("tool.user");
-        toolUserPassword = preferenceStore.getString("tool.password");
 
-        try {
-            final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-            if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
-            if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
-        } catch (Exception e) {
-            throw new DBException("Error decrypting user credentials", e);
+        if (preferenceStore instanceof DBPPreferenceMap) {
+            toolUserName = preferenceStore.getString("tool.user");
+            toolUserPassword = preferenceStore.getString("tool.password");
+
+            try {
+                final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
+                if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
+                if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
+            } catch (Exception e) {
+                throw new DBException("Error decrypting user credentials", e);
+            }
         }
-
     }
 
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
@@ -217,34 +220,35 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
         if (preferenceStore instanceof DBPPreferenceMap) {
             // Save input objects to task properties
+            Map<String, Object> propertyMap = ((DBPPreferenceMap) preferenceStore).getPropertyMap();
+
             List<String> objectList = new ArrayList<>();
             for (BASE_OBJECT object : databaseObjects) {
                 objectList.add(DBUtils.getObjectFullId(object));
             }
+            propertyMap.put("databaseObjects", objectList);
 
-            ((DBPPreferenceMap) preferenceStore).getPropertyMap().put("databaseObjects", objectList);
+            try {
+                final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
+
+                if (!CommonUtils.isEmpty(toolUserName)) {
+                    propertyMap.put("tool.user", encrypter.encrypt(toolUserName));
+                } else {
+                    propertyMap.put("tool.user", "");
+                }
+                if (!CommonUtils.isEmpty(toolUserPassword)) {
+                    propertyMap.put("tool.password", encrypter.encrypt(toolUserPassword));
+                } else {
+                    propertyMap.put("tool.password", "");
+                }
+            } catch (Exception e) {
+                log.debug(e);
+            }
         }
 
         preferenceStore.setValue(PROP_NAME_EXTRA_ARGS, extraCommandArgs);
         if (clientHomeName != null) {
             preferenceStore.setValue("clientHomeName", clientHomeName);
-        }
-
-        try {
-            final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-
-            if (!CommonUtils.isEmpty(toolUserName)) {
-                preferenceStore.setValue("tool.user", encrypter.encrypt(toolUserName));
-            } else {
-                preferenceStore.setToDefault("tool.user");
-            }
-            if (!CommonUtils.isEmpty(toolUserPassword)) {
-                preferenceStore.setValue("tool.password", encrypter.encrypt(toolUserPassword));
-            } else {
-                preferenceStore.setToDefault("tool.password");
-            }
-        } catch (Exception e) {
-            log.debug(e);
         }
     }
 
