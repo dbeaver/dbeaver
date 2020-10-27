@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -148,7 +149,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                 if (comment == null) {
                     comment = "";
                 }
-            } catch (SQLException e) {
+            } catch (DBCException | SQLException e) {
                 log.warn("Can't fetch table '" + getName() + "' comment", e);
             }
         }

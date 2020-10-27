@@ -3465,6 +3465,8 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                 }
+            } catch (DBCException e) {
+                log.error("Error obtaining session", e);
             }
         }
         model.updateMetaData(newAttributes);

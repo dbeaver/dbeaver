@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
@@ -57,6 +58,8 @@ public class CollectionElementData {
                     log.error("Error binding collection element", e);
                 }
             }
+        } catch (DBCException e) {
+            log.error("Error obtaining session", e);
         }
     }
 

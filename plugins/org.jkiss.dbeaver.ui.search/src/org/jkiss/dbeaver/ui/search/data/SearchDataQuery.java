@@ -157,6 +157,9 @@ public class SearchDataQuery implements ISearchQuery {
                 return true;
             }
             return false;
+        } catch (DBCException e) {
+            log.error("Error obtaining session", e);
+            return false;
         }
     }
 

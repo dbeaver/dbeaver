@@ -284,7 +284,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read database description")) {
             description = JDBCUtils.queryString(session, "select description from pg_shdescription "
                     + "join pg_database on objoid = pg_database.oid where datname = ?", getName());
-        } catch (SQLException e) {
+        } catch (DBCException | SQLException e) {
             log.debug("Error reading database description ", e);
         }
         if (description == null) {

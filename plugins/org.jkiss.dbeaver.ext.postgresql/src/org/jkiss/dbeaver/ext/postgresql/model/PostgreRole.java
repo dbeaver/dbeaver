@@ -293,7 +293,7 @@ public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPer
     }
 
     @Override
-    public List<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) {
+    public List<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
             List<PostgrePrivilege> permissions = new ArrayList<>();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

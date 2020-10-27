@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -129,6 +130,8 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
             } catch (SQLException e) {
                 log.error("Error reading table statistics", e);
             }
+        } catch (DBCException e) {
+            log.error("Error obtaining session", e);
         }
     }
 
