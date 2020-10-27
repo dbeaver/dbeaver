@@ -193,6 +193,15 @@
         </definition>
 -->
 
+        <definition id="org.jkiss.dbeaver.core.ui.selected.datasource">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                </iterate>
+            </with>
+        </definition>
+
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
@@ -669,26 +678,18 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
             <separator name="sql_tools" visible="true"/>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
+            <menu label="%menu.org.jkiss.dbeaver.core.connection.sqleditor">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.selected.datasource"/></visibleWhen>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.selected.datasource"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.selected.datasource"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.selected.datasource"/></visibleWhen>
+                </command>
+            </menu>
 
             <command commandId="org.jkiss.dbeaver.core.project.active">
                 <visibleWhen checkEnabled="true"/>
