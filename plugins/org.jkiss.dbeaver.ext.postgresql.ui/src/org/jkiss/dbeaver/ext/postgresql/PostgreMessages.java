@@ -48,6 +48,8 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_group_security;
     public static String wizard_backup_page_setting_group_security_label_info;
     public static String wizard_backup_page_setting_group_security_btn_authentication;
+    public static String wizard_backup_page_setting_authentication_save_password;
+    public static String wizard_backup_page_setting_authentication_save_password_tip;
     public static String wizard_backup_page_setting_group_security_btn_reset_default;
 
     /* wizard restore*/
