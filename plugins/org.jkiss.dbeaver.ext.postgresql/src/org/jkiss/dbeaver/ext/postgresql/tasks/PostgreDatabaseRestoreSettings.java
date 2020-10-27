@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -99,7 +100,18 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
                 } catch (InterruptedException e) {
                     // Ignore
                 }
+            } else {
+                for (DBSObject object : getDatabaseObjects()) {
+                    if (object instanceof PostgreDatabase) {
+                        restoreInfo = new PostgreDatabaseRestoreInfo((PostgreDatabase) object);
+                        break;
+                    }
+                }
             }
+        }
+
+        if (restoreInfo == null) {
+            throw new DBException("Cannot find database for restoring");
         }
     }
 
@@ -110,9 +122,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         store.setValue("pg.restore.inputFile", inputFile);
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);
-        if (restoreInfo != null) {
-            store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
-        }
+        store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
     }
 
 }
