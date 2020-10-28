@@ -179,23 +179,6 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                         if (node != null) {
                             if (node instanceof DBNDataSource) {
                                 DBPDataSourceContainer container = ((DBNDataSource) node).getDataSourceContainer();
-                                if (!container.isConnected()) {
-                                    try {
-                                        runnableContext.run(true, true, monitor -> {
-                                            try {
-                                                container.connect(monitor, true, true);
-                                            } catch (DBException ex) {
-                                                throw new InvocationTargetException(ex);
-                                            }
-                                        });
-                                    } catch (InvocationTargetException ex) {
-                                        DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
-                                                DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
-                                        return;
-                                    } catch (InterruptedException ex) {
-                                        return;
-                                    }
-                                }
                                 dataSourceObject = container;
                                 dataSource = container.getDataSource();
                             } else if (node instanceof DBNDatabaseItem) {
@@ -208,6 +191,24 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                         }
 
                         if (dataSource != null) {
+                            DBPDataSourceContainer dataSourceContainer = DBUtils.getContainer(dataSource);
+                            if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
+                                try {
+                                    runnableContext.run(true, true, monitor -> {
+                                        try {
+                                            dataSourceContainer.connect(monitor, true, true);
+                                        } catch (DBException ex) {
+                                            throw new InvocationTargetException(ex);
+                                        }
+                                    });
+                                } catch (InvocationTargetException ex) {
+                                    DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
+                                            DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
+                                    return;
+                                } catch (InterruptedException ex) {
+                                    return;
+                                }
+                            }
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
                                 DataSourceContextProvider contextProvider = new DataSourceContextProvider(dataSourceObject);
