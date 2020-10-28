@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -51,6 +52,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
+    private SelectionListener nodesTableSelectionListener;
 
     private static class TransferTarget {
         DataTransferNodeDescriptor node;
@@ -142,7 +144,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        nodesTable.getTable().addSelectionListener(new SelectionListener() {
+        nodesTableSelectionListener = new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -176,7 +178,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPagePipes.this));
                 }
             }
-        });
+        };
+        nodesTable.getTable().addSelectionListener(nodesTableSelectionListener);
     }
 
     private void createInputsTable(Composite composite) {
@@ -245,7 +248,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
             for (TransferTarget target : targets) {
                 if ((target.node == consumer || target.node == producer) && target.processor == processor) {
-                    UIUtils.asyncExec(() -> nodesTable.setSelection(new StructuredSelection(target)));
+                    UIUtils.asyncExec(() -> {
+                        nodesTable.setSelection(new StructuredSelection(target));
+                        Event event = new Event();
+                        event.widget = nodesTable.getTable();
+                        nodesTableSelectionListener.widgetSelected(new SelectionEvent(event));
+                    });
                     break;
                 }
             }
