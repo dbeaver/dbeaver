@@ -74,6 +74,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final String KEYWORD_SELECT_FROM_DUAL = "SELECT 1 FROM DUAL";
     private final static String KEYWORD_UPDATE_OR = "UPDATE OR";
     private final static String KEYWORD_UPSERT = "UPSERT INTO";
+    private final static String KEYWORD_REPLACE_INTO = "REPLACE INTO";
     private final static String KEYWORD_DUPLICATE_KEY = "ON DUPLICATE KEY UPDATE";
     private final static String KEYWORD_ON_CONFLICT = "ON CONFLICT";
 
@@ -88,6 +89,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
         INSERT("INSERT"),
         UPDATE(KEYWORD_UPDATE_OR),
         UPSERT(KEYWORD_UPSERT),
+        REPLACE(KEYWORD_REPLACE_INTO),
         ON_DUPLICATE(KEYWORD_DUPLICATE_KEY),
         ON_CONFLICT(KEYWORD_ON_CONFLICT);
         private String value;
@@ -201,7 +203,11 @@ public class DataExporterSQL extends StreamExporterAbstract {
             }
             if (insertKeyword == InsertKeyword.UPSERT) {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT));
-            } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+
+            } if (insertKeyword == InsertKeyword.REPLACE) {
+                sqlBuffer.append(identifierCase.transform(KEYWORD_REPLACE_INTO));
+            }
+            else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
                 if (rowCount % rowsInStatement == 0) {
                     sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
                 }
