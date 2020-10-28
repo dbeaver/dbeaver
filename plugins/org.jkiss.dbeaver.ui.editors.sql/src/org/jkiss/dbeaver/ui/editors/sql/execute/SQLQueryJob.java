@@ -545,8 +545,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (!hasResultSet) {
                     try {
                         updateCount = dbcStatement.getUpdateRowCount();
+                        SQLQueryResult.ExecuteResult executeResult = curResult.addExecuteResult(false);
                         if (updateCount >= 0) {
-                            curResult.addExecuteResult(false).setUpdateCount(updateCount);
+                            executeResult.setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
@@ -598,7 +599,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        if (statistics.getStatementsCount() > 1 || (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) {
+        int statementsCount = statistics.getStatementsCount();
+        if (statementsCount > 1 || // Many statements
+            (statementsCount == 1 && resultSetNumber == 0) || // Single non-select statement
+            (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
