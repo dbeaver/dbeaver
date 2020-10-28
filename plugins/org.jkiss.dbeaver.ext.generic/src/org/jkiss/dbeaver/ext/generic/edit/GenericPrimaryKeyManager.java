@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -62,7 +63,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
         GenericTableBase tableBase = (GenericTableBase)container;
         return tableBase.getDataSource().getMetaModel().createConstraintImpl(
             tableBase,
-            null,
+            GenericConstants.BASE_CONSTRAINT_NAME,
             DBSEntityConstraintType.PRIMARY_KEY,
             null,
             false);
