@@ -1836,15 +1836,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
-
             Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
             if (fg != null) {
                 return fg;
             }
-            if (foregroundDefault == null) {
-                foregroundDefault = controller.getDefaultForeground();
-            }
-            return foregroundDefault;
+            return UIUtils.getContrastColor(getCellBackground(colElement, rowElement, false));
         }
 
         @Nullable

@@ -69,8 +69,7 @@ public class DatabaseTasksTree {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
         colorErrorForeground = UIUtils.getContrastColor(colorError);
-        composite.addDisposeListener(e -> colorErrorForeground.dispose());
-
+        
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
             new NamedObjectPatternFilter(), TaskUIMessages.db_tasks_tree_text_tasks_type);
