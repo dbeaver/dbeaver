@@ -203,11 +203,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
             }
             if (insertKeyword == InsertKeyword.UPSERT) {
                 sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT));
-
-            } if (insertKeyword == InsertKeyword.REPLACE) {
-                sqlBuffer.append(identifierCase.transform(KEYWORD_REPLACE_INTO));
             }
-            else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+            if (insertKeyword == InsertKeyword.REPLACE) {
+                sqlBuffer.append(identifierCase.transform(KEYWORD_REPLACE_INTO));
+            } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
                 if (rowCount % rowsInStatement == 0) {
                     sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
                 }
