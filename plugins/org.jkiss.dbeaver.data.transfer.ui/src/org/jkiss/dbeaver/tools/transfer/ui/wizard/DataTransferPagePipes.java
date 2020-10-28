@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -52,7 +51,6 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
-    private SelectionListener nodesTableSelectionListener;
 
     private static class TransferTarget {
         DataTransferNodeDescriptor node;
@@ -144,30 +142,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        nodesTableSelectionListener = new SelectionListener() {
+        nodesTable.getTable().addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
-                TransferTarget target;
-                if (!selection.isEmpty()) {
-                    target = (TransferTarget) selection.getFirstElement();
-                } else {
-                    target = null;
-                }
-                DataTransferSettings settings = getWizard().getSettings();
-                if (target == null) {
-                    settings.selectConsumer(null, null, true);
-                } else {
-                    if (settings.isConsumerOptional()) {
-                        settings.selectConsumer(target.node, target.processor, true);
-                    } else if (settings.isProducerOptional()) {
-                        settings.selectProducer(target.node, target.processor, true);
-                    } else {
-                        // no optional nodes
-                    }
-                }
-                updatePageCompletion();
+                setSelectedSettings();
             }
 
             @Override
@@ -178,8 +157,30 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPagePipes.this));
                 }
             }
-        };
-        nodesTable.getTable().addSelectionListener(nodesTableSelectionListener);
+        });
+    }
+
+    private void setSelectedSettings() {
+        final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
+        TransferTarget target;
+        if (!selection.isEmpty()) {
+            target = (TransferTarget) selection.getFirstElement();
+        } else {
+            target = null;
+        }
+        DataTransferSettings settings = getWizard().getSettings();
+        if (target == null) {
+            settings.selectConsumer(null, null, true);
+        } else {
+            if (settings.isConsumerOptional()) {
+                settings.selectConsumer(target.node, target.processor, true);
+            } else if (settings.isProducerOptional()) {
+                settings.selectProducer(target.node, target.processor, true);
+            } else {
+                // no optional nodes
+            }
+        }
+        updatePageCompletion();
     }
 
     private void createInputsTable(Composite composite) {
@@ -250,9 +251,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 if ((target.node == consumer || target.node == producer) && target.processor == processor) {
                     UIUtils.asyncExec(() -> {
                         nodesTable.setSelection(new StructuredSelection(target));
-                        Event event = new Event();
-                        event.widget = nodesTable.getTable();
-                        nodesTableSelectionListener.widgetSelected(new SelectionEvent(event));
+                        setSelectedSettings();
                     });
                     break;
                 }
