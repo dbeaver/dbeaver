@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.osgi.framework.Bundle;
 
@@ -62,6 +63,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     //protected static final String MYLYN_PREF_PAGE_ID = "org.eclipse.mylyn.preferencePages.Mylyn";
+    private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
 
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
@@ -80,6 +82,21 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         //"org.eclipse.team.ui.TeamPreferences",
     };
     //private DBPPreferenceListener settingsChangeListener;
+
+    private static String[] UI_PREF_PAGES = {
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
+            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
+    };
+
+    private static String[] EDITORS_PREF_PAGES = {
+            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
+    };
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -181,7 +198,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         for (String epp : getExcludedPreferencePageIds()) {
             pm.remove(epp);
         }
-        patchPreferencePages(pm);
+        patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
+        patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
+
     }
 
     @NotNull
@@ -189,18 +208,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         return EXCLUDE_PREF_PAGES;
     }
 
-    protected void patchPreferencePages(PreferenceManager pm) {
-        String[] UI_PREF_PAGES = {
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage"
-        };
-        for (String pageId : UI_PREF_PAGES)  {
+    protected void patchPreferencePages(PreferenceManager pm, String[] preferencePages, String preferencePageId) {
+        for (String pageId : preferencePages)  {
             IPreferenceNode uiPage = pm.remove(pageId);
             if (uiPage != null) {
-                pm.addTo(PrefPageDatabaseUserInterface.PAGE_ID, uiPage);
+                pm.addTo(preferencePageId, uiPage);
             }
         }
     }
