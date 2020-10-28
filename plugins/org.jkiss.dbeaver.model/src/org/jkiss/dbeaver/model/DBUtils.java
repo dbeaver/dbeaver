@@ -1680,7 +1680,12 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        return (T) getDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
+        try {
+            return (T) getOrOpenDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
+        } catch (DBCException e) {
+            log.error("Error obtaining context", e);
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1692,7 +1697,12 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+        try {
+            return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+        } catch (DBCException e) {
+            log.error("Error obtaining context", e);
+            return null;
+        }
     }
 
     @Nullable
@@ -1948,7 +1958,8 @@ public final class DBUtils {
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
-    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) {
+    @NotNull
+    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {
         DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
         if (context == null) {
             // Not connected - try to connect
@@ -1962,7 +1973,7 @@ public final class DBUtils {
                         }
                     }, "Initiate instance connection",
                     object.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
-                    return null;
+                    throw new DBCException("Timeout while opening database connection");
                 }
                 context = DBUtils.getDefaultContext(object, meta);
             }
