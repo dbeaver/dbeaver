@@ -11,6 +11,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -23,7 +24,7 @@ import java.net.URISyntaxException;
 public class OpenLinkInWindowHandler extends AbstractHandler implements IElementUpdater {
 
     private static final String TITLE = "Search selection in web";
-    private static final String SEARCH_WEB_ADDRESS_PREFIX = "http://www.google.com/search?q=";
+    private static final String SEARCH_WEB_ADDRESS_PREFIX = "https://www.google.com/search?q=";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -40,15 +41,9 @@ public class OpenLinkInWindowHandler extends AbstractHandler implements IElement
         }
 
         TextSelection textSelection = (TextSelection) selection;
-        // TODO: how to handle the spaces, handle url generation
-        String googleLink = SEARCH_WEB_ADDRESS_PREFIX + textSelection.getText().replaceAll(" ", "%20");
-        // It should not even be possible to use DBeaver on mobile
+        String googleLink = SEARCH_WEB_ADDRESS_PREFIX + textSelection.getText().replaceAll(" ", "%20").trim();
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            try {
-                Desktop.getDesktop().browse(new URI(googleLink));
-            } catch (IOException | URISyntaxException e) {
-                DBWorkbench.getPlatformUI().showError(TITLE, "Exception when searching.", e);
-            }
+            UIUtils.launchProgram(googleLink);
         } else {
             DBWorkbench.getPlatformUI().showError(TITLE, "Desktop is not supported.");
         }
