@@ -103,6 +103,8 @@ public class DataSourceDescriptor
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
+    public static final String CATEGORY_SERVER = "Server";
+    public static final String CATEGORY_DRIVER = "Driver";
 
     @NotNull
     private final DBPDataSourceRegistry registry;
@@ -281,6 +283,7 @@ public class DataSourceDescriptor
         return storage;
     }
 
+    @Property(viewable = true, order = 3)
     @NotNull
     @Override
     public DBPDataSourceOrigin getOrigin() {
@@ -1266,13 +1269,13 @@ public class DataSourceDescriptor
         return driver.getId() + "-" + Long.toHexString(System.currentTimeMillis()) + "-" + Long.toHexString(rnd);
     }
 
-    @Property(viewable = true, order = 20, category = "Driver")
+    @Property(viewable = true, order = 20, category = CATEGORY_DRIVER)
     public String getPropertyDriverType()
     {
         return driver.getName();
     }
 
-    @Property(order = 3, category = "Server")
+    @Property(order = 30, category = CATEGORY_SERVER)
     public String getPropertyAddress()
     {
         StringBuilder addr = new StringBuilder();
@@ -1285,20 +1288,20 @@ public class DataSourceDescriptor
         return addr.toString();
     }
 
-    @Property(order = 4, category = "Server")
+    @Property(order = 31, category = CATEGORY_SERVER)
     public String getPropertyDatabase()
     {
         return connectionInfo.getDatabaseName();
     }
 
-    @Property(order = 5, category = "Server")
+    @Property(order = 32, category = CATEGORY_SERVER)
     public String getPropertyURL()
     {
         return connectionInfo.getUrl();
     }
 
     @Nullable
-    @Property(order = 6, category = "Server")
+    @Property(order = 33, category = CATEGORY_SERVER)
     public String getPropertyServerName()
     {
         if (dataSource != null) {
@@ -1312,7 +1315,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 7, category = "Server")
+    @Property(order = 34, category = CATEGORY_SERVER)
     public Map<String, Object> getPropertyServerDetails()
     {
         if (dataSource != null) {
@@ -1322,7 +1325,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 21, category = "Driver")
+    @Property(order = 21, category = CATEGORY_DRIVER)
     public String getPropertyDriver()
     {
         if (dataSource != null) {
