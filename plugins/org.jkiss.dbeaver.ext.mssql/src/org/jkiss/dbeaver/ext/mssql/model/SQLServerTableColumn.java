@@ -241,9 +241,13 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return dataType == null ? DBPDataKind.UNKNOWN : dataType.getDataKind();
     }
 
-    @Property(viewable = false, order = 75)
+    @Property(viewable = true, editable = true, updatable = true, order = 75)
     public String getCollationName() {
         return collationName;
+    }
+
+    public void setCollationName(String collationName) {
+        this.collationName = collationName;
     }
 
     @Property(viewable = false, order = 80)
