@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class DataSourceOriginProviderLocal implements DBPDataSourceOriginProvider
 {
+    public static final String PROVIDER_ID = "local";
 
     @Override
     public DBPDataSourceOrigin getOrigin(Map<String, Object> configuration) {
