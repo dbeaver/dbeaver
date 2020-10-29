@@ -73,7 +73,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final String KEYWORD_INSERT_ALL = "INSERT ALL";
     private final String KEYWORD_SELECT_FROM_DUAL = "SELECT 1 FROM DUAL";
     private final static String KEYWORD_UPDATE_OR = "UPDATE OR";
-    private final static String KEYWORD_UPSERT = "UPSERT INTO";
+    private final static String KEYWORD_UPSERT_INTO = "UPSERT INTO";
+    private final static String KEYWORD_REPLACE_INTO = "REPLACE INTO";
     private final static String KEYWORD_DUPLICATE_KEY = "ON DUPLICATE KEY UPDATE";
     private final static String KEYWORD_ON_CONFLICT = "ON CONFLICT";
 
@@ -87,7 +88,8 @@ public class DataExporterSQL extends StreamExporterAbstract {
     enum InsertKeyword {
         INSERT("INSERT"),
         UPDATE(KEYWORD_UPDATE_OR),
-        UPSERT(KEYWORD_UPSERT),
+        UPSERT(KEYWORD_UPSERT_INTO),
+        REPLACE(KEYWORD_REPLACE_INTO),
         ON_DUPLICATE(KEYWORD_DUPLICATE_KEY),
         ON_CONFLICT(KEYWORD_ON_CONFLICT);
         private String value;
@@ -196,18 +198,25 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(rowDelimiter);
                 }
             }
-            if (insertKeyword == InsertKeyword.UPDATE) {
-                sqlBuffer.append(identifierCase.transform(KEYWORD_UPDATE_OR)).append(" ");
-            }
-            if (insertKeyword == InsertKeyword.UPSERT) {
-                sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT));
-            } else if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
-                if (rowCount % rowsInStatement == 0) {
-                    sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
-                }
-                sqlBuffer.append("\t").append(identifierCase.transform(KEYWORD_INTO));
-            } else {
-                sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
+            switch (insertKeyword) {
+                case UPDATE:
+                    sqlBuffer.append(identifierCase.transform(KEYWORD_UPDATE_OR)).append(" ").append(identifierCase.transform(KEYWORD_INSERT_INTO));
+                    break;
+                case UPSERT:
+                    sqlBuffer.append(identifierCase.transform(KEYWORD_UPSERT_INTO));
+                    break;
+                case REPLACE:
+                    sqlBuffer.append(identifierCase.transform(KEYWORD_REPLACE_INTO));
+                    break;
+                default:
+                    if (insertMode == SQLDialect.MultiValueInsertMode.INSERT_ALL) {
+                        if (rowCount % rowsInStatement == 0) {
+                            sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_ALL)).append("\n");
+                        }
+                        sqlBuffer.append("\t").append(identifierCase.transform(KEYWORD_INTO));
+                    } else {
+                        sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
+                    }
             }
             sqlBuffer.append(" ").append(tableName).append(" (");
             boolean hasColumn = false;
