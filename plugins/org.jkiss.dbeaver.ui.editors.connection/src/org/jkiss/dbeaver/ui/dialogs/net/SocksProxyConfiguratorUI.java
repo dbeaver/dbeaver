@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.net;
 
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -34,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
  * SOCKS proxy configuration
  */
 public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+
+    public static final String NETWORK_PREF_PAGE_ID = "org.eclipse.ui.net.NetPreferences";
 
     private Text hostText;
     private Spinner portText;
@@ -68,6 +74,18 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
         passwordText = UIUtils.createLabelText(composite, UIConnectionMessages.dialog_connection_network_socket_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
         UIUtils.createEmptyLabel(composite,1, 1);
         savePasswordCheckbox = UIUtils.createCheckbox(composite, UIConnectionMessages.dialog_connection_auth_checkbox_save_password, false);
+
+        UIUtils.createLink(parent, "<a>Open global network preferences</a>", new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    NETWORK_PREF_PAGE_ID,
+                    null,
+                    null);
+                dialog.open();
+            }
+        });
     }
 
     @Override
