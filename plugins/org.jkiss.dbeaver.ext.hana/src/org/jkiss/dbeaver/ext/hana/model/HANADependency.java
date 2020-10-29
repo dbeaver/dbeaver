@@ -35,7 +35,7 @@ public class HANADependency implements DBSObject {
     private String baseObjectType, baseObjectSchema, baseObjectName;
 
     public HANADependency(DBSObject dependentObject, String baseObjectType, String baseObjectSchema, String baseObjectName) {
-	this.dependentObject = dependentObject;
+        this.dependentObject = dependentObject;
         this.baseObjectType = baseObjectType;
         this.baseObjectSchema = baseObjectSchema;
         this.baseObjectName = baseObjectName;
@@ -44,7 +44,7 @@ public class HANADependency implements DBSObject {
 
     @Override
     public String getName() {
-        return baseObjectSchema + "." + baseObjectName;
+        return DBUtils.getFullyQualifiedName(dependentObject.getDataSource(), baseObjectSchema, baseObjectName);
     }
 
     @Override
