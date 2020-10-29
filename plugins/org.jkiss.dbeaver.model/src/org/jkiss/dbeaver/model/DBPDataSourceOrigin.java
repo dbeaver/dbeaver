@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -40,5 +42,12 @@ public interface DBPDataSourceOrigin {
 
     @NotNull
     Map<String, Object> getConfiguration();
+
+    /**
+     * Get additional datasource information.
+     * Origins may provide extra information. Returns bean annotated with @Property.
+     */
+    @Nullable
+    DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException;
 
 }

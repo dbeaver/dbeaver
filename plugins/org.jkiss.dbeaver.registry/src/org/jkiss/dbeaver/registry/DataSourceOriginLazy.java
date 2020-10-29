@@ -18,10 +18,9 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
-import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -65,6 +64,12 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
     @Override
     public Map<String, Object> getConfiguration() {
         return originProperties;
+    }
+
+    @Nullable
+    @Override
+    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+        return resolveRealOrigin().getDataSourceDetails(monitor, dataSource);
     }
 
     @Override
