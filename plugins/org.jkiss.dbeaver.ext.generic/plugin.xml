@@ -437,9 +437,9 @@
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
-                    description="InterSystems IRIS"
+                    description="InterSystems IRIS. Replaces Cache driver."
                     categories="sql,object">
-                    <replace provider="generic" driver="cache"/>
+<!--                    <replace provider="generic" driver="cache"/>-->
                     <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
                 </driver>
                 <driver
