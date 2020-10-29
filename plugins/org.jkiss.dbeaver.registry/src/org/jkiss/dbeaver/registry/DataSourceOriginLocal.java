@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -64,6 +64,12 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
     @Override
     public Map<String, Object> getConfiguration() {
         return Collections.emptyMap();
+    }
+
+    @Nullable
+    @Override
+    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+        return null;
     }
 
     @Override
