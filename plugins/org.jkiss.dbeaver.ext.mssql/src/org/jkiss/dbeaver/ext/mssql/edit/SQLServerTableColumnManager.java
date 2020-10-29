@@ -170,10 +170,10 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                 new SQLDatabasePersistAction(
                     "Add column comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', '" + column.getTable().getSchema().getName() + "'," +
-                        " 'table', '" + column.getTable().getName() + "'," +
-                        " 'column', '" + column.getName() + "'"));
+                        " 'MS_Description', N" + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
+                        " 'schema', N'" + column.getTable().getSchema().getName() + "'," +
+                        " 'table', N'" + column.getTable().getName() + "'," +
+                        " 'column', N'" + column.getName() + "'"));
         }
         if (totalProps > 0) {
             actionList.add(new SQLDatabasePersistAction(
@@ -197,8 +197,8 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             new SQLDatabasePersistAction(
                 "Rename column",
                     "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), "sp_rename") +
-                    " '" + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
-                    "' , '" + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()) + "', 'COLUMN'")
+                    " N'" + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
+                    "' , N'" + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()) + "', 'COLUMN'")
         );
     }
 
