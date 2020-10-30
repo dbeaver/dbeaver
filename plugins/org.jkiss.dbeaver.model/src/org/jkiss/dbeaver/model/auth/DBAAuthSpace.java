@@ -17,16 +17,9 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.dbeaver.model.access.DBASession;
-
 /**
- * Auth context of application.
- * Holds auth tokens provided by app authentication.
+ * Authentication object/space
  */
-public interface DBAAuthContext {
-
-    DBASession getSpaceSession(DBAAuthSpace space);
-
-    DBAAuthToken[] getSavedTokens();
+public interface DBAAuthSpace {
 
 }
