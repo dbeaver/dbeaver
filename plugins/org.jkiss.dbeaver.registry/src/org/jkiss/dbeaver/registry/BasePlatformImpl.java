@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -91,7 +89,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         }
 
         // Navigator model
-        this.navigatorModel = new DBNModel(this, new WorkspaceSession());
+        this.navigatorModel = new DBNModel(this, null);
         this.navigatorModel.initialize();
 
         // Activate plugin services
@@ -249,22 +247,4 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         }
     }
 
-    private class WorkspaceSession implements DBASession {
-        @NotNull
-        @Override
-        public String getSessionId() {
-            return getWorkspace().getWorkspaceId();
-        }
-
-        @Override
-        public boolean isApplicationSession() {
-            return true;
-        }
-
-        @Nullable
-        @Override
-        public DBPProject getSingletonProject() {
-            return null;
-        }
-    }
 }

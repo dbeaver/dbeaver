@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.io.File;
@@ -28,9 +30,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Project meta information
+ * Project meta information.
  */
-public interface DBPProject extends DBPObject
+public interface DBPProject extends DBPObject, DBAAuthSpace
 {
     String METADATA_FOLDER = ".dbeaver";
 
@@ -75,6 +77,12 @@ public interface DBPProject extends DBPObject
 
     @NotNull
     DBASecureStorage getSecureStorage();
+
+    /**
+     * Project auth context
+     */
+    @NotNull
+    DBASessionContext getSessionContext();
 
     Object getProjectProperty(String propName);
 

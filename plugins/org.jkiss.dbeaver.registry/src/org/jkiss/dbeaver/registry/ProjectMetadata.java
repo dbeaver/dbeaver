@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,6 +70,7 @@ public class ProjectMetadata implements DBPProject {
 
     private final DBPWorkspace workspace;
     private final IProject project;
+    private final DBASessionContext sessionContext;
 
     private String projectName;
     private File projectPath;
@@ -83,14 +85,15 @@ public class ProjectMetadata implements DBPProject {
     private final Object metadataSync = new Object();
     private boolean inMemory;
 
-    public ProjectMetadata(DBPWorkspace workspace, IProject project) {
+    public ProjectMetadata(DBPWorkspace workspace, IProject project, DBASessionContext sessionContext) {
         this.workspace = workspace;
         this.project = project;
         this.metadataSyncJob = new ProjectSyncJob();
+        this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
     }
 
-    public ProjectMetadata(DBPWorkspace workspace, String name, File path) {
-        this(workspace, workspace.getActiveProject().getEclipseProject());
+    public ProjectMetadata(DBPWorkspace workspace, String name, File path, DBASessionContext sessionContext) {
+        this(workspace, workspace.getActiveProject() == null ? null : workspace.getActiveProject().getEclipseProject(), sessionContext);
         this.projectName = name;
         this.projectPath = path;
     }
@@ -166,7 +169,7 @@ public class ProjectMetadata implements DBPProject {
 
     @Override
     public boolean isOpen() {
-        return project.isOpen();
+        return project == null || project.isOpen();
     }
 
     @Override
@@ -250,6 +253,12 @@ public class ProjectMetadata implements DBPProject {
             }
         }
         return secureStorage;
+    }
+
+    @NotNull
+    @Override
+    public DBASessionContext getSessionContext() {
+        return sessionContext;
     }
 
     ////////////////////////////////////////////////////////
