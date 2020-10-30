@@ -39,8 +39,14 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @NotNull
     @Override
-    public String getId() {
+    public String getType() {
         return originId;
+    }
+
+    @Nullable
+    @Override
+    public String getSubType() {
+        return null;
     }
 
     @NotNull
@@ -74,7 +80,7 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @Override
     public String toString() {
-        return getId();
+        return getType();
     }
 
     @NotNull

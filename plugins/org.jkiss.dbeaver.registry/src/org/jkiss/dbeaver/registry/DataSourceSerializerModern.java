@@ -69,7 +69,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
-    private static final String ATTR_ORIGIN_ID = "_id"; //$NON-NLS-1$
+    private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -467,10 +467,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
-                    if (CommonUtils.isEmpty(originProperties) || !originProperties.containsKey(ATTR_ORIGIN_ID)) {
+                    if (CommonUtils.isEmpty(originProperties) || !originProperties.containsKey(ATTR_ORIGIN_TYPE)) {
                         origin = DataSourceOriginLocal.INSTANCE;
                     } else {
-                        String originID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_ID));
+                        String originID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_TYPE));
                         origin = new DataSourceOriginLazy(originID, originProperties);
                     }
                     dataSource = new DataSourceDescriptor(
@@ -741,7 +741,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBPDataSourceOrigin origin = dataSource.getOrigin();
         if (origin != DataSourceOriginLocal.INSTANCE) {
             Map<String, Object> originProps = new LinkedHashMap<>();
-            originProps.put(ATTR_ORIGIN_ID, origin.getId());
+            originProps.put(ATTR_ORIGIN_TYPE, origin.getType());
             originProps.putAll(origin.getConfiguration());
             JSONUtils.serializeProperties(json, TAG_ORIGIN, originProps);
         }
