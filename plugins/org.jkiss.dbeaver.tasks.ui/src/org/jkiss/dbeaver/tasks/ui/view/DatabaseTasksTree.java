@@ -131,7 +131,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || lastRun.getStartTime() == null) {
                         return "N/A";
                     } else {
                         return dateFormat.format(lastRun.getStartTime());
