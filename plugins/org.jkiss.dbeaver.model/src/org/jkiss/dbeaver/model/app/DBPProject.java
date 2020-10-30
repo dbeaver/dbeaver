@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * DBPWorkspace
+ * Project meta information
  */
 public interface DBPProject extends DBPObject
 {
