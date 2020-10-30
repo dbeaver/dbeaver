@@ -17,11 +17,27 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.dbeaver.model.access.DBASession;
+
 /**
  * Auth token.
  * Can be used by services to authenticate automatically.
  */
-public interface DBAAuthToken {
+public class DBAAuthToken {
 
+    private final DBASession session;
+    private final DBAAuthSpace space;
 
+    public DBAAuthToken(DBASession session, DBAAuthSpace space) {
+        this.session = session;
+        this.space = space;
+    }
+
+    public DBASession getSession() {
+        return session;
+    }
+
+    public DBAAuthSpace getSpace() {
+        return space;
+    }
 }
