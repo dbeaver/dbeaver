@@ -186,7 +186,14 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     @Override
-    public void deleteTaskConfiguration(@NotNull DBTTask task) {
+    public void deleteTaskConfiguration(@NotNull DBTTask task) throws DBException {
+        DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
+        if (scheduler != null) {
+            DBTTaskScheduleInfo info = scheduler.getScheduledTaskInfo(task);
+            if (info != null) {
+                scheduler.removeTaskSchedule(task, info);
+            }
+        }
         synchronized (tasks) {
             tasks.remove(task);
         }
