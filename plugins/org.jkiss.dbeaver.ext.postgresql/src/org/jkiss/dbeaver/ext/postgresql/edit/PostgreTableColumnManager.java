@@ -244,7 +244,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
                 actionList.add(new SQLDatabasePersistActionAtomic("Drop column default", prefix + "DROP DEFAULT", isAtomic));
             } else {
-                actionList.add(new SQLDatabasePersistActionAtomic("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue(), isAtomic));
+                actionList.add(new SQLDatabasePersistActionAtomic("Set column default", prefix + "SET DEFAULT " + SQLUtils.quoteString(column, column.getDefaultValue()), isAtomic));
             }
         }
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
