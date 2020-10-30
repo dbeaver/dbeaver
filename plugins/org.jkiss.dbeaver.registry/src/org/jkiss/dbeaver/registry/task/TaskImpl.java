@@ -65,7 +65,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     private TaskRunImpl lastRun;
 
     private static class RunStatistics {
-        private List<TaskRunImpl> runs = new ArrayList<>();
+        private final List<TaskRunImpl> runs = new ArrayList<>();
     }
 
     public TaskImpl(@NotNull DBPProject project, @NotNull DBTTaskType type, @NotNull String id, @NotNull String label, @Nullable String description, @NotNull Date createTime, @Nullable Date updateTime) {
@@ -146,12 +146,19 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
     @Override
     public DBTTaskRun getLastRun() {
         if (lastRun == null) {
-            synchronized (this) {
-                List<TaskRunImpl> runs = loadRunStatistics().runs;
-                lastRun = runs.isEmpty() ? VOID_RUN : runs.get(runs.size() - 1);
+            try {
+                synchronized (this) {
+                    List<TaskRunImpl> runs = loadRunStatistics().runs;
+                    lastRun = runs.isEmpty() ? VOID_RUN : runs.get(runs.size() - 1);
+                }
+            } catch (Throwable e) {
+                log.debug("Error loading task runs", e);
             }
         }
-        return lastRun == VOID_RUN ? null : lastRun;
+        if (lastRun == null) {
+            lastRun = VOID_RUN;
+        }
+        return lastRun;
     }
 
     @NotNull

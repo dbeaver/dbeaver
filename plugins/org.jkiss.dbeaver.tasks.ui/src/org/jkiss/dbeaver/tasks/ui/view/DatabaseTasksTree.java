@@ -393,10 +393,10 @@ public class DatabaseTasksTree {
             }
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort(this::comparTasksTime);
+        allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
 
-    private int comparTasksTime(DBTTask o1, DBTTask o2) {
+    private int compareTasksTime(DBTTask o1, DBTTask o2) {
         DBTTaskRun lr1 = o1.getLastRun();
         DBTTaskRun lr2 = o2.getLastRun();
         if (lr1 == null) {
