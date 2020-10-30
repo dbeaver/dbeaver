@@ -23,7 +23,12 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskScheduleInfo;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -58,7 +63,23 @@ public class TaskHandlerDelete extends AbstractHandler {
                     return null;
                 }
             }
+            DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
             for (DBTTask task : tasksToDelete) {
+                if (scheduler != null) {
+                    DBTTaskScheduleInfo taskScheduleInfo = scheduler.getScheduledTaskInfo(task);
+                    if (taskScheduleInfo != null) {
+                        try {
+                            scheduler.removeTaskSchedule(task, taskScheduleInfo);
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                TaskUIMessages.task_handler_delete_error_deleting_task_from_scheduler_title,
+                                NLS.bind(TaskUIMessages.task_handler_delete_error_deleting_task_from_scheduler_message, task.getId()),
+                                e
+                            );
+                            continue;
+                        }
+                    }
+                }
                 task.getProject().getTaskManager().deleteTaskConfiguration(task);
             }
         }
