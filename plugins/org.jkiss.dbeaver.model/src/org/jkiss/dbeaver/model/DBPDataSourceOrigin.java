@@ -29,8 +29,17 @@ import java.util.Map;
  */
 public interface DBPDataSourceOrigin {
 
+    /**
+     * Origin type. Unique
+     */
     @NotNull
-    String getId();
+    String getType();
+
+    /**
+     * Origina sub type
+     */
+    @Nullable
+    String getSubType();
 
     @NotNull
     String getDisplayName();

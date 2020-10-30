@@ -39,8 +39,14 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
 
     @NotNull
     @Override
-    public String getId() {
+    public String getType() {
         return ORIGIN_ID;
+    }
+
+    @Nullable
+    @Override
+    public String getSubType() {
+        return null;
     }
 
     @NotNull
@@ -74,7 +80,7 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
 
     @Override
     public String toString() {
-        return getId();
+        return getType();
     }
 
 }
