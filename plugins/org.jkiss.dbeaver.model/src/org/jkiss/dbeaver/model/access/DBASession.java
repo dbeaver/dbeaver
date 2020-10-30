@@ -21,11 +21,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 
 /**
  * Access session
  */
 public interface DBASession extends DBPObject {
+
+    /**
+     * SEssion space
+     */
+    @NotNull
+    DBAAuthSpace getSessionSpace();
 
     /**
      * Session unique ID

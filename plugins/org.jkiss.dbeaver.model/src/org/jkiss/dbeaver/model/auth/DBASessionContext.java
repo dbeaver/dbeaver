@@ -17,16 +17,23 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBASession;
 
 /**
- * Auth context of application.
- * Holds auth tokens provided by app authentication.
+ * Session context.
+ * Holds various auth sessions.
  */
-public interface DBAAuthContext {
+public interface DBASessionContext {
 
+    @Nullable
     DBASession getSpaceSession(DBAAuthSpace space);
 
     DBAAuthToken[] getSavedTokens();
+
+    void addSession(@NotNull DBASession session);
+
+    boolean removeSession(@NotNull DBASession session);
 
 }

@@ -19,11 +19,16 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -56,6 +61,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
 
     private final DBPPlatform platform;
     private final IWorkspace eclipseWorkspace;
+    private final SessionContextImpl workspaceAuthContext;
 
     private final Map<IProject, ProjectMetadata> projects = new LinkedHashMap<>();
     private final ProjectListener projectListener;
@@ -69,6 +75,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     protected BaseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
+        this.workspaceAuthContext = new SessionContextImpl(null);
+        this.workspaceAuthContext.addSession(new WorkspaceSession());
 
         String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
@@ -84,7 +92,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden()) {
-                ProjectMetadata projectMetadata = new ProjectMetadata(this, project);
+                ProjectMetadata projectMetadata = new ProjectMetadata(this, project, this.workspaceAuthContext);
                 this.projects.put(project, projectMetadata);
 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
@@ -188,6 +196,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         return eclipseWorkspace;
     }
 
+    @NotNull
     @Override
     public List<DBPProject> getProjects() {
         return new ArrayList<>(projects.values());
@@ -210,17 +219,23 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     @Override
-    public DBPProject getProject(IProject project) {
+    public DBPProject getProject(@NotNull IProject project) {
         return projects.get(project);
     }
 
     @Override
-    public DBPProject getProject(String projectName) {
+    public DBPProject getProject(@NotNull String projectName) {
         IProject eProject = eclipseWorkspace.getRoot().getProject(projectName);
         if (!eProject.exists()) {
             return null;
         }
         return getProject(eProject);
+    }
+
+    @NotNull
+    @Override
+    public DBASessionContext getAuthContext() {
+        return workspaceAuthContext;
     }
 
     @Override
@@ -616,7 +631,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                         IProject project = (IProject) childDelta.getResource();
                         if (!projects.containsKey(project)) {
                             if (childDelta.getKind() == IResourceDelta.ADDED) {
-                                ProjectMetadata projectMetadata = new ProjectMetadata(BaseWorkspaceImpl.this, project);
+                                ProjectMetadata projectMetadata = new ProjectMetadata(BaseWorkspaceImpl.this, project, BaseWorkspaceImpl.this.workspaceAuthContext);
                                 projects.put(project, projectMetadata);
                                 fireProjectAdd(projectMetadata);
                                 if (activeProject == null) {
@@ -704,4 +719,30 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
             return Status.OK_STATUS;
         }
     }
+
+    private class WorkspaceSession implements DBASession {
+        @NotNull
+        @Override
+        public DBAAuthSpace getSessionSpace() {
+            return BaseWorkspaceImpl.this;
+        }
+
+        @NotNull
+        @Override
+        public String getSessionId() {
+            return getWorkspaceId();
+        }
+
+        @Override
+        public boolean isApplicationSession() {
+            return true;
+        }
+
+        @Nullable
+        @Override
+        public DBPProject getSingletonProject() {
+            return null;
+        }
+    }
+
 }
