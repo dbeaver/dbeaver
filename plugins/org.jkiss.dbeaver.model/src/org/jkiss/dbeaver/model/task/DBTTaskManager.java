@@ -68,7 +68,7 @@ public interface DBTTaskManager {
 
     void updateTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
-    void deleteTaskConfiguration(@NotNull DBTTask task);
+    void deleteTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
     @NotNull
     File getStatisticsFolder();
