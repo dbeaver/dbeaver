@@ -115,6 +115,7 @@ public class PostgreConstants {
     public static final String TYPE_INT8 = "int8";
     public static final String TYPE_FLOAT4 = "float4";
     public static final String TYPE_FLOAT8 = "float8";
+    public static final String TYPE_INET = "inet";
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
     public static final String ERROR_TRANSACTION_ABORTED = "25P02";

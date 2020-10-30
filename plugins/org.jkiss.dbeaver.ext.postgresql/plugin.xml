@@ -547,6 +547,7 @@
             <type name="GEOGRAPHY"/>
             <type name="INTERVAL"/>
             <type name="UUID"/>
+            <type name="INET"/>
         </provider>
     </extension>
 

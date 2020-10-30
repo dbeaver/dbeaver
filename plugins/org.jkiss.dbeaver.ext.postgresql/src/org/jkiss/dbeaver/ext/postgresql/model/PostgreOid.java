@@ -59,6 +59,7 @@ public class PostgreOid {
     public static final int BIT = 1560;
     public static final int BIT_ARRAY = 1561;
     public static final int VOID = 2278;
+    public static final int INET = 869;
     public static final int INTERVAL = 1186;
     public static final int INTERVAL_ARRAY = 1187;
     public static final int CHAR = 18; // This is not char(N), this is "char" a single byte type.

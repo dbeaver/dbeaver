@@ -76,6 +76,7 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_UUID:
+                    case PostgreConstants.TYPE_INET:
                         return PostgreStringValueHandler.INSTANCE;
                     default:
                         if (typedObject.getDataKind() == DBPDataKind.STRING) {
