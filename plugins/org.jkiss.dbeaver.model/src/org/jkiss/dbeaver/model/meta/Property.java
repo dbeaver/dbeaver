@@ -107,6 +107,11 @@ public @interface Property
     boolean linkPossible() default false;
 
     /**
+     * Hyperlink property
+     */
+    boolean href() default false;
+
+    /**
      * Makes sense only for lazy properties. If set to true then this property value can be read
      * in non-lazy way with null progress monitor. In this case it will return "preview" value.
      * @return preview support flag
