@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 public interface DBASession extends DBPObject {
 
     /**
-     * SEssion space
+     * Session space
      */
     @NotNull
     DBAAuthSpace getSessionSpace();
