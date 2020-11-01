@@ -178,7 +178,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
         if (options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT)) {
             newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
         }
-        if (query == null || currentDDLFormat != newFormat && isPersisted()) {
+        if (query == null || currentDDLFormat != newFormat && isPersisted() || newFormat == OracleDDLFormat.FULL) {
             try {
                 if (query == null) {
                     query = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
