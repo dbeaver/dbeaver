@@ -83,9 +83,9 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
                         if (typeID == Types.OTHER || typedObject.getDataKind() == DBPDataKind.STRING) {
                             return PostgreStringValueHandler.INSTANCE;
                         }
-                        return super.getValueHandler(dataSource, preferences, typedObject);
                 }
         }
+        return super.getValueHandler(dataSource, preferences, typedObject);
     }
 
 }
