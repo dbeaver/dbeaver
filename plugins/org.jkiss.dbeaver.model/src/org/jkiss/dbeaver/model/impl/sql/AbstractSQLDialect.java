@@ -292,6 +292,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return null;
     }
 
+    @Nullable
+    @Override
+    public String[] getInnerBlockPrefixes() {
+        return null;
+    }
+
     @Override
     public boolean validIdentifierStart(char c) {
         return Character.isLetter(c);
