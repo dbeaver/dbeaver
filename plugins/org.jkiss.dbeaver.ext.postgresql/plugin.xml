@@ -533,20 +533,7 @@
 
             <datasource id="postgresql"/>
 
-            <type standard="ARRAY"/>
-            <type standard="STRUCT"/>
-            <type kind="DATETIME"/>
-            <type kind="STRING"/>
-            <type name="HSTORE"/>
-            <type name="JSON"/>
-            <type name="JSONB"/>
-            <type name="BIT"/>
-            <type name="REFCURSOR"/>
-            <type name="MONEY"/>
-            <type name="GEOMETRY"/>
-            <type name="GEOGRAPHY"/>
-            <type name="INTERVAL"/>
-            <type name="UUID"/>
+            <type name="*"/>
         </provider>
     </extension>
 

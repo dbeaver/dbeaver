@@ -23,7 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -31,7 +32,7 @@ import java.sql.Types;
 /**
  * PostgreValueHandlerProvider
  */
-public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
+public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvider {
 
     @Nullable
     @Override
@@ -75,15 +76,16 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                         return PostgreGeometryValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
-                    case PostgreConstants.TYPE_UUID:
-                        return PostgreStringValueHandler.INSTANCE;
                     default:
-                        if (typedObject.getDataKind() == DBPDataKind.STRING) {
+                        if (PostgreConstants.SERIAL_TYPES.containsKey(typedObject.getTypeName())) {
+                            return new JDBCNumberValueHandler(typedObject, preferences);
+                        }
+                        if (typeID == Types.OTHER || typedObject.getDataKind() == DBPDataKind.STRING) {
                             return PostgreStringValueHandler.INSTANCE;
                         }
-                        return null;
                 }
         }
+        return super.getValueHandler(dataSource, preferences, typedObject);
     }
 
 }
