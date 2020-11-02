@@ -522,4 +522,29 @@ public class CommonUtilsTest {
   public void testgetSingleLineString() {
     Assert.assertEquals("a¶bc d ", CommonUtils.getSingleLineString("a\nb\rc\td\0"));
   }
+
+  @Test
+  public void testEscapeStringForBourneShell() {
+    Assert.assertEquals("''", CommonUtils.escapeBourneShellString(""));
+    Assert.assertEquals("'string'", CommonUtils.escapeBourneShellString("string"));
+    Assert.assertEquals("'string with '\\''one single quote symbol'", CommonUtils.escapeBourneShellString("string with 'one single quote symbol"));
+    Assert.assertEquals("'string with '\\''two '\\''single quote symbols'", CommonUtils.escapeBourneShellString("string with 'two 'single quote symbols"));
+    Assert.assertEquals("'string with '\\''three '\\''single '\\''quote symbols'", CommonUtils.escapeBourneShellString("string with 'three 'single 'quote symbols"));
+    Assert.assertEquals("''\\'''", CommonUtils.escapeBourneShellString("'"));
+    Assert.assertEquals("'unit'\\'''\\''test'", CommonUtils.escapeBourneShellString("unit''test"));
+    Assert.assertEquals("'unit'\\'''\\'''\\''test'", CommonUtils.escapeBourneShellString("unit'''test"));
+  }
+
+  @Test
+  public void testUnescapeStringForBourneShell() {
+    Assert.assertEquals("", CommonUtils.unescapeBourneShellString("''"));
+    Assert.assertEquals("string", CommonUtils.unescapeBourneShellString("'string'"));
+    Assert.assertEquals("string with 'one single quote symbol", CommonUtils.unescapeBourneShellString("'string with '\\''one single quote symbol'"));
+    Assert.assertEquals("string with 'two 'single quote symbols", CommonUtils.unescapeBourneShellString("'string with '\\''two '\\''single quote symbols'"));
+    Assert.assertEquals("string with 'three 'single 'quote symbols", CommonUtils.unescapeBourneShellString("'string with '\\''three '\\''single '\\''quote symbols'"));
+    Assert.assertEquals("'", CommonUtils.unescapeBourneShellString("''\\'''"));
+    Assert.assertEquals("unit''test", CommonUtils.unescapeBourneShellString("'unit'\\'''\\''test'"));
+    Assert.assertEquals("unit'''test", CommonUtils.unescapeBourneShellString("'unit'\\'''\\'''\\''test'"));
+    Assert.assertEquals("'''unit'''test'''", CommonUtils.unescapeBourneShellString("''\\'''\\'''\\''unit'\\'''\\'''\\''test'\\'''\\'''\\'''"));
+  }
 }
