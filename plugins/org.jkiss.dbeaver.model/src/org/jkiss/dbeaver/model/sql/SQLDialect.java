@@ -207,6 +207,14 @@ public interface SQLDialect {
     String[] getBlockHeaderStrings();
 
     /**
+     * Inner block prefixes strings.
+     * Determines if the block is a child of the header block.
+     * @return inner block prefixes or null (if not supported)
+     */
+    @Nullable
+    String[] getInnerBlockPrefixes();
+
+    /**
      * Retrieves whether a catalog appears at the start of a fully qualified
      * table name.  If not, the catalog appears at the end.
      *
