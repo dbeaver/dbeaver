@@ -25,6 +25,13 @@ public class TaskNativeUIMessages extends NLS {
 	public static String tools_script_execute_wizard_task_completed;
 	public static String tools_wizard_error_task_error_message;
 	public static String tools_wizard_error_task_error_title;
+	public static String tools_wizard_error_no_database_object_selected;
+	public static String tools_wizard_error_no_native_client_selected;
+	public static String tools_wizard_database_group_title;
+	public static String tools_wizard_client_group_title;
+	public static String tools_wizard_client_group_client;
+	public static String tools_wizard_client_button;
+	public static String tools_wizard_client_dialog_title;
 	public static String tools_wizard_error_task_canceled;
 	public static String tools_wizard_log_process_exit_code;
 	public static String tools_wizard_log_io_error;

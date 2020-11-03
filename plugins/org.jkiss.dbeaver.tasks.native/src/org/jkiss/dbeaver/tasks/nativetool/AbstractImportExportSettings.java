@@ -28,7 +28,7 @@ import java.io.File;
 
 public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
 
-    private File outputFolder = new File(RuntimeUtils.getUserHomeDir().getAbsolutePath());
+    private File outputFolder;
     private String outputFilePattern;
 
     public File getOutputFolder() {
@@ -58,7 +58,10 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
         }
-        outputFolder = new File(CommonUtils.toString(store.getString("export.outputFolder"), outputFolder.getAbsolutePath()));
+        this.outputFolder = new File(CommonUtils.toString(store.getString("export.outputFolder")));
+        if (!this.outputFolder.exists()) {
+            this.outputFolder = new File(RuntimeUtils.getUserHomeDir().getAbsolutePath());
+        }
     }
 
     @Override

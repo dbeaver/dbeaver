@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tasks.ui.nativetool;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -61,7 +63,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
             if (nativeClientRequired) {
                 parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-                Button configButton = createButton(parent, CLIENT_CONFIG_ID, "Client ...", false);
+                Button configButton = createButton(parent, CLIENT_CONFIG_ID, TaskNativeUIMessages.tools_wizard_client_button, false);
                 //configButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 Label spacer = new Label(parent, SWT.NONE);
@@ -100,7 +102,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         private ClientHomesSelector homesSelector;
 
         public NativeClientConfigDialog(Shell parentShell, DBPDataSourceContainer dataSource) {
-            super(parentShell, "Configure local client for " + dataSource.getName(), dataSource.getDriver().getIcon());
+            super(parentShell, NLS.bind(TaskNativeUIMessages.tools_wizard_client_dialog_title, dataSource.getName()), dataSource.getDriver().getIcon());
             this.dataSource = dataSource;
         }
 
@@ -108,7 +110,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
 
-            homesSelector = new ClientHomesSelector(dialogArea, "Native client");
+            homesSelector = new ClientHomesSelector(dialogArea, TaskNativeUIMessages.tools_wizard_client_group_client);
             homesSelector.populateHomes(dataSource.getDriver(), dataSource.getConnectionConfiguration().getClientHomeId(), true);
             homesSelector.getPanel().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
