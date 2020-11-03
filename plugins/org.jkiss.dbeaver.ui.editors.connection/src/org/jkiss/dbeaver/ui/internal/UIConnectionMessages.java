@@ -35,6 +35,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_wizard_final_checkbox_save_password_locally;
 
     public static String controls_client_home_selector_browse;
+    public static String controls_client_home_selector_missing;
+    public static String controls_client_home_selector_tip;
     public static String controls_client_homes_panel_button_add_home;
     public static String controls_client_homes_panel_button_remove_home;
     public static String controls_client_homes_panel_confirm_remove_home_text;
