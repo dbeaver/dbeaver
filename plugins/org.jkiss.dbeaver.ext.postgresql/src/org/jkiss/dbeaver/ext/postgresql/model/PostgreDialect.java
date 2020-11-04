@@ -779,12 +779,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         return BLOCK_BOUND_KEYWORDS;
     }
 
-    @Nullable
-    @Override
-    public String[] getBlockHeaderStrings() {
-        return new String[] { "DECLARE" };
-    }
-
     @NotNull
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {

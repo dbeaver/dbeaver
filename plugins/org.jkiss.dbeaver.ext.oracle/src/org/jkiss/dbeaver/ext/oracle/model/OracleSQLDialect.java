@@ -63,6 +63,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
         "DECLARE",
     };
 
+    public static final String[] ORACLE_INNER_BLOCK_PREFIXES = new String[]{
+        "AS",
+        "IS",
+    };
+
     public static final String[] OTHER_TYPES_FUNCTIONS = {
         //functions without parentheses #8710
         "CURRENT_DATE",
@@ -348,6 +353,12 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public String[] getBlockHeaderStrings() {
         return ORACLE_BLOCK_HEADERS;
+    }
+
+    @Nullable
+    @Override
+    public String[] getInnerBlockPrefixes() {
+        return ORACLE_INNER_BLOCK_PREFIXES;
     }
 
     @NotNull
