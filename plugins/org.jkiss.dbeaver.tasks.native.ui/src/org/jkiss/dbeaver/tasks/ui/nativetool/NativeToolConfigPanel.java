@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
+import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -73,7 +74,7 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
         ieWizard = (AbstractNativeToolWizard) wizard;
         {
-            Group databasesGroup = UIUtils.createControlGroup(parent, "Select target database", 1, GridData.FILL_BOTH, 0);
+            Group databasesGroup = UIUtils.createControlGroup(parent, TaskNativeUIMessages.tools_wizard_database_group_title, 1, GridData.FILL_BOTH, 0);
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,
@@ -130,8 +131,8 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
         }
 
         {
-            Composite clientGroup = UIUtils.createControlGroup((Composite) parent, "Client files", 1, GridData.FILL_HORIZONTAL, 0);
-            homesSelector = new ClientHomesSelector(clientGroup, "Native client");
+            Composite clientGroup = UIUtils.createControlGroup((Composite) parent, TaskNativeUIMessages.tools_wizard_client_group_title, 1, GridData.FILL_HORIZONTAL, 0);
+            homesSelector = new ClientHomesSelector(clientGroup, TaskNativeUIMessages.tools_wizard_client_group_client);
             homesSelector.addSelectionChangedListener(event -> propertyChangeListener.run());
             homesSelector.getPanel().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
@@ -194,10 +195,10 @@ public abstract class NativeToolConfigPanel<OBJECT_TYPE extends DBSObject> imple
     @Override
     public String getErrorMessage() {
         if (selectedObject == null) {
-            return "No database object selected";
+            return TaskNativeUIMessages.tools_wizard_error_no_database_object_selected;
         }
         if (CommonUtils.isEmpty(homesSelector.getSelectedHome())) {
-            return "No native client selected";
+            return TaskNativeUIMessages.tools_wizard_error_no_native_client_selected;
         }
         return null;
     }
