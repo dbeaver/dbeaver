@@ -150,7 +150,12 @@ public class ClientHomesPanel extends Composite {
                 UIConnectionMessages.controls_client_homes_panel_confirm_remove_home_title,
                 NLS.bind(UIConnectionMessages.controls_client_homes_panel_confirm_remove_home_text, info.location.getName()))) {
                 homesTable.remove(selIndex);
-                selectHome(null);
+                if (homesTable.getItemCount() > 0) {
+                    selectHome((HomeInfo) homesTable.getItem(selIndex - 1).getData());
+                    homesTable.setSelection(selIndex - 1);
+                } else {
+                    selectHome(null);
+                }
             }
         }
     }
