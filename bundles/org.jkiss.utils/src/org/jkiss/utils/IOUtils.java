@@ -19,6 +19,7 @@ package org.jkiss.utils;
 
 import java.io.*;
 import java.net.ServerSocket;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -67,16 +68,20 @@ public final class IOUtils {
         final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
 
         while (src.read(buffer) != -1) {
-            buffer.flip();
+            flipBuffer(buffer);
             dest.write(buffer);
             buffer.compact();
         }
 
-        buffer.flip();
+        flipBuffer(buffer);
 
         while (buffer.hasRemaining()) {
             dest.write(buffer);
         }
+    }
+
+    public static void flipBuffer(Buffer buffer) {
+        buffer.flip();
     }
 
     public static void copyStream(
