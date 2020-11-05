@@ -65,7 +65,10 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         GenericSchema parentSchema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject : null;
 
         if (objectType == RelationalObjectType.TYPE_TABLE)
-            findTablesByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+        	/* 
+        	 * A TYPE_TABLE is requested in any kind of select statement. Hence it should return tables, views and (public) synonyms
+        	 */
+        	findObjectsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
         if (objectType == RelationalObjectType.TYPE_VIEW)
             findViewsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
         if (objectType == RelationalObjectType.TYPE_PROCEDURE)
@@ -75,6 +78,91 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         if (objectType == RelationalObjectType.TYPE_VIEW_COLUMN)
             findViewColumnsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
     }
+    
+    private void findObjectsByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
+            boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
+    	
+    	/* 
+    	 * SELECT schema_name, object_name, object_type FROM objects
+		 * WHERE object_type IN ('TABLE', 'VIEW', 'MONITORVIEW', 'SYNONYM');
+    	 */
+        String stmt =                       "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
+        stmt += caseSensitive ?             " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
+        if (parentSchema != null) stmt +=   " AND SCHEMA_NAME = ?";
+        stmt +=	                            " AND OBJECT_TYPE IN ('TABLE', 'VIEW', 'MONITORVIEW', 'SYNONYM')";
+        stmt +=                             " ORDER BY SCHEMA_NAME, OBJECT_NAME LIMIT " + maxResults;
+
+        
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+            dbStat.setString(1, caseSensitive ? objectNameMask : objectNameMask.toUpperCase());
+            if (parentSchema != null)
+                dbStat.setString(2, parentSchema.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                int numResults = maxResults;
+                while (dbResult.next() && numResults-- > 0) {
+                    if (monitor.isCanceled())
+                        break;
+                    String schemaName = dbResult.getString(1);
+                    String objectName = dbResult.getString(2);
+                    String objecttype = dbResult.getString(3);
+                    GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    if (schema == null)
+                        continue; // filtered
+                    switch (objecttype) {
+                    case "TABLE":
+                        result.add(new AbstractObjectReference(objectName, schema, null, GenericTable.class, RelationalObjectType.TYPE_TABLE) {
+                            @Override
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
+                                        getName());
+                                if (object == null) {
+                                    throw new DBException("Can't find object '" + getName() + "' in '"
+                                            + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                                }
+                                return object;
+                            }
+
+                        });
+                    	break;
+                    case "MONITORVIEW":
+                    case "VIEW":
+                        result.add(new AbstractObjectReference(objectName, schema, null, GenericView.class, RelationalObjectType.TYPE_VIEW) {
+                            @Override
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
+                                        getName());
+                                if (object == null) {
+                                    throw new DBException("Can't find object '" + getName() + "' in '"
+                                            + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                                }
+                                return object;
+                            }
+
+                        });
+                    	break;
+                    case "SYNONYM":
+                        result.add(new AbstractObjectReference(objectName, schema, null, HANASynonym.class, RelationalObjectType.TYPE_VIEW) {
+                            @Override
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
+                                        getName());
+                                if (object == null) {
+                                    throw new DBException("Can't find object '" + getName() + "' in '"
+                                            + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                                }
+                                return object;
+                            }
+
+                        });
+                    	break;
+                    }
+
+                }
+            }
+        }
+    }
+
 
     private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, String objectNameMask,
             boolean caseSensitive, int maxResults, List<DBSObjectReference> result) throws SQLException, DBException {
