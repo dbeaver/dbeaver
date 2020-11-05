@@ -40,7 +40,7 @@ import java.util.Arrays;
 /**
  * Oracle SQL dialect
  */
-class OracleSQLDialect extends JDBCSQLDialect {
+public class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
 
