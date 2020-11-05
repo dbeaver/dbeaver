@@ -4089,6 +4089,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fireResultSetLoad() {
+        labelProviderDefault.applyThemeSettings();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetLoad();
         }
