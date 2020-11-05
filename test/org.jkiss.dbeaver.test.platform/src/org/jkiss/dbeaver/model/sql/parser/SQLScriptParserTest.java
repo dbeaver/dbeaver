@@ -246,6 +246,42 @@ public class SQLScriptParserTest {
                 "  DBMS_OUTPUT.PUT_LINE(rec2.name);\n" +
                 "END;"
             });
+        
+        assertParse(ORACLE_DIALECT,
+            "DECLARE\n" +
+            "    test_v NUMBER:=0;\n" +
+            "    FUNCTION test_f(value_in_v IN number)\n" +
+            "    RETURN\n" +
+            "        varchar2\n" +
+            "    IS\n" +
+            "        value_char_out VARCHAR2(10);\n" +
+            "    BEGIN\n" +
+            "        SELECT to_char(value_in_v) INTO value_char_out FROM dual;\n" +
+            "        RETURN value_char_out;\n" +
+            "    END; \n" +
+            "BEGIN\n" +
+            "    dbms_output.put_line('Start');\n" +
+            "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
+            "    dbms_output.put_line('End');\n" +
+            "END;",
+            new String[]{
+                "DECLARE\n" +
+                "    test_v NUMBER:=0;\n" +
+                "    FUNCTION test_f(value_in_v IN number)\n" +
+                "    RETURN\n" +
+                "        varchar2\n" +
+                "    IS\n" +
+                "        value_char_out VARCHAR2(10);\n" +
+                "    BEGIN\n" +
+                "        SELECT to_char(value_in_v) INTO value_char_out FROM dual;\n" +
+                "        RETURN value_char_out;\n" +
+                "    END; \n" +
+                "BEGIN\n" +
+                "    dbms_output.put_line('Start');\n" +
+                "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
+                "    dbms_output.put_line('End');\n" +
+                "END;"
+            });
     }
 
     private void assertParse(SQLDialect dialect, String query, String[] expected) {
