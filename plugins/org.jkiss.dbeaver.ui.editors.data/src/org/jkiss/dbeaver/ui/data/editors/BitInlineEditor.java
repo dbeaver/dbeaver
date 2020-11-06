@@ -59,6 +59,9 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
+        if (value instanceof Number) {
+            value = ((Number) value).byteValue() != 0;
+        }
         control.setText(value == null ? DBConstants.NULL_VALUE_LABEL : value.toString()); //$NON-NLS-1$
     }
 
