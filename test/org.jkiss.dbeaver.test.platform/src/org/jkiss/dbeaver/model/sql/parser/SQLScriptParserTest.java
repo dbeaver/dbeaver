@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,9 +40,6 @@ import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserTest {
-    private final SQLDialect POSTGRE_DIALECT = new PostgreDialect();
-    private final SQLDialect ORACLE_DIALECT = new OracleSQLDialect();
-
     @Mock
     private DBPDataSource dataSource;
     @Mock
@@ -62,65 +59,37 @@ public class SQLScriptParserTest {
     }
 
     @Test
-    public void parsePostgresDoubleDollar() {
-        assertParse(POSTGRE_DIALECT,
-            "do $a$\n\nbegin\n\traise notice 'hello';\nend\n\n$a$\n\ndummy",
+    public void parsePostgresDoubleDollar() throws DBException {
+        assertParse("postgresql",
+            "do $a$\n\nbegin\n\traise notice 'hello';\nend\n\n$a$\n\n$a$\n\n$b$\n\n$b$\n\n$a$\n\n$a$$a$\n\ndo $$\ndeclare\nbegin\nnull;\nend $$\n\ndummy",
             new String[]{
                 "do $a$\n\nbegin\n\traise notice 'hello';\nend\n\n$a$",
-                "dummy"
-            });
-
-        assertParse(POSTGRE_DIALECT,
-            "$a$\n\n$b$\n\n$b$\n\n$a$\n\n$a$$a$\n\ndummy",
-            new String[]{
                 "$a$\n\n$b$\n\n$b$\n\n$a$",
                 "$a$$a$",
+                "do $$\ndeclare\nbegin\nnull;\nend $$",
                 "dummy"
-            });
-
-        assertParse(POSTGRE_DIALECT,
-            "do $$\ndeclare\nbegin\nnull;\nend $$",
-            new String[]{
-                "do $$\ndeclare\nbegin\nnull;\nend $$"
             });
     }
 
     @Test
-    public void parseOracleDeclareBlock() {
-        assertParse(ORACLE_DIALECT,
+    public void parseOracleDeclareBlock() throws DBException {
+        assertParse("oracle",
             "BEGIN\n" +
             "    BEGIN\n" +
             "    END;\n" +
-            "END;" +
+            "END;\n" +
+
             "BEGIN\n" +
             "    NULL;\n" +
-            "END;",
-            new String[]{
-                "BEGIN\n" +
-                "    BEGIN\n" +
-                "    END;\n" +
-                "END;",
-                "BEGIN\n" +
-                "    NULL;\n" +
-                "END;",
-            });
+            "END;\n" +
 
-        assertParse(ORACLE_DIALECT,
             "DECLARE\n" +
             "BEGIN\n" +
             "    NULL;\n" +
-            "END;",
-            new String[]{
-                "DECLARE\n" +
-                "BEGIN\n" +
-                "    NULL;\n" +
-                "END;"
-            });
+            "END;\n" +
 
-        assertParse(ORACLE_DIALECT,
             "DECLARE\n" +
             "    text VARCHAR(10);\n" +
-            "\n" +
             "    PROCEDURE greet(text IN VARCHAR2)\n" +
             "    IS\n" +
             "    BEGIN\n" +
@@ -129,26 +98,10 @@ public class SQLScriptParserTest {
             "BEGIN\n" +
             "    text := 'hello';\n" +
             "    greet(text);\n" +
-            "END;",
-            new String[]{
-                "DECLARE\n" +
-                "    text VARCHAR(10);\n" +
-                "\n" +
-                "    PROCEDURE greet(text IN VARCHAR2)\n" +
-                "    IS\n" +
-                "    BEGIN\n" +
-                "        dbms_output.put_line(text);\n" +
-                "    END;\n" +
-                "BEGIN\n" +
-                "    text := 'hello';\n" +
-                "    greet(text);\n" +
-                "END;"
-            });
+            "END;\n" +
 
-        assertParse(ORACLE_DIALECT,
             "DECLARE\n" +
             "    text VARCHAR(10);\n" +
-            "\n" +
             "    PROCEDURE greet(text IN VARCHAR2)\n" +
             "    IS\n" +
             "    BEGIN\n" +
@@ -160,26 +113,8 @@ public class SQLScriptParserTest {
             "        text := 'hello';\n" +
             "        greet(text);\n" +
             "    END;\n" +
-            "END;",
-            new String[]{
-                "DECLARE\n" +
-                "    text VARCHAR(10);\n" +
-                "\n" +
-                "    PROCEDURE greet(text IN VARCHAR2)\n" +
-                "    IS\n" +
-                "    BEGIN\n" +
-                "        dbms_output.put_line(text);\n" +
-                "    END;\n" +
-                "BEGIN\n" +
-                "    DECLARE\n" +
-                "    BEGIN\n" +
-                "        text := 'hello';\n" +
-                "        greet(text);\n" +
-                "    END;\n" +
-                "END;"
-            });
+            "END;\n" +
 
-        assertParse(ORACLE_DIALECT,
             "DECLARE\n" +
             "    TYPE EmpRecTyp IS RECORD (\n" +
             "        emp_id     NUMBER(6),\n" +
@@ -192,24 +127,8 @@ public class SQLScriptParserTest {
             "    END raise_salary;\n" +
             "BEGIN\n" +
             "    NULL;\n" +
-            "END;",
-            new String[]{
-                "DECLARE\n" +
-                "    TYPE EmpRecTyp IS RECORD (\n" +
-                "        emp_id     NUMBER(6),\n" +
-                "        emp_sal    NUMBER(8,2)\n" +
-                "    );\n" +
-                "    PROCEDURE raise_salary (emp_info EmpRecTyp) IS\n" +
-                "    BEGIN\n" +
-                "        UPDATE employees SET salary = salary + salary * 0.10\n" +
-                "        WHERE employee_id = emp_info.emp_id;\n" +
-                "    END raise_salary;\n" +
-                "BEGIN\n" +
-                "    NULL;\n" +
-                "END;"
-            });
+            "END;\n" +
 
-        assertParse(ORACLE_DIALECT,
             "DECLARE\n" +
             "  TYPE rec1_t IS RECORD (field1 VARCHAR2(16), field2 NUMBER, field3 DATE);\n" +
             "  TYPE rec2_t IS RECORD (id INTEGER NOT NULL := -1, \n" +
@@ -226,8 +145,80 @@ public class SQLScriptParserTest {
             "  rec1.field2 := 65;\n" +
             "  rec1.field3 := TRUNC(SYSDATE-1);\n" +
             "  DBMS_OUTPUT.PUT_LINE(rec2.name);\n" +
-            "END;",
+            "END;\n" +
+
+            "DECLARE\n" +
+            "    test_v NUMBER:=0;\n" +
+            "    FUNCTION test_f(value_in_v IN number)\n" +
+            "    RETURN\n" +
+            "        varchar2\n" +
+            "    IS\n" +
+            "        value_char_out VARCHAR2(10);\n" +
+            "    BEGIN\n" +
+            "        SELECT to_char(value_in_v) INTO value_char_out FROM dual;\n" +
+            "        RETURN value_char_out;\n" +
+            "    END; \n" +
+            "BEGIN\n" +
+            "    dbms_output.put_line('Start');\n" +
+            "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
+            "    dbms_output.put_line('End');\n" +
+            "END;\n",
             new String[]{
+                "BEGIN\n" +
+                "    BEGIN\n" +
+                "    END;\n" +
+                "END;",
+
+                "BEGIN\n" +
+                "    NULL;\n" +
+                "END;",
+
+                "DECLARE\n" +
+                "BEGIN\n" +
+                "    NULL;\n" +
+                "END;",
+
+                "DECLARE\n" +
+                "    text VARCHAR(10);\n" +
+                "    PROCEDURE greet(text IN VARCHAR2)\n" +
+                "    IS\n" +
+                "    BEGIN\n" +
+                "        dbms_output.put_line(text);\n" +
+                "    END;\n" +
+                "BEGIN\n" +
+                "    text := 'hello';\n" +
+                "    greet(text);\n" +
+                "END;",
+
+                "DECLARE\n" +
+                "    text VARCHAR(10);\n" +
+                "    PROCEDURE greet(text IN VARCHAR2)\n" +
+                "    IS\n" +
+                "    BEGIN\n" +
+                "        dbms_output.put_line(text);\n" +
+                "    END;\n" +
+                "BEGIN\n" +
+                "    DECLARE\n" +
+                "    BEGIN\n" +
+                "        text := 'hello';\n" +
+                "        greet(text);\n" +
+                "    END;\n" +
+                "END;",
+
+                "DECLARE\n" +
+                "    TYPE EmpRecTyp IS RECORD (\n" +
+                "        emp_id     NUMBER(6),\n" +
+                "        emp_sal    NUMBER(8,2)\n" +
+                "    );\n" +
+                "    PROCEDURE raise_salary (emp_info EmpRecTyp) IS\n" +
+                "    BEGIN\n" +
+                "        UPDATE employees SET salary = salary + salary * 0.10\n" +
+                "        WHERE employee_id = emp_info.emp_id;\n" +
+                "    END raise_salary;\n" +
+                "BEGIN\n" +
+                "    NULL;\n" +
+                "END;",
+
                 "DECLARE\n" +
                 "  TYPE rec1_t IS RECORD (field1 VARCHAR2(16), field2 NUMBER, field3 DATE);\n" +
                 "  TYPE rec2_t IS RECORD (id INTEGER NOT NULL := -1, \n" +
@@ -244,27 +235,8 @@ public class SQLScriptParserTest {
                 "  rec1.field2 := 65;\n" +
                 "  rec1.field3 := TRUNC(SYSDATE-1);\n" +
                 "  DBMS_OUTPUT.PUT_LINE(rec2.name);\n" +
-                "END;"
-            });
-        
-        assertParse(ORACLE_DIALECT,
-            "DECLARE\n" +
-            "    test_v NUMBER:=0;\n" +
-            "    FUNCTION test_f(value_in_v IN number)\n" +
-            "    RETURN\n" +
-            "        varchar2\n" +
-            "    IS\n" +
-            "        value_char_out VARCHAR2(10);\n" +
-            "    BEGIN\n" +
-            "        SELECT to_char(value_in_v) INTO value_char_out FROM dual;\n" +
-            "        RETURN value_char_out;\n" +
-            "    END; \n" +
-            "BEGIN\n" +
-            "    dbms_output.put_line('Start');\n" +
-            "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
-            "    dbms_output.put_line('End');\n" +
-            "END;",
-            new String[]{
+                "END;",
+
                 "DECLARE\n" +
                 "    test_v NUMBER:=0;\n" +
                 "    FUNCTION test_f(value_in_v IN number)\n" +
@@ -284,9 +256,8 @@ public class SQLScriptParserTest {
             });
     }
 
-    private void assertParse(SQLDialect dialect, String query, String[] expected) {
-        setDialect(dialect);
-        SQLParserContext context = createParserContext(dialect, query);
+    private void assertParse(String dialectName, String query, String[] expected) throws DBException {
+        SQLParserContext context = createParserContext(setDialect(dialectName), query);
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, context.getDocument().getLength(), false, false, false);
         Assert.assertEquals(expected.length, elements.size());
         for (int index = 0; index < expected.length; index++) {
@@ -303,7 +274,10 @@ public class SQLScriptParserTest {
         return new SQLParserContext(() -> executionContext, syntaxManager, ruleManager, document);
     }
 
-    private void setDialect(SQLDialect dialect) {
+    private SQLDialect setDialect(String name) throws DBException {
+        SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        SQLDialect dialect = registry.getDialect(name).createInstance();
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        return dialect;
     }
 }
