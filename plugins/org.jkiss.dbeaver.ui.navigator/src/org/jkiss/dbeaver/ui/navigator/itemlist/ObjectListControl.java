@@ -798,7 +798,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             columnController.addColumn(
                 prop.getDisplayName(),
                 prop.getDescription(),
-                prop.isNumeric() ? SWT.RIGHT : SWT.NONE,
+                prop.isNumeric() ? SWT.RIGHT : (prop.isBoolean() ? SWT.CENTER : SWT.NONE),
                 prop.isViewable(),
                 prop.isNameProperty(),
                 prop.isNumeric(),
@@ -1056,7 +1056,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
             if (prop != null) {
                 if (forUI && cellValue instanceof Boolean) {
-                    return "";
+                    return UIUtils.getBooleanString((Boolean) cellValue);
                 }
                 if (prop.isPassword() && cellValue instanceof String) {
                     return  CommonUtils.isEmpty((String) cellValue) ? "" : "************";

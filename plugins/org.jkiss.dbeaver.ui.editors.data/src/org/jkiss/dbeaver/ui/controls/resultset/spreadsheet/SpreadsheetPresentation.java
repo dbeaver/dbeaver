@@ -119,10 +119,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private static final boolean SHOW_CHECKBOX_AS_IMAGE = false;
 
-    private static final char CHAR_BOOL_FALSE = 0x2610;
-    private static final char CHAR_BOOL_TRUE = 0x2611;
-    private static final char CHAR_BOOL_NULL = 0x2612;
-
     private Spreadsheet spreadsheet;
 
     @Nullable
@@ -1781,17 +1777,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (isShowAsCheckbox(attr)) {
                 if (value == null) {
-                    return String.valueOf(CHAR_BOOL_NULL);
+                    return String.valueOf(UIUtils.CHAR_BOOL_NULL);
                 }
                 if (value instanceof Number) {
                     value = ((Number) value).byteValue() != 0;
                 }
                 if (value instanceof Boolean) {
-                    if ((Boolean) value) {
-                        return String.valueOf(CHAR_BOOL_TRUE);
-                    } else {
-                        return String.valueOf(CHAR_BOOL_FALSE);
-                    }
+                    return UIUtils.getBooleanString((Boolean) value);
                 }
             }
 

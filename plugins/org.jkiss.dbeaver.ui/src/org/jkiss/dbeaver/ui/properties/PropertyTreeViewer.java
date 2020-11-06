@@ -963,7 +963,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         return str.toString();
                     }
                     if (propertyValue instanceof Boolean) {
-                        return "";
+                        return UIUtils.getBooleanString((Boolean) propertyValue);
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {
