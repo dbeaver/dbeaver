@@ -93,7 +93,7 @@ public class OracleUIMessages extends NLS {
 	public static String views_oracle_compiler_log_viewer_column_pos;
 	
 	public static String dialog_connection_oracle_properties;
-	public static String dialog_connection_oracle_properties_discription;
+	public static String dialog_connection_oracle_properties_description;
 	public static String dialog_controlgroup_session_settings;
 	public static String edit_label_combo_language;
 	public static String edit_label_combo_language_tool_tip_text;
@@ -107,13 +107,15 @@ public class OracleUIMessages extends NLS {
 	public static String edit_create_checkbox_hide_empty_schemas;
 	public static String edit_create_checkbox_hide_empty_schemas_tool_tip_text;
 	public static String edit_create_checkbox_content_group_show;
-	public static String edit_create_checkbox_content_group_show_discription;
+	public static String edit_create_checkbox_content_group_show_description;
 	public static String edit_create_checkbox_content_group_use;
-	public static String edit_create_checkbox_content_group_use_discription;
+	public static String edit_create_checkbox_content_group_use_description;
 	public static String edit_create_checkbox_content_group_use_sys_schema;
 	public static String edit_create_checkbox_content_group_use_simple_constraints;
 	public static String edit_create_checkbox_content_group_use_sys_schema_description;
 	public static String edit_create_checkbox_content_group_use_simple_constraints_description;
+	public static String edit_create_checkbox_content_group_use_another_table_query;
+	public static String edit_create_checkbox_content_group_use_another_table_query_description;
 	public static String dialog_controlgroup_performance;
 	public static String edit_create_checkbox_group_use_rule;
 	public static String edit_create_checkbox_adds_rule_tool_tip_text;
@@ -127,7 +129,7 @@ public class OracleUIMessages extends NLS {
 	public static String pref_page_oracle_label_disable_client_side_parser;
 	public static String pref_page_oracle_label_if_unchecked_java_classes;
 	public static String pref_page_oracle_label_plan_table;
-	public static String pref_page_oracle_legend_executin_plan;
+	public static String pref_page_oracle_legend_execution_plan;
 	public static String pref_page_oracle_legend_misc;
 
 }
