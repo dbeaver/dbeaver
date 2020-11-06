@@ -141,16 +141,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.expensive();
     }
 
-    public boolean isNumeric()
-    {
+    public boolean isNumeric() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
-    public boolean isDateTime()
-    {
+    public boolean isDateTime() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && Date.class.isAssignableFrom(propType);
+    }
+
+    public boolean isBoolean() {
+        Class<?> propType = getGetter().getReturnType();
+        return propType == Boolean.class || propType == Boolean.TYPE;
     }
 
     public boolean isMultiLine() {

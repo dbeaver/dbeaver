@@ -24,11 +24,9 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +48,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
-        checkBox = new Label(parent, SWT.NONE);
+        Composite ph = UIUtils.createPlaceholder(parent, 1);
+        checkBox = new Label(ph, SWT.NONE);
         setCheckIcon();
         checkBox.setFont(parent.getFont());
 
@@ -66,8 +65,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
     }
 
     private void setCheckIcon() {
-        Image image = checked ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
-        checkBox.setImage(image);
+        //Image image = checked ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
+        checkBox.setText(String.valueOf(checked ? UIUtils.CHAR_BOOL_TRUE : UIUtils.CHAR_BOOL_FALSE));
     }
 
     @Override
