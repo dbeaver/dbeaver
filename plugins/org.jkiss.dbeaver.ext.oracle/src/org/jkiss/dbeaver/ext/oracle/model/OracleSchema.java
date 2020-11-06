@@ -498,12 +498,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             String tableOper = "=";
 
             boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
-            boolean useAnotherQuery = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_ANOTHER_TABLE_QUERY));
+            boolean useAlternativeQuery = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
             String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
             String tableTypeColumns = hasAllAllTables ? "t.TABLE_TYPE_OWNER,t.TABLE_TYPE" : "NULL as TABLE_TYPE_OWNER, NULL as TABLE_TYPE";
 
             JDBCPreparedStatement dbStat;
-            if (!useAnotherQuery) {
+            if (!useAlternativeQuery) {
                 dbStat = session.prepareStatement("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
                         " O.*,\n" +
                         tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n" +
@@ -520,7 +520,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                     dbStat.setString(2, object != null ? object.getName() : objectName);
                 return dbStat;
             } else {
-                return getAnotherTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns);
+                return getAlternativeTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns);
             }
         }
 
@@ -586,7 +586,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @NotNull
-        private JDBCStatement getAnotherTableStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName, String tablesSource, String tableTypeColumns) throws SQLException {
+        private JDBCStatement getAlternativeTableStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName, String tablesSource, String tableTypeColumns) throws SQLException {
             boolean hasName = object == null && objectName != null;
             JDBCPreparedStatement dbStat;
             StringBuilder sql = new StringBuilder();
