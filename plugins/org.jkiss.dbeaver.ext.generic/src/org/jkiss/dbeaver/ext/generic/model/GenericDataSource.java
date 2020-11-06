@@ -66,6 +66,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     private List<GenericSchema> schemas;
     private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
+    private GenericSchema publicSchema;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;

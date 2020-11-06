@@ -32,6 +32,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * GenericEntityContainer
@@ -48,7 +50,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<? extends GenericSequence> sequences;
-    protected List<? extends GenericSynonym> synonyms;
+    protected Map<String, GenericSynonym> synonyms;
     private List<? extends GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource) {
@@ -130,7 +132,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     @Override
     public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
         throws DBException {
-        return tableCache.getObject(monitor, this, name);
+    	try {
+        GenericTableBase ret = tableCache.getObject(monitor, this, name);
+        return ret;
+    	} catch (ClassCastException e) {
+    		return null;
+    	}
     }
 
     @Override
@@ -342,7 +349,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         if (synonyms == null) {
             loadSynonyms(monitor);
         }
-        return synonyms;
+        return synonyms.values(); // as it is a treemap, it is sorted
     }
 
     @Override
@@ -370,16 +377,30 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return getDataSource().getDataTypes(monitor);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        return getTables(monitor);
+    	/* Children are tables and synonyms */
+        List<DBSObject> ret = new ArrayList<>(); 
+        ret.addAll((List<DBSObject>) getTables(monitor));
+        // Must be a new list, otherwise we would add a synonym to the table cache list object
+        ret.addAll((Collection<DBSObject>) this.getSynonyms(monitor)); 
+        return ret;
     }
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException {
-        return getTable(monitor, childName);
+        GenericTableBase ret = getTable(monitor, childName);
+        if (ret != null) {
+        	return ret;
+        } else if (synonyms != null) {
+        	return synonyms.get(childName);
+        } else {
+        	loadSynonyms(monitor);
+        	return synonyms.get(childName);
+        }
     }
 
     @Override
@@ -454,13 +475,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
     private synchronized void loadSynonyms(DBRProgressMonitor monitor)
         throws DBException {
-        synonyms = dataSource.getMetaModel().loadSynonyms(monitor, this);
+        List<? extends GenericSynonym> synonymlist = dataSource.getMetaModel().loadSynonyms(monitor, this);
+        synonyms = new TreeMap<>(); 
 
-        // Order procedures
-        if (synonyms == null) {
-            synonyms = new ArrayList<>();
-        } else {
-            DBUtils.orderObjects(synonyms);
+        if (synonymlist != null) {
+            for (GenericSynonym e : synonymlist) {
+            	synonyms.put(e.getName(), e);
+            }
         }
     }
 

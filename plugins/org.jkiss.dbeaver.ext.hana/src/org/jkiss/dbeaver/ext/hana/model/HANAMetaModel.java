@@ -67,12 +67,14 @@ public class HANAMetaModel extends GenericMetaModel
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
-        GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
+        GenericSchema publicSchema = new HANAPublicSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
+        /*
+         * Placee the PUBLIC schema at the top, not ordered by name 
         int i;
         for (i = 0; i < schemas.size(); i++)
             if (schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
-                break;
-        schemas.add(i, publicSchema);
+                break; */
+        schemas.add(0, publicSchema);
         return schemas;
     }
 

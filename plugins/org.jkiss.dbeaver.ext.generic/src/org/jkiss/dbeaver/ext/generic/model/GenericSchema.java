@@ -25,18 +25,23 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPublicSynonymSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject
+public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject, DBSPublicSynonymSchema
 {
     @Nullable
     private GenericCatalog catalog;
     @NotNull
     private String schemaName;
     private boolean virtualSchema;
+    /**
+     * A
+     */
+    private boolean isPublicSynonymSchema;
 
     public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName)
     {
@@ -107,5 +112,13 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
     public void setVirtual(boolean nullSchema) {
         this.virtualSchema = nullSchema;
     }
+
+	public boolean isPublicSynonymSchema() {
+		return isPublicSynonymSchema;
+	}
+
+	public void setPublicSynonymSchema(boolean isPublicSchema) {
+		this.isPublicSynonymSchema = isPublicSchema;
+	}
 
 }

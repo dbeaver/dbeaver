@@ -370,12 +370,32 @@ public final class DBUtils {
         final DBSObject object = rootSC.getChild(monitor, objectName);
         if (object instanceof DBSEntity) {
             return object;
+        } else if (object instanceof DBSAlias) {
+        	DBSAlias synonym = (DBSAlias) object;
+        	return synonym.getTargetObject(monitor);
         } else {
             // Child is not an entity. May be catalog/schema names was omitted.
             // Try to use selected object
             DBSObject selectedObject = DBUtils.getSelectedObject(executionContext);
             if (selectedObject instanceof DBSObjectContainer) {
-                return ((DBSObjectContainer) selectedObject).getChild(monitor, objectName);
+                DBSObject o = ((DBSObjectContainer) selectedObject).getChild(monitor, objectName);
+                if (o != null) {
+                	// The table is one in the selected schema
+                	return o;
+                } else {
+                	// it is not the selected schema, only other option is a public synonym
+                	for (DBSObject schema : rootSC.getChildren(monitor)) {
+                		if (schema instanceof DBSPublicSynonymSchema) {
+                			if (((DBSPublicSynonymSchema) schema).isPublicSynonymSchema()) {
+                				o = ((DBSObjectContainer) schema).getChild(monitor, objectName);
+                				if (o != null) {
+                					// Found it!
+                					return o;
+                				}
+                			}
+                		}
+                	}
+                }
             }
 
             // Table container not found
