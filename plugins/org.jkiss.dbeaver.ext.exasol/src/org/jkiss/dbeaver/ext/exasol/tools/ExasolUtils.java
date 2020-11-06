@@ -71,7 +71,7 @@ public class ExasolUtils {
                                              ExasolTable exasolTable) throws DBException {
 
         StringBuilder ddlOutput = new StringBuilder();
-        ddlOutput.append("CREATE TABLE \"").append(exasolTable.getSchema().getName()).append("\".\"").append(exasolTable.getName()).append("\" (");
+        ddlOutput.append("CREATE TABLE ").append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" (");
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, exasolTable, "Get Table DDL")) {
             try (JDBCStatement dbStat = session.createStatement()) {
@@ -128,7 +128,7 @@ public class ExasolUtils {
             
             //partitioning
             ddlOutput.append(getPartitionDdl(exasolTable, monitor));
-            ddlOutput.append(";\n");
+            //ddlOutput.append(";\n"); //partition expression has ; already
 
             //primary key
             Collection<ExasolTableUniqueKey> pks = exasolTable.getConstraints(monitor);
