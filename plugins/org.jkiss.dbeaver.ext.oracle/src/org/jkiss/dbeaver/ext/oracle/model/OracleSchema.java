@@ -498,23 +498,30 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             String tableOper = "=";
 
             boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
+            boolean useAlternativeQuery = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
             String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
             String tableTypeColumns = hasAllAllTables ? "t.TABLE_TYPE_OWNER,t.TABLE_TYPE" : "NULL as TABLE_TYPE_OWNER, NULL as TABLE_TYPE";
 
-            final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
-                " O.*,\n" +
-                tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n" +
-                "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " O\n" +
-                ", " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) +
-                    " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = o.OBJECT_NAME\n" +
-                "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
-                (object == null && objectName == null ? "": " AND O.OBJECT_NAME" + tableOper + "?") +
-                (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
-                (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "") +
-                (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
-            dbStat.setString(1, owner.getName());
-            if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
-            return dbStat;
+            JDBCPreparedStatement dbStat;
+            if (!useAlternativeQuery) {
+                dbStat = session.prepareStatement("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                        " O.*,\n" +
+                        tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n" +
+                        "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " O\n" +
+                        ", " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) +
+                        " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = o.OBJECT_NAME\n" +
+                        "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')" +
+                        (object == null && objectName == null ? "" : " AND O.OBJECT_NAME" + tableOper + "?") +
+                        (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
+                        (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "") +
+                        (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
+                dbStat.setString(1, owner.getName());
+                if (object != null || objectName != null)
+                    dbStat.setString(2, object != null ? object.getName() : objectName);
+                return dbStat;
+            } else {
+                return getAlternativeTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns);
+            }
         }
 
         @Override
@@ -578,6 +585,60 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super.cacheChildren(parent, oracleTableColumns);
         }
 
+        @NotNull
+        private JDBCStatement getAlternativeTableStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName, String tablesSource, String tableTypeColumns) throws SQLException {
+            boolean hasName = object == null && objectName != null;
+            JDBCPreparedStatement dbStat;
+            StringBuilder sql = new StringBuilder();
+            String tableQuery = "SELECT t.OWNER, t.TABLE_NAME AS OBJECT_NAME, 'TABLE' AS OBJECT_TYPE, 'VALID' AS STATUS," + tableTypeColumns + ", t.TABLESPACE_NAME,\n" +
+                    "t.PARTITIONED, t.IOT_TYPE, t.IOT_NAME, t.TEMPORARY, t.SECONDARY, t.NESTED, t.NUM_ROWS\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t\n" +
+                    "WHERE t.OWNER =?\n" +
+                    "AND NESTED = 'NO'\n";
+            String viewQuery = "SELECT o.OWNER, o.OBJECT_NAME, 'VIEW' AS OBJECT_TYPE, o.STATUS, NULL, NULL, NULL, 'NO', NULL, NULL, o.TEMPORARY, o.SECONDARY, 'NO', 0\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " o\n" +
+                    "WHERE o.OWNER =?\n" +
+                    "AND o.OBJECT_TYPE = 'VIEW'\n";
+            String mviewQuery = "SELECT o.OWNER, o.OBJECT_NAME, 'MATERIALIZED VIEW' AS OBJECT_TYPE, o.STATUS, NULL, NULL, NULL, 'NO', NULL, NULL, o.TEMPORARY, o.SECONDARY, 'NO', 0\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " o\n" +
+                    "WHERE o.OWNER =?\n" +
+                    "AND o.OBJECT_TYPE = 'MATERIALIZED VIEW'";
+            String unionAll = "UNION ALL ";
+            if (hasName) {
+                sql.append("SELECT * FROM (");
+            }
+            if (object == null) {
+                sql.append(tableQuery).append(unionAll).append(viewQuery).append(unionAll).append(mviewQuery);
+            } else if (object instanceof OracleMaterializedView) {
+                sql.append(mviewQuery);
+            } else if (object instanceof OracleView) {
+                sql.append(viewQuery);
+            } else {
+                sql.append(tableQuery);
+            }
+            if (hasName) {
+                sql.append(") WHERE OBJECT_NAME").append("=?");
+            } else if (object != null) {
+                if (object instanceof OracleTable) {
+                    sql.append(" AND t.TABLE_NAME=?");
+                } else {
+                    sql.append(" AND o.OBJECT_NAME=?");
+                }
+            }
+            dbStat = session.prepareStatement(sql.toString());
+            String ownerName = owner.getName();
+            dbStat.setString(1, ownerName);
+            if (object == null) {
+                dbStat.setString(2, ownerName);
+                dbStat.setString(3, ownerName);
+                if (objectName != null) {
+                    dbStat.setString(4, objectName);
+                }
+            } else {
+                dbStat.setString(2, object.getName());
+            }
+            return dbStat;
+        }
     }
 
     /**

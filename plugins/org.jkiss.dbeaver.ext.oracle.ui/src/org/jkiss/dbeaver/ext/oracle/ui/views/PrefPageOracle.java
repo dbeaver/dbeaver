@@ -74,7 +74,7 @@ public class PrefPageOracle extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         {
-            Group planGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_executin_plan, 2, GridData.FILL_HORIZONTAL, 0);
+            Group planGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_execution_plan, 2, GridData.FILL_HORIZONTAL, 0);
 
             Label descLabel = new Label(planGroup, SWT.WRAP);
             descLabel.setText(OracleUIMessages.pref_page_oracle_label_by_default_plan_table);
