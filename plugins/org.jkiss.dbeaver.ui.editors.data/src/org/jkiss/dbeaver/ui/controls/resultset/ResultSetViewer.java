@@ -1111,6 +1111,7 @@ public class ResultSetViewer extends Viewer
                 if (setActive) {
                     panelFolder.setSelection(panelTab);
                     presentationSettings.activePanelId = id;
+                    panelTab.getControl().setFocus();
                 }
                 return true;
             } else {
