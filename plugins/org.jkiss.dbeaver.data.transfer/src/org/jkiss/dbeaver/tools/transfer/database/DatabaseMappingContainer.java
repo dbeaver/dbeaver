@@ -30,7 +30,8 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -207,7 +208,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {
-        if (source instanceof DBSEntity) {
+        if (source instanceof DBSEntity && !(source instanceof DBSDocumentContainer)) {
             for (DBSEntityAttribute attr : CommonUtils.safeCollection(((DBSEntity) source).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;
