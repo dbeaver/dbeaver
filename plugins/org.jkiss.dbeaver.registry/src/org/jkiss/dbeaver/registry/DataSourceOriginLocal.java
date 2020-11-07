@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collections;
@@ -74,7 +75,7 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
 
     @Nullable
     @Override
-    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
         return null;
     }
 

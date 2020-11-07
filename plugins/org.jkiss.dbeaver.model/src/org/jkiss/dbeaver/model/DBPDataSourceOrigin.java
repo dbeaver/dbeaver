@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
@@ -36,7 +37,7 @@ public interface DBPDataSourceOrigin {
     String getType();
 
     /**
-     * Origina sub type
+     * Origin sub type
      */
     @Nullable
     String getSubType();
@@ -57,6 +58,6 @@ public interface DBPDataSourceOrigin {
      * Origins may provide extra information. Returns bean annotated with @Property.
      */
     @Nullable
-    DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException;
+    DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException;
 
 }
