@@ -468,7 +468,6 @@ class ResultSetPersister {
         model.refreshChangeCount();
 
         viewer.redrawData(false, rowsChanged);
-        viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.updatePanelsContent(false);
         viewer.getActivePresentation().updateValueView();

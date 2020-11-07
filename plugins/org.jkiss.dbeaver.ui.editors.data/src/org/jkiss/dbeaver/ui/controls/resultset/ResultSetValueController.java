@@ -155,12 +155,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         }
         if (updated && updatePresentation) {
             // Update controls
-            UIUtils.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    controller.updatePanelsContent(false);
-                }
-            });
+            UIUtils.syncExec(() -> controller.updatePanelsContent(false));
             if (controller instanceof ResultSetViewer) {
                 ((ResultSetViewer)controller).fireResultSetChange();
             }
