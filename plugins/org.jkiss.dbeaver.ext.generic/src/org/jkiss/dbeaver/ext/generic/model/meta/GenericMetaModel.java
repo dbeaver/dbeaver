@@ -752,4 +752,8 @@ public class GenericMetaModel {
     public boolean supportsCheckConstraints() {
         return false;
     }
+
+    public boolean supportsViews(@NotNull GenericDataSource dataSource) {
+        return ((GenericDataSourceInfo)dataSource.getInfo()).supportsViews();
+    }
 }

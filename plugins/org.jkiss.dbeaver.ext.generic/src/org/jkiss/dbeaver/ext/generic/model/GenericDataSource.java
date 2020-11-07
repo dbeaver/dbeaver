@@ -212,22 +212,27 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
         final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
         if (supportsReferences != null) {
-            info.setSupportsReferences(Boolean.valueOf(supportsReferences.toString()));
+            info.setSupportsReferences(CommonUtils.toBoolean(supportsReferences));
         }
 
         final Object supportsIndexes = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_INDEXES);
         if (supportsIndexes != null) {
-            info.setSupportsIndexes(Boolean.valueOf(supportsIndexes.toString()));
+            info.setSupportsIndexes(CommonUtils.toBoolean(supportsIndexes));
+        }
+
+        final Object supportsViews = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_VIEWS);
+        if (supportsViews != null) {
+            info.setSupportsViews(CommonUtils.toBoolean(supportsViews));
         }
 
         final Object supportsStoredCode = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STORED_CODE);
         if (supportsStoredCode != null) {
-            info.setSupportsStoredCode(Boolean.valueOf(supportsStoredCode.toString()));
+            info.setSupportsStoredCode(CommonUtils.toBoolean(supportsStoredCode));
         }
 
         final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
         if (supportsSubqueries != null) {
-            dialect.setSupportsSubqueries(Boolean.valueOf(supportsSubqueries.toString()));
+            dialect.setSupportsSubqueries(CommonUtils.toBoolean(supportsSubqueries));
         }
 
         final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
@@ -349,7 +354,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
 
     @Override
-    public List<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 
