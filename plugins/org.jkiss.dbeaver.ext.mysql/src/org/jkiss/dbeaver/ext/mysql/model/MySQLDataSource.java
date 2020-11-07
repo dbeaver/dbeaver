@@ -82,6 +82,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
 
+    private transient boolean inServerTimezoneHandle;
+
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
         super(monitor, container, new MySQLDialect());
@@ -123,9 +125,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
-//        if (CommonUtils.isEmpty(serverTZ) && getContainer().getDriver().getId().equals(MySQLConstants.DRIVER_ID_MYSQL8)) {
-//            serverTZ = "UTC";
-//        }
+        if (CommonUtils.isEmpty(serverTZ) && inServerTimezoneHandle/*&& getContainer().getDriver().getId().equals(MySQLConstants.DRIVER_ID_MYSQL8)*/) {
+            serverTZ = "UTC";
+        }
         if (!CommonUtils.isEmpty(serverTZ)) {
             props.put("serverTimezone", serverTZ);
         }
@@ -400,7 +402,27 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        Connection mysqlConnection = super.openConnection(monitor, context, purpose);
+        Connection mysqlConnection;
+        try {
+            mysqlConnection = super.openConnection(monitor, context, purpose);
+        } catch (DBCException e) {
+            if (e.getCause() instanceof SQLException &&
+                SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
+                CommonUtils.isEmpty(getContainer().getActualConnectionConfiguration().getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE)))
+            {
+                // Workaround for nasty problem with MySQL 8 driver and serverTimezone error
+                log.debug("Error connecting without serverTimezone. Trying to set serverTimezone=UTC. Original error: " + e.getMessage());
+                inServerTimezoneHandle = true;
+                try {
+                    mysqlConnection = super.openConnection(monitor, context, purpose);
+                } catch (DBCException e2) {
+                    inServerTimezoneHandle = false;
+                    throw e2;
+                }
+            } else {
+                throw e;
+            }
+        }
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
