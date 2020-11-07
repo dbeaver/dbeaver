@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
@@ -74,8 +75,8 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @Nullable
     @Override
-    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSource) throws DBException {
-        return resolveRealOrigin().getDataSourceDetails(monitor, dataSource);
+    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+        return resolveRealOrigin().getDataSourceDetails(monitor, sessionContext, dataSource);
     }
 
     @Override
