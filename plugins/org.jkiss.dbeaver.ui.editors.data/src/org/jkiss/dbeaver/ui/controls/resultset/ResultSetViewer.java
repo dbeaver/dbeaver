@@ -3973,7 +3973,6 @@ public class ResultSetViewer extends Viewer
         if (updatePresentation) {
             redrawData(false, true);
             updateEditControls();
-            fireResultSetChange();
         }
 
         return curRow;
@@ -4011,7 +4010,6 @@ public class ResultSetViewer extends Viewer
         }
 
         updateEditControls();
-        fireResultSetChange();
     }
 
     //////////////////////////////////
