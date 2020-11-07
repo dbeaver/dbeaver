@@ -513,8 +513,7 @@ public class DBExecUtils {
             for (DBDAttributeBinding column : bindings) {
                 DBDPseudoAttribute pseudoAttribute = column instanceof DBDAttributeBindingMeta ? ((DBDAttributeBindingMeta) column).getPseudoAttribute() : null;
                 if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                    identifiers.add(new DBDPseudoReferrer(table, column));
-                    break;
+                    return new DBDPseudoReferrer(table, column);
                 }
             }
         }
