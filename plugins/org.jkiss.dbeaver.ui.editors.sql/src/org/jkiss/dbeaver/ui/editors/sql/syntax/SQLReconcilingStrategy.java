@@ -39,7 +39,7 @@ import java.util.*;
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
     private static final boolean ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT = false;
 
-    private Collection<Annotation> oldAnnotations = new ArrayList<>();
+    private List<SQLScriptPosition> registeredPositions = new ArrayList<>();
 
     private SQLEditorBase editor;
 
@@ -90,17 +90,20 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         Iterable<SQLScriptElement> queries = getQueries();
         Map<Annotation, Position> newAnnotations = new HashMap<>();
-        Collection<Annotation> annotations = new ArrayList<>();
+        List<SQLScriptPosition> newRegisteredPositions = new ArrayList<>();
         for (SQLScriptElement element: queries) {
             if (deservesFolding(element)) {
-                Annotation annotation = new ProjectionAnnotation();
-                Position position = new Position(element.getOffset(), expandQueryLength(element));
-                newAnnotations.put(annotation, position);
-                annotations.add(annotation);
+                SQLScriptPosition position = retrievePosition(element);
+                newRegisteredPositions.add(position);
+                newAnnotations.put(position.getFoldingAnnotation(), position);
             }
         }
-        model.modifyAnnotations(oldAnnotations.toArray(new Annotation[0]), newAnnotations, null);
-        oldAnnotations = annotations;
+        Annotation[] oldAnnotations = new Annotation[registeredPositions.size()];
+        for (int i = 0; i < oldAnnotations.length; i++) {
+            oldAnnotations[i] = registeredPositions.get(i).getFoldingAnnotation();
+        }
+        model.modifyAnnotations(oldAnnotations, newAnnotations, null);
+        registeredPositions = newRegisteredPositions;
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
@@ -170,5 +173,18 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         private SQLReconcilingStrategyException(Throwable cause) {
             super(cause);
         }
+    }
+
+    private SQLScriptPosition retrievePosition(SQLScriptElement element) {
+        Iterator<SQLScriptPosition> iterator = registeredPositions.listIterator();
+        int expandedQueryLength = expandQueryLength(element);
+        while (iterator.hasNext()) {
+            SQLScriptPosition position = iterator.next();
+            if (position.getOffset() == element.getOffset() && position.getLength() == expandedQueryLength) {
+                iterator.remove();
+                return position;
+            }
+        }
+        return new SQLScriptPosition(element.getOffset(), expandedQueryLength, true, new ProjectionAnnotation());
     }
 }
