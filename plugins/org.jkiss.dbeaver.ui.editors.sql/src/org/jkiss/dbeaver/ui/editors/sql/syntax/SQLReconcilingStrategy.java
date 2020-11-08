@@ -28,7 +28,6 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
@@ -38,7 +37,7 @@ import java.util.*;
  * SQLReconcilingStrategy
  */
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-    private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
+    private static final boolean ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT = false;
 
     private Collection<Annotation> oldAnnotations = new ArrayList<>();
 
@@ -46,7 +45,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private IDocument document;
 
-    private IProgressMonitor monitor;
+    private IProgressMonitor monitor; //TODO use me
 
     public SQLEditorBase getEditor() {
         return editor;
@@ -81,12 +80,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         reconcile();
     }
 
-    private void logDebug(int... values) { //fixme delete
-        for (int i: values) {
-            log.debug("i=+" + i + ", ch=" + unsafeGetChar(i));
-        }
-    }
-
     private void reconcile() {
         if (!editor.isFoldingEnabled()) {
             return;
@@ -99,21 +92,29 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         Map<Annotation, Position> newAnnotations = new HashMap<>();
         Collection<Annotation> annotations = new ArrayList<>();
         for (SQLScriptElement element: queries) {
-            int numberOfLines = getNumberOfLines(element);
-            if (numberOfLines == 1) {
-                continue;
+            if (deservesFolding(element)) {
+                Annotation annotation = new ProjectionAnnotation();
+                Position position = new Position(element.getOffset(), expandQueryLength(element));
+                newAnnotations.put(annotation, position);
+                annotations.add(annotation);
             }
-            int newLength = calcLengthOfExpandedQueryToTheEndOfTheLine(element); //fixme needs rename
-            if (numberOfLines == 2 && newLength == element.getLength() && element.getOffset() + element.getLength() != document.getLength()) {
-                continue;
-            }
-            Annotation annotation = new ProjectionAnnotation();
-            Position position = new Position(element.getOffset(), newLength);
-            newAnnotations.put(annotation, position);
-            annotations.add(annotation);
         }
         model.modifyAnnotations(oldAnnotations.toArray(new Annotation[0]), newAnnotations, null);
         oldAnnotations = annotations;
+    }
+
+    private boolean deservesFolding(SQLScriptElement element) {
+        int numberOfLines = getNumberOfLines(element);
+        if (numberOfLines == 1) {
+            return false;
+        }
+        if (numberOfLines == 2 && expandQueryLength(element) == element.getLength() && element.getOffset() + element.getLength() != document.getLength()) {
+            return false;
+        }
+        if (numberOfLines > 2 && expandQueryLength(element) == element.getLength()) {
+            return ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT;
+        }
+        return true;
     }
 
     private int getNumberOfLines(SQLScriptElement element) {
@@ -124,8 +125,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
     }
 
-    //todo rename
-    private int calcLengthOfExpandedQueryToTheEndOfTheLine(SQLScriptElement element) {
+    //expands query to the end of the line if there are only whitespaces after it. Returns desired length.
+    private int expandQueryLength(SQLScriptElement element) {
         int position = element.getOffset() + element.getLength();
         while (position < document.getLength()) {
             char c = unsafeGetChar(position);
@@ -170,138 +171,4 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             super(cause);
         }
     }
-
-//    protected void calculatePositions(IRegion partition)
-//    {
-//        if (!editor.isFoldingEnabled()) {
-//            return;
-//        }
-//
-//        List<Annotation> removedAnnotations = null;
-//        Map<Annotation, Position> addedAnnotations = null;
-//
-//        if (partition == null) {
-//            regionOffset = 0;
-//            regionLength = document.getLength();
-//        } else {
-//            regionOffset = partition.getOffset();
-//            regionLength = partition.getLength();
-//
-//            for (int i = 0; i < parsedPositions.size(); i++) {
-//                SQLScriptPosition sp = parsedPositions.get(i);
-//                if (sp.getOffset() <= regionOffset + regionLength && sp.getOffset() + sp.getLength() >= regionOffset + regionLength) {
-//                    SQLScriptPosition startPos = i > 0 ? parsedPositions.get(i - 1) : sp;
-//                    SQLScriptPosition endPos = i < parsedPositions.size() - 1 ? parsedPositions.get(i + 1) : sp;
-//                    regionOffset = i == 0 ? 0 : startPos.getOffset();
-//                    regionLength = endPos.getOffset() + endPos.getLength() + regionLength;
-//                    break;
-//                }
-//            }
-//
-///*
-//            if (partition instanceof DirtyRegion) {
-//                // Modify positions
-//                DirtyRegion dirtyRegion = (DirtyRegion)partition;
-//                // Shift parsed positions
-//                boolean insert = DirtyRegion.INSERT.equals(dirtyRegion.getType());
-//                for (SQLScriptPosition sp : parsedPositions) {
-//                    if (dirtyRegion.getOffset() > sp.getOffset() && dirtyRegion.getOffset() < sp.getOffset() + sp.getLength()) {
-//                        // In this position
-//                        if (insert) {
-//                            sp.setLength(sp.getLength() + dirtyRegion.getLength());
-//                        } else {
-//                            sp.setLength(sp.getLength() - dirtyRegion.getLength());
-//                        }
-//                    } else if (sp.getOffset() >= dirtyRegion.getOffset()) {
-//                        // After this position
-//                        if (insert) {
-//                            sp.setOffset(sp.getOffset() + dirtyRegion.getLength());
-//                        } else {
-//                            sp.setOffset(sp.getOffset() - dirtyRegion.getLength());
-//                        }
-//                    }
-//                }
-//            }
-//*/
-//        }
-//        ProjectionAnnotationModel annotationModel = editor.getAnnotationModel();
-//        if (annotationModel == null) {
-//            return;
-//        }
-//        List<SQLScriptElement> queries;
-//        try {
-//            queries = editor.extractScriptQueries(regionOffset, document.getLength() - regionOffset, false, true, false);
-//        } catch (Exception e) {
-//            log.error("Error parsing script queries", e);
-//            return;
-//        }
-//
-//        {
-//            List<SQLScriptPosition> removedPositions = new ArrayList<>();
-//            for (SQLScriptPosition sp : parsedPositions) {
-//                if (sp.getOffset() >= regionOffset/* && sp.getOffset() <= regionOffset + regionLength*/) {
-//                    removedPositions.add(sp);
-//                }
-//            }
-//            if (!removedPositions.isEmpty()) {
-//                parsedPositions.removeAll(removedPositions);
-//                removedAnnotations = new ArrayList<>();
-//                for (SQLScriptPosition removedPosition : removedPositions) {
-//                    if (removedPosition.isMultiline()) {
-//                        removedAnnotations.add(removedPosition.getFoldingAnnotation());
-//                    }
-//                }
-//            }
-//        }
-//
-//        try {
-//            List<SQLScriptPosition> addedPositions = new ArrayList<>();
-//            int documentLength = document.getLength();
-//            for (SQLScriptElement se : queries) {
-//                int queryOffset = se.getOffset();
-//                int queryLength = se.getLength();
-//
-//                boolean isMultiline = document.getLineOfOffset(queryOffset) != document.getLineOfOffset(queryOffset + queryLength);
-//
-//                // Expand query to the end of line
-//                for (int i = queryOffset + queryLength; i < documentLength; i++) {
-//                    char ch = document.getChar(i);
-//                    if (Character.isWhitespace(ch)) {
-//                        queryLength++;
-//                    }
-//                    if (ch == '\n') {
-//                        break;
-//                    }
-//                }
-//                addedPositions.add(new SQLScriptPosition(queryOffset, queryLength, isMultiline, new ProjectionAnnotation()));
-//            }
-//            if (!addedPositions.isEmpty()) {
-//                final int firstQueryPos = addedPositions.get(0).getOffset();
-//                int posBeforeFirst = 0;
-//                for (int i = 0; i < parsedPositions.size(); i++) {
-//                    SQLScriptPosition sp = parsedPositions.get(i);
-//                    if (sp.getOffset() >= firstQueryPos) {
-//                        break;
-//                    }
-//                    posBeforeFirst = i;
-//                }
-//                parsedPositions.addAll(posBeforeFirst, addedPositions);
-//
-//                addedAnnotations = new HashMap<>();
-//                for (SQLScriptPosition pos : addedPositions) {
-//                    if (pos.isMultiline()) {
-//                        addedAnnotations.put(pos.getFoldingAnnotation(), pos);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            log.error(e);
-//        }
-//        if (removedAnnotations != null || !CommonUtils.isEmpty(addedAnnotations)) {
-//            annotationModel.modifyAnnotations(
-//                removedAnnotations == null ? null : removedAnnotations.toArray(new Annotation[removedAnnotations.size()]),
-//                addedAnnotations,
-//                null);
-//        }
-//    }
 }
