@@ -65,10 +65,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
         GenericSchema parentSchema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject : null;
 
         if (objectType == RelationalObjectType.TYPE_TABLE)
-        	/* 
-        	 * A TYPE_TABLE is requested in any kind of select statement. Hence it should return tables, views and (public) synonyms
-        	 */
-        	findObjectsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
+        	findTablesByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
         if (objectType == RelationalObjectType.TYPE_VIEW)
             findViewsByMask(session, parentSchema, objectNameMask, caseSensitive, maxResults, result);
         if (objectType == RelationalObjectType.TYPE_PROCEDURE)
