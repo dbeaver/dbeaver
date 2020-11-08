@@ -115,7 +115,7 @@ class SQLOccurrencesHighlighter {
                         }
                     }
 
-                    if (CommonUtils.isEmpty(wordSelected) || wordSelected.length() < 2) {
+                    if (wordUnderCursor == null && (CommonUtils.isEmpty(wordSelected) || wordSelected.length() < 2)) {
                         this.removeOccurrenceAnnotations();
                     } else {
                         OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
