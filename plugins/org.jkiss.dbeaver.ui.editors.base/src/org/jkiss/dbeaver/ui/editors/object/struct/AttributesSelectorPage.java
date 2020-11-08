@@ -247,6 +247,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         AbstractJob loadJob = new AbstractJob("Load entity attributes") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Load attributes", 1);
                 try {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
                         if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
@@ -255,6 +256,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     }
                 } catch (DBException e) {
                     return GeneralUtils.makeErrorStatus("Error loading attributes", e);
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }
