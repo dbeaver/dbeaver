@@ -324,7 +324,7 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAssociation> getAllReferences(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity onEntity) throws DBException {
+    public static List<DBSEntityAssociation> getAllReferences(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity onEntity) {
         List<DBSEntityAssociation> result = new ArrayList<>();
         try {
             final Collection<? extends DBSEntityAssociation> realConstraints = onEntity.getReferences(monitor);
