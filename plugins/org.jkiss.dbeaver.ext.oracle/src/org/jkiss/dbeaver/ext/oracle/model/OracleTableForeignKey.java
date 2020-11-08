@@ -96,11 +96,14 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
             switch (deleteRuleName) {
                 case "CASCADE":
                     this.deleteRule = DBSForeignKeyModifyRule.CASCADE;
+                    break;
                 case "SET NULL":
                     this.deleteRule = DBSForeignKeyModifyRule.SET_NULL;
+                    break;
                 case "NO ACTION":
                 default:
                     this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+                    break;
             }
         }
     }
