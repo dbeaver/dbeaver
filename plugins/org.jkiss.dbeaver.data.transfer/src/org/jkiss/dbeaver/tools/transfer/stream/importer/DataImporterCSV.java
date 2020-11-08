@@ -49,7 +49,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
-    private static final String PROP_TIMESTAMP_FORMAT = "timestampFormat";
 
     enum HeaderPosition {
         none,
@@ -135,7 +134,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
             consumer.fetchStart(producerSession, resultSet, -1, -1);
 
-            applyTransformHints(resultSet, consumer, getTimeStampFormat(properties, PROP_TIMESTAMP_FORMAT));
+            applyTransformHints(resultSet, consumer, properties, PROP_TIMESTAMP_FORMAT, PROP_TIMESTAMP_ZONE);
 
             try (Reader reader = openStreamReader(inputStream, properties)) {
                 try (CSVReader csvReader = openCSVReader(reader, properties)) {
