@@ -135,10 +135,12 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
             DBDCollection collection = (DBDCollection) value;
+            boolean isNativeFormat = format == DBDDisplayFormat.NATIVE;
+            boolean isStringArray = collection.getComponentType().getDataKind() == DBPDataKind.STRING;
 
             DBDValueHandler valueHandler = collection.getComponentValueHandler();
             StringBuilder str = new StringBuilder();
-            if (format == DBDDisplayFormat.NATIVE) {
+            if (isNativeFormat) {
                 str.append("'");
             }
             str.append("{");
@@ -154,11 +156,14 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 } else {
                     itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, format);
                 }
+
+                if (isNativeFormat && isStringArray) str.append('"');
                 if (format == DBDDisplayFormat.NATIVE) {
                     str.append(SQLUtils.escapeString(collection.getComponentType().getDataSource(), itemString));
                 } else {
                     str.append(itemString);
                 }
+                if (isNativeFormat && isStringArray) str.append('"');
             }
             str.append("}");
             if (format == DBDDisplayFormat.NATIVE) {
