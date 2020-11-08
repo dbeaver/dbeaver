@@ -304,11 +304,15 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) throws DBException {
+    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
         List<DBSEntityAssociation> result = new ArrayList<>();
-        final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
-        if (!CommonUtils.isEmpty(realConstraints)) {
-            result.addAll(realConstraints);
+        try {
+            final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
+            if (!CommonUtils.isEmpty(realConstraints)) {
+                result.addAll(realConstraints);
+            }
+        } catch (DBException e) {
+            log.debug("Error reading entity associations", e);
         }
         if (!(entity instanceof DBVEntity)) {
             DBVEntity vEntity = getVirtualEntity(entity, false);
