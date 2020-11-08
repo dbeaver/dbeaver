@@ -326,9 +326,13 @@ public abstract class DBVUtils {
     @NotNull
     public static List<DBSEntityAssociation> getAllReferences(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity onEntity) throws DBException {
         List<DBSEntityAssociation> result = new ArrayList<>();
-        final Collection<? extends DBSEntityAssociation> realConstraints = onEntity.getReferences(monitor);
-        if (!CommonUtils.isEmpty(realConstraints)) {
-            result.addAll(realConstraints);
+        try {
+            final Collection<? extends DBSEntityAssociation> realConstraints = onEntity.getReferences(monitor);
+            if (!CommonUtils.isEmpty(realConstraints)) {
+                result.addAll(realConstraints);
+            }
+        } catch (DBException e) {
+            log.debug("Error reading entity references", e);
         }
 
         result.addAll(getVirtualReferences(onEntity));
