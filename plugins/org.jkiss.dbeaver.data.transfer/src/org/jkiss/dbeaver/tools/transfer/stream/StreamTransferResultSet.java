@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -97,9 +97,9 @@ public class StreamTransferResultSet implements DBCResultSet {
                     value = java.util.Date.from(zdt.toInstant());
                 } catch (Exception e) {
                     LocalDateTime localDT = LocalDateTime.from(ta);
-                    if (localDT != null) {
-                        value = java.util.Date.from(localDT.atZone(ZoneId.of("UTC")).toInstant());
-                    }
+                    // We use java.sql.Timestamp.valueOf because classic date/time conversion turns "pre-historic" Gregorian
+                    // dates into incorrect SQL timestamps (in Julian calendar). E.g. 0001-01-01->0001-01-03
+                    value = Timestamp.valueOf(localDT);
                 }
             } catch (Exception e) {
                 // Can't parse. Ignore format then
