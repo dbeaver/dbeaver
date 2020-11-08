@@ -39,7 +39,9 @@ import java.util.*;
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
     private static final boolean ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT = false;
 
-    private List<SQLScriptPosition> registeredPositions = new ArrayList<>();
+    private static final Comparator<SQLScriptPosition> COMPARATOR = Comparator.comparingInt(SQLScriptPosition::getOffset).thenComparingInt(SQLScriptPosition::getLength);
+
+    private SortedSet<SQLScriptPosition> registeredPositions = new TreeSet<>(COMPARATOR);
 
     private SQLEditorBase editor;
 
@@ -90,7 +92,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         Iterable<SQLScriptElement> queries = getQueries();
         Map<Annotation, Position> newAnnotations = new HashMap<>();
-        List<SQLScriptPosition> newRegisteredPositions = new ArrayList<>();
+        SortedSet<SQLScriptPosition> newRegisteredPositions = new TreeSet<>(COMPARATOR);
         for (SQLScriptElement element: queries) {
             if (deservesFolding(element)) {
                 SQLScriptPosition position = retrievePosition(element);
@@ -99,8 +101,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             }
         }
         Annotation[] oldAnnotations = new Annotation[registeredPositions.size()];
-        for (int i = 0; i < oldAnnotations.length; i++) {
-            oldAnnotations[i] = registeredPositions.get(i).getFoldingAnnotation();
+        int i = 0;
+        for (SQLScriptPosition position: registeredPositions) {
+            oldAnnotations[i] = position.getFoldingAnnotation();
+            i++;
         }
         model.modifyAnnotations(oldAnnotations, newAnnotations, null);
         registeredPositions = newRegisteredPositions;
@@ -176,15 +180,16 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     private SQLScriptPosition retrievePosition(SQLScriptElement element) {
-        Iterator<SQLScriptPosition> iterator = registeredPositions.listIterator();
         int expandedQueryLength = expandQueryLength(element);
-        while (iterator.hasNext()) {
-            SQLScriptPosition position = iterator.next();
-            if (position.getOffset() == element.getOffset() && position.getLength() == expandedQueryLength) {
-                iterator.remove();
-                return position;
-            }
+        SQLScriptPosition newPosition = new SQLScriptPosition(element.getOffset(), expandedQueryLength, true, new ProjectionAnnotation());
+        SortedSet<SQLScriptPosition> registeredPositionsSubset = registeredPositions.tailSet(newPosition);
+        if (registeredPositionsSubset.isEmpty()) {
+            return newPosition;
         }
-        return new SQLScriptPosition(element.getOffset(), expandedQueryLength, true, new ProjectionAnnotation());
+        SQLScriptPosition firstRegisteredPosition = registeredPositionsSubset.first();
+        if (firstRegisteredPosition.equals(newPosition)) {
+            return firstRegisteredPosition;
+        }
+        return newPosition;
     }
 }
