@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -54,7 +53,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
     private static final int MAX_COLUMN_LENGTH = 1024;
-    private static final int MAX_TYPE_SAMPLES = 1000;
+
+    private static final int MAX_DATA_TYPE_SAMPLES = 1000;
+    private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
+    private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     enum HeaderPosition {
         none,
@@ -90,7 +95,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     columnsInfo.add(columnInfo);
                 }
 
-                for (int sample = 0; sample < MAX_TYPE_SAMPLES; sample++) {
+                for (int sample = 0; sample < MAX_DATA_TYPE_SAMPLES; sample++) {
                     String[] line = getNextLine(csvReader);
                     if (line == null) {
                         break;
@@ -168,26 +173,26 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
     private Pair<DBPDataKind, String> getDataType(String value) {
         if (CommonUtils.isEmpty(value)) {
-            return new Pair<>(DBPDataKind.UNKNOWN, null);
+            return DATA_TYPE_UNKNOWN;
         }
 
         try {
             Integer.parseInt(value);
-            return new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+            return DATA_TYPE_INTEGER;
         } catch (NumberFormatException ignored) {
         }
 
         try {
             Double.parseDouble(value);
-            return new Pair<>(DBPDataKind.NUMERIC, "REAL");
+            return DATA_TYPE_REAL;
         } catch (NumberFormatException ignored) {
         }
 
-        if (ArrayUtils.containsIgnoreCase(new String[]{"true", "false"}, value)) {
-            return new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            return DATA_TYPE_BOOLEAN;
         }
 
-        return new Pair<>(DBPDataKind.STRING, "VARCHAR");
+        return DATA_TYPE_STRING;
     }
 
     @Override
