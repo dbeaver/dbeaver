@@ -32,14 +32,17 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
@@ -172,9 +175,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                 DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
                                 rootNode,
                                 rootNode,
-                                new Class[]{DBPDataSource.class, DBSObjectContainer.class, DBSCatalog.class},
-                                null,
-                                new Class[]{DBPDataSource.class, DBSObjectContainer.class, DBSCatalog.class});
+                                new Class[]{DBSObjectContainer.class, DBSDataContainer.class},
+                                new Class[]{DBSDataContainer.class, DBSSchema.class},
+                                new Class[]{DBSSchema.class});
 
                         if (node != null) {
                             if (node instanceof DBNDataSource) {
@@ -209,9 +212,22 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                     return;
                                 }
                             }
+                            DataSourceContextProvider contextProvider = new DataSourceContextProvider(dataSourceObject);
+                            try {
+                                DBExecUtils.setExecutionContextDefaults(
+                                        new VoidProgressMonitor(),
+                                        dataSource,
+                                        contextProvider.getExecutionContext(),
+                                        dataSourceObject instanceof DBSSchema ? DBUtils.getObjectOwnerInstance(dataSourceObject).getName() : null,
+                                        null,
+                                        dataSourceObject.getName()
+                                );
+                            } catch (DBException ex) {
+                                log.error("Error setting context defaults", ex);
+                                return;
+                            }
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
-                                DataSourceContextProvider contextProvider = new DataSourceContextProvider(dataSourceObject);
                                 String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
                                 if (query != null) {
                                     SQLScriptContext scriptContext = new SQLScriptContext(null, contextProvider, null, new PrintWriter(System.err, true), null);
