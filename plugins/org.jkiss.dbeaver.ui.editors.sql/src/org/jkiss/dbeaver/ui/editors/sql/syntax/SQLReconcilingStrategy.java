@@ -115,11 +115,12 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (numberOfLines == 1) {
             return false;
         }
-        if (numberOfLines == 2 && expandQueryLength(element) == element.getLength() && element.getOffset() + element.getLength() != document.getLength()) {
-            return false;
-        }
-        if (numberOfLines > 2 && expandQueryLength(element) == element.getLength()) {
-            return ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT;
+        if (element.getOffset() + element.getLength() != document.getLength() && expandQueryLength(element) == element.getLength()) {
+            if (numberOfLines == 2) {
+                return false;
+            } else {
+                return ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT;
+            }
         }
         return true;
     }
