@@ -82,9 +82,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         } else {
                             column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
                         }
-                        columnsInfo.add(
-                            new StreamDataImporterColumnInfo(
-                                entityMapping, i, column, "VARCHAR", 1024, DBPDataKind.STRING));
+                        StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, "VARCHAR", 1024, DBPDataKind.STRING);
+                        columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
+                        columnsInfo.add(columnInfo);
                     }
                     break;
                 }
