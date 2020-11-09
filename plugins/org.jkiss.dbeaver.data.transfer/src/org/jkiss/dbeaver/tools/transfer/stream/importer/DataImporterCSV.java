@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.importer;
 import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,7 +31,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ import java.util.Map;
  * CSV importer
  */
 public class DataImporterCSV extends StreamImporterAbstract {
+    private static final Log log = Log.getLog(DataImporterCSV.class);
 
     private static final String PROP_ENCODING = "encoding";
     private static final String PROP_HEADER = "header";
@@ -49,6 +53,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final int MAX_COLUMN_LENGTH = 1024;
+    private static final int MAX_TYPE_SAMPLES = 1000;
 
     enum HeaderPosition {
         none,
@@ -67,26 +73,55 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
-                for (;;) {
-                    String[] line = csvReader.readNext();
+                String[] header = getNextLine(csvReader);
+                if (header == null) {
+                    return columnsInfo;
+                }
+
+                for (int i = 0; i < header.length; i++) {
+                    String column = header[i];
+                    if (headerPosition == HeaderPosition.none) {
+                        column = "Column" + (i + 1);
+                    } else {
+                        column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
+                    }
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, MAX_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
+                    columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
+                    columnsInfo.add(columnInfo);
+                }
+
+                for (int sample = 0; sample < MAX_TYPE_SAMPLES; sample++) {
+                    String[] line = getNextLine(csvReader);
                     if (line == null) {
                         break;
                     }
-                    if (line.length == 0) {
-                        continue;
-                    }
-                    for (int i = 0; i < line.length; i++) {
-                        String column = line[i];
-                        if (headerPosition == HeaderPosition.none) {
-                            column = "Column" + (i + 1);
-                        } else {
-                            column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
+
+                    for (int i = 0; i < Math.min(line.length, header.length); i++) {
+                        Pair<DBPDataKind, String> dataType = getDataType(line[i]);
+                        StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
+
+                        switch (dataType.getFirst()) {
+                            case STRING:
+                                columnInfo.setDataKind(dataType.getFirst());
+                                columnInfo.setTypeName(dataType.getSecond());
+                                break;
+                            case NUMERIC:
+                            case BOOLEAN:
+                                if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
+                                    columnInfo.setDataKind(dataType.getFirst());
+                                    columnInfo.setTypeName(dataType.getSecond());
+                                }
+                                break;
                         }
-                        StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, "VARCHAR", 1024, DBPDataKind.STRING);
-                        columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
-                        columnsInfo.add(columnInfo);
                     }
-                    break;
+                }
+
+                for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
+                    if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
+                        log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
+                        columnInfo.setDataKind(DBPDataKind.STRING);
+                        columnInfo.setTypeName("VARCHAR");
+                    }
                 }
             }
         } catch (IOException e) {
@@ -116,6 +151,43 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private InputStreamReader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties) throws UnsupportedEncodingException {
         String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         return new InputStreamReader(inputStream, encoding);
+    }
+
+    private String[] getNextLine(CSVReader csvReader) throws IOException {
+        while (true) {
+            String[] line = csvReader.readNext();
+            if (line == null) {
+                return null;
+            }
+            if (line.length == 0) {
+                continue;
+            }
+            return line;
+        }
+    }
+
+    private Pair<DBPDataKind, String> getDataType(String value) {
+        if (CommonUtils.isEmpty(value)) {
+            return new Pair<>(DBPDataKind.UNKNOWN, null);
+        }
+
+        try {
+            Integer.parseInt(value);
+            return new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+        } catch (NumberFormatException ignored) {
+        }
+
+        try {
+            Double.parseDouble(value);
+            return new Pair<>(DBPDataKind.NUMERIC, "REAL");
+        } catch (NumberFormatException ignored) {
+        }
+
+        if (ArrayUtils.containsIgnoreCase(new String[]{"true", "false"}, value)) {
+            return new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
+        }
+
+        return new Pair<>(DBPDataKind.STRING, "VARCHAR");
     }
 
     @Override

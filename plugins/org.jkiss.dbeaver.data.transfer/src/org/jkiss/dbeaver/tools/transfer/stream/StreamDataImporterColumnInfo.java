@@ -28,6 +28,9 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
 
     private StreamEntityMapping entityMapping;
     private DBPDataKind dataKind;
+
+    // Determines whether the mapping metadata,
+    // such as the column name, is present or not.
     private boolean mappingMetadataPresent;
 
     public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {

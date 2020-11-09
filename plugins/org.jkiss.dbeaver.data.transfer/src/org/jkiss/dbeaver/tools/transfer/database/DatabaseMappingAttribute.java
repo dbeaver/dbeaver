@@ -126,11 +126,13 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    if (source instanceof StreamDataImporterColumnInfo &&
-                            !((StreamDataImporterColumnInfo) source).isMappingMetadataPresent() &&
-                            targetAttributes != null &&
-                            source.getOrdinalPosition() < targetAttributes.size()) {
-                        targetName = targetAttributes.get(source.getOrdinalPosition()).getName();
+                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null && source.getOrdinalPosition() < targetAttributes.size()) {
+                        StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
+                        DBSEntityAttribute targetAttribute = targetAttributes.get(source.getOrdinalPosition());
+                        source.setDataKind(targetAttribute.getDataKind());
+                        if (!source.isMappingMetadataPresent()) {
+                            targetName = targetAttribute.getName();
+                        }
                     }
                     this.target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                     if (this.target != null) {
