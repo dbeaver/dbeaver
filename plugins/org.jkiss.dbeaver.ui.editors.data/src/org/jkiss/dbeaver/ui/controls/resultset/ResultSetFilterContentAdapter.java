@@ -47,7 +47,11 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
             for (int i = selection.x - 1; i >= 0; i--) {
                 String prefix = curValue.substring(i, selection.x);
                 if (contentsUC.startsWith(prefix)) {
-                    if (i == 0 || curValue.substring(i - 1, selection.x).startsWith(" ")) {
+                    String selectedText = "";
+                    if(i != 0) {
+                        selectedText = curValue.substring(i - 1, selection.x);
+                    }
+                    if (i == 0 || selectedText.startsWith(" ") || selectedText.startsWith("(")) {
                         text.setSelection(i, selection.x);
                         break;
                     }
