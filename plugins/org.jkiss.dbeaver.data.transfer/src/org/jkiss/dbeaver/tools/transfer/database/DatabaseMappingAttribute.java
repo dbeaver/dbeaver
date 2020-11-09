@@ -24,8 +24,10 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -123,8 +125,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                         targetName = source.getName();
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
-                    this.target = DBUtils.findObject(
-                        targetEntity.getAttributes(monitor), DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                    List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
+                    if (source instanceof StreamDataImporterColumnInfo &&
+                            !((StreamDataImporterColumnInfo) source).isMappingMetadataPresent() &&
+                            targetAttributes != null &&
+                            source.getOrdinalPosition() < targetAttributes.size()) {
+                        targetName = targetAttributes.get(source.getOrdinalPosition()).getName();
+                    }
+                    this.target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                     if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {

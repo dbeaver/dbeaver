@@ -28,6 +28,7 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
 
     private StreamEntityMapping entityMapping;
     private DBPDataKind dataKind;
+    private boolean mappingMetadataPresent;
 
     public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
         super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
@@ -60,5 +61,13 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
 
     public void setDataKind(DBPDataKind dataKind) {
         this.dataKind = dataKind;
+    }
+
+    public boolean isMappingMetadataPresent() {
+        return mappingMetadataPresent;
+    }
+
+    public void setMappingMetadataPresent(boolean mappingMetadataPresent) {
+        this.mappingMetadataPresent = mappingMetadataPresent;
     }
 }
