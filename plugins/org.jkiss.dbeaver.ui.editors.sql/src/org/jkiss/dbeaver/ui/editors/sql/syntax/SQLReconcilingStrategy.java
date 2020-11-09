@@ -37,8 +37,6 @@ import java.util.*;
  * SQLReconcilingStrategy
  */
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-    private static final boolean ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT = false;
-
     private static final Comparator<SQLScriptPosition> COMPARATOR = Comparator.comparingInt(SQLScriptPosition::getOffset).thenComparingInt(SQLScriptPosition::getLength);
 
     private SortedSet<SQLScriptPosition> registeredPositions = new TreeSet<>(COMPARATOR);
@@ -116,11 +114,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             return false;
         }
         if (element.getOffset() + element.getLength() != document.getLength() && expandQueryLength(element) == element.getLength()) {
-            if (numberOfLines == 2) {
-                return false;
-            } else {
-                return ACTIVATE_FOLDS_WHEN_STATEMENT_IS_LONGER_THAN_TWO_LINES_AND_THERE_IS_SOMETHING_ELSE_OTHER_THAT_WHITESPACES_ON_THE_LINE_AFTER_THE_STATEMENT;
-            }
+            return numberOfLines > 2;
         }
         return true;
     }
