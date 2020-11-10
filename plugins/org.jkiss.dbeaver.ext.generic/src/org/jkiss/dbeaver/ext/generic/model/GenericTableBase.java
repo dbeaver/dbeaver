@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -474,5 +475,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public List<? extends GenericTrigger> getTriggerCache() {
         return triggers;
+    }
+
+    public boolean supportUniqueIndexes() {
+        return true;
+    }
+
+    public Collection<DBSIndexType> getTableIndexTypes() {
+        return Collections.singletonList(DBSIndexType.OTHER);
     }
 }
