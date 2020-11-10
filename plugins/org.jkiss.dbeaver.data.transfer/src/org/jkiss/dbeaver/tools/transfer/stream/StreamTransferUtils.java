@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -28,18 +29,17 @@ public class StreamTransferUtils {
 
     private static final Log log = Log.getLog(StreamTransferUtils.class);
 
-    private static final char DEF_DELIMITER = ',';
+    private static final String DEF_DELIMITER = ",";
 
     public static String getDelimiterString(Map<String, Object> properties, String propName) {
-        String delimString = String.valueOf(properties.get(propName));
-        if (delimString == null || delimString.isEmpty()) {
-            delimString = String.valueOf(DEF_DELIMITER);
+        String delimString = CommonUtils.toString(properties.get(propName), null);
+        if (CommonUtils.isEmpty(delimString)) {
+            return DEF_DELIMITER;
         } else {
-            delimString = delimString
+            return delimString
                     .replace("\\t", "\t")
                     .replace("\\n", "\n")
                     .replace("\\r", "\r");
         }
-        return delimString;
     }
 }
