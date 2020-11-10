@@ -97,9 +97,13 @@ public class DTMessages extends NLS {
 	public static String data_transfer_db_consumer_target_container;
 	public static String data_transfer_db_consumer_choose_container;
 	public static String data_transfer_db_consumer_auto_assign;
+	public static String data_transfer_db_consumer_auto_assign_description;
 	public static String data_transfer_db_consumer_existing_table;
+	public static String data_transfer_db_consumer_existing_table_description;
 	public static String data_transfer_db_consumer_new_table;
+	public static String data_transfer_db_consumer_new_table_description;
 	public static String data_transfer_db_consumer_column_mappings;
+	public static String data_transfer_db_consumer_column_mappings_description;
 	public static String data_transfer_db_consumer_ddl;
 
 	public static String sql_script_task_title;
