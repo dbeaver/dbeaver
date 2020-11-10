@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
+import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -44,41 +48,35 @@ import java.util.Locale;
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreValueParserTest {
 
+    private final PostgreDialect sqlDialect = new PostgreDialect();
+
+    @Mock
+    private PostgreDataSource dataSource;
     @Mock
     private DBCSession session;
 
     @Mock
     private PostgreDataType arrayDoubleItemType;
-
     @Mock
     private PostgreDataType arrayIntItemType;
-
     @Mock
     private PostgreDataType arrayStringItemType;
-
     @Mock
     private PostgreDataType arrayBooleanItemType;
-
     @Mock
     private PostgreDataType arrayStructItemType;
-
     @Mock
     private PostgreDataType stringItemType;
-
     @Mock
     private PostgreDataType intItemType;
-
     @Mock
     private PostgreDataType booleanItemType;
-
     @Mock
     private PostgreDataType doubleItemType;
-
     @Mock
     private PostgreDataType structItemType;
 
     private NumberDataFormatter numberDataFormatter = new NumberDataFormatter();
-
     @Mock
     private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", new TestPreferenceStore());
 
@@ -169,6 +167,20 @@ public class PostgreValueParserTest {
     }
 
     @Test
+    public void convertArrayToString() {
+        PostgreArrayValueHandler arrayVH = new PostgreArrayValueHandler();
+        String[] stringItems = new String[] {
+            "one", "two", " four with spaces ", "f{i,v}e"
+        };
+        JDBCCollection array = new JDBCCollection(stringItemType, arrayVH, stringItems);
+        JDBCCollection array3D = new JDBCCollection(stringItemType, arrayVH, new Object[] { array, array} );
+        String arrayString = arrayVH.getValueDisplayString(arrayStringItemType, array, DBDDisplayFormat.NATIVE);
+        Assert.assertEquals("'{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}'", arrayString);
+        String arrayString3D = arrayVH.getValueDisplayString(arrayStringItemType, array3D, DBDDisplayFormat.NATIVE);
+        Assert.assertEquals("'{{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"},{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}}'", arrayString3D);
+    }
+
+    @Test
     public void parseArrayString() {
         List<String> stringList = new ArrayList<>();
         stringList.add("A");
@@ -212,6 +224,7 @@ public class PostgreValueParserTest {
     }
 
     private void setupGeneralWhenMocks() throws Exception {
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(sqlDialect);
         Mockito.when(session.getProgressMonitor()).thenReturn(new VoidProgressMonitor());
 
         Mockito.when(intItemType.getFullTypeName()).thenReturn("test_intItemType");
@@ -233,6 +246,7 @@ public class PostgreValueParserTest {
         Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
         Mockito.when(stringItemType.getDataKind()).thenReturn(DBPDataKind.STRING);
         Mockito.when(stringItemType.getTypeID()).thenReturn(Types.VARCHAR);
+        Mockito.when(stringItemType.getDataSource()).thenReturn(dataSource);
 
         Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");
         Mockito.when(arrayStringItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
