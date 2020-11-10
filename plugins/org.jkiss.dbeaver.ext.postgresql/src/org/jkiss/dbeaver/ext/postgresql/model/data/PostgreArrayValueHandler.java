@@ -133,6 +133,10 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        return convertArrayToString(column, value, format, false);
+    }
+
+    private String convertArrayToString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format, boolean nested) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
             DBDCollection collection = (DBDCollection) value;
             boolean isNativeFormat = format == DBDDisplayFormat.NATIVE;
@@ -140,7 +144,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
 
             DBDValueHandler valueHandler = collection.getComponentValueHandler();
             StringBuilder str = new StringBuilder();
-            if (isNativeFormat) {
+            if (isNativeFormat && !nested) {
                 str.append("'");
             }
             str.append("{");
@@ -152,21 +156,21 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 String itemString;
                 if (item instanceof JDBCCollection) {
                     // Multi-dimensional arrays case
-                    itemString = getValueDisplayString(column, item, format);
+                    itemString = convertArrayToString(column, item, format, true);
                 } else {
                     itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, format);
                 }
 
-                if (isNativeFormat && isStringArray) str.append('"');
-                if (format == DBDDisplayFormat.NATIVE) {
+                if (isNativeFormat) {
+                    if (item instanceof String) str.append('"');
                     str.append(SQLUtils.escapeString(collection.getComponentType().getDataSource(), itemString));
+                    if (item instanceof String) str.append('"');
                 } else {
                     str.append(itemString);
                 }
-                if (isNativeFormat && isStringArray) str.append('"');
             }
             str.append("}");
-            if (format == DBDDisplayFormat.NATIVE) {
+            if (isNativeFormat && !nested) {
                 str.append("'");
             }
 

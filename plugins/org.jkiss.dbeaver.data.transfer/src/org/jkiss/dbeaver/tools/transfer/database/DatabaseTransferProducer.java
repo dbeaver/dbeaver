@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -289,9 +291,21 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 state.put("type", "query");
                 SQLQueryContainer queryContainer = (SQLQueryContainer) dataContainer;
                 DBPDataSourceContainer dataSource = queryContainer.getDataSourceContainer();
+                DBCExecutionContext executionContext = queryContainer.getExecutionContext();
                 if (dataSource != null) {
                     state.put("project", dataSource.getProject().getName());
                     state.put("dataSource", dataSource.getId());
+                    if (executionContext instanceof DBCExecutionContextDefaults) {
+                        DBCExecutionContextDefaults contextDefaults = ((DBCExecutionContextDefaults) executionContext);
+                        DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                        if (defaultCatalog != null) {
+                            state.put("defaultCatalog", defaultCatalog.getName());
+                        }
+                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                        if (defaultSchema != null) {
+                            state.put("defaultSchema", defaultSchema.getName());
+                        }
+                    }
                 }
                 SQLScriptElement query = queryContainer.getQuery();
                 state.put("query", query.getOriginalText());
@@ -340,6 +354,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 DBPDataSource dataSource = ds.getDataSource();
                                 SQLQuery query = new SQLQuery(dataSource, queryText);
                                 TaskContextProvider taskContextProvider = new TaskContextProvider(runnableContext, dataSource, objectContext);
+                                DBExecUtils.setExecutionContextDefaults(
+                                        monitor,
+                                        dataSource,
+                                        taskContextProvider.getExecutionContext(),
+                                        CommonUtils.toString(state.get("defaultCatalog"), null),
+                                        null,
+                                        CommonUtils.toString(state.get("defaultSchema"), null)
+                                );
                                 SQLScriptContext scriptContext = new SQLScriptContext(null,
                                     taskContextProvider, null, new PrintWriter(System.err, true), null);
                                 scriptContext.setVariables(DBTaskUtils.getVariables(objectContext));
