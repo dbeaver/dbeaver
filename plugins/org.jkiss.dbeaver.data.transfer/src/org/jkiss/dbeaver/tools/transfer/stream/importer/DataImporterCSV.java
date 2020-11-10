@@ -61,7 +61,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
-    enum HeaderPosition {
+    public enum HeaderPosition {
         none,
         top,
     }
@@ -96,9 +96,16 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 }
 
                 for (int sample = 0; sample < MAX_DATA_TYPE_SAMPLES; sample++) {
-                    String[] line = getNextLine(csvReader);
-                    if (line == null) {
-                        break;
+                    String[] line;
+
+                    if (sample == 0 && headerPosition == HeaderPosition.none) {
+                        // Include first line (header that does not exist) for sampling
+                        line = header;
+                    } else {
+                        line = getNextLine(csvReader);
+                        if (line == null) {
+                            break;
+                        }
                     }
 
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
