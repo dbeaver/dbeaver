@@ -164,7 +164,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
          * algorithm will fail if the 'ssh-keygen' cannot be found (#5845)
          */
         if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
-            log.debug("Attempting to convert unsupported key");
+            log.debug("Attempting to convert an unsupported key into suitable format");
 
             String id = dataSource != null ? dataSource.getId() : "profile";
             File dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
@@ -176,10 +176,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 .command(
                     "ssh-keygen",
                     "-p",
+                    "-P", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"',
+                    "-N", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"',
                     "-m", "PEM",
                     "-f", tmp.getAbsolutePath(),
-                    "-q",
-                    "-N", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"')
+                    "-q")
                 .start();
 
             try {
