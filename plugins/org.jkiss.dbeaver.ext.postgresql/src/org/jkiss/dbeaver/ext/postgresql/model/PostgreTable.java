@@ -417,16 +417,16 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     @Association
-    public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
             return null;
         }
-        List<PostgreTableBase> result = new ArrayList<>(si.size());
-        for (int i1 = 0; i1 < si.size(); i1++) {
-            PostgreTableBase table = si.get(i1).getParentObject();
-            if (table.isPartition()) {
-                result.add(table);
+        List<PostgreTablePartition> result = new ArrayList<>(si.size());
+        for (PostgreTableInheritance postgreTableInheritance : si) {
+            PostgreTableBase table = postgreTableInheritance.getParentObject();
+            if (table instanceof PostgreTablePartition) {
+                result.add((PostgreTablePartition) table);
             }
         }
         return result;
