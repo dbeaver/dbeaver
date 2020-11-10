@@ -2,15 +2,14 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public class ExpandCollapseAllFoldingsHandler extends AbstractHandler implements IHandler {
-    private static final String PREFIX = "org.jkiss.dbeaver.ui.editors.sql.commands.";
+public class SQLEditorHandlerExpandCollapseAllFoldings extends AbstractHandler {
+    private static final String PREFIX = "command.org.jkiss.dbeaver.ui.editors.sql.";
     private static final String SUFFIX = "AllFoldings";
     private static final String EXPAND_COMMAND_ID = PREFIX + "Expand" + SUFFIX;
     private static final String COLLAPSE_COMMAND_ID = PREFIX + "Collapse" + SUFFIX;

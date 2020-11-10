@@ -819,7 +819,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     /**
@@ -862,6 +862,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
+            case SQLPreferenceConstants.FOLDING_ENABLED:
+                SourceViewerConfiguration configuration = getSourceViewerConfiguration();
+                SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
+                sourceViewer.unconfigure();
+                annotationModel.removeAllAnnotations();
+                sourceViewer.configure(configuration);
         }
     }
 
