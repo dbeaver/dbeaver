@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -49,6 +50,11 @@ public class HiveMetaModel extends GenericMetaModel
     @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         return new HiveTable(container, tableName, tableType, dbResult);
+    }
+
+    @Override
+    public GenericTableIndex createIndexImpl(GenericTableBase table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
+        return new HiveIndex((HiveTable) table, indexName, persisted, "", indexType.getName(), null);
     }
 
     @Override
