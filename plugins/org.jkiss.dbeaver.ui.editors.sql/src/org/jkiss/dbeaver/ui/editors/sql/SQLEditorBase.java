@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -159,6 +160,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         setKeyBindingScopes(getKeyBindingContexts());  //$NON-NLS-1$
 
         completionContext = new SQLEditorCompletionContext(this);
+
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
     }
 
     @Override
@@ -474,6 +477,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     public void dispose() {
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -730,15 +734,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     protected String[] collectContextMenuPreferencePages() {
         String[] ids = super.collectContextMenuPreferencePages();
-        String[] more = new String[ids.length + 6];
-        more[ids.length] = PrefPageSQLEditor.PAGE_ID;
-        more[ids.length + 1] = PrefPageSQLExecute.PAGE_ID;
-        more[ids.length + 2] = PrefPageSQLCompletion.PAGE_ID;
-        more[ids.length + 3] = PrefPageSQLFormat.PAGE_ID;
-        more[ids.length + 4] = PrefPageSQLResources.PAGE_ID;
-        more[ids.length + 5] = PrefPageSQLTemplates.PAGE_ID;
-        System.arraycopy(ids, 0, more, 0, ids.length);
-        return more;
+        return ArrayUtils.concatArrays(ids, new String[] {
+            PrefPageSQLEditor.PAGE_ID,
+            PrefPageSQLExecute.PAGE_ID,
+            PrefPageSQLCodeEditing.PAGE_ID,
+            PrefPageSQLCompletion.PAGE_ID,
+            PrefPageSQLFormat.PAGE_ID,
+            PrefPageSQLResources.PAGE_ID,
+            PrefPageSQLTemplates.PAGE_ID
+        });
     }
 
     @Override
@@ -855,7 +859,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
+            case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
+            case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
+                occurrencesHighlighter.updateInput(getEditorInput());
+                return;
         }
+
     }
 
     ////////////////////////////////////////////////////////
