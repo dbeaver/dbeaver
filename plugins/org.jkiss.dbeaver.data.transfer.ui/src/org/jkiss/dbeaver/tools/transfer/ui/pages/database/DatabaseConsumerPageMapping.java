@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -164,7 +163,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_auto_assign,
                 UIIcon.ASTERISK,
-                "Auto-assign table and column mappings",
+                DTMessages.data_transfer_db_consumer_auto_assign_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -178,7 +177,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_existing_table,
                 DBIcon.TREE_TABLE,
-                "Select target table",
+                DTMessages.data_transfer_db_consumer_existing_table_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -191,7 +190,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button createNewButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_new_table,
                 DBIcon.TREE_VIEW,
-                "Set target table name",
+                DTMessages.data_transfer_db_consumer_new_table_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -204,7 +203,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button columnsButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_column_mappings,
                 DBIcon.TREE_COLUMNS,
-                "Configure column mappings (advanced)",
+                DTMessages.data_transfer_db_consumer_column_mappings_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
