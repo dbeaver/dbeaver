@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
+import java.util.Collection;
 
 /**
  * Generic table index configurator
@@ -38,13 +39,16 @@ public class GenericTableIndexConfigurator implements DBEObjectConfigurator<Gene
 
     @Override
     public GenericTableIndex configureObject(DBRProgressMonitor monitor, Object table, GenericTableIndex index) {
+        GenericTableBase tableBase = (GenericTableBase) table;
+        boolean supportUniqueIndexes = tableBase.supportUniqueIndexes();
+        Collection<DBSIndexType> tableIndexTypes = tableBase.getTableIndexTypes();
         return new UITask<GenericTableIndex>() {
             @Override
             protected GenericTableIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     "Create index",
                     index,
-                    Collections.singletonList(DBSIndexType.OTHER));
+                    tableIndexTypes, supportUniqueIndexes);
                 if (!editPage.edit()) {
                     return null;
                 }

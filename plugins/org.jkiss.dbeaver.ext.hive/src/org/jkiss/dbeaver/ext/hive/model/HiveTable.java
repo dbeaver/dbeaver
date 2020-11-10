@@ -1,12 +1,28 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.hive.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -14,17 +30,63 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class HiveTable extends GenericTable {
+public class HiveTable extends GenericTable implements DBPImageProvider {
     final public IndexCache indexCache = new IndexCache();
 
     public HiveTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+
+    @Override
+    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        List<HiveIndex> cacheObjects = indexCache.getObjects(monitor, getContainer(), this);
+        List<GenericTableIndex> newGenericIndexesList = new ArrayList<>();
+        for (HiveIndex index : cacheObjects) {
+            newGenericIndexesList.add((GenericTableIndex) index);
+        }
+        return newGenericIndexesList;
+    }
+
+    @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        indexCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
+    public boolean isIndexTable(){
+        return getTableType().equals("INDEX_TABLE");
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        if (isIndexTable()) {
+            return DBIcon.TREE_TABLE_INDEX;
+        } else {
+            return DBIcon.TREE_TABLE;
+        }
+    }
+
+    @Override
+    public boolean supportUniqueIndexes() {
+        return false;
+    }
+
+    public Collection<DBSIndexType> getTableIndexTypes() {
+        List<DBSIndexType> indexTypes = new ArrayList<>();
+        indexTypes.add(new DBSIndexType("COMPACT", "Compact"));
+        indexTypes.add(new DBSIndexType("BITMAP", "Bitmap"));
+        return indexTypes;
     }
 
     /**
@@ -53,17 +115,17 @@ public class HiveTable extends GenericTable {
         @Override
         protected HiveIndex fetchObject(JDBCSession session, GenericStructContainer owner, HiveTable parent, String indexName, JDBCResultSet dbResult)
         {
-            String hiveIndexName = JDBCUtils.safeGetString(dbResult, "idx_name");
+            String hiveIndexName = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, "idx_name")).trim();
             String comment = JDBCUtils.safeGetString(dbResult, "comment");
-            String indexType = JDBCUtils.safeGetString(dbResult, "idx_type");
-            String indexTableName = JDBCUtils.safeGetString(dbResult, "idx_tab_name");
+            String indexType = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, "idx_type")).trim();
+            String indexTableName = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, "idx_tab_name")).trim();
             try {
-                HiveTable table = (HiveTable) owner.getTable(dbResult.getSession().getProgressMonitor(), indexTableName.trim());
-                return new HiveIndex(parent, hiveIndexName, comment, indexType, table);
+                HiveTable table = (HiveTable) owner.getTable(dbResult.getSession().getProgressMonitor(), indexTableName);
+                return new HiveIndex(parent, hiveIndexName, true, comment, indexType, table);
             } catch (DBException e) {
                 log.debug("Can't read table from index" + indexName, e);
             }
-            return new HiveIndex(parent, hiveIndexName, comment, indexType, null);
+            return new HiveIndex(parent, hiveIndexName, true, comment, indexType, null);
         }
 
         @Nullable
