@@ -31,6 +31,7 @@ public class ResultSetCopySettings {
     private String rowDelimiter;
     private String quoteString;
     private DBDDisplayFormat format;
+    private boolean copyHTML;
 
     public ResultSetCopySettings() {
     }
@@ -126,5 +127,13 @@ public class ResultSetCopySettings {
 
     public void setFormat(DBDDisplayFormat format) {
         this.format = format;
+    }
+
+    public boolean isCopyHTML() {
+        return copyHTML;
+    }
+
+    public void setCopyHTML(boolean copyHTML) {
+        this.copyHTML = copyHTML;
     }
 }
