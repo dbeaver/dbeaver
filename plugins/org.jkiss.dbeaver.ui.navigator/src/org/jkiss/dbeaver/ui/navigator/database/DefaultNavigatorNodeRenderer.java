@@ -90,4 +90,9 @@ public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
 
     }
 
+    @Override
+    public void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction) {
+
+    }
+
 }

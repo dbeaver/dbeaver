@@ -89,9 +89,19 @@ public class UIUtils {
     private static final Log log = Log.getLog(UIUtils.class);
 
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
+    private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
+    private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
+
+    public static final char CHAR_BOOL_FALSE = 0x2610;
+    public static final char CHAR_BOOL_TRUE = 0x2611;
+    public static final char CHAR_BOOL_NULL = 0x2612;
 
     private static SharedTextColors sharedTextColors = new SharedTextColors();
     private static SharedFonts sharedFonts = new SharedFonts();
+
+    public static String getBooleanString(Boolean value) {
+        return String.valueOf(value == null ? CHAR_BOOL_NULL : (value ? UIUtils.CHAR_BOOL_TRUE : UIUtils.CHAR_BOOL_FALSE));
+    }
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
     {
@@ -1928,16 +1938,18 @@ public class UIUtils {
     /**
      * Calculate the Contrast color based on Luma(brightness)
      * https://en.wikipedia.org/wiki/Luma_(video)
+     *
+     * Do not dispose returned color.
      */
     public static Color getContrastColor(Color color) {
-        if (color == null)
-            return new Color(null, 0, 0, 0);
-
+        if (color == null) {
+            return COLOR_BLACK;
+        }
         double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
-
-        int c = (luminance > 0.5) ? 255 : 0;
-
-        return new Color(null, c, c, c);
+        if (luminance > 0.5) {
+            return COLOR_WHITE;
+        }
+        return COLOR_BLACK;
     }  
 
     public static void openWebBrowser(String url)

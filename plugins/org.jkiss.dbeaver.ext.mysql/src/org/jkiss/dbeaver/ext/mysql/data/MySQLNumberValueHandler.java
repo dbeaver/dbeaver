@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,8 +36,8 @@ import java.sql.Types;
 public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
 
 
-    public MySQLNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        super(type, formatterProfile);
+    public MySQLNumberValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        super(type, formatSettings);
     }
 
     /**

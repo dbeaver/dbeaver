@@ -129,10 +129,7 @@ public class SQLScriptParser
                 }
 
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
-                    if (curBlock == null) {
-                        // Check for double block header, e.g. DO, DECLARE
-                        curBlock = new ScriptBlockInfo(curBlock, true);
-                    }
+                    curBlock = new ScriptBlockInfo(curBlock, true);
                     hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
                     String togglePattern;
@@ -142,39 +139,26 @@ public class SQLScriptParser
                         log.warn(e);
                         togglePattern = "";
                     }
-                    // Second toggle pattern must be the same as first one.
-                    // Toggles can be nested (PostgreSQL) and we need to count only outer
-                    if (curBlock != null && curBlock.parent == null && togglePattern.equals(curBlock.togglePattern)) {
+
+                    if (curBlock != null && togglePattern.equals(curBlock.togglePattern)) {
                         curBlock = curBlock.parent;
-                    } else if (curBlock == null) {
+                    } else {
                         curBlock = new ScriptBlockInfo(curBlock, togglePattern);
-                    } else {
-                        log.debug("Block toggle token inside another block. Can't process it");
+                        hasBlocks = true;
                     }
-                    hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_BEGIN) {
-                    if (curBlock == null || !curBlock.isHeader) {
-                        curBlock = new ScriptBlockInfo(curBlock, false);
-                    } else {
-                        curBlock.isHeader = false;
+                    // Drop header block if it is followed by a regular block and
+                    // that block is not preceded by the prefix e.g 'AS', because in many dialects
+                    // there's no direct header block terminators
+                    // like 'BEGIN ... END' but 'DECLARE ... BEGIN ... END'
+                    if (curBlock != null && curBlock.isHeader && !ArrayUtils.contains(dialect.getInnerBlockPrefixes(), lastKeyword)) {
+                        curBlock = curBlock.parent;
                     }
+                    curBlock = new ScriptBlockInfo(curBlock, false);
                     hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_END) {
-                    // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
-                    // This END doesn't mean block
                     if (curBlock != null) {
-                        if (!CommonUtils.isEmpty(curBlock.togglePattern)) {
-                            // Block end inside of block toggle (#7460).
-                            // Actually it is a result of some wrong SQL parse (e.g. we didn't recognize block begin correctly).
-                            // However block toggle has higher priority. At the moment it is PostgreSQL specific.
-                            try {
-                                log.debug("Block end '" + document.get(tokenOffset, tokenLength) + "' inside of named block toggle '" + curBlock.togglePattern + "'. Ignore.");
-                            } catch (Throwable e) {
-                                log.debug(e);
-                            }
-                        } else {
-                            curBlock = curBlock.parent;
-                        }
+                        curBlock = curBlock.parent;
                     }
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets or inside block. Ignore it.
@@ -284,6 +268,9 @@ public class SQLScriptParser
                         int queryEndPos = tokenOffset;
                         if (tokenType == SQLTokenType.T_DELIMITER) {
                             queryEndPos += tokenLength;
+                        }
+                        if (curBlock != null) {
+                            log.warn("Found leftover blocks in script after parsing");
                         }
                         // make script line
                         return new SQLQuery(

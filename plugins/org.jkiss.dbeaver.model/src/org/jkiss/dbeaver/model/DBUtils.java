@@ -759,7 +759,7 @@ public final class DBUtils {
                         Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
                         if (!CommonUtils.isEmpty(entityAttrs)) {
                             for (DBSEntityAttribute ea : entityAttrs) {
-                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea));
+                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea, metaColumns.size()));
                             }
                         }
                     }
@@ -842,7 +842,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(@Nullable DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@Nullable DBPDataSource dataSource, @Nullable DBDFormatSettings preferences, @NotNull DBSTypedObject column)
     {
         DBDValueHandler valueHandler = null;
         // Get handler provider from datasource
@@ -1289,7 +1289,8 @@ public final class DBUtils {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
-                    if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)) {
+                    if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
+                            (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
                 } else {
@@ -1298,11 +1299,13 @@ public final class DBUtils {
             }
         }
 
+        boolean doScrollable = (offset > 0);
         String queryText;
         try {
             if (hasLimits && limitTransformer != null) {
                 limitTransformer.setParameters(offset, maxRows);
                 queryText = limitTransformer.transformQueryString(sqlQuery);
+                doScrollable = false;
             } else if (fetchAllTransformer != null) {
                 queryText = fetchAllTransformer.transformQueryString(sqlQuery);
             } else {
@@ -1314,8 +1317,8 @@ public final class DBUtils {
         }
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
-            createStatement(session, queryText, hasLimits) :
-            makeStatement(session, queryText, hasLimits);
+            createStatement(session, queryText, doScrollable) :
+            makeStatement(session, queryText, doScrollable);
         dbStat.setStatementSource(executionSource);
 
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
@@ -1677,7 +1680,12 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        return (T) getDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
+        try {
+            return (T) getOrOpenDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
+        } catch (DBCException e) {
+            log.error("Error obtaining context", e);
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1689,7 +1697,12 @@ public final class DBUtils {
     @SuppressWarnings("unchecked")
     @NotNull
     public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
-        return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+        try {
+            return (T) getOrOpenDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+        } catch (DBCException e) {
+            log.error("Error obtaining context", e);
+            return null;
+        }
     }
 
     @Nullable
@@ -1945,7 +1958,8 @@ public final class DBUtils {
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
-    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) {
+    @NotNull
+    public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {
         DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
         if (context == null) {
             // Not connected - try to connect
@@ -1959,7 +1973,7 @@ public final class DBUtils {
                         }
                     }, "Initiate instance connection",
                     object.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
-                    return null;
+                    throw new DBCException("Timeout while opening database connection");
                 }
                 context = DBUtils.getDefaultContext(object, meta);
             }
@@ -2059,6 +2073,9 @@ public final class DBUtils {
             catalogName = DBObjectNameCaseTransformer.transformName(dataSource, catalogName);
             schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
             entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
+        }
+        if (CommonUtils.isEmpty(entityName)) {
+            return null;
         }
         DBSObject entityObject = getObjectByPath(monitor, executionContext, objectContainer, catalogName, schemaName, entityName);
         if (entityObject instanceof DBSAlias && !(entityObject instanceof DBSEntity)) {

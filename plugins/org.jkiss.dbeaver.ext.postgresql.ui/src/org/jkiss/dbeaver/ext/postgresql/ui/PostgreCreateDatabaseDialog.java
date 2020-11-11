@@ -132,6 +132,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Create database", 1);
                 try {
                     PostgreDatabase database = dataSource.getDefaultInstance();
                     allUsers = supportsRoles ? new ArrayList<>(database.getUsers(monitor)) : null;
@@ -188,6 +189,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     });
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }

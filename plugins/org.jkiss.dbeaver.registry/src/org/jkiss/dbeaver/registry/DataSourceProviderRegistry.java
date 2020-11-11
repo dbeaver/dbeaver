@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.*;
@@ -76,6 +77,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final DBPPreferenceStore globalDataSourcePreferenceStore;
 
+    private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
+
     private DataSourceProviderRegistry()
     {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
@@ -96,7 +99,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         };
     }
 
-    public void loadExtensions(IExtensionRegistry registry)
+    private void loadExtensions(IExtensionRegistry registry)
     {
         // Load datasource providers from external plugins
         {
@@ -112,10 +115,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
             for (IConfigurationElement ext : extElements) {
                 switch (ext.getName()) {
-                    case RegistryConstants.TAG_DATASOURCE:
+                    case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                         dataSourceProviders.add(provider);
                         break;
+                    }
+                    case RegistryConstants.TAG_DATASOURCE_ORIGIN: {
+                        DataSourceOriginProviderDescriptor provider = new DataSourceOriginProviderDescriptor(ext);
+                        dataSourceOrigins.put(provider.getId(), provider);
+                        break;
+                    }
                 }
             }
 
@@ -494,6 +503,20 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     public List<DataSourceConfigurationStorageDescriptor> getDataSourceConfigurationStorages() {
         return dataSourceConfigurationStorageDescriptors;
+    }
+
+    @Override
+    public DBPDataSourceOriginProvider getDataSourceOriginProvider(String id) {
+        DataSourceOriginProviderDescriptor descriptor = dataSourceOrigins.get(id);
+        if (descriptor == null) {
+            return null;
+        }
+        try {
+            return descriptor.getProvider();
+        } catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     //////////////////////////////////////////////

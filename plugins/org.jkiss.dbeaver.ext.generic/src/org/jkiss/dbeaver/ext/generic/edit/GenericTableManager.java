@@ -72,6 +72,11 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return super.canCreateObject(container);
+    }
+
+    @Override
     protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.utils.CommonUtils;
 
@@ -262,5 +263,20 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         rowCount = null;
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (isView()) {
+            return false;
+        }
+        Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
+        if (!CommonUtils.isEmpty(indexes)) {
+            for (SQLServerTableIndex index : indexes) {
+                if (index.getIndexType() == DBSIndexType.CLUSTERED) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

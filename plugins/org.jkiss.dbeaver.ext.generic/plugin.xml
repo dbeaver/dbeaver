@@ -68,7 +68,7 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip" visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -122,6 +122,7 @@
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-views" label="Driver supports views" description="Driver supports table views" type="boolean" required="false" defaultValue="true"/>
                     <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
@@ -229,9 +230,7 @@
                     description="IBM Informix Dynamic Server"
                     categories="sql">
 
-                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
-                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
-                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
+                    <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -419,16 +418,30 @@
                 <driver
                     id="cache"
                     label="Cache"
-                    icon="icons/cache_icon.png"
-                    iconBig="icons/cache_icon_big.png"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
-                    description="Intersystems Cache"
+                    description="InterSystems Cache"
                     categories="sql,object">
                     <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
                     <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="iris"
+                    label="InterSystems IRIS"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
+                    class="com.intersystems.jdbc.IRISDriver"
+                    sampleURL="jdbc:IRIS://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/iris/"
+                    description="InterSystems IRIS. Replaces Cache driver."
+                    categories="sql,object">
+<!--                    <replace provider="generic" driver="cache"/>-->
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -523,6 +536,9 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
@@ -548,6 +564,9 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>

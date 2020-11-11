@@ -121,9 +121,16 @@ class GridCellRenderer extends AbstractRenderer
 
             switch (columnAlign) {
                 // Center
-                case IGridContentProvider.ALIGN_CENTER:
+                case IGridContentProvider.ALIGN_CENTER: {
+                    Point textSize = gc.textExtent(text);
+                    gc.drawString(
+                        text,
+                        bounds.x + (bounds.width - textSize.x) / 2,
+                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                        true);
                     break;
-                case IGridContentProvider.ALIGN_RIGHT:
+                }
+                case IGridContentProvider.ALIGN_RIGHT: {
                     // Right (numbers, datetimes)
                     Point textSize = gc.textExtent(text);
                     boolean useClipping = textSize.x > bounds.width;
@@ -141,21 +148,23 @@ class GridCellRenderer extends AbstractRenderer
                         }
                     }
                     gc.drawString(
-                            text,
-                            bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
-                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                            true);
+                        text,
+                        bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
+                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                        true);
                     if (useClipping) {
                         gc.setClipping((Rectangle) null);
                     }
                     break;
-                default:
+                }
+                default: {
                     gc.drawString(
-                            text,
-                            bounds.x + x,
-                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                            true);
+                        text,
+                        bounds.x + x,
+                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                        true);
                     break;
+                }
             }
         }
 
@@ -181,18 +190,30 @@ class GridCellRenderer extends AbstractRenderer
         Object rowElement = grid.getRowElement(row);
         int state = contentProvider.getCellState(colElement, rowElement, null);
 
-        if (isLinkState(state)) {
+        boolean isToggle = (state & IGridContentProvider.STATE_TOGGLE) != 0;
+        if (isToggle) {
+            if (contentProvider.isElementReadOnly(colElement)) {
+                return false;
+            }
+        }
+        if (isLinkState(state) || isToggle) {
             int columnAlign = contentProvider.getColumnAlign(colElement);
             Point origin = grid.getOrigin(column, row);
-            DBPImage cellImage = grid.getCellImage(colElement, rowElement);
-            Image image;
-            if (cellImage == null) {
-                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+            Rectangle imageBounds;
+            if (isToggle) {
+                String cellText = grid.getCellText(colElement, rowElement);
+                Point textSize = grid.sizingGC.textExtent(cellText);
+                imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
-                image = DBeaverIcons.getImage(cellImage);
+                DBPImage cellImage = grid.getCellImage(colElement, rowElement);
+                Image image;
+                if (cellImage == null) {
+                    image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                } else {
+                    image = DBeaverIcons.getImage(cellImage);
+                }
+                imageBounds = image.getBounds();
             }
-            Rectangle imageBounds = image.getBounds();
-
             int verMargin = (grid.getItemHeight() - imageBounds.height) / 2;
 
             switch (columnAlign) {

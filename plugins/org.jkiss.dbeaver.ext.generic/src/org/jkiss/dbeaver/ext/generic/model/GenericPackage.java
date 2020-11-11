@@ -126,7 +126,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return GenericProcedure.class;
     }

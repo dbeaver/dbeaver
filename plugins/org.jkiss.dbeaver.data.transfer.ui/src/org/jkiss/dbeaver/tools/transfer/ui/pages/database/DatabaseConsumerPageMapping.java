@@ -31,10 +31,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -166,7 +163,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_auto_assign,
                 UIIcon.ASTERISK,
-                "Auto-assign table and column mappings",
+                DTMessages.data_transfer_db_consumer_auto_assign_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -180,7 +177,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_existing_table,
                 DBIcon.TREE_TABLE,
-                "Select target table",
+                DTMessages.data_transfer_db_consumer_existing_table_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -193,7 +190,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button createNewButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_new_table,
                 DBIcon.TREE_VIEW,
-                "Set target table name",
+                DTMessages.data_transfer_db_consumer_new_table_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -206,7 +203,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final Button columnsButton = UIUtils.createDialogButton(buttonsPanel,
                 DTMessages.data_transfer_db_consumer_column_mappings,
                 DBIcon.TREE_COLUMNS,
-                "Configure column mappings (advanced)",
+                DTMessages.data_transfer_db_consumer_column_mappings_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -222,9 +219,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
             final Button ddlButton = UIUtils.createDialogButton(buttonsPanel,
-                DTMessages.data_transfer_db_consumer_ddl,
+                DTMessages.data_transfer_wizard_page_ddl_name,
                 UIIcon.SQL_TEXT,
-                "View target DDL (if any new tables or columns must be created)",
+                DTMessages.data_transfer_wizard_page_ddl_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -238,13 +235,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             ddlButton.setEnabled(false);
 
             final Button previewButton = UIUtils.createDialogButton(buttonsPanel,
-                DTMessages.data_transfer_wizard_page_preview_name.replace("P", "&P"),
+                DTMessages.data_transfer_wizard_page_preview_name,
                 UIIcon.SQL_PREVIEW,
                 DTMessages.data_transfer_wizard_page_preview_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
+                        DBPDataSourceContainer dataSourceContainer = getDatabaseConsumerSettings().getContainerNode().getDataSourceContainer();
+                        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+                            UIUtils.showMessageBox(getShell(), DTMessages.data_transfer_wizard_restricted_title, NLS.bind(DTMessages.data_transfer_wizard_restricted_description, dataSourceContainer.getName()), SWT.ICON_WARNING);
+                            return;
+                        }
                         DatabaseMappingObject selectedMapping = getSelectedMapping();
                         showPreview(selectedMapping instanceof DatabaseMappingContainer ?
                             (DatabaseMappingContainer) selectedMapping :
@@ -799,7 +801,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DTUIMessages.database_consumer_page_mapping_sqlviewer_title,
                 null,
                 sql,
-                true,
+                dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA),
                 false);
             if (result == IDialogConstants.PROCEED_ID) {
                 if (UIUtils.confirmAction(

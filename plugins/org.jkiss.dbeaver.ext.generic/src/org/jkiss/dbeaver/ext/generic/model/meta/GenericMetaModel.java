@@ -22,18 +22,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -267,139 +267,148 @@ public class GenericMetaModel {
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             boolean supportsFunctions = false;
-            try {
-                // Try to read functions (note: this function appeared only in Java 1.6 so it maybe not implemented by many drivers)
-                // Read procedures
-                JDBCResultSet dbResult = session.getMetaData().getFunctions(
-                    container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
-                    dataSource.getAllObjectsPattern());
+            if (hasFunctionSupport()) {
                 try {
-                    supportsFunctions = true;
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        String functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.FUNCTION_NAME);
-                        if (functionName == null) {
-                            //functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                            // Apparently some drivers return the same results for getProcedures and getFunctions -
-                            // so let's skip yet another procedure list
-                            continue;
-                        }
-                        String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
-                        if (specificName == null && functionName.indexOf(';') != -1) {
-                            // [JDBC: SQL Server native driver]
-                            specificName = functionName;
-                            functionName = functionName.substring(0, functionName.lastIndexOf(';'));
-                        }
-                        if (container.hasProcedure(functionName)) {
-                            // Seems to be a duplicate
-                            continue;
-                        }
-                        int funcTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.FUNCTION_TYPE);
-                        String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
-                        GenericFunctionResultType functionResultType;
-                        switch (funcTypeNum) {
-                            //case DatabaseMetaData.functionResultUnknown: functionResultType = GenericFunctionResultType.UNKNOWN; break;
-                            case DatabaseMetaData.functionNoTable: functionResultType = GenericFunctionResultType.NO_TABLE; break;
-                            case DatabaseMetaData.functionReturnsTable: functionResultType = GenericFunctionResultType.TABLE; break;
-                            default: functionResultType = GenericFunctionResultType.UNKNOWN; break;
-                        }
+                    // Try to read functions (note: this function appeared only in Java 1.6 so it maybe not implemented by many drivers)
+                    // Read procedures
+                    JDBCResultSet dbResult = session.getMetaData().getFunctions(
+                            container.getCatalog() == null ? null : container.getCatalog().getName(),
+                            container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                            dataSource.getAllObjectsPattern());
+                    try {
+                        supportsFunctions = true;
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+                            String functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.FUNCTION_NAME);
+                            if (functionName == null) {
+                                //functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                                // Apparently some drivers return the same results for getProcedures and getFunctions -
+                                // so let's skip yet another procedure list
+                                continue;
+                            }
+                            String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                            if (specificName == null && functionName.indexOf(';') != -1) {
+                                // [JDBC: SQL Server native driver]
+                                specificName = functionName;
+                                functionName = functionName.substring(0, functionName.lastIndexOf(';'));
+                            }
+                            if (container.hasProcedure(functionName)) {
+                                // Seems to be a duplicate
+                                continue;
+                            }
+                            int funcTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.FUNCTION_TYPE);
+                            String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
+                            GenericFunctionResultType functionResultType;
+                            switch (funcTypeNum) {
+                                //case DatabaseMetaData.functionResultUnknown: functionResultType = GenericFunctionResultType.UNKNOWN; break;
+                                case DatabaseMetaData.functionNoTable:
+                                    functionResultType = GenericFunctionResultType.NO_TABLE;
+                                    break;
+                                case DatabaseMetaData.functionReturnsTable:
+                                    functionResultType = GenericFunctionResultType.TABLE;
+                                    break;
+                                default:
+                                    functionResultType = GenericFunctionResultType.UNKNOWN;
+                                    break;
+                            }
 
-                        final GenericProcedure procedure = createProcedureImpl(
-                            container,
-                            functionName,
-                            specificName,
-                            remarks,
-                            DBSProcedureType.FUNCTION,
-                            functionResultType);
-                        container.addProcedure(procedure);
+                            final GenericProcedure procedure = createProcedureImpl(
+                                    container,
+                                    functionName,
+                                    specificName,
+                                    remarks,
+                                    DBSProcedureType.FUNCTION,
+                                    functionResultType);
+                            container.addProcedure(procedure);
 
-                        funcMap.put(specificName == null ? functionName : specificName, procedure);
+                            funcMap.put(specificName == null ? functionName : specificName, procedure);
+                        }
+                    } finally {
+                        dbResult.close();
                     }
+                } catch (Throwable e) {
+                    log.debug("Can't read generic functions", e);
                 }
-                finally {
-                    dbResult.close();
-                }
-            } catch (Throwable e) {
-                log.debug("Can't read generic functions", e);
             }
 
-            {
-                // Read procedures
-                JDBCResultSet dbResult = session.getMetaData().getProcedures(
-                    container.getCatalog() == null ? null : container.getCatalog().getName(),
-                    container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
-                    dataSource.getAllObjectsPattern());
-                try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
-                        String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                        String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
-                        int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
-                        String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
-                        DBSProcedureType procedureType;
-                        switch (procTypeNum) {
-                            case DatabaseMetaData.procedureNoResult:
-                                procedureType = DBSProcedureType.PROCEDURE;
+            if (hasProcedureSupport()) {
+                {
+                    // Read procedures
+                    JDBCResultSet dbResult = session.getMetaData().getProcedures(
+                            container.getCatalog() == null ? null : container.getCatalog().getName(),
+                            container.getSchema() == null || DBUtils.isVirtualObject(container.getSchema()) ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
+                            dataSource.getAllObjectsPattern());
+                    try {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
                                 break;
-                            case DatabaseMetaData.procedureReturnsResult:
-                                procedureType = supportsFunctions ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
+                            }
+                            String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
+                            String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                            String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                            int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
+                            String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
+                            DBSProcedureType procedureType;
+                            switch (procTypeNum) {
+                                case DatabaseMetaData.procedureNoResult:
+                                    procedureType = DBSProcedureType.PROCEDURE;
+                                    break;
+                                case DatabaseMetaData.procedureReturnsResult:
+                                    procedureType = supportsFunctions ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
+                                    break;
+                                case DatabaseMetaData.procedureResultUnknown:
+                                    procedureType = DBSProcedureType.PROCEDURE;
+                                    break;
+                                default:
+                                    procedureType = DBSProcedureType.UNKNOWN;
+                                    break;
+                            }
+                            if (CommonUtils.isEmpty(specificName)) {
+                                specificName = procedureName;
+                            }
+                            GenericProcedure function = funcMap.get(specificName);
+                            if (function != null) {
+                                // Broken driver
+                                log.debug("Broken driver [" + session.getDataSource().getContainer().getDriver().getName() + "] - returns the same list for getProcedures and getFunctons");
                                 break;
-                            case DatabaseMetaData.procedureResultUnknown:
-                                procedureType = DBSProcedureType.PROCEDURE;
-                                break;
-                            default:
-                                procedureType = DBSProcedureType.UNKNOWN;
-                                break;
-                        }
-                        if (CommonUtils.isEmpty(specificName)) {
-                            specificName = procedureName;
-                        }
-                        GenericProcedure function = funcMap.get(specificName);
-                        if (function != null) {
-                            // Broken driver
-                            log.debug("Broken driver [" + session.getDataSource().getContainer().getDriver().getName() + "] - returns the same list for getProcedures and getFunctons");
-                            break;
-                        }
-                        procedureName = GenericUtils.normalizeProcedureName(procedureName);
+                            }
+                            procedureName = GenericUtils.normalizeProcedureName(procedureName);
 
-                        GenericPackage procedurePackage = null;
-                        // FIXME: remove as a silly workaround
-                        String packageName = getPackageName(dataSource, procedureCatalog, procedureName, specificName);
-                        if (packageName != null) {
-                            if (!CommonUtils.isEmpty(packageName)) {
-                                if (packageMap == null) {
-                                    packageMap = new TreeMap<>();
-                                }
-                                procedurePackage = packageMap.get(packageName);
-                                if (procedurePackage == null) {
-                                    procedurePackage = new GenericPackage(container, packageName, true);
-                                    packageMap.put(packageName, procedurePackage);
-                                    container.addPackage(procedurePackage);
+                            GenericPackage procedurePackage = null;
+                            // FIXME: remove as a silly workaround
+                            String packageName = getPackageName(dataSource, procedureCatalog, procedureName, specificName);
+                            if (packageName != null) {
+                                if (!CommonUtils.isEmpty(packageName)) {
+                                    if (packageMap == null) {
+                                        packageMap = new TreeMap<>();
+                                    }
+                                    procedurePackage = packageMap.get(packageName);
+                                    if (procedurePackage == null) {
+                                        procedurePackage = new GenericPackage(container, packageName, true);
+                                        packageMap.put(packageName, procedurePackage);
+                                        container.addPackage(procedurePackage);
+                                    }
                                 }
                             }
-                        }
 
-                        final GenericProcedure procedure = createProcedureImpl(
-                            procedurePackage != null ? procedurePackage : container,
-                            procedureName,
-                            specificName,
-                            remarks,
-                            procedureType,
-                            null);
-                        if (procedurePackage != null) {
-                            procedurePackage.addProcedure(procedure);
-                        } else {
-                            container.addProcedure(procedure);
+                            final GenericProcedure procedure = createProcedureImpl(
+                                    procedurePackage != null ? procedurePackage : container,
+                                    procedureName,
+                                    specificName,
+                                    remarks,
+                                    procedureType,
+                                    null);
+                            if (procedurePackage != null) {
+                                procedurePackage.addProcedure(procedure);
+                            } else {
+                                container.addProcedure(procedure);
+                            }
                         }
+                    } finally {
+                        dbResult.close();
                     }
-                } finally {
-                    dbResult.close();
                 }
             }
 
@@ -647,6 +656,34 @@ public class GenericMetaModel {
             persisted);
     }
 
+    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+        return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
+    }
+
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session,
+                                                                      GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+        String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
+        if (CommonUtils.isEmpty(columnName)) {
+            log.debug("Null primary key column for '" + object.getName() + "'");
+            return null;
+        }
+        if ((columnName.startsWith("[") && columnName.endsWith("]")) ||
+                (columnName.startsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE) && columnName.endsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE))) {
+            // [JDBC: SQLite] Escaped column name. Let's un-escape it
+            columnName = columnName.substring(1, columnName.length() - 1);
+        }
+        int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
+
+        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+        if (tableColumn == null) {
+            log.warn("Column '" + columnName + "' not found in table '" + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for PK '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+            return null;
+        }
+
+        return new GenericTableConstraintColumn[] {
+                new GenericTableConstraintColumn(object, tableColumn, keySeq) };
+    }
+
     //////////////////////////////////////////////////////
     // Sequences
 
@@ -700,5 +737,23 @@ public class GenericMetaModel {
 
     public boolean isColumnNotNullByDefault() {
         return false;
+    }
+
+    public boolean hasProcedureSupport() {
+        return true;
+    }
+
+    public boolean hasFunctionSupport() {
+        return true;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return false;
+    }
+
+    public boolean supportsViews(@NotNull GenericDataSource dataSource) {
+        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+        return !(dataSourceInfo instanceof JDBCDataSourceInfo) ||
+            ((JDBCDataSourceInfo) dataSourceInfo).supportsViews();
     }
 }

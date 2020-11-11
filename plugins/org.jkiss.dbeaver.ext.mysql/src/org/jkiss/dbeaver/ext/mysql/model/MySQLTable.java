@@ -494,7 +494,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                             fkList.add(fk);
                         }
                         MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                        fk.addColumn(fkColumnInfo);
+                        if (fk.hasColumn(fkColumnInfo)) {
+                            // Known MySQL bug, metaData.getImportedKeys() can return duplicates
+                            // https://bugs.mysql.com/bug.php?id=95280
+                            log.debug("FK "+ fkName +" has already been added, skip");
+                        }
+                        else {
+                            fk.addColumn(fkColumnInfo);
+                        }
                     }
                 }
             } finally {

@@ -103,6 +103,11 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
         return 0;
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
     @Nullable
     @Override
     public Object geTypeExtension() {

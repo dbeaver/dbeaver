@@ -56,7 +56,7 @@ import java.util.*;
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
-class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, IDataSourceConnectionTester {
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, ICompositeDialogPageContainer, IDataSourceConnectionTester {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
@@ -409,5 +409,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public void showSubPage(IDialogPage subPage) {
+        for (TabItem pageTab : tabFolder.getItems()) {
+            if (pageTab.getData() == subPage) {
+                tabFolder.setSelection(pageTab);
+                break;
+            }
+        }
     }
 }

@@ -67,7 +67,18 @@ public class PostgreScriptExecuteSettings extends AbstractScriptExecuteSettings<
                 } catch (InterruptedException e) {
                     // Ignore
                 }
+            } else {
+                for (DBSObject object : getDatabaseObjects()) {
+                    if (object instanceof PostgreDatabase) {
+                        database = (PostgreDatabase) object;
+                        break;
+                    }
+                }
             }
+        }
+
+        if (database == null) {
+            throw new DBException("Cannot find database for script execution");
         }
     }
 

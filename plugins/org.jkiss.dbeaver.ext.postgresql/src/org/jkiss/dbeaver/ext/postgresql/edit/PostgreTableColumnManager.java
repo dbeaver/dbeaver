@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,94 +52,91 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
         final PostgreDataType dataType = column.getDataType();
-        String defValue = column.getDefaultValue();
-        if (!CommonUtils.isEmpty(defValue) && defValue.contains("nextval")) {
-            // Use serial type name
-            switch (dataType.getName()) {
-                case PostgreConstants.TYPE_INT2:
-                    sql.append("smallserial");
-                    return;
-                case PostgreConstants.TYPE_INT4:
-                    sql.append("serial");
-                    return;
-                case PostgreConstants.TYPE_INT8:
-                    sql.append("bigserial");
-                    return;
-            }
-        }
         final PostgreDataType rawType = null;//dataType.getElementType(monitor);
         if (rawType != null) {
             sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        } else {
+        } else if (dataType != null) {
             sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        } else {
+            sql.append(column.getFullTypeName());
         }
-        switch (dataType.getDataKind()) {
-            case STRING:
-                final long length = column.getMaxLength();
-                if (length > 0) {
-                    sql.append('(').append(length).append(')');
-                }
-                break;
-            case NUMERIC:
-                if (dataType.getTypeID() == Types.NUMERIC) {
-                    final int precision = CommonUtils.toInt(column.getPrecision());
-                    final int scale = CommonUtils.toInt(column.getScale());
-                    if (scale > 0 || precision > 0) {
-                        sql.append('(');
-                        if (precision > 0) {
-                            sql.append(precision);
-                        }
-                        if (scale > 0) {
-                            if (precision > 0) {
-                                sql.append(',');
-                            }
-                            sql.append(scale);
-                        }
-                        sql.append(')');
-                    }
-                }
-                break;
-            case DATETIME:
-                final int scale = CommonUtils.toInt(column.getScale());
-                String typeName = dataType.getName();
-                if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
-                    if (scale < 6) {
-                        sql.append('(').append(scale).append(')');
-                    }
-                }
-        }
-        if (PostgreUtils.isGISDataType(column.getTypeName())) {
-            try {
-                String geometryType = column.getAttributeGeometryType(monitor);
-                int geometrySRID = column.getAttributeGeometrySRID(monitor);
-                if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
-                    // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
-                    sql.append("(").append(geometryType);
-                    if (geometrySRID > 0) {
-                        sql.append(", ").append(geometrySRID);
-                    }
-                    sql.append(")");
-                }
-            } catch (DBCException e) {
-                log.debug(e);
-            }
-        }
-        if (rawType != null) {
-            sql.append("[]");
-        }
+        getColumnDataTypeModifiers(monitor, column, sql);
     };
+
+    public static StringBuilder getColumnDataTypeModifiers(DBRProgressMonitor monitor, DBSTypedObject column, StringBuilder sql) {
+        if (column instanceof PostgreTableColumn) {
+            PostgreTableColumn postgreColumn = (PostgreTableColumn) column;
+            final PostgreDataType rawType = null;//dataType.getElementType(monitor);
+            switch (postgreColumn.getDataKind()) {
+                case STRING:
+                    final long length = postgreColumn.getMaxLength();
+                    if (length > 0 && length < Integer.MAX_VALUE) {
+                        sql.append('(').append(length).append(')');
+                    }
+                    break;
+                case NUMERIC:
+                    if (column.getTypeID() == Types.NUMERIC) {
+                        final int precision = CommonUtils.toInt(postgreColumn.getPrecision());
+                        final int scale = CommonUtils.toInt(postgreColumn.getScale());
+                        if (scale > 0 || precision > 0) {
+                            sql.append('(');
+                            if (precision > 0) {
+                                sql.append(precision);
+                            }
+                            if (scale > 0) {
+                                if (precision > 0) {
+                                    sql.append(',');
+                                }
+                                sql.append(scale);
+                            }
+                            sql.append(')');
+                        }
+                    }
+                    break;
+                case DATETIME:
+                    final int scale = CommonUtils.toInt(postgreColumn.getScale());
+                    String typeName = column.getTypeName();
+                    if (typeName.startsWith(PostgreConstants.TYPE_TIMESTAMP) || typeName.equals(PostgreConstants.TYPE_TIME)) {
+                        if (scale < 6) {
+                            sql.append('(').append(scale).append(')');
+                        }
+                    }
+                    if (typeName.equals(PostgreConstants.TYPE_INTERVAL)) {
+                        final String precision = postgreColumn.getIntervalTypeField();
+                        if (!CommonUtils.isEmpty(precision)) {
+                            sql.append(' ').append(precision);
+                        }
+                        if (scale >= 0 && scale < 7) {
+                            sql.append('(').append(scale).append(')');
+                        }
+                    }
+            }
+            if (PostgreUtils.isGISDataType(postgreColumn.getTypeName())) {
+                try {
+                    String geometryType = postgreColumn.getAttributeGeometryType(monitor);
+                    int geometrySRID = postgreColumn.getAttributeGeometrySRID(monitor);
+                    if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
+                        // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
+                        sql.append("(").append(geometryType);
+                        if (geometrySRID > 0) {
+                            sql.append(", ").append(geometrySRID);
+                        }
+                        sql.append(")");
+                    }
+                } catch (DBCException e) {
+                    log.debug(e);
+                }
+            }
+            if (rawType != null) {
+                sql.append("[]");
+            }
+            return sql;
+        }
+        return sql;
+    }
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
-        if (!CommonUtils.isEmpty(defaultValue) && defaultValue.contains("nextval")) {
-            // Use serial type name
-            switch (column.getDataType().getName()) {
-                case PostgreConstants.TYPE_INT2:
-                case PostgreConstants.TYPE_INT4:
-                case PostgreConstants.TYPE_INT8:
-                    return;
-            }
-        }
         DefaultModifier.appendModifier(monitor, column, sql, command);
     };
 

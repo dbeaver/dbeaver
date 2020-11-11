@@ -157,6 +157,11 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return precision;
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
     @Nullable
     @Override
     public Object geTypeExtension() {

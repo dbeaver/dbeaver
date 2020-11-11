@@ -338,6 +338,11 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     @Property(viewable = true, editable = false, order = 6)
     public Integer getScale()
     {

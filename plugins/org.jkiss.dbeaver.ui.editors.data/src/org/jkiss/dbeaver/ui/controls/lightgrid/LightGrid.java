@@ -713,6 +713,12 @@ public abstract class LightGrid extends Canvas {
         return columnElements[col];
     }
 
+    public int getColumnIndex(int x, int y) {
+        Point dragPoint = getDisplay().map(null, LightGrid.this, new Point(x, y));
+        GridColumn column = getColumn(dragPoint);
+        return column == null ? -1 : column.getIndex();
+    }
+
     public Rectangle getColumnBounds(int col) {
         return getColumn(col).getBounds();
     }

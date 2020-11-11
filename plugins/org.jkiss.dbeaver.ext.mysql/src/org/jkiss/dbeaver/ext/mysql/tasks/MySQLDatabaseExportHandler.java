@@ -54,7 +54,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
     @Override
     protected List<String> getCommandLine(MySQLExportSettings settings, MySQLDatabaseExportInfo arg) throws IOException {
-        List<String> cmd = getMySQLToolCommandLine(this, settings, arg);
+        List<String> cmd = super.getCommandLine(settings, arg);
         if (!CommonUtils.isEmpty(arg.getTables())) {
             cmd.add(arg.getDatabase().getName());
             for (MySQLTableBase table : arg.getTables()) {

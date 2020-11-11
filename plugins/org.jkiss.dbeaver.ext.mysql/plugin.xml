@@ -166,7 +166,7 @@
                         defaultUser="root"
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
-                        description="Driver for MySQL 4.x+"
+                        description="Driver for MySQL 5.x+"
                         promoted="1"
                         categories="sql">
                     <replace provider="mysql" driver="mysql3"/>

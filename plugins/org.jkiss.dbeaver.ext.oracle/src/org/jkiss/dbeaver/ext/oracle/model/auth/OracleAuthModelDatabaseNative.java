@@ -36,7 +36,7 @@ import java.util.Properties;
 public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
 
     @Override
-    public void initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         String userName = configuration.getUserName();
         if (!CommonUtils.isEmpty(userName) && !userName.contains(" AS ")) {
             final String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
@@ -46,7 +46,7 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
         }
 
         credentials.setUserName(userName);
-        super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
+        return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
     @Override

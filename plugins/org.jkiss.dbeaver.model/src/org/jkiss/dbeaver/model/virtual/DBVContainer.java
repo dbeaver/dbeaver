@@ -225,7 +225,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return !containers.isEmpty() ? DBVContainer.class : DBVEntity.class;
     }
 

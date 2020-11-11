@@ -32,8 +32,8 @@ public class SQLWordRule implements TPRule {
 
     private SQLDelimiterRule delimRule;
     private TPToken defaultToken;
-    private Map<String, TPToken> fWords = new HashMap<>();
-    private StringBuilder fBuffer = new StringBuilder();
+    private Map<String, TPToken> words = new HashMap<>();
+    private StringBuilder buffer = new StringBuilder();
     private char[][] delimiters;
 
     public SQLWordRule(SQLDelimiterRule delimRule, TPToken defaultToken) {
@@ -42,27 +42,29 @@ public class SQLWordRule implements TPRule {
     }
 
     public boolean hasWord(String word) {
-        return fWords.containsKey(word.toLowerCase());
+        return words.containsKey(word.toLowerCase());
     }
 
     public void addWord(String word, TPToken token) {
-        fWords.put(word.toLowerCase(), token);
+        words.put(word.toLowerCase(), token);
     }
 
     @Override
     public TPToken evaluate(TPCharacterScanner scanner) {
         int c = scanner.read();
         if (c != TPCharacterScanner.EOF && Character.isUnicodeIdentifierStart(c)) {
-            fBuffer.setLength(0);
+            buffer.setLength(0);
             delimiters = delimRule.getDelimiters();
+            char prevC;
             do {
-                fBuffer.append((char) c);
+                prevC = (char)c;
+                buffer.append((char) c);
                 c = scanner.read();
-            } while (c != TPCharacterScanner.EOF && isWordPart((char) c, scanner));
+            } while (c != TPCharacterScanner.EOF && isWordPart((char) c, prevC, scanner));
             scanner.unread();
 
-            String buffer = fBuffer.toString().toLowerCase();
-            TPToken token = fWords.get(buffer);
+            String buffer = this.buffer.toString().toLowerCase();
+            TPToken token = words.get(buffer);
 
             if (token != null)
                 return token;
@@ -77,8 +79,14 @@ public class SQLWordRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
 
-    private boolean isWordPart(char c, TPCharacterScanner scanner) {
+    private boolean isWordPart(char c, char prevC, TPCharacterScanner scanner) {
         if (!Character.isUnicodeIdentifierPart(c) && c != '$') {
+            return false;
+        }
+        if (c == '$' && prevC == '$') {
+            // Double dollar. Prev dollar is also wrong char
+            scanner.unread();
+            buffer.setLength(buffer.length() - 1);
             return false;
         }
         // Check for delimiter
@@ -113,7 +121,7 @@ public class SQLWordRule implements TPRule {
     }
 
     private void unreadBuffer(TPCharacterScanner scanner) {
-        for (int i = fBuffer.length() - 1; i >= 0; i--) {
+        for (int i = buffer.length() - 1; i >= 0; i--) {
             scanner.unread();
         }
     }

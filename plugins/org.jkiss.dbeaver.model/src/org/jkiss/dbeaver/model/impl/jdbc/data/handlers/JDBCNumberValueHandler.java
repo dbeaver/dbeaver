@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,12 +43,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
 
-    private final DBDDataFormatterProfile formatterProfile;
+    private final DBDFormatSettings formatSettings;
     private int useScientificNotation = -1;
     private DBDDataFormatter formatter;
 
-    public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        this.formatterProfile = formatterProfile;
+    public JDBCNumberValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        this.formatSettings = formatSettings;
     }
 
     @Override
@@ -83,7 +82,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             if (useScientificNotation < 0) {
                 this.useScientificNotation =
-                    formatterProfile.getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT) ? 1 : 0;
+                    formatSettings.isUseScientificNumericFormat() ? 1 : 0;
             }
 
             return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation > 0);
@@ -94,7 +93,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     private DBDDataFormatter getFormatter(@NotNull DBSTypedObject column) {
         if (formatter == null) {
             try {
-                formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
+                formatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
             } catch (Exception e) {
                 log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
                 formatter = DefaultDataFormatter.INSTANCE;

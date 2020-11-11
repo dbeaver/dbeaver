@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -43,8 +43,6 @@ import java.util.List;
  * PostgreExecutionContext
  */
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
-    private static final Log log = Log.getLog(PostgreExecutionContext.class);
-
     private PostgreSchema activeSchema;
     private final List<String> searchPath = new ArrayList<>();
     private List<String> defaultSearchPath = new ArrayList<>();
@@ -183,7 +181,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
-
+        setSessionRole(monitor);
         return true;
     }
 
@@ -244,4 +242,17 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
+    void setSessionRole(final DBRProgressMonitor monitor) throws DBCException {
+        final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);
+        if (CommonUtils.isEmpty(roleName)) {
+            return;
+        }
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active role")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                dbStat.executeUpdate("SET ROLE " + roleName);
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+    }
 }

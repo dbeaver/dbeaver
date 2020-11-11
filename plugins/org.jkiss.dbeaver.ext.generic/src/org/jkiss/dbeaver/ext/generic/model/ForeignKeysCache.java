@@ -172,7 +172,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                 fakePk = pkMap.get(pkFullName);
                 if (fakePk == null) {
-                    fakePk = new GenericUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    fakePk = pkTable.getDataSource().getMetaModel().createConstraintImpl(pkTable, pkName,  DBSEntityConstraintType.PRIMARY_KEY, dbResult, true);
                     pkMap.put(pkFullName, fakePk);
                     // Add this fake constraint to it's owner
                     fakePk.getTable().addUniqueKey(fakePk);

@@ -37,6 +37,8 @@ import java.util.Map;
  */
 public class MapAttributeTransformer implements DBDAttributeTransformer {
 
+    private static final boolean FILTER_SIMPLE_COLLECTIONS = false;
+
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         if (!CommonUtils.isEmpty(attribute.getNestedBindings()) ||
@@ -99,32 +101,31 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
 
     private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes, List<Object[]> rows) throws DBException {
         int maxPosition = 0;
-        for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
-            maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
-        }
         List<DBDAttributeBinding> nestedBindings = topAttribute.getNestedBindings();
         if (nestedBindings == null) {
             nestedBindings = new ArrayList<>();
-        } else {
-            for (DBDAttributeBinding binding : nestedBindings) {
-                maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
-            }
         }
+        for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
+            DBSAttributeBase attribute = nestedAttr.getFirst();
+            maxPosition = Math.max(maxPosition, attribute.getOrdinalPosition());
+            DBDAttributeBinding nestedBinding = DBUtils.findObject(nestedBindings, attribute.getName());
+            if (nestedBinding == null) {
+                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute, nestedBindings.size());
+                nestedBindings.add(nestedBinding);
+            }
+            maxPosition = Math.max(maxPosition, nestedBinding.getOrdinalPosition());
+        }
+
+
         Object[] fakeRow = new Object[maxPosition + 1];
 
         List<Object[]> fakeRows = Collections.singletonList(fakeRow);
         for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
             DBSAttributeBase attribute = nestedAttr.getFirst();
             Object[] values = nestedAttr.getSecond();
-            DBDAttributeBinding nestedBinding = null;
-            for (DBDAttributeBinding binding : nestedBindings) {
-                if (binding.getName().equals(attribute.getName())) {
-                    nestedBinding = binding;
-                    break;
-                }
-            }
+            DBDAttributeBinding nestedBinding = DBUtils.findObject(nestedBindings, attribute.getName());
             if (nestedBinding == null) {
-                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute);
+                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute, nestedBindings.size());
                 nestedBindings.add(nestedBinding);
             }
             if (attribute.getDataKind().isComplex()) {
@@ -141,10 +142,17 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             }
         }
 
-        // Remove empty collection attributes from nested bindings
-        // They can't be used anyway
-        nestedBindings.removeIf(
-            attribute -> attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings()));
+        if (FILTER_SIMPLE_COLLECTIONS) {
+            // Remove empty collection attributes from nested bindings
+            // They can't be used anyway
+            nestedBindings.removeIf(
+                attribute -> {
+                    if (attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings())) {
+                        return true;
+                    }
+                    return false;
+                });
+        }
 
         if (!nestedBindings.isEmpty()) {
             topAttribute.setNestedBindings(nestedBindings);

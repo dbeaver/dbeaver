@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreDollarQuoteRule;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.ArrayUtils;
 
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.List;
 
@@ -777,12 +780,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         return BLOCK_BOUND_KEYWORDS;
     }
 
-    @Nullable
-    @Override
-    public String[] getBlockHeaderStrings() {
-        return new String[] { "DECLARE" };
-    }
-
     @NotNull
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
@@ -796,7 +793,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @NotNull
     @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
-        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS) || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())) {
+        if (value.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS) || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
+        || attribute.getTypeID() == Types.OTHER) {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';
@@ -845,13 +843,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
-        if (dataKind == DBPDataKind.DATETIME) {
-            {
-                Integer scale = column.getScale();
-                if (scale != null) {
-                    return "(" + scale + ')';
-                }
-            }
+        StringBuilder columnModifier = PostgreTableColumnManager.getColumnDataTypeModifiers(new VoidProgressMonitor(), column, new StringBuilder());
+        if (columnModifier.length() != 0) {
+            return columnModifier.toString();
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }

@@ -570,7 +570,11 @@ public class NavigatorUtils {
             // Now check if we can change default object
             DBSObject dbObject = ((DBNDatabaseNode) selectedNode).getObject();
             if (dbObject instanceof DBSCatalog || dbObject instanceof DBSSchema) {
-                DBCExecutionContext navExecutionContext = DBUtils.getOrOpenDefaultContext(dbObject, false);
+                DBCExecutionContext navExecutionContext = null;
+                try {
+                    navExecutionContext = DBUtils.getOrOpenDefaultContext(dbObject, false);
+                } catch (DBCException ignored) {
+                }
                 DBCExecutionContext editorExecutionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
                 if (navExecutionContext != null && editorExecutionContext != null) {
                     DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();

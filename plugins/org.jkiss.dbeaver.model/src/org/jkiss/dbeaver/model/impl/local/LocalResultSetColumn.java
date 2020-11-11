@@ -162,6 +162,11 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     }
 
     @Override
+    public long getTypeModifiers() {
+        return typedObject == null ? 0 : typedObject.getTypeModifiers();
+    }
+
+    @Override
     public String toString() {
         return getName();
     }

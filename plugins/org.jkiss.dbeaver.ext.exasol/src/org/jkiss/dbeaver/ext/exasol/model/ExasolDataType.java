@@ -245,6 +245,11 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     @Property(viewable = true, editable = false, order = 6)
     public Integer getScale() {
         return scale;

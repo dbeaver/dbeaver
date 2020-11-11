@@ -22,8 +22,7 @@ import org.jkiss.code.Nullable;
 /**
  * Struct object with localized description
  */
-public interface DBPObjectWithDescriptionLocalized extends DBPObjectWithDescription
-{
+public interface DBPObjectWithDescriptionLocalized extends DBPObjectWithDescription {
 
     /**
      * Object description

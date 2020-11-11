@@ -260,6 +260,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
         return displaySize;
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
     @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
     public Integer getPrecision() {

@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
  */
 public final class ResultSetPreferences {
 
+    public static final int MIN_SEGMENT_SIZE = 100;
+
     // ResultSet
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize"; //$NON-NLS-1$
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob"; //$NON-NLS-1$
@@ -84,4 +86,5 @@ public final class ResultSetPreferences {
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
+
 }

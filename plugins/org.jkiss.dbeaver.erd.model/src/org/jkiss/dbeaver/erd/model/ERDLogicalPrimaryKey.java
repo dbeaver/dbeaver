@@ -57,6 +57,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         return description;
     }
 
+    @NotNull
     @Override
     public DBSEntity getParentObject()
     {

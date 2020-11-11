@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -44,23 +45,23 @@ import java.util.Locale;
 /**
  * PostgreConnectionPage
  */
-public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
-{
+public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
+    private static final Log log = Log.getLog(PostgreConnectionPage.class);
+
     private Text hostText;
     private Text portText;
     private Text dbText;
+    private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
         ModifyListener textListener = e -> {
@@ -98,7 +99,13 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
         createAuthPanel(mainGroup, 1);
 
+
         Group advancedGroup = UIUtils.createControlGroup(mainGroup, "Advanced", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+        roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_user_role, null, SWT.BORDER);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
+        roleText.setLayoutData(gd);
 
         homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
         gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -109,8 +116,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return hostText != null && portText != null && 
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
@@ -156,14 +162,16 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             }
             dbText.setText(databaseName);
         }
+        if (roleText != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
+        }
         homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
         activated = true;
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -174,6 +182,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
+        if (roleText != null) {
+            connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());
+        }
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
@@ -182,12 +193,10 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
-    {
+    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
             new PostgreConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
     }
-
 }

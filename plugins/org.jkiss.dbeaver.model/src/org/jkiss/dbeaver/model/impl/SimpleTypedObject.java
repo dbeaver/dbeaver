@@ -66,4 +66,9 @@ public class SimpleTypedObject implements DBSTypedObject {
     public long getMaxLength() {
         return 0;
     }
+
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
 }

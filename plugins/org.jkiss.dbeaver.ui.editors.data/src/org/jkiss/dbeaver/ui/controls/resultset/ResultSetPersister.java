@@ -197,13 +197,20 @@ class ResultSetPersister {
             return false;
         }
 
+        if (rowIdentifier.getEntity() instanceof DBSDocumentContainer) {
+            // FIXME: do not refresh documents for now. Can be solved by extracting document ID attributes
+            // FIXME: but it will require to provide dynamic document metadata.
+            return false;
+        }
+
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
 
         RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, refreshRows);
-        job.schedule();
+        viewer.queueDataPump(job);
+        //job.schedule();
         return true;
     }
 
@@ -461,7 +468,6 @@ class ResultSetPersister {
         model.refreshChangeCount();
 
         viewer.redrawData(false, rowsChanged);
-        viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.updatePanelsContent(false);
         viewer.getActivePresentation().updateValueView();
@@ -612,14 +618,14 @@ class ResultSetPersister {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            model.setUpdateInProgress(true);
+            model.setUpdateInProgress(this);
             updateStats = new DBCStatistics();
             insertStats = new DBCStatistics();
             deleteStats = new DBCStatistics();
             try {
                 error = executeStatements(monitor);
             } finally {
-                model.setUpdateInProgress(false);
+                model.setUpdateInProgress(null);
             }
 
             if (!generateScript) {
@@ -1000,14 +1006,14 @@ class ResultSetPersister {
         }
     }
 
-    private class RowRefreshJob extends DataSourceJob {
+    private class RowRefreshJob extends ResultSetJobAbstract {
 
         private DBSDataContainer dataContainer;
         private DBDRowIdentifier rowIdentifier;
         private List<ResultSetRow> rows;
 
         RowRefreshJob(DBCExecutionContext context, DBSDataContainer dataContainer, DBDRowIdentifier rowIdentifier, List<ResultSetRow> rows) {
-            super("Refresh rows", context);
+            super("Refresh rows", dataContainer, viewer, context);
             this.dataContainer = dataContainer;
             this.rowIdentifier = rowIdentifier;
             this.rows = new ArrayList<>(rows);
@@ -1015,6 +1021,9 @@ class ResultSetPersister {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            if (!viewer.acquireDataReadLock()) {
+                return Status.CANCEL_STATUS;
+            }
             monitor.beginTask("Refresh updated rows", 1);
             try {
                 final Object[][] refreshValues = new Object[rows.size()][];
@@ -1083,6 +1092,7 @@ class ResultSetPersister {
                 }
             } finally {
                 monitor.done();
+                viewer.releaseDataReadLock();
             }
             return Status.OK_STATUS;
         }

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValueHandler;
 
 /**
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCTemporalAccessorValue
 public class PostgreTemporalAccessorValueHandler extends JDBCTemporalAccessorValueHandler {
 
 
-    public PostgreTemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile) {
+    public PostgreTemporalAccessorValueHandler(DBDFormatSettings formatterProfile) {
         super(formatterProfile);
     }
 

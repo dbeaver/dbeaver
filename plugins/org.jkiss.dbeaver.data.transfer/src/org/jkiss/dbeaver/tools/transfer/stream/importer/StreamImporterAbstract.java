@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferResultSet;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -40,6 +41,9 @@ import java.util.Map;
 public abstract class StreamImporterAbstract implements IStreamDataImporter {
 
     private static final Log log = Log.getLog(StreamImporterAbstract.class);
+
+    protected static final String PROP_TIMESTAMP_FORMAT = "timestampFormat";
+    protected static final String PROP_TIMESTAMP_ZONE = "timestampZone";
 
     private IStreamDataImporterSite site;
 
@@ -61,10 +65,10 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
     }
 
     @Nullable
-    protected DateTimeFormatter getTimeStampFormat(Map<String, Object> properties, String propName) {
+    protected DateTimeFormatter getTimeStampFormat(Map<String, Object> properties, String formatPropName) {
         DateTimeFormatter tsFormat = null;
 
-        String tsFormatPattern = CommonUtils.toString(properties.get(propName));
+        String tsFormatPattern = CommonUtils.toString(properties.get(formatPropName));
         if (!CommonUtils.isEmpty(tsFormatPattern)) {
             try {
                 tsFormat = DateTimeFormatter.ofPattern(tsFormatPattern);
@@ -75,9 +79,17 @@ public abstract class StreamImporterAbstract implements IStreamDataImporter {
         return tsFormat;
     }
 
-    protected void applyTransformHints(StreamTransferResultSet resultSet, IDataTransferConsumer consumer, DateTimeFormatter tsFormat) throws DBException {
+    protected void applyTransformHints(StreamTransferResultSet resultSet, IDataTransferConsumer consumer, Map<String, Object> properties, String formatPropName, String zoneIdPropName) throws DBException {
+        DateTimeFormatter tsFormat = formatPropName == null ? null : getTimeStampFormat(properties, formatPropName);
+        ZoneId tsZoneId = null;
+        if (zoneIdPropName != null) {
+            String zoneId = CommonUtils.toString(properties.get(zoneIdPropName));
+            if (!CommonUtils.isEmpty(zoneId)) {
+                tsZoneId = ZoneId.of(zoneId);
+            }
+        }
         if (tsFormat != null) {
-            resultSet.setDateTimeFormat(tsFormat);
+            resultSet.setDateTimeFormat(tsFormat, tsZoneId);
         }
 
         // Try to find source/target attributes

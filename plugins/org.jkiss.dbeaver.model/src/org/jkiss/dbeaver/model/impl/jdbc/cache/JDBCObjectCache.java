@@ -98,48 +98,51 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        try {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + owner.getName())) {
-                try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
-                    monitor.subTask("Load " + getCacheName());
-                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                    dbStat.executeStatement();
-                    JDBCResultSet dbResult = dbStat.getResultSet();
-                    if (dbResult != null) {
-                        try {
-                            while (dbResult.next()) {
-                                if (monitor.isCanceled()) {
-                                    return;
-                                }
+        if (owner.isPersisted()) {
+            // Load cache from database only for persisted objects
+            try {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + owner.getName())) {
+                    try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
+                        monitor.subTask("Load " + getCacheName());
+                        dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                        dbStat.executeStatement();
+                        JDBCResultSet dbResult = dbStat.getResultSet();
+                        if (dbResult != null) {
+                            try {
+                                while (dbResult.next()) {
+                                    if (monitor.isCanceled()) {
+                                        return;
+                                    }
 
-                                OBJECT object = fetchObject(session, owner, dbResult);
-                                if (object == null || !isValidObject(monitor, owner, object)) {
-                                    continue;
-                                }
-                                tmpObjectList.add(object);
+                                    OBJECT object = fetchObject(session, owner, dbResult);
+                                    if (object == null || !isValidObject(monitor, owner, object)) {
+                                        continue;
+                                    }
+                                    tmpObjectList.add(object);
 
-                                // Do not log every object load. This overheats UI in case of long lists
-                                //monitor.subTask(object.getName());
-                                if (tmpObjectList.size() == maximumCacheSize) {
-                                    log.warn("Maximum cache size exceeded (" + maximumCacheSize + ") in " + this);
-                                    break;
+                                    // Do not log every object load. This overheats UI in case of long lists
+                                    //monitor.subTask(object.getName());
+                                    if (tmpObjectList.size() == maximumCacheSize) {
+                                        log.warn("Maximum cache size exceeded (" + maximumCacheSize + ") in " + this);
+                                        break;
+                                    }
                                 }
+                            } finally {
+                                dbResult.close();
                             }
-                        } finally {
-                            dbResult.close();
                         }
                     }
+                } catch (SQLException ex) {
+                    throw new DBException(ex, dataSource);
+                } catch (DBException ex) {
+                    throw ex;
+                } catch (Exception ex) {
+                    throw new DBException("Internal driver error", ex);
                 }
-            } catch (SQLException ex) {
-                throw new DBException(ex, dataSource);
-            } catch (DBException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new DBException("Internal driver error", ex);
-            }
-        } catch (Exception e) {
-            if (!handleCacheReadError(e)) {
-                throw e;
+            } catch (Exception e) {
+                if (!handleCacheReadError(e)) {
+                    throw e;
+                }
             }
         }
 

@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -26,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DataSourceContextProvider implements DBPContextProvider
 {
+    private static final Log log = Log.getLog(DataSourceContextProvider.class);
+
     private final DBSObject object;
 
     public DataSourceContextProvider(DBSObject object) {
@@ -34,6 +38,11 @@ public class DataSourceContextProvider implements DBPContextProvider
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return DBUtils.getDefaultContext(object, false);
+        try {
+            return DBUtils.getOrOpenDefaultContext(object, false);
+        } catch (DBCException e) {
+            log.error("Error obtaining context", e);
+            return null;
+        }
     }
 }

@@ -20,9 +20,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
@@ -113,8 +113,8 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             if (oldAutoCommit) {
                 connection.setAutoCommit(false);
             }
-            try (JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString())) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            try (JDBCStatement dbStat = connection.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery(getPlanQueryString())) {
                     if (oldQuery) {
                         List<String> planLines = new ArrayList<>();
                         while (dbResult.next()) {

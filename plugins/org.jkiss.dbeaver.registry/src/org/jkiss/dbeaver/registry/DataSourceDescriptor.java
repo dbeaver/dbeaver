@@ -31,9 +31,10 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -89,6 +90,7 @@ public class DataSourceDescriptor
         {DBPConnectionConfiguration.VARIABLE_USER, "database user name"},
         {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
         {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
+        {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
 
         {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
@@ -96,15 +98,23 @@ public class DataSourceDescriptor
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
         {SystemVariablesResolver.VAR_HOME, "OS user home path"},
         {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
+        {SystemVariablesResolver.VAR_APP_PATH, "application install path"},
         {SystemVariablesResolver.VAR_APP_NAME, "application name"},
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
+    public static final String CATEGORY_SERVER = "Server";
+    public static final String CATEGORY_DRIVER = "Driver";
 
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
-    private final DBPDataSourceConfigurationStorage origin;
+    private final DBPDataSourceConfigurationStorage storage;
+    // Origin
+    @NotNull
+    private DBPDataSourceOrigin origin;
+
+    private final boolean manageable;
     @NotNull
     private DBPDriver driver;
     @NotNull
@@ -156,18 +166,21 @@ public class DataSourceDescriptor
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
-        this(registry, ((DataSourceRegistry)registry).getDefaultOrigin(), id, driver, connectionInfo);
+        this(registry, ((DataSourceRegistry)registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
     }
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
-        @NotNull DBPDataSourceConfigurationStorage origin,
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.registry = registry;
+        this.storage = storage;
         this.origin = origin;
+        this.manageable = storage.isDefault();
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
@@ -177,18 +190,20 @@ public class DataSourceDescriptor
     }
 
     // Copy constructor
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source) {
-        this(source, source.registry, true);
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry) {
+        this(source, registry, true);
     }
 
     /**
      * Copies datasource configuration
-     * @param setDefaultOrigin sets origin to default (in order to allow connection copy-paste with following save in default configuration)
+     * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultOrigin)
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage)
     {
         this.registry = registry;
-        this.origin = setDefaultOrigin ? ((DataSourceRegistry)registry).getDefaultOrigin() : source.origin;
+        this.storage = setDefaultStorage ? ((DataSourceRegistry)registry).getDefaultStorage() : source.storage;
+        this.origin = source.origin;
+        this.manageable = setDefaultStorage && ((DataSourceRegistry)registry).getDefaultStorage().isDefault();
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
@@ -265,6 +280,16 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DBPDataSourceConfigurationStorage getConfigurationStorage() {
+        return storage;
+    }
+
+    @Property(viewable = true, order = 3)
+    @NotNull
+    @Override
+    public DBPDataSourceOrigin getOrigin() {
+        if (origin instanceof DataSourceOriginLazy) {
+            origin = ((DataSourceOriginLazy) origin).resolveRealOrigin();
+        }
         return origin;
     }
 
@@ -577,13 +602,26 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    DBPDataSourceConfigurationStorage getOrigin() {
-        return origin;
+    DBPDataSourceConfigurationStorage getStorage() {
+        return storage;
+    }
+
+    public boolean isDetached() {
+        return hidden || temporary;
+    }
+
+    public boolean isManageable() {
+        return manageable;
     }
 
     @Override
     public boolean isProvided() {
-        return !origin.isDefault();
+        return !storage.isDefault();
+    }
+
+    @Override
+    public boolean isExternallyProvided() {
+        return origin.isDynamic();
     }
 
     @Override
@@ -727,26 +765,34 @@ public class DataSourceDescriptor
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
-        //final String oldName = getConnectionConfiguration().getUserName();
-        //final String oldPassword = getConnectionConfiguration().getUserPassword();
-        if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
-            // Ask for password
-            if (!askForPassword(this, null, false)) {
-                updateDataSourceObject(this);
-                return false;
+        resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
+
+        // Update auth properties if possible
+        boolean authProvided = true;
+        DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+        if (authProvider != null) {
+            authProvided = authProvider.provideAuthParameters(this, resolvedConnectionInfo);
+        } else {
+            // Legacy password provider
+            if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                // Ask for password
+                authProvided = askForPassword(this, null, false);
             }
+        }
+        if (!authProvided) {
+            // Auth parameters were canceled
+            updateDataSourceObject(this);
+            return false;
         }
 
         processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
         connecting = true;
-        resolvedConnectionInfo = null;
         try {
             // Resolve variables
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) ||
                 !CommonUtils.isEmpty(connectionInfo.getConfigProfileName()))
             {
-                this.resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
                 // Update config from profile
                 if (!CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
                     // Update config from profile
@@ -754,7 +800,7 @@ public class DataSourceDescriptor
                     if (profile != null) {
                         for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                             if (handlerCfg.isEnabled()) {
-                                resolvedConnectionInfo.updateHandler(handlerCfg);
+                                resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
                             }
                         }
                     }
@@ -765,9 +811,6 @@ public class DataSourceDescriptor
                         this, this.resolvedConnectionInfo);
                     this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
                 }
-
-            } else {
-                resolvedConnectionInfo = connectionInfo;
             }
 
             // Handle tunnelHandler
@@ -1134,17 +1177,26 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
-        this.formatterProfile = formatterProfile;
+    public boolean isUseNativeDateTimeFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+    }
+
+    @Override
+    public boolean isUseNativeNumericFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
+    }
+
+    @Override
+    public boolean isUseScientificNumericFormat() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
-        if (dataSource instanceof DBDPreferences) {
-            return ((DBDPreferences) dataSource).getDefaultValueHandler();
+        if (dataSource instanceof DBDFormatSettings) {
+            return ((DBDFormatSettings) dataSource).getDefaultValueHandler();
         }
         return DefaultValueHandler.INSTANCE;
     }
@@ -1217,13 +1269,13 @@ public class DataSourceDescriptor
         return driver.getId() + "-" + Long.toHexString(System.currentTimeMillis()) + "-" + Long.toHexString(rnd);
     }
 
-    @Property(viewable = true, order = 20, category = "Driver")
+    @Property(viewable = true, order = 20, category = CATEGORY_DRIVER)
     public String getPropertyDriverType()
     {
         return driver.getName();
     }
 
-    @Property(order = 3, category = "Server")
+    @Property(order = 30, category = CATEGORY_SERVER)
     public String getPropertyAddress()
     {
         StringBuilder addr = new StringBuilder();
@@ -1236,20 +1288,20 @@ public class DataSourceDescriptor
         return addr.toString();
     }
 
-    @Property(order = 4, category = "Server")
+    @Property(order = 31, category = CATEGORY_SERVER)
     public String getPropertyDatabase()
     {
         return connectionInfo.getDatabaseName();
     }
 
-    @Property(order = 5, category = "Server")
+    @Property(order = 32, category = CATEGORY_SERVER)
     public String getPropertyURL()
     {
         return connectionInfo.getUrl();
     }
 
     @Nullable
-    @Property(order = 6, category = "Server")
+    @Property(order = 33, category = CATEGORY_SERVER)
     public String getPropertyServerName()
     {
         if (dataSource != null) {
@@ -1263,7 +1315,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 7, category = "Server")
+    @Property(order = 34, category = CATEGORY_SERVER)
     public Map<String, Object> getPropertyServerDetails()
     {
         if (dataSource != null) {
@@ -1273,7 +1325,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 21, category = "Driver")
+    @Property(order = 21, category = CATEGORY_DRIVER)
     public String getPropertyDriver()
     {
         if (dataSource != null) {
@@ -1356,10 +1408,6 @@ public class DataSourceDescriptor
             CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
 
-    public boolean isDetached() {
-        return hidden || temporary;
-    }
-
     public static class ContextInfo implements DBPObject {
         private final DBCExecutionContext context;
 
@@ -1396,6 +1444,7 @@ public class DataSourceDescriptor
                 case DBPConnectionConfiguration.VARIABLE_USER: return configuration.getUserName();
                 case DBPConnectionConfiguration.VARIABLE_PASSWORD: return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL: return configuration.getUrl();
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE: return configuration.getConnectionType().getId();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
@@ -1432,6 +1481,7 @@ public class DataSourceDescriptor
             }
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
+            dataSourceContainer.getConnectionConfiguration().updateHandler(networkHandler);
         } else {
             if (!passwordOnly) {
                 dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());

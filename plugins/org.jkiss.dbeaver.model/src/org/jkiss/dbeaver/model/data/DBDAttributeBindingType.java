@@ -35,13 +35,16 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     @NotNull
     private final DBSAttributeBase attribute;
     private List<DBSEntityReferrer> referrers;
+    private int ordinalPosition;
 
     public DBDAttributeBindingType(
         @NotNull DBDAttributeBinding parent,
-        @NotNull DBSAttributeBase attribute)
+        @NotNull DBSAttributeBase attribute,
+        int ordinalPosition)
     {
         super(parent, DBUtils.findValueHandler(parent.getDataSource(), attribute));
         this.attribute = attribute;
+        this.ordinalPosition = ordinalPosition;
     }
 
     /**
@@ -51,7 +54,7 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     @Override
     public int getOrdinalPosition()
     {
-        return attribute.getOrdinalPosition();
+        return ordinalPosition < 0 ? attribute.getOrdinalPosition() : ordinalPosition;
     }
 
     @Override
@@ -208,6 +211,11 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
     @Override
     public long getMaxLength() {
         return attribute.getMaxLength();
+    }
+
+    @Override
+    public long getTypeModifiers() {
+        return attribute.getTypeModifiers();
     }
 
     @Override

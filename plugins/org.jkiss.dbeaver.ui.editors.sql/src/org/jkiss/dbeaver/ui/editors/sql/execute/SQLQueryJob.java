@@ -76,6 +76,8 @@ public class SQLQueryJob extends DataSourceJob
 
     public static final Object STATS_RESULTS = new Object();
 
+    public static final String DEFAULT_RESULSET_NAME = "Results";
+
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
     private final SQLScriptContext scriptContext;
@@ -543,8 +545,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (!hasResultSet) {
                     try {
                         updateCount = dbcStatement.getUpdateRowCount();
+                        SQLQueryResult.ExecuteResult executeResult = curResult.addExecuteResult(false);
                         if (updateCount >= 0) {
-                            curResult.addExecuteResult(false).setUpdateCount(updateCount);
+                            executeResult.setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
@@ -596,7 +599,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
+        int statementsCount = statistics.getStatementsCount();
+        if (statementsCount > 1 || // Many statements
+            (statementsCount == 1 && resultSetNumber == 0) || // Single non-select statement
+            (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
@@ -644,7 +650,7 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(updateCount, query.getText(), new Date());
 
-            executeResult.setResultSetName("Result");
+            executeResult.setResultSetName(DEFAULT_RESULSET_NAME);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
@@ -700,7 +706,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
-                    sourceName = "Result";
+                    sourceName = DEFAULT_RESULSET_NAME;
                 }
                 executeResult.setResultSetName(sourceName);
             }

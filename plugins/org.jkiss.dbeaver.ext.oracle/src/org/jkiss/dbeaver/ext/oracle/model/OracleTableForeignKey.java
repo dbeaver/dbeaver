@@ -90,7 +90,22 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         }
 
         String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
-        this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSForeignKeyModifyRule.CASCADE : DBSForeignKeyModifyRule.NO_ACTION;
+        if (CommonUtils.isEmpty(deleteRuleName)) {
+            this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+        } else {
+            switch (deleteRuleName) {
+                case "CASCADE":
+                    this.deleteRule = DBSForeignKeyModifyRule.CASCADE;
+                    break;
+                case "SET NULL":
+                    this.deleteRule = DBSForeignKeyModifyRule.SET_NULL;
+                    break;
+                case "NO ACTION":
+                default:
+                    this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+                    break;
+            }
+        }
     }
 
     @Property(viewable = true, order = 3)

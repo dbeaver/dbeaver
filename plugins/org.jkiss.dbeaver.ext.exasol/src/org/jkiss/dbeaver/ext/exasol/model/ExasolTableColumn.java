@@ -195,10 +195,9 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     }
 
     public void setPrecision(Integer precision) {
-        if (this.precision != precision)
+        if (this.precision != CommonUtils.toInt(precision))
             this.changed = true;
-        super.precision = precision;
-        this.precision = precision;
+        super.setPrecision(precision);
 
     }
 

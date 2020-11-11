@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
@@ -34,12 +34,12 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
+            return new MySQLDateTimeValueHandler(preferences);
         } else if (typedObject.getDataKind() == DBPDataKind.NUMERIC) {
-            return new MySQLNumberValueHandler(typedObject, preferences.getDataFormatterProfile());
+            return new MySQLNumberValueHandler(typedObject, preferences);
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return JDBCContentValueHandler.INSTANCE;
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_GEOMETRY)) {

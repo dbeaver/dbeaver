@@ -69,8 +69,7 @@ public class DatabaseTasksTree {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
         colorErrorForeground = UIUtils.getContrastColor(colorError);
-        composite.addDisposeListener(e -> colorErrorForeground.dispose());
-
+        
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
             new NamedObjectPatternFilter(), TaskUIMessages.db_tasks_tree_text_tasks_type);
@@ -132,7 +131,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || lastRun.getStartTime() == null) {
                         return "N/A";
                     } else {
                         return dateFormat.format(lastRun.getStartTime());
@@ -306,8 +305,8 @@ public class DatabaseTasksTree {
 
     public void refresh() {
         refreshTasks();
-        regroupTasks();
-        taskViewer.refresh(true);
+        regroupTasks(false);
+        //taskViewer.refresh(true);
         if (refreshScheduledTasks()) {
             taskViewer.refresh(true);
         }
@@ -317,10 +316,10 @@ public class DatabaseTasksTree {
         refreshTasks();
         refreshScheduledTasks();
 
-        regroupTasks();
+        regroupTasks(true);
     }
 
-    public void regroupTasks() {
+    public void regroupTasks(boolean expandAll) {
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -339,7 +338,9 @@ public class DatabaseTasksTree {
             }
 
             taskViewer.setInput(rootObjects);
-            taskViewer.expandAll();
+            if (expandAll) {
+                taskViewer.expandAll();
+            }
             taskColumnController.repackColumns();
         } finally {
             taskViewer.getTree().setRedraw(true);
@@ -392,10 +393,10 @@ public class DatabaseTasksTree {
             }
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort(this::comparTasksTime);
+        allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
 
-    private int comparTasksTime(DBTTask o1, DBTTask o2) {
+    private int compareTasksTime(DBTTask o1, DBTTask o2) {
         DBTTaskRun lr1 = o1.getLastRun();
         DBTTaskRun lr2 = o2.getLastRun();
         if (lr1 == null) {

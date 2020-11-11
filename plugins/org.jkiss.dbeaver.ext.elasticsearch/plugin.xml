@@ -29,7 +29,7 @@
                         webURL="https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-jdbc.html"
                         categories="fulltext">
                     <replace provider="generic" driver="es_generic"/>
-                    <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:7.4.0"/>
+                    <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:7.9.1"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -39,13 +39,6 @@
             </drivers>
 
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="elastic-search-maven-repo" name="Elasticsearch Repository" url="https://artifacts.elastic.co/maven" order="20">
-            <scope group="org.elasticsearch.plugin"/>
-        </repository>
-
     </extension>
 
 </plugin>

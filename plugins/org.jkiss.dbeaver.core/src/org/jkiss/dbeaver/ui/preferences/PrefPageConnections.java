@@ -49,6 +49,7 @@ public class PrefPageConnections extends TargetPrefPage
         DBPConnectionConfiguration.VARIABLE_USER,
         DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
+        DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
 
         DBConstants.VAR_CONTEXT_NAME,
         DBConstants.VAR_CONTEXT_ID,
@@ -58,6 +59,7 @@ public class PrefPageConnections extends TargetPrefPage
         SystemVariablesResolver.VAR_DBEAVER_HOME,
         SystemVariablesResolver.VAR_APP_NAME,
         SystemVariablesResolver.VAR_APP_VERSION,
+        SystemVariablesResolver.VAR_APP_PATH,
         SystemVariablesResolver.VAR_LOCAL_IP,
     };
 

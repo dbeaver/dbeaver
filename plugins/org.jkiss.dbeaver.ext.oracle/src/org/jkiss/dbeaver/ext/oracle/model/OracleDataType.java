@@ -334,6 +334,11 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public int getMinScale()
     {
         return typeDesc == null ? 0 : typeDesc.minScale;

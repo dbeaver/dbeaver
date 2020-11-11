@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPCredentialsProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -45,6 +44,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_USER = "user";
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
+    public static final String VARIABLE_CONN_TYPE = "connectionType";
 
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
@@ -75,7 +75,6 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String connectionColor;
     private int keepAliveInterval;
 
-    private DBPCredentialsProvider credentialsProvider;
     private String authModelId;
     private Map<String, String> authProperties;
 
@@ -392,14 +391,6 @@ public class DBPConnectionConfiguration implements DBPObject {
             authProperties = new HashMap<>();
         }
         this.authProperties.put(name, value);
-    }
-
-    public DBPCredentialsProvider getCredentialsProvider() {
-        return credentialsProvider;
-    }
-
-    public void setCredentialsProvider(DBPCredentialsProvider credentialsProvider) {
-        this.credentialsProvider = credentialsProvider;
     }
 
     ///////////////////////////////////////////////////////////

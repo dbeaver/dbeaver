@@ -262,7 +262,7 @@ public class JSONUtils {
     public static Map<String, Object> getObject(@NotNull Map<String, Object> map, @NotNull String name) {
         Map<String, Object> object = (Map<String, Object>) map.get(name);
         if (object == null) {
-            return Collections.emptyMap();
+            return new LinkedHashMap<>();
         } else {
             return object;
         }
@@ -272,7 +272,7 @@ public class JSONUtils {
     public static Iterable<Map.Entry<String, Map<String, Object>>> getNestedObjects(@NotNull Map<String, Object> map, @NotNull String name) {
         Map<String, Map<String, Object>> object = (Map<String, Map<String, Object>>) map.get(name);
         if (object == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         } else {
             return object.entrySet();
         }

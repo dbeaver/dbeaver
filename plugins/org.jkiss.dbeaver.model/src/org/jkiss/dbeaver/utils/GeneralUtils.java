@@ -93,7 +93,6 @@ public class GeneralUtils {
      */
     public static String getDefaultFileEncoding() {
         return UTF8_ENCODING;
-        //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
     public static String getDefaultLocalFileEncoding() {
@@ -662,14 +661,6 @@ public class GeneralUtils {
         return new URI(path.replace(" ", "%20"));
     }
 
-    public static String encodeTopic(@NotNull String topic) {
-        return topic.replace(".", "__dot__");
-    }
-
-    public static String decodeTopic(@NotNull String topic) {
-        return topic.replace("__dot__", ".");
-    }
-
     public static boolean isWindows() {
         return Platform.getOS().contains("win32");
     }
@@ -719,7 +710,7 @@ public class GeneralUtils {
                     + sourceObject.getClass().getName() + " returned " + result.getClass().getName() //$NON-NLS-1$
                     + " that is not an instance of " + adapter.getName()); //$NON-NLS-1$
             }
-            return (T) result;
+            return adapter.cast(result);
         }
 
         return null;

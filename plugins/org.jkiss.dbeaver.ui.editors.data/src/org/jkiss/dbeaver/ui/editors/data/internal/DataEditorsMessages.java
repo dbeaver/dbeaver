@@ -93,7 +93,12 @@ public class DataEditorsMessages extends NLS {
 	public static String virtual_structure_editor_table_column_source_table;
 	public static String virtual_structure_editor_table_column_source_datasource;
 	public static String virtual_structure_editor_dialog_button_refresh;
-	
+
+    public static String complex_object_editor_dialog_menu_copy_element;
+    public static String complex_object_editor_dialog_menu_add_element;
+    public static String complex_object_editor_dialog_menu_remove_element;
+    public static String complex_object_editor_dialog_menu_move_up_element;
+    public static String complex_object_editor_dialog_menu_move_down_element;
 
     static {
 		// initialize resource bundle

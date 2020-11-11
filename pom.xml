@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>7.2.1</dbeaver-version>
+        <dbeaver-version>7.2.5</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.7.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -144,41 +144,9 @@
                 </executions>
             </plugin>
 
-            <!-- Tests run -->
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.5</version>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <phase>test</phase>
-                        <configuration>
-                            <includes>
-                                <include>**/*Test.java</include>
-                            </includes>
-                        </configuration>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
 
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.5</version>
-            </plugin>
-        </plugins>
-    </reporting>
 
     <profiles>
         <!-- desktop build: includes UI components and products -->
@@ -229,36 +197,5 @@
             </build>
         </profile>
     </profiles>
-
-    <!-- unit tests -->
-
-    <dependencies>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-<!--
-        <dependency>
-          <groupId>org.powermock</groupId>
-          <artifactId>powermock-api-mockito</artifactId>
-          <version>1.6.6</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.powermock</groupId>
-          <artifactId>powermock-module-junit4</artifactId>
-          <version>1.6.6</version>
-          <scope>test</scope>
-        </dependency>
--->
-    </dependencies>
 
 </project>

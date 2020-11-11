@@ -496,4 +496,18 @@
         </task>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="mssql_ssl"
+                codeName="SSL"
+                label="SSL"
+                description="SSL settings"
+                secured="false"
+                order="100"
+                handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"/>
+        </handler>
+    </extension>
+
 </plugin>

@@ -62,7 +62,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreObject,
         DBPDataTypeProvider,
         DBSInstanceLazy,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPObjectWithLazyDescription
+{
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -126,7 +128,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // We need to set name first
         this.name = databaseName;
         this.initCaches();
-        checkInstanceConnection(monitor);
+        checkInstanceConnection(monitor, false);
 
         try {
             readDatabaseInfo(monitor);
@@ -192,8 +194,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (executionContext == null) {
+            checkInstanceConnection(monitor, true);
+        }
+    }
+
+    // We mustn't cache metadata when checkInstanceConnection called during datasource instantiation
+    // Because datasource is not fully initialized yet
+    void checkInstanceConnection(@NotNull DBRProgressMonitor monitor, boolean cacheMetadata) throws DBException {
+        if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
+            if (cacheMetadata)
+                cacheDataTypes(monitor, true);
         }
     }
 
@@ -243,7 +255,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @NotNull
@@ -258,7 +270,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
-    @Property(viewable = true, multiline = true, order = 100)
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
@@ -279,6 +292,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
         
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -596,7 +613,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 

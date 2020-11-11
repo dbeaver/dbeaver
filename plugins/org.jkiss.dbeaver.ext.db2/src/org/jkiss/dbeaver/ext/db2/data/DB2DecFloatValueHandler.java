@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.data;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -36,8 +36,8 @@ public class DB2DecFloatValueHandler extends JDBCNumberValueHandler {
 
     final static int DECFLOAT_SPECIALVALUE_ENCOUNTERED = -4231;
 
-    public DB2DecFloatValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        super(type, formatterProfile);
+    public DB2DecFloatValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        super(type, formatSettings);
     }
 
     @Nullable
