@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
@@ -81,10 +82,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -99,6 +97,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -468,6 +467,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         StringBuilder tdt = new StringBuilder();
         StringBuilder html = new StringBuilder();
+        byte[] binaryData = null;
 
         Map<Transfer, Object> formats = new LinkedHashMap<>();
 
@@ -549,6 +549,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
             ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.row : cell.col);
             Object value = controller.getModel().getCellValue(column, row);
+            if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
+                if (value instanceof byte[]) {
+                    binaryData = (byte[]) value;
+                } else if (value instanceof DBDContent && !ContentUtils.isTextContent((DBDContent) value) && value instanceof DBDContentCached) {
+                    try {
+                        binaryData = ContentUtils.getContentBinaryValue(new VoidProgressMonitor(), (DBDContent) value);
+                    } catch (DBCException e) {
+                        log.debug("Error reading content binary value");
+                    }
+                }
+            }
             String cellText = column.getValueRenderer().getValueDisplayString(
                 column.getAttribute(),
                 value,
@@ -583,6 +594,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         formats.put(TextTransfer.getInstance(), tdt.toString());
         if (copyHTML) {
             formats.put(HTMLTransfer.getInstance(), html.toString());
+        }
+        if (binaryData != null) {
+            formats.put(SimpleByteArrayTransfer.getInstance(), binaryData);
         }
 
         return formats;
@@ -681,16 +695,34 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         continue;
                     }
 
-                    Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
-                    if (newValue == null) {
-                        continue;
-                    }
-                    new SpreadsheetValueController(
+                    SpreadsheetValueController valueController = new SpreadsheetValueController(
                         controller,
                         attr,
                         row,
                         IValueController.EditType.NONE,
-                        null).updateValue(newValue, false);
+                        null);
+
+                    Object newValue = null;
+
+                    if (attr.getDataKind() == DBPDataKind.BINARY || attr.getDataKind() == DBPDataKind.CONTENT) {
+
+                        Clipboard clipboard = new Clipboard(Display.getCurrent());
+                        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), attr, "Copy from clipboard")) {
+                            byte[] binaryContents = (byte[]) clipboard.getContents(SimpleByteArrayTransfer.getInstance());
+                            if (binaryContents != null) {
+                                newValue = valueController.getValueHandler().getValueFromObject(session, attr, binaryContents, false, false);
+                            }
+                        } finally {
+                            clipboard.dispose();
+                        }
+                    }
+                    if (newValue == null) {
+                        newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
+                        if (newValue == null) {
+                            continue;
+                        }
+                    }
+                    valueController.updateValue(newValue, false);
                 }
             }
             controller.redrawData(false, true);
