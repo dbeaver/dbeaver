@@ -89,6 +89,11 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
             return pageContents;
         }
 
+        @Override
+        public boolean isPageComplete() {
+            return super.isPageComplete() && selectedFunction != null;
+        }
+
         private class PostgreProcedureSelector extends CSmartSelector<PostgreProcedure> {
             private final Composite parent;
 
@@ -128,6 +133,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                             selectedFunction = (PostgreProcedure) ((DBNDatabaseNode) node).getObject();
                             functionCombo.addItem(selectedFunction);
                             functionCombo.select(selectedFunction);
+                            updatePageState();
                         }
                     }
                 }
