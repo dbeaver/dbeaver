@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.gis.presentation;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
@@ -41,10 +42,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Geometry presentation.
@@ -105,10 +103,10 @@ public class GeometryPresentation extends AbstractPresentation {
         return controller.getModel().getDocumentAttribute();
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String copySelectionToString(ResultSetCopySettings settings) {
-        return null;
+    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+        return Collections.emptyMap();
     }
 
     ///////////////////////////////////////////////////////////////////////

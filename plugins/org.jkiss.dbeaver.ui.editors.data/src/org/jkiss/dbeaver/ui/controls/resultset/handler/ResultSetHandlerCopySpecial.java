@@ -63,8 +63,8 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public static void showAdvancedCopyDialog(IResultSetController resultSet, Shell shell) {
         AdvancedCopyConfigDialog configDialog = new AdvancedCopyConfigDialog(shell);
         if (configDialog.open() == IDialogConstants.OK_ID) {
-            ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
-                configDialog.copySettings));
+            ResultSetUtils.copyToClipboard(
+                resultSet.getActivePresentation().copySelection(configDialog.copySettings));
         }
     }
 

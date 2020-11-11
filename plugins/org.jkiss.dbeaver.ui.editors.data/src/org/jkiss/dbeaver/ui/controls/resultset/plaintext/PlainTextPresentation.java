@@ -25,6 +25,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.StyledTextPrintOptions;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -59,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Empty presentation.
@@ -587,10 +590,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         return curAttribute;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String copySelectionToString(ResultSetCopySettings settings) {
-        return text.getSelectionText();
+    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+        return Collections.singletonMap(
+            TextTransfer.getInstance(),
+            text.getSelectionText());
     }
 
     private static PrinterData fgPrinterData= null;

@@ -18,12 +18,15 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+
+import java.util.Map;
 
 /**
  * Result set renderer.
@@ -111,8 +114,11 @@ public interface IResultSetPresentation {
     @Nullable
     Point getCursorLocation();
 
-    @Nullable
-    String copySelectionToString(ResultSetCopySettings settings);
+    /**
+     * Copies selected cells in supported Transfer formats.
+     */
+    @NotNull
+    Map<Transfer, Object> copySelection(ResultSetCopySettings settings);
 
     void printResultSet();
 

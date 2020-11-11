@@ -39,6 +39,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utils
@@ -78,6 +79,25 @@ public class ResultSetUtils
                 clipboard.setContents(
                     new Object[]{string},
                     new Transfer[]{textTransfer});
+            } finally {
+                clipboard.dispose();
+            }
+        }
+    }
+
+    public static void copyToClipboard(Map<Transfer, Object> formats) {
+        if (!formats.isEmpty()) {
+            Clipboard clipboard = new Clipboard(Display.getCurrent());
+            try {
+                Transfer[] transfers = new Transfer[formats.size()];
+                Object[] values = new Object[formats.size()];
+                int index = 0;
+                for (Map.Entry<Transfer, Object> fmtEntry : formats.entrySet()) {
+                    transfers[index] = fmtEntry.getKey();
+                    values[index] = fmtEntry.getValue();
+                    index++;
+                }
+                clipboard.setContents(values, transfers);
             } finally {
                 clipboard.dispose();
             }
