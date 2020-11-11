@@ -20,9 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -40,21 +38,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class HiveTable extends GenericTable implements DBPImageProvider {
+public class HiveTable extends GenericTable implements DBPImageProvider, DBPNamedObject2 {
     final public IndexCache indexCache = new IndexCache();
 
     public HiveTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
 
+    @Nullable
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
-        List<HiveIndex> cacheObjects = indexCache.getObjects(monitor, getContainer(), this);
-        List<GenericTableIndex> newGenericIndexesList = new ArrayList<>();
-        for (HiveIndex index : cacheObjects) {
-            newGenericIndexesList.add((GenericTableIndex) index);
-        }
-        return newGenericIndexesList;
+    public synchronized List<HiveTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (List<HiveTableColumn>) super.getAttributes(monitor);
+    }
+
+    @Override
+    public List<HiveIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return indexCache.getObjects(monitor, getContainer(), this);
     }
 
     @Override

@@ -152,7 +152,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
             if (pk == null) {
                 // No PK. Let's try unique indexes
-                Collection<GenericTableIndex> indexes = pkTable.getIndexes(session.getProgressMonitor());
+                Collection<? extends GenericTableIndex> indexes = pkTable.getIndexes(session.getProgressMonitor());
                 if (indexes != null) {
                     for (GenericTableIndex index : indexes) {
                         if (index.isUnique() && DBUtils.getConstraintAttribute(session.getProgressMonitor(), index, pkColumn) != null) {

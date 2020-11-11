@@ -41,6 +41,7 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
     public static final String PROP_CAN_EXPORT = "canExport";
     public static final String PROP_HAS_SELECTION = "hasSelection";
+    public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
 
     public SQLEditorPropertyTester() {
@@ -89,6 +90,8 @@ public class SQLEditorPropertyTester extends PropertyTester
             }
             case PROP_FOLDING_ENABLED:
                 return editor.isFoldingEnabled();
+            case PROP_FOLDING_SUPPORTED:
+                return editor.getAnnotationModel() != null;
         }
         return false;
     }

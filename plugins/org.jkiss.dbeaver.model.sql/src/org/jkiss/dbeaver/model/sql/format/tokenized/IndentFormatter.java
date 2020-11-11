@@ -73,7 +73,8 @@ class IndentFormatter {
             case ",":
                 if (!isCompact) {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
-                    if(bracketsDepth <= 0 || functionBracket.size() == 0 || ("SELECT".equalsIgnoreCase(getPrevDMLKeyword(argList, index)) && bracketsDepth > 0 && bracketsDepth == indent))
+                    boolean isInsideAFunction = functionBracket.size() != 0 && functionBracket.get(functionBracket.size() - 1).equals(Boolean.TRUE);
+                    if (!isInsideAFunction)
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(
