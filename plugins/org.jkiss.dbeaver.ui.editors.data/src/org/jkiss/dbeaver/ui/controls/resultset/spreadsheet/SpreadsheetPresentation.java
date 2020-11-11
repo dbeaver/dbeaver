@@ -465,6 +465,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
         boolean copyHTML = settings.isCopyHTML();
+
+        StringBuilder tdt = new StringBuilder();
+        StringBuilder html = new StringBuilder();
+
         Map<Transfer, Object> formats = new LinkedHashMap<>();
 
         String columnDelimiter = settings.getColumnDelimiter();
@@ -482,9 +486,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
-        StringBuilder tdt = new StringBuilder();
-        StringBuilder html = new StringBuilder();
-        html.append("<table border=\"1\">");
+        if (copyHTML) html.append("<table border=\"1\">");
         if (settings.isCopyHeader()) {
             if (copyHTML) html.append("<thead>");
             if (settings.isCopyRowNumbers()) {
