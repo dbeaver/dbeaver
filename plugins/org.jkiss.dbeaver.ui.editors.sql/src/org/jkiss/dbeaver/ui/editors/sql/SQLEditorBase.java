@@ -587,12 +587,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         SQLDialect dialect = getSQLDialect();
         IDocument document = getDocument();
 
-        syntaxManager.init(dialect, getActivePreferenceStore());
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
-
-        ruleScanner.refreshRules(getDataSource(), ruleManager);
-        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
+        reloadParserContext(dialect, document);
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
@@ -640,6 +635,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (verticalRuler != null) {
             verticalRuler.update();
         }
+    }
+
+    private void reloadParserContext(SQLDialect dialect, IDocument document) {
+        syntaxManager.init(dialect, getActivePreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
+        ruleScanner.refreshRules(getDataSource(), ruleManager);
+        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
+    }
+
+    public void reloadParserContext() {
+        reloadParserContext(getSQLDialect(), getDocument());
     }
 
     boolean hasActiveQuery() {
@@ -816,7 +823,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     /**
@@ -859,12 +866,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
+            case SQLPreferenceConstants.FOLDING_ENABLED:
+                SourceViewerConfiguration configuration = getSourceViewerConfiguration();
+                SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
+                sourceViewer.unconfigure();
+                annotationModel.removeAllAnnotations();
+                sourceViewer.configure(configuration);
+                return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
                 return;
         }
-
     }
 
     ////////////////////////////////////////////////////////
