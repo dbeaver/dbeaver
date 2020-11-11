@@ -48,6 +48,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ControlAdapter;
@@ -101,6 +102,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -462,6 +464,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @NotNull
     @Override
     public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+        boolean copyHTML = settings.isCopyHTML();
         Map<Transfer, Object> formats = new LinkedHashMap<>();
 
         String columnDelimiter = settings.getColumnDelimiter();
@@ -480,18 +483,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();
+        StringBuilder html = new StringBuilder();
+        html.append("<table border=\"1\">");
         if (settings.isCopyHeader()) {
+            if (copyHTML) html.append("<thead>");
             if (settings.isCopyRowNumbers()) {
                 tdt.append("#");
+                if (copyHTML) html.append("<th>#</th>");
             }
             for (Object column : selectedColumns) {
                 if (tdt.length() > 0) {
                     tdt.append(columnDelimiter);
                 }
-                tdt.append(labelProvider.getText(column));
+                String columnText = labelProvider.getText(column);
+                tdt.append(columnText);
+                if (copyHTML) html.append("<th>").append(XMLUtils.escapeXml(columnText)).append("</th>");
             }
             tdt.append(rowDelimiter);
+            if (copyHTML) html.append("</thead>").append(rowDelimiter);
         }
+
+        if (copyHTML) html.append("<tbody>");
 
         List<GridCell> selectedCells = spreadsheet.getCellSelection();
         boolean quoteCells = settings.isQuoteCells() && selectedCells.size() > 1;
@@ -506,20 +518,28 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     int prevColIndex = selectedColumns.indexOf(prevCell.col);
                     for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
                         tdt.append(columnDelimiter);
+                        if (copyHTML) html.append("<td></td>");
                     }
                 }
                 if (prevCell != null) {
                     tdt.append(rowDelimiter);
+                    if (copyHTML) html.append("</tr>").append(rowDelimiter);
                 }
                 if (settings.isCopyRowNumbers()) {
-                    tdt.append(labelProvider.getText(cell.row)).append(columnDelimiter);
+                    String rowNumber = labelProvider.getText(cell.row);
+                    tdt.append(rowNumber).append(columnDelimiter);
+                    if (copyHTML) html.append("<td>").append(rowNumber).append("</td>");
                 }
+                if (copyHTML) html.append("<tr>");
             }
             if (prevCell != null && prevCell.col != cell.col) {
                 int prevColIndex = selectedColumns.indexOf(prevCell.col);
                 int curColIndex = selectedColumns.indexOf(cell.col);
                 for (int i = prevColIndex; i < curColIndex; i++) {
                     tdt.append(columnDelimiter);
+                    if (i != prevColIndex) {
+                        if (copyHTML) html.append("<td></td>");
+                    }
                 }
             }
 
@@ -537,6 +557,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             tdt.append(cellText);
+            if (copyHTML) html.append("<td>").append(XMLUtils.escapeXml(cellText)).append("</td> ");
 
             if (settings.isCut()) {
                 IValueController valueController = new SpreadsheetValueController(
@@ -548,12 +569,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             prevCell = cell;
         }
+        if (copyHTML) {
+            html.append("</tbody>").append(rowDelimiter);
+            html.append("</table>").append(rowDelimiter);
+        }
         if (settings.isCut()) {
             controller.redrawData(false, false);
             controller.updatePanelsContent(false);
         }
 
         formats.put(TextTransfer.getInstance(), tdt.toString());
+        if (copyHTML) {
+            formats.put(HTMLTransfer.getInstance(), html.toString());
+        }
 
         return formats;
     }
