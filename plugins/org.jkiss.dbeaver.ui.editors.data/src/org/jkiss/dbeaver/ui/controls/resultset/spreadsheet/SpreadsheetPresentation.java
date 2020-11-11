@@ -49,6 +49,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -458,9 +459,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    @Nullable
-    public String copySelectionToString(ResultSetCopySettings settings)
-    {
+    @NotNull
+    @Override
+    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+        Map<Transfer, Object> formats = new LinkedHashMap<>();
+
         String columnDelimiter = settings.getColumnDelimiter();
         if (columnDelimiter == null) {
             columnDelimiter = "\t";
@@ -550,7 +553,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.updatePanelsContent(false);
         }
 
-        return tdt.toString();
+        formats.put(TextTransfer.getInstance(), tdt.toString());
+
+        return formats;
     }
 
     @Override

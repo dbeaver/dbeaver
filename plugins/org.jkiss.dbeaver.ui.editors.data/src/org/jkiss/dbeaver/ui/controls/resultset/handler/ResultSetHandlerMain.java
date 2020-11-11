@@ -360,7 +360,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
-                    presentation.copySelectionToString(
+                    presentation.copySelection(
                         new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
@@ -371,7 +371,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:
                 ResultSetUtils.copyToClipboard(
-                    presentation.copySelectionToString(
+                    presentation.copySelection(
                         new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT))
                 );
                 break;
