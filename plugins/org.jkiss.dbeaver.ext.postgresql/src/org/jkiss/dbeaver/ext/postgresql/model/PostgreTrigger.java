@@ -251,15 +251,13 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return table.getDatabase();
     }
 
-    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        StringBuilder ddl = new StringBuilder();
+        if (body != null) {
+            return body;
+        }
 
-        ddl.append("-- DROP TRIGGER ")
-                .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
-                .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
-
-        if (body == null) {
+        if (persisted) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
                 body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
                 if (body != null) {
@@ -268,23 +266,24 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
+        } else {
+            body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
+                       + "\n    AFTER INSERT"
+                       + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                       + "\n    FOR EACH ROW"
+                       + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
         }
 
-        ddl.append(body).append(';');
-
-        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
-            ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                    .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .append(" IS ")
-                    .append(SQLUtils.quoteString(this, getDescription())).append(";");
-        }
-
-        return ddl.toString();
+        return body;
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Trigger DDL is read-only");
+    public void setObjectDefinitionText(String sourceText) {
+        this.body = sourceText;
+    }
+
+    public String getBody() {
+        return body;
     }
 
     @Override
