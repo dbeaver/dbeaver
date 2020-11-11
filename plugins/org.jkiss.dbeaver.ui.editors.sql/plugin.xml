@@ -169,7 +169,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,hasSelection"
+                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,hasSelection,foldingEnabled"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorPropertyTester"
@@ -397,7 +397,6 @@
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.editors.sql.convert.CopySourceCodeHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
-
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerNavigateQuery">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
@@ -475,6 +474,29 @@
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
                     </adapt>
                 </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerEnableDisableFolding"/>
+        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.foldingEnabled"/>
+                        </adapt>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler commandId="command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExpandCollapseAllFoldings">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.foldingEnabled"/>
+                        </adapt>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
 
@@ -743,6 +765,16 @@
             </menu>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="popup:#SQLRulerContext?before=additions">
+            <separator name="foldings" visible="true"/>
+            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled" label="%command.org.jkiss.dbeaver.ui.editors.sql.FoldingsEnabled.name" style="toggle"/>
+            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.ExpandAllFoldings.name" style="push">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings" label="%command.org.jkiss.dbeaver.ui.editors.sql.CollapseAllFoldings.name" style="push">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.themes">
