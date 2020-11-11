@@ -256,6 +256,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return ruleScanner;
     }
 
+    @Nullable
     public ProjectionAnnotationModel getAnnotationModel() {
         return annotationModel;
     }
@@ -867,16 +868,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
             case SQLPreferenceConstants.FOLDING_ENABLED:
-                SourceViewerConfiguration configuration = getSourceViewerConfiguration();
-                SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
-                sourceViewer.unconfigure();
-                annotationModel.removeAllAnnotations();
-                sourceViewer.configure(configuration);
+                if (annotationModel != null) {
+                    SourceViewerConfiguration configuration = getSourceViewerConfiguration();
+                    SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
+                    annotationModel.removeAllAnnotations();
+                    sourceViewer.unconfigure();
+                    sourceViewer.configure(configuration);
+                }
                 return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
-                return;
         }
     }
 
