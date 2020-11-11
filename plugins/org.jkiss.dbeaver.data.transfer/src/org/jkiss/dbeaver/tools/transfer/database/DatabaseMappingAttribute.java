@@ -129,6 +129,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null && source.getOrdinalPosition() < targetAttributes.size()) {
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
                         DBSEntityAttribute targetAttribute = targetAttributes.get(source.getOrdinalPosition());
+                        source.setTypeName(targetAttribute.getTypeName());
+                        source.setMaxLength(targetAttribute.getMaxLength());
                         source.setDataKind(targetAttribute.getDataKind());
                         if (!source.isMappingMetadataPresent()) {
                             targetName = targetAttribute.getName();
