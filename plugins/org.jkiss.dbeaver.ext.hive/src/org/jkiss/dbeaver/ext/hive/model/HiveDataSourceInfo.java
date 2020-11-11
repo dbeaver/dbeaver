@@ -76,4 +76,12 @@ class HiveDataSourceInfo extends JDBCDataSourceInfo {
         }
         return super.getDriverVersion();
     }
+
+    @Override
+    public boolean supportsIndexes() {
+        if (serverVersion != null) {
+            return !serverVersion.startsWith("3");
+        }
+        return false;
+    }
 }

@@ -48,6 +48,7 @@ public class EditIndexPage extends AttributesSelectorPage {
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
     private boolean unique;
+    private boolean supportUniqueIndexes = true;
 
     private int descColumnIndex;
 
@@ -60,6 +61,18 @@ public class EditIndexPage extends AttributesSelectorPage {
         this.index = index;
         this.indexTypes = new ArrayList<>(indexTypes);
         Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+    }
+
+    public EditIndexPage(
+            String title,
+            DBSTableIndex index,
+            Collection<DBSIndexType> indexTypes, boolean supportUniqueIndexes)
+    {
+        super(title, index.getTable());
+        this.index = index;
+        this.indexTypes = new ArrayList<>(indexTypes);
+        Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+        this.supportUniqueIndexes = supportUniqueIndexes;
     }
 
     @Override
@@ -85,13 +98,15 @@ public class EditIndexPage extends AttributesSelectorPage {
             }
         });
 
-        final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
-        uniqueButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                unique = uniqueButton.getSelection();
-            }
-        });
+        if (supportUniqueIndexes) {
+            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
+            uniqueButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    unique = uniqueButton.getSelection();
+                }
+            });
+        }
     }
 
     public DBSIndexType getIndexType()

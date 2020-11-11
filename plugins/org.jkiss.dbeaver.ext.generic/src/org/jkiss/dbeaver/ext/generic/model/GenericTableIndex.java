@@ -121,7 +121,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<GenericTableIndexColumn> columns)
+    public void setColumns(List<GenericTableIndexColumn> columns)
     {
         this.columns = columns;
     }
