@@ -16,20 +16,51 @@
  */
 package org.jkiss.dbeaver.ext.hive.model.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.hive.model.HiveIndex;
 import org.jkiss.dbeaver.ext.hive.model.HiveTable;
+import org.jkiss.dbeaver.ext.hive.model.HiveTableColumn;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class HiveTableManager extends GenericTableManager {
+public class HiveTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
+
+    private static final Class<?>[] CHILD_TYPES = {
+            HiveTableColumn.class,
+            GenericUniqueKey.class,
+            GenericTableForeignKey.class,
+            HiveIndex.class
+    };
+
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object, Class<? extends DBSObject> childType) throws DBException {
+        if (childType == HiveTableColumn.class) {
+            return object.getAttributes(monitor);
+        } else if (childType == HiveIndex.class) {
+            return object.getIndexes(monitor);
+        }
+        return super.getChildObjects(monitor, object, childType);
+    }
 
     @Override
     public boolean canDeleteObject(GenericTableBase object) {
@@ -55,5 +86,10 @@ public class HiveTableManager extends GenericTableManager {
             return;
         }
         super.addObjectDeleteActions(monitor, executionContext, actions, command, options);
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, GenericTableBase object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
     }
 }
