@@ -83,6 +83,11 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     @Property(viewable = true, editable = true, order = 7)
     public Integer getScale()
     {

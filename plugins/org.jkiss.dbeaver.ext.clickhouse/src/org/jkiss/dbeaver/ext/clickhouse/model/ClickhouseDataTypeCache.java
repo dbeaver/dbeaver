@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeArray;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataTypeCache;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -36,6 +37,10 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
         // Add array data types
         for (GenericDataType dt : new ArrayList<>(genericDataTypes)) {
             genericDataTypes.add(new GenericDataTypeArray(dt.getParentObject(), Types.ARRAY, "Array(" + dt.getName() + ")", "Array of " + dt.getName(), dt));
+        }
+        // Driver error - missing data types
+        if (DBUtils.findObject(genericDataTypes, "DateTime64") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.TIMESTAMP, "DateTime64", "DateTime64", false, false, 0, 0, 0));
         }
     }
 

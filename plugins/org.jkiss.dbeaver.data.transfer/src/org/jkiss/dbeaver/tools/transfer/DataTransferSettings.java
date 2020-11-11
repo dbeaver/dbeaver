@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -76,6 +77,9 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     // Hacky flag. Says that pipe selection is frozen.
     // Makes sense for special case like multi-file import
     private boolean pipeChangeRestricted;
+    // Hacky flag too. Skip nodes (producer and consumer) update
+    // if it's not required -- e.g., when we're editing an exiting task
+    private final boolean nodeUpdateRestricted;
 
     public DataTransferSettings(
         @NotNull DBRProgressMonitor monitor,
@@ -84,8 +88,10 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         @NotNull Map<String, Object> configuration,
         @NotNull DataTransferState state,
         boolean selectDefaultNodes,
-        boolean isExport) {
+        boolean isExport,
+        boolean isExitingTask) {
         this.state = state;
+        this.nodeUpdateRestricted = isExitingTask;
         initializePipes(producers, consumers, isExport);
         loadSettings(monitor, configuration);
 
@@ -110,7 +116,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             getTaskOrSavedSettings(task, configuration),
             state,
             !task.getProperties().isEmpty(),
-            isExportTask(task)
+            isExportTask(task),
+            DBTaskUtils.isTaskExists(task)
         );
     }
 
@@ -592,12 +599,15 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         this.consumerOptional = isExport;
         this.producerOptional = !isExport;
 
-        this.producer = null;
-        this.consumer = null;
-        if (!dataPipes.isEmpty()) {
-            DataTransferPipe pipe = dataPipes.get(0);
-            this.producer = pipe.getProducer() == null ? null : registry.getNodeByType(pipe.getProducer().getClass());
-            this.consumer = pipe.getConsumer() == null ? null : registry.getNodeByType(pipe.getConsumer().getClass());
+        // Don't update producer and consumer if it's not required (#9687)
+        if (!nodeUpdateRestricted) {
+            this.producer = null;
+            this.consumer = null;
+            if (!dataPipes.isEmpty()) {
+                DataTransferPipe pipe = dataPipes.get(0);
+                this.producer = pipe.getProducer() == null ? null : registry.getNodeByType(pipe.getProducer().getClass());
+                this.consumer = pipe.getConsumer() == null ? null : registry.getNodeByType(pipe.getConsumer().getClass());
+            }
         }
 
         DataTransferProcessorDescriptor savedProcessor = this.processor;

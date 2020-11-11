@@ -34,6 +34,6 @@ public interface INavigatorNodeActionHandler {
 
     String getNodeActionToolTip(INavigatorModelView view, DBNNode node);
 
-    void handleNodeAction(INavigatorModelView view, DBNNode node, Event event);
+    void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction);
 
 }

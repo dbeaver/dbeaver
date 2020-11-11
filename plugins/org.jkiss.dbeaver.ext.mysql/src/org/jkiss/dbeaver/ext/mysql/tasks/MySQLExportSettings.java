@@ -37,7 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject> {
+public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject> implements MySQLNativeCredentialsSettings {
 
     private static final Log log = Log.getLog(MySQLExportSettings.class);
 
@@ -58,6 +58,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean binariesInHex;
     private boolean noData;
     private boolean showViews;
+    private boolean overrideCredentials;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
@@ -157,6 +158,17 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         return exportObjects;
     }
 
+    @Override
+    public boolean isOverrideCredentials() {
+        return overrideCredentials;
+    }
+
+    @Override
+    public void setOverrideCredentials(boolean value) {
+        this.overrideCredentials = value;
+    }
+
+    @Override
     public void fillExportObjectsFromInput() {
         Map<MySQLCatalog, List<MySQLTableBase>> objMap = new LinkedHashMap<>();
         for (DBSObject object : getDatabaseObjects()) {
@@ -200,6 +212,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
         noData = CommonUtils.getBoolean(store.getString("MySQL.export.noData"), false);
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
+        overrideCredentials = CommonUtils.getBoolean(store.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME), false);
         if (CommonUtils.isEmpty(getExtraCommandArgs())) {
             // Backward compatibility
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
@@ -269,6 +282,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
         store.setValue("MySQL.export.noData", noData);
         store.setValue("MySQL.export.showViews", showViews);
+        store.setValue(MySQLNativeCredentialsSettings.PREFERENCE_NAME, overrideCredentials);
 
         if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
             // Save input objects to task properties

@@ -77,11 +77,11 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
-        super.saveSettings(dataSource);
         DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
         dataSource.getConnectionConfiguration().setAuthModelId(
             selectedAuthModel == null ? null : selectedAuthModel.getId());
         authModelSelector.saveSettings(dataSource);
+        super.saveSettings(dataSource);
     }
 
     @Override

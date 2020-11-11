@@ -74,7 +74,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     public SQLQueryParameterBindDialog(IWorkbenchPartSite site, SQLQuery query, List<SQLQueryParameter> parameters)
     {
         super(site.getShell());
-        setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
+        if (!UIUtils.isInDialog()) {
+            setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
+        }
         this.site = site;
         StringWriter dummyWriter = new StringWriter();
         this.queryContext = new SQLScriptContext(null, new DataSourceContextProvider(query.getDataSource()), null, dummyWriter, null);

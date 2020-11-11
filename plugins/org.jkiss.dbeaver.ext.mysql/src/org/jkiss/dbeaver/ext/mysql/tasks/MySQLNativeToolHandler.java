@@ -1,8 +1,29 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
@@ -18,27 +39,58 @@ import java.util.List;
 public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
-    protected List<String> getMySQLToolCommandLine(AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> handler, SETTINGS settings, PROCESS_ARG arg) throws IOException {
+    private File config;
+
+    @Override
+    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
+        try {
+            return super.doExecute(monitor, task, settings, log);
+        } finally {
+            if (config != null && !config.delete()) {
+                log.debug("Failed to delete configuration file");
+            }
+        }
+    }
+
+    @Override
+    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+        if (!isOverrideCredentials(settings)) {
+            String toolUserPassword = settings.getToolUserPassword();
+
+            if (CommonUtils.isEmpty(settings.getToolUserName())) {
+                toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
+            }
+
+            if (CommonUtils.isNotEmpty(toolUserPassword)) {
+                process.environment().put(MySQLConstants.ENV_VAR_MYSQL_PWD, toolUserPassword);
+            }
+        }
+    }
+
+    @Override
+    protected List<String> getCommandLine(SETTINGS settings, PROCESS_ARG arg) throws IOException {
         List<String> cmd = new ArrayList<>();
-        handler.fillProcessParameters(settings, arg, cmd);
+        fillProcessParameters(settings, arg, cmd);
 
         String toolUserName = settings.getToolUserName();
+        String toolUserPassword = settings.getToolUserPassword();
+
+        /*
+         * Use credentials derived from connection configuration
+         * if no username was specified by export configuration itself.
+         * This is needed to avoid overriding empty password.
+         */
         if (CommonUtils.isEmpty(toolUserName)) {
             toolUserName = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserName();
-        }
-
-        String toolUserPassword = settings.getToolUserPassword();
-        if (CommonUtils.isEmpty(toolUserPassword)) {
             toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
         }
 
-        /*
-         * Let's assume that if username is not set, then
-         * native tool must search for credentials on its own.
-         */
-        if (!CommonUtils.isEmpty(toolUserName)) {
-            String credentialsFile = createCredentialsFile(toolUserName, toolUserPassword);
-            cmd.add(1, "--defaults-file=" + credentialsFile);
+        if (isOverrideCredentials(settings)) {
+            config = createCredentialsFile(toolUserName, toolUserPassword);
+            cmd.add(1, "--defaults-file=" + config.getAbsolutePath());
+        } else {
+            cmd.add("-u");
+            cmd.add(toolUserName);
         }
 
         DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
@@ -50,22 +102,24 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
-    /*
-     * Native tools like mysqldump doesn't read password set in
-     * MYSQL_PWD (also it's deprecated since MySQL 8.0) and prefer
-     * to grab credentials from my.cnf (that is located somewhere in the system),
-     * so we'll generate our own my.cnf with required credentials (#5350)
-     */
-    private static String createCredentialsFile(String username, String password) throws IOException {
+    private static File createCredentialsFile(String username, String password) throws IOException {
         File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
-        File cnf = new File(dir, "my.cnf"); //$NON-NLS-1$
+        File cnf = new File(dir, ".my.cnf"); //$NON-NLS-1$
+        cnf.deleteOnExit();
 
         try (Writer writer = new FileWriter(cnf)) {
             writer.write("[client]"); //$NON-NLS-1$
-            writer.write("\nuser=" + (CommonUtils.isEmpty(username) ? "" : username)); //$NON-NLS-1$
-            writer.write("\npassword=" + (CommonUtils.isEmpty(password) ? "" : password)); //$NON-NLS-1$
+            writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
+            writer.write("\npassword=" + CommonUtils.notEmpty(password)); //$NON-NLS-1$
         }
 
-        return cnf.getPath();
+        return cnf;
+    }
+
+    private boolean isOverrideCredentials(SETTINGS settings) {
+        if (settings instanceof MySQLNativeCredentialsSettings) {
+            return ((MySQLNativeCredentialsSettings) settings).isOverrideCredentials();
+        }
+        return false;
     }
 }

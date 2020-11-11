@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -50,7 +51,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
-    @NotNull
+    @Nullable
     private PostgreDataType dataType;
     private String comment;
     private long charLength;
@@ -62,6 +63,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private boolean isLocal;
     private long collationId;
     private Object acl;
+    private long typeId;
+    private int typeMod;
 
     protected PostgreAttribute(
         OWNER table)
@@ -97,6 +100,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.isLocal = source.isLocal;
         this.collationId = source.collationId;
         this.acl = source.acl;
+        this.typeId = source.typeId;
+        this.typeMod = source.typeMod;
     }
 
     @NotNull
@@ -113,7 +118,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public void setMaxLength(long maxLength) {
         super.setMaxLength(maxLength);
-        if (getDataKind() == DBPDataKind.STRING && this.precision != null) {
+        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
             this.precision = (int)maxLength;
         }
     }
@@ -134,7 +139,21 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
-        final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
+        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq";
+        //set serial types manually
+        if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
+                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
+            if (typeId == PostgreOid.INT4) {
+                typeId = PostgreOid.SERIAL;
+            } else if (typeId == PostgreOid.INT2) {
+                typeId = PostgreOid.SMALLSERIAL;
+            } else if (typeId == PostgreOid.INT8) {
+                typeId = PostgreOid.BIGSERIAL;
+            }
+        }
+        setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
@@ -152,8 +171,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
-        int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
+        typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();
         if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
@@ -293,6 +311,22 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return super.getDefaultValue();
     }
 
+    @Property(viewable = true, order = 31, visibleIf = PostgreTableHasIntervalTypeValidator.class)
+    public String getIntervalTypeField() {
+        if (typeId == PostgreOid.INTERVAL) {
+            return PostgreUtils.getIntervalField(typeMod);
+        }
+        return null;
+    }
+
+    public long getTypeId() {
+        return typeId;
+    }
+
+    public int getTypeMod() {
+        return typeMod;
+    }
+
     @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
@@ -389,6 +423,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.error(e);
                 return new Object[0];
             }
+        }
+    }
+
+    public static class PostgreTableHasIntervalTypeValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+            return object.getTypeId() == PostgreOid.INTERVAL;
         }
     }
 }

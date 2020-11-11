@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -40,11 +40,11 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler impl
 
     protected static final Log log = Log.getLog(TemporalAccessorValueHandler.class);
 
-    private final DBDDataFormatterProfile formatterProfile;
+    private final DBDFormatSettings formatSettings;
     protected DBDDataFormatter formatter;
 
-    public TemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile) {
-        this.formatterProfile = formatterProfile;
+    public TemporalAccessorValueHandler(DBDFormatSettings formatSettings) {
+        this.formatSettings = formatSettings;
     }
 
     @Override
@@ -102,7 +102,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler impl
     {
         if (formatter == null) {
             try {
-                formatter = formatterProfile.createFormatter(getFormatterId(column), column);
+                formatter = formatSettings.getDataFormatterProfile().createFormatter(getFormatterId(column), column);
             } catch (Exception e) {
                 log.error("Can't create formatter for zoned datetime value handler", e); //$NON-NLS-1$
                 formatter = DefaultDataFormatter.INSTANCE;

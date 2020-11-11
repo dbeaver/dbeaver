@@ -194,18 +194,13 @@ public class ERDUtils
             if (monitor.isCanceled()) {
                 return result;
             }
-            try {
-                monitor.subTask("Read references");
-                Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, rootTable);
-                if (refs != null) {
-                    for (DBSEntityAssociation ref : refs) {
-                        result.add(ref.getParentObject());
-                    }
-                }
-                monitor.worked(1);
-            } catch (DBException e) {
-                log.warn("Can't load table references", e);
+            monitor.subTask("Read references");
+            Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, rootTable);
+            for (DBSEntityAssociation ref : refs) {
+                result.add(ref.getParentObject());
             }
+
+            monitor.worked(1);
             if (monitor.isCanceled()) {
                 return result;
             }

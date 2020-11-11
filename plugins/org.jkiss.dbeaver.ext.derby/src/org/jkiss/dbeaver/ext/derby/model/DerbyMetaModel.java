@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -151,38 +153,9 @@ public class DerbyMetaModel extends GenericMetaModel
         } else {
             dbStat.setString(1, owner.getName());
         }
-        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-            while (dbResult.next()) {
-                String name = JDBCUtils.safeGetString(dbResult, "PK_NAME");
-                if (name == null) {
-                    continue;
-                }
-                try {
-                    GenericUniqueKey gConstraint = new GenericUniqueKey(forParent, name, null, getUniqueConstraintType(dbResult), true);
-                    Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
-                    if (descriptor != null) {
-                        Object baseColumnPositions = BeanUtils.invokeObjectMethod(descriptor, "baseColumnPositions");
-                        int[] columnPositions = (int []) baseColumnPositions;
-                        for (int pos : columnPositions) {
-                            List<? extends GenericTableColumn> attributes = forParent.getAttributes(session.getProgressMonitor());
-                            if (!CommonUtils.isEmpty(attributes)) {
-                                for (GenericTableColumn genericTableColumn : attributes) {
-                                    if (genericTableColumn.getOrdinalPosition() == pos) {
-                                        GenericTableConstraintColumn constraintColumn = new GenericTableConstraintColumn(gConstraint, genericTableColumn, pos);
-                                        gConstraint.addColumn(constraintColumn);
-                                        forParent.addUniqueKey(gConstraint);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (Throwable e) {
-                    throw new DBException("Can't get Derby constraint", e);
-                }
-            }
-        }
         return dbStat;
     }
+
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
         String type = JDBCUtils.safeGetString(dbResult, "TYPE");
@@ -195,4 +168,35 @@ public class DerbyMetaModel extends GenericMetaModel
         return super.getUniqueConstraintType(dbResult);
     }
 
+    @Override
+    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+        return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
+    }
+
+    @Override
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session, GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+        try {
+            List<GenericTableConstraintColumn> derbyConstraintColumns = new ArrayList<>();
+            Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
+            if (descriptor != null) {
+                Object baseColumnPositions = BeanUtils.invokeObjectMethod(descriptor, "baseColumnPositions");
+                int[] columnPositions = (int []) baseColumnPositions;
+                for (int pos : columnPositions) {
+                    List<? extends GenericTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+                    if (!CommonUtils.isEmpty(attributes)) {
+                        for (GenericTableColumn genericTableColumn : attributes) {
+                            if (genericTableColumn.getOrdinalPosition() == pos) {
+                                GenericTableConstraintColumn constraintColumn = new GenericTableConstraintColumn(object, genericTableColumn, pos);
+                                derbyConstraintColumns.add(constraintColumn);
+                            }
+                        }
+                    }
+                }
+                return ArrayUtils.toArray(GenericTableConstraintColumn.class, derbyConstraintColumns);
+            }
+        } catch (Throwable e) {
+            log.debug("Can't get Derby constraint", e);
+        }
+        return super.createConstraintColumnsImpl(session, parent, object, pkObject, dbResult);
+    }
 }

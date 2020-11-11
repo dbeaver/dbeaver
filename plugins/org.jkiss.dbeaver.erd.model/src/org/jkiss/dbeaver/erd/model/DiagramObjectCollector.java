@@ -20,11 +20,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -190,6 +192,9 @@ public class DiagramObjectCollector {
                 roots.add((DBSObject) object);
             }
         }
+        if (roots.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         final List<ERDEntity> entities = new ArrayList<>();
 
@@ -199,8 +204,14 @@ public class DiagramObjectCollector {
         //boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
 
         try {
-            collector.generateDiagramObjects(monitor, roots, settings);
-        } catch (DBException e) {
+            DBExecUtils.tryExecuteRecover(monitor, roots.get(0).getDataSource(), monitor1 -> {
+                try {
+                    collector.generateDiagramObjects(monitor1, roots, settings);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (Exception e) {
             log.error(e);
         }
         entities.addAll(collector.getDiagramEntities());

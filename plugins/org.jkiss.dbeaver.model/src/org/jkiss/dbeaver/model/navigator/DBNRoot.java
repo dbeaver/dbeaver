@@ -44,8 +44,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     public DBNRoot(DBNModel model) {
         super();
         this.model = model;
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            addProject(project, false);
+        DBPProject globalProject = model.getModelProject();
+        if (globalProject != null) {
+            addProject(globalProject, false);
+        } else {
+            for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+                addProject(project, false);
+            }
         }
         if (model.isGlobal()) {
             model.getPlatform().getWorkspace().addProjectListener(this);

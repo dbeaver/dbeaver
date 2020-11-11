@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -134,7 +136,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         try {
             initExporter(session.getProgressMonitor());
         } catch (DBException e) {
-            throw new DBCException("Error initializing exporter");
+            throw new DBCException("Error initializing exporter", e);
         }
         if (containerMapping == null) {
             throw new DBCException("Internal error: consumer mappings not set");
@@ -212,7 +214,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
             DBSEntityAttribute targetAttr = columnMapping.targetAttr.getTarget();
             if (targetAttr == null) {
-                if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
+                if (isPreview) {
+                    targetAttr = new PreviewColumnInfo(null, columnMapping.sourceAttr, columnMapping.targetIndex);
+                } else if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
                     // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
                     targetAttr = (DBSEntityAttribute) columnMapping.targetAttr.getSource();
                 } else {
@@ -527,6 +531,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
+        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New table creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
+        }
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");
@@ -544,6 +552,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
+        DBPDataSourceContainer dataSourceContainer = session.getDataSource().getContainer();
+        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New attribute creation in database [" + dataSourceContainer.getName() + "] restricted by connection configuration");
+        }
+
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
         try {
             DatabaseTransferUtils.executeDDL(session, new DBEPersistAction[] { DatabaseTransferUtils.generateTargetAttributeDDL(session.getDataSource(), attribute) } );
@@ -694,6 +707,43 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         @Override
         public void close() {
 
+        }
+    }
+
+    /*
+     * This class is only suitable for data transfer preview.
+     */
+    private static class PreviewColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
+        private final DBSEntity entity;
+        private final DBDAttributeBinding binding;
+
+        public PreviewColumnInfo(DBSEntity entity, DBDAttributeBinding binding, int index) {
+            super(binding.getName(), binding.getTypeName(), -1, index, binding.getMaxLength(), null, null, false, false);
+            this.entity = entity;
+            this.binding = binding;
+        }
+
+        @Nullable
+        @Override
+        public String getDefaultValue() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public DBSEntity getParentObject() {
+            return entity;
+        }
+
+        @NotNull
+        @Override
+        public DBPDataSource getDataSource() {
+            return this.binding.getDataSource();
+        }
+
+        @Override
+        public DBPDataKind getDataKind() {
+            return this.binding.getDataKind();
         }
     }
 }

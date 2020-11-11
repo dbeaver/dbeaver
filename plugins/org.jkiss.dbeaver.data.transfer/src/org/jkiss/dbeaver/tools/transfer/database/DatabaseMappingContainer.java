@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Select;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,6 +30,9 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -126,7 +132,27 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             if (target != null) {
                 targetTableName = target.getName();
             } else if (source != null) {
-                targetTableName = source.getName();
+                if (source instanceof IAdaptable) {
+                    DBSDataContainer adapterSource = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                    if (adapterSource != null) {
+                        source = adapterSource;
+                    }
+                }
+                if (source instanceof SQLQueryContainer) {
+                    final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) source;
+                    if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
+                        final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
+                        if (sqlQuery.getStatement() instanceof Select) {
+                            final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
+                            if (table != null) {
+                                targetTableName = table.getName();
+                            }
+                        }
+                    }
+                }
+                if (CommonUtils.isEmpty(targetTableName)) {
+                    targetTableName = source.getName();
+                }
             } else {
                 targetTableName = "";
             }
@@ -182,7 +208,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {
-        if (source instanceof DBSEntity) {
+        if (source instanceof DBSEntity && !(source instanceof DBSDocumentContainer)) {
             for (DBSEntityAttribute attr : CommonUtils.safeCollection(((DBSEntity) source).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;

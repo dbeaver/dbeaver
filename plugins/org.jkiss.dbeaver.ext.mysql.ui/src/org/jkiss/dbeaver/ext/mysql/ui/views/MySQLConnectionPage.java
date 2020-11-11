@@ -199,10 +199,11 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
         if (serverTimezoneCombo != null) {
-            if (serverTimezoneCombo.getSelectionIndex() == 0 || CommonUtils.isEmpty(serverTimezoneCombo.getText())) {
+            String serverTimeZone = serverTimezoneCombo.getText();
+            if (CommonUtils.isEmpty(serverTimeZone) || serverTimeZone.equals(MySQLUIMessages.dialog_connection_auto_detect)) {
                 connectionInfo.removeProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
             } else {
-                connectionInfo.setProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE, serverTimezoneCombo.getText());
+                connectionInfo.setProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE, serverTimeZone);
             }
         }
         if (homesSelector != null) {

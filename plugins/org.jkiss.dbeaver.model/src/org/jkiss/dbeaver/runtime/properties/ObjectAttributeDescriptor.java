@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -107,6 +108,10 @@ public abstract class ObjectAttributeDescriptor {
     public String getId()
     {
         return id;
+    }
+
+    public <T extends Annotation> T getAnnotation(Class<T> annoType) {
+        return getter == null ? null : getter.getAnnotation(annoType);
     }
 
     public Method getGetter()

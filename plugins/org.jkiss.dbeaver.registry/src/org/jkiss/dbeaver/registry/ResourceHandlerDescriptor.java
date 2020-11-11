@@ -129,7 +129,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
                 return null;
             }
             try {
-                handler = clazz.newInstance();
+                handler = clazz.getConstructor().newInstance();
             } catch (Exception e) {
                 log.error("Can't instantiate resource handler", e);
             }

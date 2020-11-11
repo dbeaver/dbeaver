@@ -72,6 +72,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final RGB HOST_NAME_FG_DARK = new RGB(140,140,140);
     private static final RGB HOST_NAME_FG_LIGHT = new RGB(105,105,105);
 
+    // Disabled because of performance and a couple of glitches
+    // Sometimes hover bg remains after mouse move
+    private static final boolean PAINT_ACTION_HOVER = false;
+
     private final INavigatorModelView view;
 
     private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
@@ -133,6 +137,17 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             tree.setToolTipText(detailsTip);
         } else {
             tree.setToolTipText(null);
+        }
+    }
+
+    @Override
+    public void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+            // Detect active action
+            INavigatorNodeActionHandler overActionButton = getActionButtonFor(node, tree, event);
+            if (overActionButton != null) {
+                overActionButton.handleNodeAction(view, node, event, defaultAction);
+            }
         }
     }
 
@@ -282,8 +297,21 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                     // event.height * 2 / 3;
                 xPos -= imageSize;
                 widthOccupied += imageSize;
-                //gc.fillRectangle(xPos, event.y + (event.height - imageSize) / 2, imageBounds.width, imageBounds.height);
+                Point mousePos = tree.getDisplay().getCursorLocation();
+                Point itemPos = tree.toDisplay(xPos, event.y + (event.height - imageSize) / 2);
+
+                if (PAINT_ACTION_HOVER) {
+                    if (mousePos.x >= itemPos.x - 1 && mousePos.x <= itemPos.x + imageBounds.width + 2 &&
+                        mousePos.y > itemPos.y - 1 && mousePos.y < itemPos.y + imageBounds.height + 2) {
+                        Color oldBackground = gc.getBackground();
+                        Color overBG = UIUtils.getSharedColor(new RGB(200, 200, 255));
+                        gc.setBackground(overBG);
+                        gc.fillRoundRectangle(xPos - 1, event.y + (event.height - imageSize) / 2 - 1, imageBounds.width + 2, imageBounds.height + 2, 2, 2);
+                        gc.setBackground(oldBackground);
+                    }
+                }
                 gc.drawImage(image, xPos, event.y + (event.height - imageSize) / 2);
+
 //                gc.drawImage(image,
 //                    0, 0, imageBounds.width, imageBounds.height,
 //                    xPos, event.y + (event.height - imageSize) / 2, imageBounds.width, imageBounds.height);

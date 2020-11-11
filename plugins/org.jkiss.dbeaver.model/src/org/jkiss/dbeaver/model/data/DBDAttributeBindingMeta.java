@@ -144,6 +144,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return getAttribute().getMaxLength();
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return getAttribute().getTypeModifiers();
+    }
+
     /**
      * Attribute label
      */

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -43,7 +43,7 @@ import java.util.Date;
 /**
  * DBPDataSourceContainer
  */
-public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2, DBPDataSourcePermissionOwner
+public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DBPNamedObject2, DBPDataSourcePermissionOwner
 {
     /**
      * Container unique ID
@@ -61,6 +61,9 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     @NotNull
     DBPDataSourceConfigurationStorage getConfigurationStorage();
+
+    @NotNull
+    DBPDataSourceOrigin getOrigin();
 
     @NotNull
     DBPPlatform getPlatform();
@@ -84,6 +87,17 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     DBNBrowseSettings getNavigatorSettings();
 
     boolean isProvided();
+
+    /*
+     * Returns true if datasource can be managed (edited or deleted).
+     * Datasource is manageable if it belongs to its owner registry.
+     */
+    boolean isManageable();
+
+    /**
+     * @return true if datasource is provided by some dynamic DS provider. E.g. cloud configuration.
+     */
+    boolean isExternallyProvided();
 
     boolean isTemplate();
 

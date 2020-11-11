@@ -53,6 +53,7 @@ public class ClientHomesSelector implements ISelectionProvider {
     private DBPDriver driver;
     private List<String> homeIds = new ArrayList<>();
     private String currentHomeId;
+    private int currentHomeIndex;
 
     private final Map<ISelectionChangedListener, SelectionListener> listeners = new IdentityHashMap<>();
 
@@ -70,7 +71,7 @@ public class ClientHomesSelector implements ISelectionProvider {
         selectorPanel = createComposite ? UIUtils.createComposite(parent, 2) : parent;
 
         Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
-        controlLabel.setToolTipText("Local client configuration is needed for some administrative tasks like database dump/restore.");
+        controlLabel.setToolTipText(UIConnectionMessages.controls_client_home_selector_tip);
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
         homesCombo = new Combo(selectorPanel, SWT.READ_ONLY);
         //directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
@@ -83,9 +84,11 @@ public class ClientHomesSelector implements ISelectionProvider {
             public void widgetSelected(SelectionEvent e)
             {
                 if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
+                    homesCombo.select(currentHomeIndex);
                     manageHomes();
                 } else {
                     currentHomeId = homeIds.get(homesCombo.getSelectionIndex());
+                    currentHomeIndex = homesCombo.getSelectionIndex();
                 }
                 displayClientVersion();
                 handleHomeChange();
@@ -108,14 +111,11 @@ public class ClientHomesSelector implements ISelectionProvider {
         if (newHomeId != null) {
             currentHomeId = newHomeId;
         }
-        populateHomes(driver, currentHomeId, false);
+        populateHomes(driver, currentHomeId, true);
     }
 
     public void populateHomes(DBPDriver driver, String currentHome, boolean selectDefault)
     {
-        if (this.driver == driver) {
-            return;
-        }
         this.driver = driver;
         this.currentHomeId = currentHome;
 
@@ -135,15 +135,9 @@ public class ClientHomesSelector implements ISelectionProvider {
                 DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
                 if (clientManager != null) {
                     for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
-                        if (!homes.containsKey(location.getName())) {
-                            homes.put(location.getName(), location);
-                        }
+                        homes.putIfAbsent(location.getName(), location);
                     }
                 }
-                if (!CommonUtils.isEmpty(currentHome) && !homes.containsKey(currentHome)) {
-                    homes.put(currentHome, new LocalNativeClientLocation(currentHome, currentHome));
-                }
-
                 return Status.OK_STATUS;
             }
         };
@@ -151,8 +145,6 @@ public class ClientHomesSelector implements ISelectionProvider {
             @Override
             public void done(IJobChangeEvent event) {
                 UIUtils.syncExec(() -> {
-                    homesCombo.add("");
-                    homeIds.add(null);
                     for (DBPNativeClientLocation location : homes.values()) {
                         homesCombo.add(location.getDisplayName());
                         homeIds.add(location.getName());
@@ -160,10 +152,13 @@ public class ClientHomesSelector implements ISelectionProvider {
                             homesCombo.select(homesCombo.getItemCount() - 1);
                         }
                     }
-                    if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
-                        // Select first
-                        homesCombo.select(1);
-                        currentHomeId = homesCombo.getItem(1);
+                    if (homesCombo.getItemCount() == 0) {
+                        homesCombo.add(UIConnectionMessages.controls_client_home_selector_missing);
+                        homeIds.add(null);
+                    }
+                    if (selectDefault && homesCombo.getSelectionIndex() == -1) {
+                        homesCombo.select(0);
+                        currentHomeId = homeIds.get(0);
                     }
                     homesCombo.add(UIConnectionMessages.controls_client_home_selector_browse);
 

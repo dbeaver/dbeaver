@@ -90,6 +90,10 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         return id;
     }
 
+    public String setId(String id) {
+        return this.id = id;
+    }
+
     public String getName() {
         return name;
     }

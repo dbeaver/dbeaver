@@ -27,15 +27,11 @@ import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -69,7 +65,6 @@ public abstract class JDBCDataSource
         DBPDataTypeProvider,
         DBPErrorAssistant,
         DBPRefreshableObject,
-        DBDPreferences,
         DBSObject,
         DBSObjectContainer,
         DBSInstanceContainer,
@@ -167,7 +162,7 @@ public abstract class JDBCDataSource
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
                 authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
-                throw new DBCException("Authentication error", e);
+                throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
@@ -545,6 +540,8 @@ public abstract class JDBCDataSource
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return DBPDataKind.STRING;
             case Types.BIGINT:
             case Types.DECIMAL:
@@ -575,8 +572,6 @@ public abstract class JDBCDataSource
             case Types.BLOB:
             case Types.CLOB:
             case Types.NCLOB:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
                 return DBPDataKind.CONTENT;
             case Types.SQLXML:
                 return DBPDataKind.CONTENT;
@@ -731,23 +726,7 @@ public abstract class JDBCDataSource
     }
 
     /////////////////////////////////////////////////
-    // DBDPreferences
-
-    @Override
-    public DBDDataFormatterProfile getDataFormatterProfile() {
-        return container.getDataFormatterProfile();
-    }
-
-    @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile) {
-        container.setDataFormatterProfile(formatterProfile);
-    }
-
-    @NotNull
-    @Override
-    public DBDValueHandler getDefaultValueHandler() {
-        return JDBCObjectValueHandler.INSTANCE;
-    }
+    // DBDFormatSettings
 
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {

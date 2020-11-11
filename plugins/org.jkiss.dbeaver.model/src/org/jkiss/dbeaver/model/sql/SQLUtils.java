@@ -552,11 +552,13 @@ public final class SQLUtils {
                     if (i > 0) {
                         conString.append(" AND");
                     }
+                    String strValue;
                     if (inlineCriteria) {
-                        conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
+                        strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
                     } else {
-                        conString.append(" ").append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(),"?"));
+                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?");
                     }
+                    conString.append(' ').append(strValue);
                 }
             } else if (operator.getArgumentCount() < 0) {
                 // Multiple arguments
@@ -610,12 +612,20 @@ public final class SQLUtils {
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
-        return dataSource.getSQLDialect().getTypeCastClause(
-            attribute,
-            convertValueToSQL(dataSource, attribute, valueHandler, value));
+        return convertValueToSQL(dataSource, attribute, valueHandler, value, DBDDisplayFormat.NATIVE);
     }
 
-    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {
+    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
+        if (DBUtils.isNullValue(value)) {
+            return SQLConstants.NULL_VALUE;
+        }
+
+        return dataSource.getSQLDialect().getTypeCastClause(
+            attribute,
+            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat));
+    }
+
+    private static String convertValueToSQLFormat(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
@@ -625,7 +635,7 @@ public final class SQLUtils {
         if (value instanceof DBDContent) {
             strValue = convertStreamToSQL(attribute, (DBDContent) value, valueHandler, dataSource);
         } else {
-            strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
+            strValue = valueHandler.getValueDisplayString(attribute, value, displayFormat);
         }
         if (value instanceof Number) {
             return strValue;
@@ -668,7 +678,7 @@ public final class SQLUtils {
     public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, DBPDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
-            if (ContentUtils.isTextContent(content)) {
+            if (!content.isNull() && ContentUtils.isTextContent(content)) {
                 String strValue = ContentUtils.getContentStringValue(monitor, content);
                 return dataSource.getSQLDialect().escapeString(strValue);
             } else {

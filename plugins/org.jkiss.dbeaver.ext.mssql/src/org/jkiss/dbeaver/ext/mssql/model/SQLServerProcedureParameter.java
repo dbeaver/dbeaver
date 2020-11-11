@@ -169,6 +169,11 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         return maxLength;
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
     @Property(viewable = true, order = 5)
     public String getDefaultValue() {
         return defaultValue;

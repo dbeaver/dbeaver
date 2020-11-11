@@ -40,9 +40,11 @@
         <setEntry value="net.i2p.crypto.eddsa@default:default"/>
         <setEntry value="net.sf.opencsv@default:default"/>
         <setEntry value="org.apache.batik.constants@default:default"/>
-        <setEntry value="org.apache.batik.css@default:default"/>
+        <setEntry value="org.apache.batik.css*1.11.0.v20190515-0436@default:default"/>
+        <setEntry value="org.apache.batik.css*1.7.0.v201011041433@default:default"/>
         <setEntry value="org.apache.batik.i18n@default:default"/>
-        <setEntry value="org.apache.batik.util@default:default"/>
+        <setEntry value="org.apache.batik.util*1.11.0.v20190515-0436@default:default"/>
+        <setEntry value="org.apache.batik.util*1.7.0.v201011041433@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.io@default:default"/>
@@ -225,6 +227,8 @@
         <setEntry value="org.jkiss.dbeaver.data.transfer@default:default"/>
         <setEntry value="org.jkiss.dbeaver.debug.core@default:default"/>
         <setEntry value="org.jkiss.dbeaver.debug.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.erd.model@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.erd.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.athena.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.athena@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
@@ -236,7 +240,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.db2@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.derby@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.elasticsearch@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.erd@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.exasol@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.firebird@default:default"/>
@@ -293,7 +296,8 @@
         <setEntry value="org.jkiss.dbeaver.tasks.native@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.sql.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.ui@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ui.app.eclipse@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.team.git.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.team.git@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.charts@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.dashboard@default:default"/>

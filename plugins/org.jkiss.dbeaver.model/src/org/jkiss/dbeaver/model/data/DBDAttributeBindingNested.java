@@ -54,7 +54,7 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
     /**
      * Meta attribute (obtained from result set)
      */
-    @Nullable
+    @NotNull
     public DBCAttributeMetaData getMetaAttribute() {
         return this;
     }

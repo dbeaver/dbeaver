@@ -21,6 +21,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -86,6 +87,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @NotNull
     @Override
+    public DBPDataSourceOrigin getOrigin() {
+        throw new IllegalStateException("Stream datasource doesn't have origin");
+    }
+
+    @NotNull
+    @Override
     public DBPPlatform getPlatform() {
         return DBWorkbench.getPlatform();
     }
@@ -111,6 +118,16 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isProvided() {
         return true;
+    }
+
+    @Override
+    public boolean isManageable() {
+        return false;
+    }
+
+    @Override
+    public boolean isExternallyProvided() {
+        return false;
     }
 
     @Override
@@ -353,12 +370,22 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
-        return null;
+        return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();
     }
 
     @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile) {
+    public boolean isUseNativeDateTimeFormat() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+    }
 
+    @Override
+    public boolean isUseNativeNumericFormat() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
+    }
+
+    @Override
+    public boolean isUseScientificNumericFormat() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @NotNull

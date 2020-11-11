@@ -150,6 +150,11 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         return collection.getComponentType().getMaxLength();
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return collection.getComponentType().getTypeModifiers();
+    }
+
     @Nullable
     @Override
     public DBPImage getObjectImage() {

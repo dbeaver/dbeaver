@@ -18,11 +18,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -50,9 +49,9 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
     public static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
 
-    public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
+    public JDBCDateTimeValueHandler(DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
     }
 
     @Override
@@ -79,7 +78,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                 JDBCResultSet dbResults = (JDBCResultSet) resultSet;
 
                 // check for native format
-                if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+                if (formatSettings.isUseNativeDateTimeFormat()) {
                     try {
                         return dbResults.getString(index + 1);
                     } catch (SQLException e) {

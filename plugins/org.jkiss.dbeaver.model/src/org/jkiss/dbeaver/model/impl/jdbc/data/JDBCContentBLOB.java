@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -191,7 +192,11 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 }
             } else if (blob != null) {
                 try {
-                    preparedStatement.setBlob(paramIndex, blob);
+                    if (columnType.getDataKind() == DBPDataKind.BINARY) {
+                        preparedStatement.setBinaryStream(paramIndex, blob.getBinaryStream());
+                    } else {
+                        preparedStatement.setBlob(paramIndex, blob);
+                    }
                 }
                 catch (Throwable e0) {
                     // Write new blob value

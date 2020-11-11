@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -30,7 +30,7 @@ public class HANAValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences,
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
             DBSTypedObject typedObject) {
         switch (typedObject.getTypeName()) {
         case "ST_GEOMETRY":

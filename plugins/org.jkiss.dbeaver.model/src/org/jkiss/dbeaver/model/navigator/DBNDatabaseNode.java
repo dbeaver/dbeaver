@@ -82,7 +82,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     @Override
     public String getNodeType() {
-        return getObject() == null ? "" : getMeta().getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
+        if (getObject() == null) {
+            return "";
+        }
+        DBXTreeNode meta = getMeta();
+        return meta == null ? "" : meta.getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
     @Override
@@ -882,8 +886,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public boolean isVirtual() {
         for (DBNNode node = this; node != null; node = node.getParentNode()) {
-            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getMeta().isVirtual()) {
-                return true;
+            if (node instanceof DBNDatabaseNode) {
+                DBXTreeNode meta = ((DBNDatabaseNode) node).getMeta();
+                if (meta != null && meta.isVirtual()) {
+                    return true;
+                }
             }
         }
         return false;

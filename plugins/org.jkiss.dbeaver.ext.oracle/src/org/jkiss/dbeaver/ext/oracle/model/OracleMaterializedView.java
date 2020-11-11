@@ -129,6 +129,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private String query;
+    private OracleDDLFormat currentDDLFormat;
 
     public OracleMaterializedView(OracleSchema schema, String name)
     {
@@ -171,8 +172,21 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
     {
         if (query == null) {
+            currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
+        }
+        OracleDDLFormat newFormat = OracleDDLFormat.FULL;
+        boolean isFormatInOptions = options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT);
+        if (isFormatInOptions) {
+            newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
+        }
+        if (query == null || currentDDLFormat != newFormat && isPersisted()) {
             try {
-                query = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+                if (query == null || !isFormatInOptions) {
+                    query = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
+                } else {
+                    query = OracleUtils.getDDL(monitor, getTableTypeName(), this, newFormat, options);
+                    currentDDLFormat = newFormat;
+                }
             } catch (DBException e) {
                 String message = e.getMessage();
                 if (message != null) {
@@ -188,6 +202,14 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
     public void setObjectDefinitionText(String source)
     {
         this.query = source;
+    }
+
+    public String getMViewText() {
+        return query;
+    }
+
+    public void setCurrentDDLFormat(OracleDDLFormat currentDDLFormat) {
+        this.currentDDLFormat = currentDDLFormat;
     }
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
@@ -67,6 +68,17 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     public DBSObjectCache<? extends DBSObject, GenericTableBase> getObjectsCache(GenericTableBase object)
     {
         return object.getContainer().getTableCache();
+    }
+
+    @Override
+    public boolean canCreateObject(Object container) {
+        if (container instanceof DBSObject) {
+            DBPDataSource dataSource = ((DBSObject) container).getDataSource();
+            if (dataSource instanceof GenericDataSource) {
+                return ((GenericDataSource) dataSource).getMetaModel().supportsViews((GenericDataSource) dataSource);
+            }
+        }
+        return super.canCreateObject(container);
     }
 
     @Override

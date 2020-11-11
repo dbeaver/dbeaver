@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -408,7 +409,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                     log.warn("Can't find unique key for table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
                     //String pkFullName = getFullyQualifiedName() + "." + info.pkName;
-                    pk = new GenericUniqueKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    pk = this.getDataSource().getMetaModel().createConstraintImpl(this, info.pkName, DBSEntityConstraintType.PRIMARY_KEY, null, true);
                     pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
                     this.addUniqueKey(pk);
@@ -474,5 +475,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public List<? extends GenericTrigger> getTriggerCache() {
         return triggers;
+    }
+
+    public boolean supportUniqueIndexes() {
+        return true;
+    }
+
+    public Collection<DBSIndexType> getTableIndexTypes() {
+        return Collections.singletonList(DBSIndexType.OTHER);
     }
 }

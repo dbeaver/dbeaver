@@ -180,6 +180,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @Override
     public String getToolTipText(Object element) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)) {
+            return null;
+        }
         if (element instanceof DBNDataSource) {
             final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
             if (ds != null) {
@@ -213,6 +216,11 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
             }
         } else if (element instanceof DBNNode) {
+            if (element instanceof DBNResource &&
+                !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP))
+            {
+                return null;
+            }
             final String description = ((DBNNode) element).getNodeDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
@@ -224,6 +232,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
 
     @Override
     public Image getToolTipImage(Object element) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS)) {
+            return null;
+        }
         if (element instanceof DBNNode) {
             return DBeaverIcons.getImage(((DBNNode) element).getNodeIconDefault());
         }

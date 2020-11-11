@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -179,6 +176,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 throw new DBException("You can't set empty password");
             }
             Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+            connectProps.setProperty(JDBCConstants.PROP_USER, passwordInfo.getUserName());
+            connectProps.setProperty(JDBCConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
@@ -246,16 +245,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         log.warn("Can't set session territory", e);
                     }
                 }
-                String nlsDateFormat = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
-                if (nlsDateFormat != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_DATE_FORMAT='" + nlsDateFormat + "'");
-                    } catch (Throwable e) {
-                        log.warn("Can't set session NLS date format", e);
-                    }
-                }
+                setNLSParameter(session, connectionInfo, "NLS_DATE_FORMAT", OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
+                setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
 
                 if (JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())) {
                     if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER))) {
@@ -269,6 +262,19 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void setNLSParameter(JDBCSession session, DBPConnectionConfiguration connectionInfo, String oraNlsName, String paramName) {
+        String paramValue = connectionInfo.getProviderProperty(paramName);
+        if (!CommonUtils.isEmpty(paramValue)) {
+            try {
+                JDBCUtils.executeSQL(
+                    session,
+                    "ALTER SESSION SET "+ oraNlsName + "='" + paramValue + "'");
+            } catch (Throwable e) {
+                log.warn("Can not set session NLS parameter " + oraNlsName, e);
             }
         }
     }
@@ -477,7 +483,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public Class<? extends OracleSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         return OracleSchema.class;
     }

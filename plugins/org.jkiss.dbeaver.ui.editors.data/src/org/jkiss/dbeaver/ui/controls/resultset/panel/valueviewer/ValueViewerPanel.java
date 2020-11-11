@@ -131,6 +131,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     @Override
     public void activatePanel() {
         refreshValue(false);
+        viewPlaceholder.setFocus();
     }
 
     @Override

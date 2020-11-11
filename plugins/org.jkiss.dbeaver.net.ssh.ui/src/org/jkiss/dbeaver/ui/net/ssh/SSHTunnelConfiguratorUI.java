@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -190,7 +191,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             configuration.resolveDynamicVariables(
                 new DataSourceVariableResolver(
                     dataSource,
-                    dataSource == null ? null : dataSource.getConnectionConfiguration()));
+                    dataSource.getConnectionConfiguration()));
+        } else {
+            configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
 
         try {

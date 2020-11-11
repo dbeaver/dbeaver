@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
+    private static final boolean LONGVARCHAR_AS_LOB = false;
+
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         int valueType = typedObject.getTypeID();
         DBPDataKind dataKind = typedObject.getDataKind();//JDBCUtils.resolveDataKind(dataSource, typedObject.getTypeName(), valueType);
@@ -37,16 +39,16 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case BOOLEAN:
                 return new JDBCBooleanValueHandler();
             case STRING:
-                if (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR) {
+                if (LONGVARCHAR_AS_LOB && (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR)) {
                     // Eval long varchars as LOBs
                     return JDBCContentValueHandler.INSTANCE;
                 } else {
                     return JDBCStringValueHandler.INSTANCE;
                 }
             case NUMERIC:
-                return new JDBCNumberValueHandler(typedObject, preferences.getDataFormatterProfile());
+                return new JDBCNumberValueHandler(typedObject, preferences);
             case DATETIME:
-                return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
+                return new JDBCDateTimeValueHandler(preferences);
             case BINARY:
             case CONTENT:
                 if ("UUID".equalsIgnoreCase(typedObject.getTypeName())) {

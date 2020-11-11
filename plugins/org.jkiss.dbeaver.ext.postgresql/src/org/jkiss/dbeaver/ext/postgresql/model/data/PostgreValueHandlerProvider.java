@@ -21,9 +21,10 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -31,11 +32,11 @@ import java.sql.Types;
 /**
  * PostgreValueHandlerProvider
  */
-public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
+public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
 //        // FIXME: This doesn't work as data type information is not available during RS metadata reading
 //        DBSDataType dataType = DBUtils.getDataType(typedObject);
 //        if (dataType instanceof PostgreDataType && ((PostgreDataType) dataType).getTypeCategory() == PostgreTypeCategory.E) {
@@ -53,9 +54,9 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
                 if (((PostgreDataSource) dataSource).getServerType().supportsTemporalAccessor()) {
-                    return new PostgreTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                    return new PostgreTemporalAccessorValueHandler(preferences);
                 } else {
-                    return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
+                    return new PostgreDateTimeValueHandler(preferences);
                 }
             default:
                 switch (typedObject.getTypeName()) {
@@ -76,12 +77,15 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
                     default:
-                        if (typedObject.getDataKind() == DBPDataKind.STRING) {
+                        if (PostgreConstants.SERIAL_TYPES.containsKey(typedObject.getTypeName())) {
+                            return new JDBCNumberValueHandler(typedObject, preferences);
+                        }
+                        if (typeID == Types.OTHER || typedObject.getDataKind() == DBPDataKind.STRING) {
                             return PostgreStringValueHandler.INSTANCE;
                         }
-                        return null;
                 }
         }
+        return super.getValueHandler(dataSource, preferences, typedObject);
     }
 
 }

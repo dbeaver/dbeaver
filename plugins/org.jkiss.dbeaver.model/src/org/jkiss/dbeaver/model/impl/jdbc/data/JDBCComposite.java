@@ -52,11 +52,8 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     @Nullable
     private Struct rawStruct;
 
-    @NotNull
     protected DBSDataType type;
-    @NotNull
     protected DBSEntityAttribute[] attributes;
-    @NotNull
     protected Object[] values;
     protected boolean modified;
 
@@ -296,8 +293,8 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             return CommonUtils.equalObjects(name, attr.name) &&
                 valueType == attr.valueType &&
                 maxLength == attr.maxLength &&
-                CommonUtils.equalObjects(scale, attr.scale) &&
-                CommonUtils.equalObjects(precision, attr.precision) &&
+                scale == attr.scale &&
+                precision == attr.precision &&
                 CommonUtils.equalObjects(typeName, attr.typeName) &&
                 ordinalPosition == attr.ordinalPosition;
         }
@@ -305,7 +302,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         @Override
         public int hashCode() {
             return (int) ((name == null ? 0 : name.hashCode()) +
-                valueType + maxLength + CommonUtils.toInt(scale) + CommonUtils.toInt(precision) +
+                valueType + maxLength + scale + precision +
                 (typeName == null ? 0 : typeName.hashCode()) +
                 ordinalPosition);
         }

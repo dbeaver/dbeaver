@@ -117,6 +117,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
+    private static final boolean SHOW_CHECKBOX_AS_IMAGE = false;
+
     private Spreadsheet spreadsheet;
 
     @Nullable
@@ -332,7 +334,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Update controls
             controller.updateEditControls();
             controller.updateStatusMessage();
-            controller.updatePanelsContent(true);
+            controller.updatePanelsContent(false);
 
             if (recordMode) {
                 // Refresh meta if we are in record mode
@@ -360,9 +362,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         GridCell cell = controller.isRecordMode() ?
             new GridCell(curRow, this.curAttribute) :
             new GridCell(this.curAttribute, curRow);
-        UIUtils.asyncExec(() -> {
-            this.spreadsheet.setCursor(cell, false, true);
-        });
+        this.spreadsheet.setCursor(cell, false, true);
         //this.spreadsheet.showColumn(this.curAttribute);
     }
 
@@ -1102,8 +1102,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         Object value = controller.getModel().getCellValue(attr, row);
         if (isShowAsCheckbox(attr)) {
-            // Switch boolean value
-            toggleBooleanValue(attr, row, value);
+            if (!DBExecUtils.isAttributeReadOnly(attr)) {
+                // Switch boolean value
+                toggleBooleanValue(attr, row, value);
+            }
         } else if (DBUtils.isNullValue(value)) {
             UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
         } else if (!CommonUtils.isEmpty(attr.getReferrers())) {
@@ -1716,7 +1718,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
                 Object value = controller.getModel().getCellValue(attr, row);
                 if (isShowAsCheckbox(attr)) {
-                    state |= STATE_LINK;
+                    state |= STATE_TOGGLE;
                 } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                     state |= STATE_LINK;
                 } else {
@@ -1753,9 +1755,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            if (isShowAsCheckbox(attr)) {
-                return "";
-            }
             ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
             Object value = controller.getModel().getCellValue(attr, row);
@@ -1773,6 +1772,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (value instanceof DBDValueError) {
                 return ((DBDValueError) value).getErrorTitle();
             }
+
+            if (isShowAsCheckbox(attr)) {
+                if (value == null) {
+                    return String.valueOf(UIUtils.CHAR_BOOL_NULL);
+                }
+                if (value instanceof Number) {
+                    value = ((Number) value).byteValue() != 0;
+                }
+                if (value instanceof Boolean) {
+                    return UIUtils.getBooleanString((Boolean) value);
+                }
+            }
+
             if (formatString) {
                 if (recordMode) {
                     if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
@@ -1798,22 +1810,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
-            DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            if (isShowAsCheckbox(attr)) {
-                ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
-                Object cellValue = controller.getModel().getCellValue(attr, row);
-                if (cellValue instanceof Number) {
-                    cellValue = ((Number) cellValue).byteValue() != 0;
-                }
-                if (cellValue instanceof Boolean) {
-                    if ((Boolean)cellValue) {
-                        return UIIcon.CHECK_ON;
-                    } else {
-                        return UIIcon.CHECK_OFF;
+            if (SHOW_CHECKBOX_AS_IMAGE) {
+                DBDAttributeBinding attr = (DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+                if (isShowAsCheckbox(attr)) {
+                    ResultSetRow row = (ResultSetRow) (colElement instanceof ResultSetRow ? colElement : rowElement);
+                    Object cellValue = controller.getModel().getCellValue(attr, row);
+                    if (cellValue instanceof Number) {
+                        cellValue = ((Number) cellValue).byteValue() != 0;
                     }
-                }
-                if (DBUtils.isNullValue(cellValue)) {
-                    return UIIcon.CHECK_QUEST;
+                    if (cellValue instanceof Boolean) {
+                        if ((Boolean) cellValue) {
+                            return UIIcon.CHECK_ON;
+                        } else {
+                            return UIIcon.CHECK_OFF;
+                        }
+                    }
+                    if (DBUtils.isNullValue(cellValue)) {
+                        return UIIcon.CHECK_QUEST;
+                    }
                 }
             }
             return null;
@@ -1836,15 +1850,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
-
             Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
             if (fg != null) {
                 return fg;
             }
-            if (foregroundDefault == null) {
-                foregroundDefault = controller.getDefaultForeground();
-            }
-            return foregroundDefault;
+            return UIUtils.getContrastColor(getCellBackground(colElement, rowElement, false));
         }
 
         @Nullable

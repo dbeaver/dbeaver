@@ -39,11 +39,13 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
 
     @Override
     protected List<String> getCommandLine(MySQLScriptExecuteSettings settings, MySQLCatalog arg) throws IOException {
-        List<String> cmd = getMySQLToolCommandLine(this, settings, arg);
+        List<String> cmd = super.getCommandLine(settings, arg);
         if (settings.isVerbose()) {
             cmd.add("-v");
         }
-
+        if (settings.isForeignKeyCheckDisabled()) {
+            cmd.add("--init-command=SET SESSION FOREIGN_KEY_CHECKS=0;");
+        }
         cmd.add(arg.getName());
         return cmd;
     }

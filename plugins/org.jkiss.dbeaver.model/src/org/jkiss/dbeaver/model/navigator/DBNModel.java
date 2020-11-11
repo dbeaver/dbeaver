@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -75,7 +75,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final DBASession modelContext;
+    private final DBPProject modelProject;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -85,23 +85,28 @@ public class DBNModel implements IResourceChangeListener {
 
     /**
      * Creates navigator model.
-     * @param modelContext Model context. If null then this is global navigator model. Otherwise it points to a session-like object.
+     * @param modelProject Model project. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @NotNull DBASession modelContext) {
+    public DBNModel(DBPPlatform platform, @Nullable DBPProject modelProject) {
         this.platform = platform;
-        this.modelContext = modelContext;
+        this.modelProject = modelProject;
     }
 
     public DBPPlatform getPlatform() {
         return platform;
     }
 
-    public boolean isGlobal() {
-        return modelContext.isApplicationSession();
+    @Nullable
+    public DBPProject getModelProject() {
+        return modelProject;
     }
 
-    public DBASession getModelContext() {
-        return modelContext;
+    public DBASessionContext getModelAuthContext() {
+        return modelProject != null ? modelProject.getSessionContext() : platform.getWorkspace().getAuthContext();
+    }
+
+    public boolean isGlobal() {
+        return modelProject == null;
     }
 
     public void initialize()
@@ -291,6 +296,16 @@ public class DBNModel implements IResourceChangeListener {
                     }
                 }
             }
+        } else if (nodePath.type == DBNNode.NodePathType.ext) {
+            DBNProject[] projects = root.getProjects();
+            if (ArrayUtils.isEmpty(projects)) {
+                throw new DBException("No projects in workspace");
+            }
+            if (projects.length > 1) {
+                throw new DBException("Multi-project workspace. Extension nodes not supported");
+            }
+            return findNodeByPath(monitor, nodePath,
+                projects[0], 0);
         } else if (nodePath.type == DBNNode.NodePathType.other) {
             return findNodeByPath(monitor, nodePath,
                 root, 0);
@@ -667,6 +682,10 @@ public class DBNModel implements IResourceChangeListener {
             }
         }
         return true;
+    }
+
+    public static void disposeNode(DBNNode node, boolean reflect) {
+        node.dispose(reflect);
     }
 
     private class EventProcessingJob extends Job {

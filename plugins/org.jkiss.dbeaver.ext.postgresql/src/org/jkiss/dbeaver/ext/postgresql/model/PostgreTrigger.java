@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -66,15 +65,14 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private String whenExpression;
     private long functionSchemaId;
     private long functionId;
-    private String body;
-
-    protected String name;
     private DBSActionTiming actionTiming;
     private DBSManipulationType[] manipulationTypes;
     private PostgreTriggerType type;
     private boolean persisted;
     private PostgreTableColumn[] columnRefs;
     protected String description;
+    protected String name;
+    private String body;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
@@ -155,11 +153,6 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getBody()
-    {
-        return body;
     }
 
     @Property(viewable = true, order = 2)
@@ -259,39 +252,39 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     }
 
     @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
-        if (body == null) {
-            StringBuilder ddl = new StringBuilder();
-            ddl.append("-- DROP TRIGGER ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder ddl = new StringBuilder();
+
+        ddl.append("-- DROP TRIGGER ")
+                .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
                 .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
 
+        if (body == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-                String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
-                if (triggerSource != null) {
-                    triggerSource = SQLFormatUtils.formatSQL(getDataSource(), triggerSource);
-                    ddl.append(triggerSource).append(";");
+                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                if (body != null) {
+                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
                 }
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
+        }
 
-            if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
-                ddl.append("\n").append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
+        ddl.append(body).append(';');
+
+        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
+            ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
                     .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .append(" IS ")
                     .append(SQLUtils.quoteString(this, getDescription())).append(";");
-            }
-            this.body = ddl.toString();
         }
-        return body;
+
+        return ddl.toString();
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
-        body = sourceText;
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Trigger DDL is read-only");
     }
 
     @Override
