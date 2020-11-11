@@ -66,6 +66,11 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         this.dataKind = dataKind;
     }
 
+    @Override
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
     public boolean isMappingMetadataPresent() {
         return mappingMetadataPresent;
     }
