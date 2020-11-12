@@ -671,6 +671,10 @@ public class GeneralUtils {
         return IS_MACOS;
     }
 
+    public static boolean isLinux() {
+        return Platform.getOS().contains("linux");
+    }
+
     /////////////////////////////////////////////////////////////////////////
     // Adapters
     // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
