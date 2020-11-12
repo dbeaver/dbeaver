@@ -37,4 +37,9 @@ public class HiveSQLDialect extends GenericSQLDialect {
     public String[][] getIdentifierQuoteStrings() {
         return DEFAULT_QUOTE_STRINGS;
     }
+
+    @Override
+    public boolean supportsAlterTableConstraint() {
+        return false;
+    }
 }
