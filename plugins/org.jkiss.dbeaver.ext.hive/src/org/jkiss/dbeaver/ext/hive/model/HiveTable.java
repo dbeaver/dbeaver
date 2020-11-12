@@ -52,7 +52,7 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
     }
 
     @Override
-    public List<HiveIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<HiveIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return indexCache.getObjects(monitor, getContainer(), this);
     }
 
