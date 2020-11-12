@@ -50,6 +50,13 @@ public class HiveMetaModel extends GenericMetaModel
 
     @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+        if (tableType != null && isView(tableType)) {
+            return new GenericView(
+                    container,
+                    tableName,
+                    tableType,
+                    dbResult);
+        }
         return new HiveTable(container, tableName, tableType, dbResult);
     }
 
