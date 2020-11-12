@@ -1653,11 +1653,8 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void setFocus()
-    {
-        long st = System.currentTimeMillis();
+    public void setFocus() {
         super.setFocus();
-        System.out.println("setFocus() = " + (System.currentTimeMillis() - st));
     }
 
     public void loadQueryPlan() {
