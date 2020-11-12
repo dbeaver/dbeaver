@@ -162,7 +162,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsIndexes()) {
@@ -279,7 +279,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         try {
             // Try to get cardinality from some unique index
             // Cardinality
-            final Collection<GenericTableIndex> indexList = getIndexes(monitor);
+            final Collection<? extends GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {
                 for (GenericTableIndex index : indexList) {
                     if (index.isUnique()/* || index.getIndexType() == DBSIndexType.STATISTIC*/) {

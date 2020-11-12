@@ -28,6 +28,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
@@ -37,6 +38,8 @@ import java.util.*;
  * SQLReconcilingStrategy
  */
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
+    private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
+
     private static final Comparator<SQLScriptPosition> COMPARATOR = Comparator.comparingInt(SQLScriptPosition::getOffset).thenComparingInt(SQLScriptPosition::getLength);
 
     private SortedSet<SQLScriptPosition> registeredPositions = new TreeSet<>(COMPARATOR);
@@ -85,7 +88,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             return;
         }
         ProjectionAnnotationModel model = editor.getAnnotationModel();
-        if (editor == null) {
+        if (model == null) {
+            log.warn("Attempt to change folding annotations on editor with empty annotation model. editor=" + editor.toString());
             return;
         }
         Iterable<SQLScriptElement> queries = getQueries();
