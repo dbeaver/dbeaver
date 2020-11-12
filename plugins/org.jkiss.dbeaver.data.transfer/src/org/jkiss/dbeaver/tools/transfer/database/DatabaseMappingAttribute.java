@@ -128,24 +128,31 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null && source.getOrdinalPosition() < targetAttributes.size()) {
-                        List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
-                            .stream()
-                            .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
-                            .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
-                            .collect(Collectors.toList());
+                    target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+
+                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
-                        if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
-                            DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
-                            source.setTypeName(targetAttribute.getTypeName());
-                            source.setMaxLength(targetAttribute.getMaxLength());
-                            source.setDataKind(targetAttribute.getDataKind());
-                            if (!source.isMappingMetadataPresent()) {
+
+                        if (!source.isMappingMetadataPresent()) {
+                            List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
+                                .stream()
+                                .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
+                                .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
+                                .collect(Collectors.toList());
+
+                            if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
+                                DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
                                 targetName = targetAttribute.getName();
+                                target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                             }
                         }
+
+                        if (target != null) {
+                            source.setTypeName(target.getTypeName());
+                            source.setMaxLength(target.getMaxLength());
+                            source.setDataKind(target.getDataKind());
+                        }
                     }
-                    this.target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                     if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
