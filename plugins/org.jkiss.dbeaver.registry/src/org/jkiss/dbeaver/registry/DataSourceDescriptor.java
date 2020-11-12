@@ -1464,11 +1464,14 @@ public class DataSourceDescriptor
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
     {
+        DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
+        DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
+
         final String prompt = networkHandler != null ?
             NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
             "'" + dataSourceContainer.getName() + RegistryMessages.dialog_connection_auth_title; //$NON-NLS-1$
-        final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
-        final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
+        final String user = networkHandler != null ? networkHandler.getUserName() : actualConfig.getUserName();
+        final String password = networkHandler != null ? networkHandler.getPassword() : actualConfig.getUserPassword();
 
         DBPAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
         if (authInfo == null) {
@@ -1481,15 +1484,26 @@ public class DataSourceDescriptor
             }
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
-            dataSourceContainer.getConnectionConfiguration().updateHandler(networkHandler);
+            actualConfig.updateHandler(networkHandler);
+
+            if (authInfo.isSavePassword() && connConfig != actualConfig) {
+                // Save changes in real connection info
+                connConfig.updateHandler(networkHandler);
+            }
         } else {
             if (!passwordOnly) {
-                dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
+                actualConfig.setUserName(authInfo.getUserName());
             }
-            dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
+            actualConfig.setUserPassword(authInfo.getUserPassword());
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
         if (authInfo.isSavePassword()) {
+            if (authInfo.isSavePassword() && connConfig != actualConfig) {
+                if (!passwordOnly) {
+                    connConfig.setUserName(authInfo.getUserName());
+                }
+                connConfig.setUserPassword(authInfo.getUserPassword());
+            }
             // Update connection properties
             dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
         }
