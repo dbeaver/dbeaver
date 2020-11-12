@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * DatabaseMappingAttribute
@@ -126,17 +128,31 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null && source.getOrdinalPosition() < targetAttributes.size()) {
+                    target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+
+                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
-                        DBSEntityAttribute targetAttribute = targetAttributes.get(source.getOrdinalPosition());
-                        source.setTypeName(targetAttribute.getTypeName());
-                        source.setMaxLength(targetAttribute.getMaxLength());
-                        source.setDataKind(targetAttribute.getDataKind());
+
                         if (!source.isMappingMetadataPresent()) {
-                            targetName = targetAttribute.getName();
+                            List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
+                                .stream()
+                                .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
+                                .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
+                                .collect(Collectors.toList());
+
+                            if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
+                                DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
+                                targetName = targetAttribute.getName();
+                                target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                            }
+                        }
+
+                        if (target != null) {
+                            source.setTypeName(target.getTypeName());
+                            source.setMaxLength(target.getMaxLength());
+                            source.setDataKind(target.getDataKind());
                         }
                     }
-                    this.target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
                     if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
