@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * DatabaseMappingAttribute
@@ -127,13 +129,20 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
                     List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
                     if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null && source.getOrdinalPosition() < targetAttributes.size()) {
+                        List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
+                            .stream()
+                            .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
+                            .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
+                            .collect(Collectors.toList());
                         StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
-                        DBSEntityAttribute targetAttribute = targetAttributes.get(source.getOrdinalPosition());
-                        source.setTypeName(targetAttribute.getTypeName());
-                        source.setMaxLength(targetAttribute.getMaxLength());
-                        source.setDataKind(targetAttribute.getDataKind());
-                        if (!source.isMappingMetadataPresent()) {
-                            targetName = targetAttribute.getName();
+                        if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
+                            DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
+                            source.setTypeName(targetAttribute.getTypeName());
+                            source.setMaxLength(targetAttribute.getMaxLength());
+                            source.setDataKind(targetAttribute.getDataKind());
+                            if (!source.isMappingMetadataPresent()) {
+                                targetName = targetAttribute.getName();
+                            }
                         }
                     }
                     this.target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
