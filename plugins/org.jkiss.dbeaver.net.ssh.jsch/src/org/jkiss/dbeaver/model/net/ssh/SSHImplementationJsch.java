@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -173,19 +172,18 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
-            if (CommonUtils.isEmpty(password)) {
-                // For some reason, empty quotes on linux
-                // is treated as whitespace and thus being ignored,
-                // so we need to supply at least something.
-                password = SecurityUtils.generatePassword(5);
+            password = CommonUtils.notEmpty(password);
+
+            if (RuntimeUtils.isPlatformWindows()) {
+                password = '"' + password + '"';
             }
 
             Process process = new ProcessBuilder()
                 .command(
                     "ssh-keygen",
                     "-p",
-                    "-P", '"' + password + '"',
-                    "-N", '"' + password + '"',
+                    "-P", password,
+                    "-N", password,
                     "-m", "PEM",
                     "-f", tmp.getAbsolutePath(),
                     "-q")
