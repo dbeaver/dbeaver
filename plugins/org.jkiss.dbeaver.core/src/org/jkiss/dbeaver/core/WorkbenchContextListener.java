@@ -223,9 +223,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 activationResults = contextService.activateContext(RESULTS_CONTEXT_ID);
             }
             // Refresh auto-commit element state (#3315)
-            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
             // Refresh OpenSeparateConnection
-            ActionUtils.fireCommandRefresh(SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
+            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT, SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
         }
         finally {
             contextService.deferUpdates(false);
