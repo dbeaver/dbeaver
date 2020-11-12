@@ -172,12 +172,18 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
+            password = CommonUtils.notEmpty(password);
+
+            if (RuntimeUtils.isPlatformWindows()) {
+                password = '"' + password + '"';
+            }
+
             Process process = new ProcessBuilder()
                 .command(
                     "ssh-keygen",
                     "-p",
-                    "-P", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"',
-                    "-N", '"' + (CommonUtils.isEmpty(password) ? "" : password) + '"',
+                    "-P", password,
+                    "-N", password,
                     "-m", "PEM",
                     "-f", tmp.getAbsolutePath(),
                     "-q")
