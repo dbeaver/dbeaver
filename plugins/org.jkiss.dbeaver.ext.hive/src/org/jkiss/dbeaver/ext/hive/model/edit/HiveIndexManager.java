@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.hive.model.edit;
 
 import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.hive.model.HiveIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -37,14 +39,25 @@ public class HiveIndexManager extends GenericIndexManager {
         String indexName = tableIndex.getName();
         String tableName = tableIndex.getTable().getName();
         String hiveIndexType;
+        List<GenericTableIndexColumn> indexColumns = tableIndex.getAttributeReferences(monitor);
         if (indexType.getId().equals("COMPACT")) {
             hiveIndexType = "\'COMPACT\'";
         } else {
             hiveIndexType = "\'BITMAP\'";
         }
-        actions.add(new SQLDatabasePersistAction("Create table index",
-        "CREATE INDEX " + indexName + " ON TABLE " + tableName + " AS " + hiveIndexType +
-                " WITH DEFERRED REBUILD"));
+        StringBuilder ddl = new StringBuilder();
+        ddl.append("CREATE INDEX ").append(indexName).append(" ON TABLE ").append(tableName).append(" (");
+        if (indexColumns != null) {
+            for (int i = 0; i < indexColumns.size(); i++) {
+                if (i == 0) {
+                    ddl.append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
+                } else {
+                    ddl.append(", ").append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
+                }
+            }
+        }
+        ddl.append(") AS ").append(hiveIndexType).append(" WITH DEFERRED REBUILD");
+        actions.add(new SQLDatabasePersistAction("Create table index", ddl.toString()));
         actions.add(new SQLDatabasePersistAction("ALTER INDEX " + indexName + " ON " + tableName + " REBUILD"));
     }
 
