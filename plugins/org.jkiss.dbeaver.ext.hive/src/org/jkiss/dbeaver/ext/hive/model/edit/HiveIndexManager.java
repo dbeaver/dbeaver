@@ -20,8 +20,10 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.ext.hive.model.HiveIndex;
+import org.jkiss.dbeaver.ext.hive.model.HiveTable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -32,6 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 public class HiveIndexManager extends GenericIndexManager {
+
+    @Override
+    protected GenericTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object from, Map<String, Object> options) {
+        return new HiveIndex((HiveTable) container, "NewIndex",false, "", "Compact", null);
+    }
+
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         HiveIndex tableIndex = (HiveIndex) command.getObject();
