@@ -151,7 +151,7 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormatForCreateStatementWhenIndentSubstatementsInParenthesesOff() {
         //given
         String inputString = "CREATE TABLE Persons (PersonID int, LastName varchar(255), FirstName varchar(255), Address varchar(255), City varchar(255));";
-        String expectedString = "CREATE TABLE Persons (PersonID int,\r\nLastName varchar(255),\r\nFirstName varchar(255),\r\nAddress varchar(255),\r\nCity varchar(255));";
+        String expectedString = "CREATE TABLE Persons (PersonID int," + lineBreak + "LastName varchar(255)," + lineBreak + "FirstName varchar(255)," + lineBreak + "Address varchar(255)," + lineBreak + "City varchar(255));";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(false);
 
@@ -166,12 +166,12 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormatForCreateStatementWhenIndentSubstatementsInParenthesesOn() {
         //given
         String inputString = "CREATE TABLE Persons (PersonID int, LastName varchar(255), FirstName varchar(255), Address varchar(255), City varchar(255));";
-        String expectedString = "CREATE TABLE Persons (\r\n" +
-                "\tPersonID int,\r\n" +
-                "\tLastName varchar(255),\r\n" +
-                "\tFirstName varchar(255),\r\n" +
-                "\tAddress varchar(255),\r\n" +
-                "\tCity varchar(255)\r\n" +
+        String expectedString = "CREATE TABLE Persons (" + lineBreak +
+                "\tPersonID int," + lineBreak +
+                "\tLastName varchar(255)," + lineBreak +
+                "\tFirstName varchar(255)," + lineBreak +
+                "\tAddress varchar(255)," + lineBreak +
+                "\tCity varchar(255)" + lineBreak +
                 ");";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
@@ -187,9 +187,9 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormatForAlterStatementWhenIndentSubstatementsInParenthesesOn() {
         //given
         String inputString = "ALTER TABLE `users` ADD COLUMN (count_copy smallint(6) NOT NULL, status int(10) unsigned NOT NULL) AFTER `lastname`;";
-        String expectedString = "ALTER TABLE `users` ADD COLUMN (\r\n" +
-                "\tcount_copy SMALLINT(6) NOT NULL,\r\n" +
-                "\tstatus int(10) unsigned NOT NULL\r\n" +
+        String expectedString = "ALTER TABLE `users` ADD COLUMN (" + lineBreak +
+                "\tcount_copy SMALLINT(6) NOT NULL," + lineBreak +
+                "\tstatus int(10) unsigned NOT NULL" + lineBreak +
                 ") AFTER `lastname`;";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
@@ -205,7 +205,7 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormatForValuesNestedInTheFunctionAndDoNotMakeALineBreakAfterTheCommaForThem() {
         //given
         String inputString = "SELECT to_date(CONCAT(YEAR('2019-12-31'),'-',lpad(CEIL(MONTH('2019-12-31')/3)*3-2, 2, 0),'-01')) AS season_first_day"; //#7509
-        String expectedString = "SELECT\r\n" +
+        String expectedString = "SELECT" + lineBreak +
                 "\tto_date(CONCAT(YEAR('2019-12-31'), '-', lpad(CEIL(MONTH('2019-12-31')/ 3)* 3-2, 2, 0), '-01')) AS season_first_day";
 
         Mockito.when(configuration.isFunction("to_date")).thenReturn(true);
@@ -222,21 +222,21 @@ public class SQLFormatterTokenizedTest {
     public void shouldDoDefaultFormatForSubSelectAndForValuesNestedInTheFunctionAndDoNotMakeALineBreakAfterTheCommaForThem() {
         //given
         String inputString = "CREATE VIEW bi_gaz_check_curve AS (SELECT cal.date, pay.check_id, COALESCE(pay.base_amount, pay.amount) amount_ars, pay.future_pay_due_date due_date, pay.cleared_date, pay.check_date issued_date FROM (SELECT generate_series('2010-01-01'::date, '2050-12-31'::date, INTERVAL '1 day') date, 1 payment_id) cal LEFT JOIN oracle.ap_checks_all pay ON cal.date >= pay.check_date AND cal.date <= (pay.future_pay_due_date::date + 30));"; //#9365
-        String expectedString = "CREATE VIEW bi_gaz_check_curve AS (\r\n" +
-                "SELECT\r\n" +
-                "\tcal.date,\r\n" +
-                "\tpay.check_id,\r\n" +
-                "\tCOALESCE(pay.base_amount, pay.amount) amount_ars,\r\n" +
-                "\tpay.future_pay_due_date due_date,\r\n" +
-                "\tpay.cleared_date,\r\n" +
-                "\tpay.check_date issued_date\r\n" +
-                "FROM\r\n" +
-                "\t(\r\n" +
-                "\tSELECT\r\n" +
-                "\t\tgenerate_series('2010-01-01'::date, '2050-12-31'::date, INTERVAL '1 day') date,\r\n" +
-                "\t\t1 payment_id) cal\r\n" +
-                "LEFT JOIN oracle.ap_checks_all pay ON\r\n" +
-                "\tcal.date >= pay.check_date\r\n" +
+        String expectedString = "CREATE VIEW bi_gaz_check_curve AS (" + lineBreak +
+                "SELECT" + lineBreak +
+                "\tcal.date," + lineBreak +
+                "\tpay.check_id," + lineBreak +
+                "\tCOALESCE(pay.base_amount, pay.amount) amount_ars," + lineBreak +
+                "\tpay.future_pay_due_date due_date," + lineBreak +
+                "\tpay.cleared_date," + lineBreak +
+                "\tpay.check_date issued_date" + lineBreak +
+                "FROM" + lineBreak +
+                "\t(" + lineBreak +
+                "\tSELECT" + lineBreak +
+                "\t\tgenerate_series('2010-01-01'::date, '2050-12-31'::date, INTERVAL '1 day') date," + lineBreak +
+                "\t\t1 payment_id) cal" + lineBreak +
+                "LEFT JOIN oracle.ap_checks_all pay ON" + lineBreak +
+                "\tcal.date >= pay.check_date" + lineBreak +
                 "\tAND cal.date <= (pay.future_pay_due_date::date + 30));";
 
         Mockito.when(configuration.isFunction("COALESCE")).thenReturn(true);
