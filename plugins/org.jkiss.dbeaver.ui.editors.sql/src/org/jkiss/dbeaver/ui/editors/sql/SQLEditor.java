@@ -1655,7 +1655,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void setFocus()
     {
+        long st = System.currentTimeMillis();
         super.setFocus();
+        System.out.println("setFocus() = " + (System.currentTimeMillis() - st));
     }
 
     public void loadQueryPlan() {
@@ -3807,14 +3809,18 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
+
             outputWriter.flush();
+            if (!outputViewer.isHasNewOutput()) {
+                return;
+            }
+            outputViewer.resetNewOutput();
             UIUtils.asyncExec(() -> {
                 if (outputViewer!=null) {
                     if (outputViewer.getControl()!=null) {
-                        if (!outputViewer.isDisposed() && outputViewer.isHasNewOutput()) {
+                        if (!outputViewer.isDisposed()) {
                             outputViewer.scrollToEnd();
                             updateOutputViewerIcon(true);
-                            outputViewer.resetNewOutput();
                         }
                     }
                 }
