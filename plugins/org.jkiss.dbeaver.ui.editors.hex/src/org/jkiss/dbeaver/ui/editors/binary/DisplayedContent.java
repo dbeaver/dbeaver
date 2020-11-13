@@ -159,7 +159,7 @@ public class DisplayedContent implements StyledTextContent {
     public void setText(String text)
     {
         data.setLength(0);
-        data.append(text.substring(0, Math.min(text.length(), linesTimesColumns)));
+        data.append(text, 0, Math.min(text.length(), Math.max(0, linesTimesColumns)));
 
         TextChangedEvent changedEvent = new TextChangedEvent(this);
         for (TextChangeListener textListener : textListeners) {
