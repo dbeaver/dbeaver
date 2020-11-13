@@ -54,7 +54,11 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final Class<?>[] CHILD_TYPES = {ExasolTableColumn.class, ExasolTableUniqueKey.class, ExasolTableForeignKey.class
+    private static final Class<?>[] CHILD_TYPES = {
+            ExasolTableColumn.class,
+            ExasolTableUniqueKey.class,
+            ExasolTableForeignKey.class,
+            ExasolTableIndex.class
     };
 
     // -----------------

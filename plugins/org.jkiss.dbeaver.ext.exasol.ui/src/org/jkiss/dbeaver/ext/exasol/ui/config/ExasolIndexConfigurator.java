@@ -22,7 +22,8 @@ public class ExasolIndexConfigurator implements DBEObjectConfigurator<ExasolTabl
 				EditIndexPage editPage = new EditIndexPage(
 						"create index",
 						index,
-						Arrays.asList(new DBSIndexType("LOCAL","LOCAL"), new DBSIndexType("GLOBAL","GLOBAL"))
+						Arrays.asList(new DBSIndexType("LOCAL","LOCAL"), new DBSIndexType("GLOBAL","GLOBAL")),
+						false
 					);
 				if (!editPage.edit()) {
 					return null;
