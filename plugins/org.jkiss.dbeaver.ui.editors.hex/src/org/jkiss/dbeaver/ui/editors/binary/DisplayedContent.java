@@ -109,7 +109,7 @@ public class DisplayedContent implements StyledTextContent {
     public String getTextRange(int start, int length)
     {
         int dataLength = data.length();
-        if (start > dataLength)
+        if (start > dataLength || start < 0)
             return "";
 
         return data.substring(start, Math.min(dataLength, start + length));
