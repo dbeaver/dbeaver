@@ -213,7 +213,7 @@ public class TextViewDialog extends ValueViewDialog {
 
     private void setBinaryContent(String stringValue)
     {
-        if (hexEditorService != null) {
+        if (hexEditorService != null && stringValue != null) {
             String charset = getDefaultCharset();
             byte[] bytes;
             try {
@@ -222,7 +222,11 @@ public class TextViewDialog extends ValueViewDialog {
                 log.error(e);
                 bytes = stringValue.getBytes(Charset.defaultCharset());
             }
-            hexEditorService.setHexContent(hexEditControl, bytes, charset);
+            try {
+                hexEditorService.setHexContent(hexEditControl, bytes, charset);
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 
