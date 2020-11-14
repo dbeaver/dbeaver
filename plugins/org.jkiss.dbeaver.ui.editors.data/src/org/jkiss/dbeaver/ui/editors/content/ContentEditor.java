@@ -149,6 +149,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                         valueController.getValueType().getDataKind() == DBPDataKind.CONTENT ||
                         valueController.getValueType().getDataKind() == DBPDataKind.BINARY)
                     {
+                        monitor.beginTask("Initialize stream value manager", 1);
                         DBDContent content = (DBDContent) value;
                         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
                             ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
@@ -184,6 +185,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                                 log.error(e);
                             }
                         }
+                        monitor.done();
                     }
                     editorParts = parts.toArray(new IEditorPart[0]);
                 }
