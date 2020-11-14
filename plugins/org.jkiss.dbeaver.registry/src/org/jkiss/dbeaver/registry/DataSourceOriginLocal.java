@@ -75,7 +75,7 @@ public class DataSourceOriginLocal implements DBPDataSourceOrigin
 
     @Nullable
     @Override
-    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+    public DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
         return null;
     }
 

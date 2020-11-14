@@ -75,8 +75,8 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @Nullable
     @Override
-    public DBPObject getDataSourceDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
-        return resolveRealOrigin().getDataSourceDetails(monitor, sessionContext, dataSource);
+    public DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+        return resolveRealOrigin().getObjectDetails(monitor, sessionContext, dataSource);
     }
 
     @Override

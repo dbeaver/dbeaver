@@ -18,36 +18,20 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-
-import java.util.Map;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Configuration origin.
- * It can be local configuration or some cloud provider.
+ * Object with detailed info.
  */
-public interface DBPDataSourceOrigin extends DBPObjectWithDetails<DBPDataSourceContainer> {
+public interface DBPObjectWithDetails<OBJECT> extends DBPObject {
 
     /**
-     * Origin type. Unique
-     */
-    @NotNull
-    String getType();
-
-    /**
-     * Origin sub type
+     * Get additional object information.
+     * Although this function required progress monitor it mustn't establish any remote database connections or require addional authentication.
      */
     @Nullable
-    String getSubType();
-
-    @NotNull
-    String getDisplayName();
-
-    @Nullable
-    DBPImage getIcon();
-
-    boolean isDynamic();
-
-    @NotNull
-    Map<String, Object> getConfiguration();
+    DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull OBJECT dataSource) throws DBException;
 
 }
