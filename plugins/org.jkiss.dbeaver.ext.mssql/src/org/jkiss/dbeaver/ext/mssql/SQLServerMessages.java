@@ -38,6 +38,7 @@ public class SQLServerMessages extends NLS {
 
     public static String index_type_Heap;
     public static String index_type_NonClustered;
+    public static String index_type_Default;
     public static String index_type_XML;
     public static String index_type_Spatial;
 
