@@ -383,10 +383,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
     }
 
-    /*private SQLDialect.MultiValueInsertMode getMultiValueInsertMode() {
+    /*private SQLDialect.MultiValueInsertMode getDefaultMultiValueInsertMode() {
         SQLDialect.MultiValueInsertMode insertMode = SQLDialect.MultiValueInsertMode.NOT_SUPPORTED;
         if (dialect != null && rowsInStatement != 1) {
-            insertMode = dialect.getMultiValueInsertMode();
+            insertMode = dialect.getDefaultMultiValueInsertMode();
         }
         return insertMode;
     }*/

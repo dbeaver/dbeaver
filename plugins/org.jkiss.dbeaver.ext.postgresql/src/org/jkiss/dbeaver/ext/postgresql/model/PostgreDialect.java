@@ -771,7 +771,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 
