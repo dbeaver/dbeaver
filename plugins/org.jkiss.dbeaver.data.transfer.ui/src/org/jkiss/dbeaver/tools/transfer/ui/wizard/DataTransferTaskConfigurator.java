@@ -175,15 +175,14 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                 DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
                                 rootNode,
                                 rootNode,
-                                new Class[]{DBSObjectContainer.class, DBSDataContainer.class},
-                                new Class[]{DBSDataContainer.class, DBSSchema.class},
-                                new Class[]{DBSSchema.class});
+                                new Class[]{DBSObjectContainer.class},
+                                new Class[]{DBPDataSource.class, DBSCatalog.class, DBSSchema.class},
+                                null);
 
                         if (node != null) {
                             if (node instanceof DBNDataSource) {
-                                DBPDataSourceContainer container = ((DBNDataSource) node).getDataSourceContainer();
-                                dataSourceObject = container;
-                                dataSource = container.getDataSource();
+                                dataSourceObject = ((DBNDataSource) node).getDataSource();
+                                dataSource = ((DBNDataSource) node).getDataSource();
                             } else if (node instanceof DBNDatabaseItem) {
                                 dataSourceObject = ((DBNDatabaseItem) node).getObject();
                                 dataSource = dataSourceObject.getDataSource();
@@ -195,6 +194,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
 
                         if (dataSource != null) {
                             DBPDataSourceContainer dataSourceContainer = DBUtils.getContainer(dataSource);
+
                             if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
                                 try {
                                     runnableContext.run(true, true, monitor -> {
@@ -212,20 +212,38 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                     return;
                                 }
                             }
+
+                            String newInstanceName;
+                            String newObjectName;
+
+                            if (dataSourceObject instanceof DBSCatalog) {
+                                newInstanceName = dataSourceObject.getName();
+                                newObjectName = null;
+                            } else if (dataSourceObject instanceof DBSSchema) {
+                                newInstanceName = DBUtils.getObjectOwnerInstance(dataSourceObject).getName();
+                                newObjectName = dataSourceObject.getName();
+                            } else {
+                                // Use default database and schema
+                                newInstanceName = null;
+                                newObjectName = null;
+                            }
+
                             DataSourceContextProvider contextProvider = new DataSourceContextProvider(dataSourceObject);
+
                             try {
                                 DBExecUtils.setExecutionContextDefaults(
                                         new VoidProgressMonitor(),
                                         dataSource,
                                         contextProvider.getExecutionContext(),
-                                        dataSourceObject instanceof DBSSchema ? DBUtils.getObjectOwnerInstance(dataSourceObject).getName() : null,
+                                        newInstanceName,
                                         null,
-                                        dataSourceObject.getName()
+                                        newObjectName
                                 );
                             } catch (DBException ex) {
                                 log.error("Error setting context defaults", ex);
                                 return;
                             }
+
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
                                 String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
