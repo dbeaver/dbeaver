@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -71,7 +70,8 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         SQLServerTableIndex index = command.getObject();
-        if (index.getTable() instanceof SQLServerTableType) {
+        SQLServerTableBase indexTable = index.getTable();
+        if (indexTable instanceof SQLServerTableType) {
             return;
         }
         if (index.isPersisted()) {
@@ -87,7 +87,39 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
                 log.warn("Can't extract index DDL", e);
             }
         }
-        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        DBSIndexType indexType = index.getIndexType();
+        String sqlServerIndexType = null;
+        if (indexType == DBSIndexType.CLUSTERED) {
+            sqlServerIndexType = "CLUSTERED";
+        } else if (indexType == SQLServerConstants.INDEX_TYPE_NON_CLUSTERED) {
+            sqlServerIndexType = "NONCLUSTERED";
+        }
+        StringBuilder ddl = new StringBuilder();
+        ddl.append("CREATE ");
+        if (index.isUnique()) {
+            ddl.append("UNIQUE ");
+        }
+        if (sqlServerIndexType != null) {
+            ddl.append(sqlServerIndexType).append(" ");
+        }
+        ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" (");
+        List<SQLServerTableIndexColumn> indexColumns = index.getAttributeReferences(monitor);
+        if (indexColumns != null) {
+            for (int i = 0; i < indexColumns.size(); i++) {
+                if (i == 0) {
+                    ddl.append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
+                } else {
+                    ddl.append(", ").append(DBUtils.getQuotedIdentifier(indexColumns.get(i)));
+                }
+            }
+        } else {
+            super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+            return;
+        }
+        ddl.append(")");
+        actions.add(
+                new SQLDatabasePersistAction("Create new SQL Server index", ddl.toString())
+        );
     }
 
     protected String getDropIndexPattern(SQLServerTableIndex index)
