@@ -174,6 +174,12 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
+            // Add rule for matching function invocation.
+            SQLFunctionRule functionRule = new SQLFunctionRule(typeToken);
+            for (String function : dialect.getFunctions(dataSource)) {
+                functionRule.addFunction(function);
+            }
+            rules.add(functionRule);
 
             // Add word rule for keywords, types, and constants.
             SQLWordRule wordRule = new SQLWordRule(delimRule, otherToken);
@@ -181,9 +187,6 @@ public class SQLRuleManager {
                 wordRule.addWord(reservedWord, keywordToken);
             }
             if (dataSource != null) {
-                for (String function : dialect.getFunctions(dataSource)) {
-                    wordRule.addWord(function, typeToken);
-                }
                 for (String type : dialect.getDataTypes(dataSource)) {
                     wordRule.addWord(type, typeToken);
                 }
