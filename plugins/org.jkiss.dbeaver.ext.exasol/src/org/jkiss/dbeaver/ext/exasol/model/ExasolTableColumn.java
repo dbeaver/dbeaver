@@ -273,15 +273,15 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
             switch (this.dataType.getTypeName()) {
                 case ExasolConstants.TYPE_VARCHAR:
                 case ExasolConstants.TYPE_CHAR:
-                    this.scale = 0;
-                    return dataType.getTypeName() + "(" + this.maxLength + ")";
+                    scale = 0;
+                    return dataType.getTypeName() + "(" + maxLength + ")";
                 case ExasolConstants.TYPE_DECIMAL:
-                    if (this.maxLength < 0 || this.maxLength > 36) {
-                        this.maxLength = 36;
+                    if (maxLength < 0 || maxLength > 36) {
+                        setMaxLength(36);
                     }
-                    return dataType.getTypeName() + "(" + this.maxLength + "," + this.scale + ")";
+                    return dataType.getTypeName() + "(" + maxLength + "," + scale + ")";
                 case ExasolConstants.TYPE_HASHTYPE:
-                	return dataType.getTypeName() + "(" + this.maxLength + " byte)";
+                	return dataType.getTypeName() + "(" + maxLength + " byte)";
                     
                 default:
                     return dataType.getTypeName();
