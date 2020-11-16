@@ -186,13 +186,15 @@ public class LockManagerViewer {
 
     protected void refreshDetail(Map<String, Object> options) {
         StringBuilder sb = new StringBuilder("Wait - ");
-        sb.append(curLock.getTitle());
+        if (curLock != null) {
+            sb.append(curLock.getTitle());
+        }
         blockedLabel.setText(sb.toString());
         blockedTable.getOptions().putAll(options);
         blockedTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeWait);
         blockedTable.loadData(false);
         sb.setLength(0);
-        if (curLock.getHoldBy() != null) {
+        if (curLock != null && curLock.getHoldBy() != null) {
             sb.append("Hold - ");
             sb.append(curLock.getHoldBy().getTitle());
             blockingLabel.setText(sb.toString());
