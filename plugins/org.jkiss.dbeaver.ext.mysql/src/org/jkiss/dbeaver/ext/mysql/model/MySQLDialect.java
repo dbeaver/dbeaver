@@ -41,7 +41,7 @@ class MySQLDialect extends JDBCSQLDialect {
             "EXPLAIN", "DESCRIBE", "DESC" }
     );
 
-    public static final String[] ADVANCED_KEYWORDS = {
+    private static final String[] ADVANCED_KEYWORDS = {
         "AUTO_INCREMENT",
         "DATABASES",
         "COLUMNS",
@@ -52,6 +52,56 @@ class MySQLDialect extends JDBCSQLDialect {
     public static final String[][] MYSQL_QUOTE_STRINGS = {
             {"`", "`"},
             {"\"", "\""},
+    };
+
+    private static final String[] MYSQL_EXTRA_FUNCTIONS = {
+            "ADDDATE",
+            "ADDTIME",
+            "ANY_VALUE",
+            "CAST",
+            "COALESCE",
+            "COLLATION",
+            "COMPRESS",
+            "DATE_ADD",
+            "DATE_SUB",
+            "DATEDIFF",
+            "EXTRACT",
+            "FIRST_VALUE",
+            "FORMAT",
+            "FOUND_ROWS",
+            "FROM_BASE64",
+            "GET_FORMAT",
+            "GROUP_CONCAT",
+            "HOUR",
+            "DAY",
+            "IFNULL",
+            "ISNULL",
+            "LAG",
+            "LAST_VALUE",
+            "LEAD",
+            "LEAST",
+            "LENGTH",
+            "MAKEDATE",
+            "MAKETIME",
+            "MINUTE",
+            "MONTH",
+            "NULLIF",
+            "RANDOM_BYTES",
+            "REGEXP_LIKE",
+            "REGEXP_INSTR",
+            "REGEXP_REPLACE",
+            "REGEXP_SUBSTR",
+            "SESSION_USER",
+            "SPACE",
+            "SUBSTR",
+            "SUBTIME",
+            "TIMEDIFF",
+            "TO_BASE64",
+            "TO_SECONDS",
+            "UUID",
+            "UUID_TO_BIN",
+            "WEEKOFYEAR",
+            "YEAR"
     };
 
     private static String[] EXEC_KEYWORDS =  { "CALL" };
@@ -76,6 +126,7 @@ class MySQLDialect extends JDBCSQLDialect {
         removeSQLKeyword("SOURCE");
 
         addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
+        addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
     }
 
     @Nullable
