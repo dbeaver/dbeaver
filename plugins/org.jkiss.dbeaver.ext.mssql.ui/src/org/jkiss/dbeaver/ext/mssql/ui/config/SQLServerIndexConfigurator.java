@@ -37,7 +37,7 @@ import java.util.Arrays;
 public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServerTableIndex> {
 
     private static final DBSIndexType[] SQLSERVER_INDEX_TYPES = {
-            new DBSIndexType("DEFAULT", "Default"),
+            SQLServerConstants.INDEX_TYPE_DEFAULT,
             SQLServerConstants.INDEX_TYPE_NON_CLUSTERED,
             DBSIndexType.CLUSTERED
     };

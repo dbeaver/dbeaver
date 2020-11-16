@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -88,9 +89,9 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         }
         DBSIndexType indexType = index.getIndexType();
         String sqlServerIndexType = null;
-        if (indexType.getId().equals("CLUSTERED")) {
+        if (indexType == DBSIndexType.CLUSTERED) {
             sqlServerIndexType = "CLUSTERED";
-        } else if (indexType.getId().equals("NON_CLUSTERED")) {
+        } else if (indexType == SQLServerConstants.INDEX_TYPE_NON_CLUSTERED) {
             sqlServerIndexType = "NONCLUSTERED";
         }
         StringBuilder ddl = new StringBuilder();
