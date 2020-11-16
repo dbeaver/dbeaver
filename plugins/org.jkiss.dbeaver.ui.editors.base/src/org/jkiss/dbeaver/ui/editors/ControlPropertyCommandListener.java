@@ -43,6 +43,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
     private Object originalValue;
     //private Object newValue;
     private DBECommandProperty<OBJECT_TYPE> curCommand;
+    private boolean changingValue = false;
 
     public static <OBJECT_TYPE extends DBSObject> void create(
         AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor,
@@ -111,30 +112,35 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
         if (widget == null || widget.isDisposed()) {
             return;
         }
-        if (widget instanceof Text) {
-            ((Text)widget).setText(CommonUtils.toString(value));
-        } else if (widget instanceof Combo) {
-            ((Combo)widget).setText(CommonUtils.toString(value));
-        } else if (widget instanceof Button) {
-            ((Button)widget).setSelection(value != null && Boolean.TRUE.equals(value));
-        } else if (widget instanceof Spinner) {
-            ((Spinner)widget).setSelection(CommonUtils.toInt(value));
-        } else if (widget instanceof List) {
-            ((List)widget).setSelection((String[])value);
-        } else if (widget instanceof DateTime) {
-            DateTime dateTime = (DateTime) widget;
+        changingValue = true;
+        try {
+            if (widget instanceof Text) {
+                ((Text)widget).setText(CommonUtils.toString(value));
+            } else if (widget instanceof Combo) {
+                ((Combo)widget).setText(CommonUtils.toString(value));
+            } else if (widget instanceof Button) {
+                ((Button)widget).setSelection(value != null && Boolean.TRUE.equals(value));
+            } else if (widget instanceof Spinner) {
+                ((Spinner)widget).setSelection(CommonUtils.toInt(value));
+            } else if (widget instanceof List) {
+                ((List)widget).setSelection((String[])value);
+            } else if (widget instanceof DateTime) {
+                DateTime dateTime = (DateTime) widget;
 
-            Calendar cl = Calendar.getInstance();
-            cl.setTime((Date)value);
-            dateTime.setYear(cl.get(Calendar.YEAR));
-            dateTime.setMonth(cl.get(Calendar.MONTH));
-            dateTime.setDay(cl.get(Calendar.DAY_OF_MONTH));
-            dateTime.setHours(cl.get(Calendar.HOUR_OF_DAY));
-            dateTime.setMinutes(cl.get(Calendar.MINUTE));
-            dateTime.setSeconds(cl.get(Calendar.SECOND));
-        } else {
-            // not supported
-            log.warn("Control " + widget + " is not supported");
+                Calendar cl = Calendar.getInstance();
+                cl.setTime((Date)value);
+                dateTime.setYear(cl.get(Calendar.YEAR));
+                dateTime.setMonth(cl.get(Calendar.MONTH));
+                dateTime.setDay(cl.get(Calendar.DAY_OF_MONTH));
+                dateTime.setHours(cl.get(Calendar.HOUR_OF_DAY));
+                dateTime.setMinutes(cl.get(Calendar.MINUTE));
+                dateTime.setSeconds(cl.get(Calendar.SECOND));
+            } else {
+                // not supported
+                log.warn("Control " + widget + " is not supported");
+            }
+        } finally {
+            changingValue = false;
         }
     }
 
@@ -142,6 +148,9 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
         @Override
         public void handleEvent(Event event)
         {
+            if (changingValue) {
+                return;
+            }
             switch (event.type) {
                 case SWT.FocusIn:
                 {
@@ -174,7 +183,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     };
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            curCommand = new DBECommandProperty<>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);;
+                            curCommand = new DBECommandProperty<>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);
                             objectEditor.addChangeCommand(curCommand, commandReflector);
                         }
                     } else {
@@ -191,5 +200,4 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
             }
         }
     }
-
 }
