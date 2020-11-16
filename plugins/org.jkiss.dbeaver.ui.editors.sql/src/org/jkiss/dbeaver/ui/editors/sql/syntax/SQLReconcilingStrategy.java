@@ -89,7 +89,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         ProjectionAnnotationModel model = editor.getAnnotationModel();
         if (model == null) {
-            log.warn("Attempt to change folding annotations on editor with empty annotation model. editor=" + editor.toString());
+            log.debug("Attempt to change folding annotations on editor with empty annotation model. editor=" + editor.toString());
             return;
         }
         Iterable<SQLScriptElement> queries = getQueries();
