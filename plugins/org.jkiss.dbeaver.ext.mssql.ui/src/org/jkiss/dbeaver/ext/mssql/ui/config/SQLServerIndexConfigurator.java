@@ -36,10 +36,10 @@ import java.util.Arrays;
  */
 public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServerTableIndex> {
 
-    public static final DBSIndexType[] SQLSERVER_INDEX_TYPES = {
-            DBSIndexType.CLUSTERED,
+    private static final DBSIndexType[] SQLSERVER_INDEX_TYPES = {
+            new DBSIndexType("DEFAULT", "Default"),
             SQLServerConstants.INDEX_TYPE_NON_CLUSTERED,
-            DBSIndexType.OTHER
+            DBSIndexType.CLUSTERED
     };
 
     @Override
