@@ -151,7 +151,7 @@ public class SQLScriptParser
                     // that block is not preceded by the prefix e.g 'AS', because in many dialects
                     // there's no direct header block terminators
                     // like 'BEGIN ... END' but 'DECLARE ... BEGIN ... END'
-                    if (curBlock != null && curBlock.isHeader && !ArrayUtils.contains(dialect.getInnerBlockPrefixes(), lastKeyword)) {
+                    if (curBlock != null && curBlock.isHeader && !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
                         curBlock = curBlock.parent;
                     }
                     curBlock = new ScriptBlockInfo(curBlock, false);
