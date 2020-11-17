@@ -162,8 +162,36 @@ public class SQLScriptParserTest {
             "    dbms_output.put_line('Start');\n" +
             "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
             "    dbms_output.put_line('End');\n" +
-            "END;\n",
-            new String[]{
+            "END;\n" +
+
+            "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
+            "BEFORE INSERT ON CODE_SYSTEM\n" +
+            "REFERENCING NEW AS NEWROW FOR EACH ROW\n" +
+            "BEGIN ATOMIC\n" +
+            "IF TRUE THEN\n" +
+            "SIGNAL SQLSTATE '45000';\n" +
+            "END IF;\n" +
+            "END;\n" +
+
+            "CREATE OR REPLACE PACKAGE MIG2 AUTHID CURRENT_USER AS\n" +
+            "    PROCEDURE LOG(SEVERITY VARCHAR2, MSG CLOB);\n" +
+            "END;" +
+
+            "CREATE OR REPLACE PACKAGE emp_mgmt AS \n" +
+            "    FUNCTION hire (last_name VARCHAR2, job_id VARCHAR2, \n" +
+            "        manager_id NUMBER, salary NUMBER, \n" +
+            "        commission_pct NUMBER, department_id NUMBER) \n" +
+            "        RETURN NUMBER; \n" +
+            "    FUNCTION create_dept(department_id NUMBER, location_id NUMBER) \n" +
+            "        RETURN NUMBER; \n" +
+            "    PROCEDURE remove_emp(employee_id NUMBER) IS BEGIN NULL; END;\n" +
+            "    PROCEDURE remove_dept(department_id NUMBER) IS BEGIN NULL; END;\n" +
+            "    PROCEDURE increase_sal(employee_id NUMBER, salary_incr NUMBER) IS BEGIN NULL; END;\n" +
+            "    PROCEDURE increase_comm(employee_id NUMBER, comm_incr NUMBER) IS BEGIN NULL; END;\n" +
+            "    no_comm EXCEPTION; \n" +
+            "    no_sal EXCEPTION; \n" +
+            "END emp_mgmt;",
+        new String[]{
                 "BEGIN\n" +
                 "    BEGIN\n" +
                 "    END;\n" +
@@ -252,7 +280,35 @@ public class SQLScriptParserTest {
                 "    dbms_output.put_line('Start');\n" +
                 "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
                 "    dbms_output.put_line('End');\n" +
-                "END;"
+                "END;",
+
+                "CREATE TRIGGER TRI_CODE_SYSTEM\n" +
+                "BEFORE INSERT ON CODE_SYSTEM\n" +
+                "REFERENCING NEW AS NEWROW FOR EACH ROW\n" +
+                "BEGIN ATOMIC\n" +
+                "IF TRUE THEN\n" +
+                "SIGNAL SQLSTATE '45000';\n" +
+                "END IF;\n" +
+                "END;",
+
+                "CREATE OR REPLACE PACKAGE MIG2 AUTHID CURRENT_USER AS\n" +
+                "    PROCEDURE LOG(SEVERITY VARCHAR2, MSG CLOB);\n" +
+                "END;",
+
+                "CREATE OR REPLACE PACKAGE emp_mgmt AS \n" +
+                "    FUNCTION hire (last_name VARCHAR2, job_id VARCHAR2, \n" +
+                "        manager_id NUMBER, salary NUMBER, \n" +
+                "        commission_pct NUMBER, department_id NUMBER) \n" +
+                "        RETURN NUMBER; \n" +
+                "    FUNCTION create_dept(department_id NUMBER, location_id NUMBER) \n" +
+                "        RETURN NUMBER; \n" +
+                "    PROCEDURE remove_emp(employee_id NUMBER) IS BEGIN NULL; END;\n" +
+                "    PROCEDURE remove_dept(department_id NUMBER) IS BEGIN NULL; END;\n" +
+                "    PROCEDURE increase_sal(employee_id NUMBER, salary_incr NUMBER) IS BEGIN NULL; END;\n" +
+                "    PROCEDURE increase_comm(employee_id NUMBER, comm_incr NUMBER) IS BEGIN NULL; END;\n" +
+                "    no_comm EXCEPTION; \n" +
+                "    no_sal EXCEPTION; \n" +
+                "END emp_mgmt;"
             });
     }
 
