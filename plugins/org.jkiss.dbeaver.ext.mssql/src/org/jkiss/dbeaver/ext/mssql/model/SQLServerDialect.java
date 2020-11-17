@@ -160,14 +160,14 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         if (isSqlServer) {
             if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
                 return MultiValueInsertMode.GROUP_ROWS;
             }
-            return super.getMultiValueInsertMode();
+            return super.getDefaultMultiValueInsertMode();
         } else {
-            return super.getMultiValueInsertMode();
+            return super.getDefaultMultiValueInsertMode();
         }
     }
 
