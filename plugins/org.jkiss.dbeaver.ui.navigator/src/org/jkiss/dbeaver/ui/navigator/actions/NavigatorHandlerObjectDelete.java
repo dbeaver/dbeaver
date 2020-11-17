@@ -148,7 +148,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             final Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
             objectsTable.setHeaderVisible(false);
             objectsTable.setLinesVisible(true);
-            objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            gd.widthHint = 200;
+            objectsTable.setLayoutData(gd);
             UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
             UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
             for (Object obj: selectedObjects) {
@@ -192,6 +195,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (showViewScript) {
                 createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
             }
+        }
+
+        @Override
+        protected boolean isResizable() {
+            return true;
         }
     }
 
