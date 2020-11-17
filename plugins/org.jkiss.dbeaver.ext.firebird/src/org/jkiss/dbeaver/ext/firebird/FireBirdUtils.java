@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -38,9 +40,7 @@ import org.osgi.framework.Version;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -221,4 +221,27 @@ public class FireBirdUtils {
         return new Version(0, 0, 0);
     }
 
+    public static Map<String, String> readColumnDomainTypes(DBRProgressMonitor monitor, GenericTableBase table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read column domain type")) {
+            // Read metadata
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
+                dbStat.setString(1, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    Map<String, String> dtMap = new HashMap<>();
+                    while (dbResult.next()) {
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                        String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                        if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                            dtMap.put(columnName, domainTypeName);
+                        }
+                    }
+                    return dtMap;
+                }
+            }
+
+        } catch (SQLException ex) {
+            throw new DBException("Error reading column domain types for " + table.getName(), ex);
+        }
+
+    }
 }
