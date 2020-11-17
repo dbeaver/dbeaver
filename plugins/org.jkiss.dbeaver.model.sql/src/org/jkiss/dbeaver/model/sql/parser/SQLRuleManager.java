@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -174,21 +175,22 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
-            // Add rule for matching function invocation.
-            SQLFunctionRule functionRule = new SQLFunctionRule(typeToken);
-            for (String function : dialect.getFunctions(dataSource)) {
-                functionRule.addFunction(function);
-            }
-            rules.add(functionRule);
-
-            // Add word rule for keywords, types, and constants.
-            SQLWordRule wordRule = new SQLWordRule(delimRule, otherToken);
+            // Add word rule for keywords, functions, types, and constants.
+            SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken);
             for (String reservedWord : dialect.getReservedWords()) {
-                wordRule.addWord(reservedWord, keywordToken);
+                // Functions without parentheses has type 'DBPKeywordType.OTHER' (#8710)
+                if (dialect.getKeywordType(reservedWord) == DBPKeywordType.OTHER) {
+                    wordRule.addFunction(reservedWord);
+                } else {
+                    wordRule.addWord(reservedWord, keywordToken);
+                }
             }
             if (dataSource != null) {
                 for (String type : dialect.getDataTypes(dataSource)) {
                     wordRule.addWord(type, typeToken);
+                }
+                for (String function : dialect.getFunctions(dataSource)) {
+                    wordRule.addFunction(function);
                 }
             }
             final String[] blockHeaderStrings = dialect.getBlockHeaderStrings();
