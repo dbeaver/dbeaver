@@ -379,6 +379,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             case Types.INTEGER:
                 return Long.class;
             case Types.SMALLINT:
+            //Workaround for MySQL Unsigned SMALLINT #10239
+                return Integer.class;
             case Types.TINYINT:
                 return Short.class;
             case Types.BIT:
