@@ -229,7 +229,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         boolean isSystem = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
         GenericTableBase table;
         if (relType == 1) {
-            table = new FireBirdView(owner, tableName, isSystem ? "SYSTEM VIEW" : "VIEW", null);
+            table = new FireBirdView(owner, tableName, isSystem ? "SYSTEM VIEW" : "VIEW", dbResult);
         } else {
             String tableType;
             switch (relType) {
