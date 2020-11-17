@@ -61,6 +61,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
         "DECLARE",
+        "PACKAGE"
     };
 
     public static final String[] ORACLE_INNER_BLOCK_PREFIXES = new String[]{
@@ -83,6 +84,8 @@ public class OracleSQLDialect extends JDBCSQLDialect {
         "PACKAGE",
         "FUNCTION",
         "TYPE",
+        "BODY",
+        "RECORD",
         "TRIGGER",
         "MATERIALIZED",
         "IF",
@@ -156,6 +159,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
                 "INSTR2",
                 "INSTR4",
                 "LENGTHB",
+                "LENGTH",
 
                 //Datetime Functions:
                 "ADD_MONTHS",
