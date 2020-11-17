@@ -119,7 +119,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 return new ConfirmationDialog(
                         shell,
                         UINavigatorMessages.confirm_deleting_multiple_objects_title,
-                        UINavigatorMessages.confirm_deleting_multiple_objects_message,
+                        NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()),
                         selectedObjects,
                         showCascade,
                         showViewScript
@@ -149,11 +149,13 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             objectsTable.setHeaderVisible(false);
             objectsTable.setLinesVisible(true);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 200;
-            gd.widthHint = 200;
+            int fontHeight = UIUtils.getFontHeight(objectsTable);
+            int rowCount = selectedObjects.size();
+            gd.widthHint = fontHeight * 7;
+            gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
             objectsTable.setLayoutData(gd);
-            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
-            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
+            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
+            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
             for (Object obj: selectedObjects) {
                 if (!(obj instanceof DBNNode)) {
                     continue;
