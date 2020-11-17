@@ -66,6 +66,7 @@ import java.util.*;
  * Driver properties control
  */
 public class PropertyTreeViewer extends TreeViewer {
+    private static final boolean IS_MACOS = GeneralUtils.isMacOS();
 
     public static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
@@ -91,6 +92,8 @@ public class PropertyTreeViewer extends TreeViewer {
     private IBaseLabelProvider extraLabelProvider;
     private ObjectViewerRenderer renderer;
     private ExpandMode expandMode = ExpandMode.ALL;
+
+    private boolean isMouseEventOnMacos = false; // [#10279] [#10366] [#10361]
 
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
 
@@ -401,7 +404,13 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void widgetSelected(final SelectionEvent e)
             {
-                showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                TreeItem item = (TreeItem) e.item;
+                if (!IS_MACOS) { // [#10279] [#10366] [#10361]
+                    showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                    return;
+                }
+                showEditor(item, isMouseEventOnMacos);
+                isMouseEventOnMacos = false;
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -409,6 +418,9 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (IS_MACOS) { // [#10279] [#10366] [#10361]
+                    isMouseEventOnMacos = true;
+                }
                 if (item != null) {
                     selectedColumn = UIUtils.getColumnAtPos(item, e.x, e.y);
                 } else {
