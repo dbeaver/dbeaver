@@ -635,7 +635,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            container,
+            container instanceof DBVModel ? null : container,
             this);
     }
 
