@@ -31,7 +31,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
 
     private FireBirdDataType dataType;
 
-    public FireBirdTableColumn(FireBirdTable table) {
+    public FireBirdTableColumn(GenericTableBase table) {
         super(table);
     }
 
@@ -46,8 +46,8 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
-    public FireBirdTable getTable() {
-        return (FireBirdTable)super.getTable();
+    public GenericTableBase getTable() {
+        return super.getTable();
     }
 
     @Override
@@ -57,7 +57,11 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
 
     @Property(order = 21)
     public String getDomainTypeName(DBRProgressMonitor monitor) throws DBException {
-        return getTable().getColumnDomainType(monitor, this);
+        GenericTableBase table = getTable();
+        if (table instanceof FireBirdTableBase) {
+            return ((FireBirdTableBase)table).getColumnDomainType(monitor, this);
+        }
+        return null;
     }
 
     @Property(order = 22, viewable = true)

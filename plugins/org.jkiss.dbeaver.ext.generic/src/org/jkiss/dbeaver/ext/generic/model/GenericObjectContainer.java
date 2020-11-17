@@ -98,7 +98,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
             List<GenericView> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {
                 if (table instanceof GenericView) {
-                    filtered.add((GenericView)table);
+                    filtered.add((GenericView) table);
                 }
             }
             return filtered;

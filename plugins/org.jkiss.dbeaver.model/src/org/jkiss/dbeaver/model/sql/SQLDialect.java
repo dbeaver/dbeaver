@@ -298,8 +298,13 @@ public interface SQLDialect {
     @NotNull
     String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue);
 
+    /**
+     * Default multi-value insertion mode
+     * Used e.g. to SQL export
+     * @return MultiValueInsertMode enum value
+     */
     @NotNull
-    MultiValueInsertMode getMultiValueInsertMode();
+    MultiValueInsertMode getDefaultMultiValueInsertMode();
 
     String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
 

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui.config;
 
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndexColumn;
@@ -28,12 +29,18 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * SQL Server index configurator
  */
 public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServerTableIndex> {
+
+    private static final DBSIndexType[] SQLSERVER_INDEX_TYPES = {
+            SQLServerConstants.INDEX_TYPE_DEFAULT,
+            SQLServerConstants.INDEX_TYPE_NON_CLUSTERED,
+            DBSIndexType.CLUSTERED
+    };
 
     @Override
     public SQLServerTableIndex configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableIndex index) {
@@ -41,7 +48,7 @@ public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServ
             EditIndexPage editPage = new EditIndexPage(
                 "Create index",
                 index,
-                Collections.singletonList(DBSIndexType.OTHER));
+                Arrays.asList(SQLSERVER_INDEX_TYPES));
             if (!editPage.edit()) {
                 return null;
             }
