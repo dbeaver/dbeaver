@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -31,13 +33,16 @@ import java.util.Map;
 public class SQLWordRule implements TPRule {
 
     private SQLDelimiterRule delimRule;
+    private TPToken functionToken;
     private TPToken defaultToken;
     private Map<String, TPToken> words = new HashMap<>();
+    private Set<String> functions = new HashSet<>();
     private StringBuilder buffer = new StringBuilder();
     private char[][] delimiters;
 
-    public SQLWordRule(SQLDelimiterRule delimRule, TPToken defaultToken) {
+    public SQLWordRule(SQLDelimiterRule delimRule, TPToken functionToken, TPToken defaultToken) {
         this.delimRule = delimRule;
+        this.functionToken = functionToken;
         this.defaultToken = defaultToken;
     }
 
@@ -47,6 +52,14 @@ public class SQLWordRule implements TPRule {
 
     public void addWord(String word, TPToken token) {
         words.put(word.toLowerCase(), token);
+    }
+
+    public boolean hasFunction(String function) {
+        return functions.contains(function);
+    }
+
+    public void addFunction(String function) {
+        functions.add(function.toLowerCase());
     }
 
     @Override
@@ -65,6 +78,21 @@ public class SQLWordRule implements TPRule {
 
             String buffer = this.buffer.toString().toLowerCase();
             TPToken token = words.get(buffer);
+
+            if (functions.contains(buffer)) {
+                int length = 0;
+                while (c != TPCharacterScanner.EOF && c != '\n' && Character.isWhitespace(c)) {
+                    c = scanner.read();
+                    length += 1;
+                }
+                while (length > 0) {
+                    scanner.unread();
+                    length -= 1;
+                }
+                if (c == '(' || token == null) {
+                    return functionToken;
+                }
+            }
 
             if (token != null)
                 return token;
