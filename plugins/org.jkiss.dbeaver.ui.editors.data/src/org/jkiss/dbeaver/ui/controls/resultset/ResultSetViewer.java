@@ -1111,7 +1111,10 @@ public class ResultSetViewer extends Viewer
                 if (setActive) {
                     panelFolder.setSelection(panelTab);
                     presentationSettings.activePanelId = id;
-                    panelTab.getControl().setFocus();
+                    if (showPanels) {
+                        panel.setFocus();
+                    }
+                    //panelTab.getControl().setFocus();
                 }
                 return true;
             } else {
@@ -1148,6 +1151,9 @@ public class ResultSetViewer extends Viewer
 
             if (setActive || firstPanel) {
                 panelFolder.setSelection(panelTab);
+            }
+            if (showPanels) {
+                panel.setFocus();
             }
         } finally {
             panelFolder.setRedraw(true);

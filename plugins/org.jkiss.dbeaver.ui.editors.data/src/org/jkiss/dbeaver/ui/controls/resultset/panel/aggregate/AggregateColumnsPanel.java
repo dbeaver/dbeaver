@@ -188,6 +188,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     @Override
+    public void setFocus() {
+        //aggregateTable.setFocus();
+    }
+
+    @Override
     public void refresh(boolean force) {
         aggregateTable.setRedraw(false);
         try {
