@@ -81,7 +81,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 //"LEFT OUTER JOIN v$process e ON (s.paddr = e.addr)\n" +
                 //"WHERE 1=1");
             if(atLeastV9) {
-                sql.append(" AND s.sql_child_number = sq.child_number");
+                sql.append(" AND s.sql_child_number = sq.child_number (+)");
             }
             if (!CommonUtils.getOption(options, OPTION_SHOW_BACKGROUND)) {
                 sql.append(" AND s.TYPE = 'USER'");
