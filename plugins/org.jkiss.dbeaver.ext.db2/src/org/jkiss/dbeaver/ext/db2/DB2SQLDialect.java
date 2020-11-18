@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 /**
  * DB2 SQL dialect
@@ -85,5 +84,10 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     @Override
     public String[][] getBlockBoundStrings() {
         return DB2_BEGIN_END_BLOCK;
+    }
+    
+    @Override
+    public String getScriptDelimiterRedefiner() {
+    	return "DELIMITER";
     }
 }
