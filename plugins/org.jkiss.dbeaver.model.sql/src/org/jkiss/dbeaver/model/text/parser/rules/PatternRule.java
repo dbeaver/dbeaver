@@ -277,8 +277,11 @@ public class PatternRule implements TPPredicateRule {
             } else if (fBreaksOnEOL) {
                 // Check for end of line since it can be used to terminate the pattern.
                 for (char[] fSortedLineDelimiter : fSortedLineDelimiters) {
-                    if (c == fSortedLineDelimiter[0] && sequenceDetected(scanner, fSortedLineDelimiter, fBreaksOnEOF))
+                    if (c == fSortedLineDelimiter[0] && sequenceDetected(scanner, fSortedLineDelimiter, fBreaksOnEOF)) {
+                        for (int i = 0; i < fSortedLineDelimiter.length; i++)
+                            scanner.unread();
                         return true;
+                    }
                 }
             }
             readCount++;
