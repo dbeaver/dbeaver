@@ -88,7 +88,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
         OracleSchema schema = (OracleSchema) container;
         OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
         setNewObjectName(monitor, schema, newView);
-        newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
+        newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT 1 AS A FROM DUAL");
         return newView;
     }
 
