@@ -124,12 +124,16 @@ public class MetaDataPanel implements IResultSetPanel {
     @Override
     public void activatePanel() {
         refresh(false);
-        attributeList.setFocus();
     }
 
     @Override
     public void deactivatePanel() {
 
+    }
+
+    @Override
+    public void setFocus() {
+        attributeList.setFocus();
     }
 
     @Override
