@@ -137,6 +137,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
+        if (!CommonUtils.isEmpty(defaultValue) && defaultValue.startsWith("nextval")) {
+            // Remove serial type default value from DDL
+            if (PostgreConstants.SERIAL_TYPES.containsKey(column.getDataType().getName())) {
+                return;
+            }
+        }
         DefaultModifier.appendModifier(monitor, column, sql, command);
     };
 
