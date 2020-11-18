@@ -128,7 +128,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
             newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
         }
 
-        if (viewText == null || currentDDLFormat != newFormat) {
+        if (viewText == null || (currentDDLFormat != newFormat && isPersisted())) {
             try {
                 if (viewText == null || !isFormatInOptions) {
                     viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
