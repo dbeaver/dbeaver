@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
@@ -98,7 +100,13 @@ public class StreamTransferResultSet implements DBCResultSet {
                     ZonedDateTime zdt = ZonedDateTime.from(ta);
                     value = java.util.Date.from(zdt.toInstant());
                 } catch (Exception e) {
-                    LocalDateTime localDT = LocalDateTime.from(ta);
+                    LocalDateTime localDT;
+                    if (ta.isSupported(ChronoField.NANO_OF_SECOND)) {
+                        localDT = LocalDateTime.from(ta);
+                    } else {
+                        localDT = LocalDate.from(ta).atStartOfDay();
+                        log.debug("No time present in datetime string, defaulting to the start of the day");
+                    }
                     if (dateTimeZoneId != null) {
                         // Shift LocalDateTime to specified zone
                         // https://stackoverflow.com/questions/42280454/changing-localdatetime-based-on-time-difference-in-current-time-zone-vs-eastern
