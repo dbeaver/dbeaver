@@ -135,6 +135,11 @@ public class ReferencesPanel implements IResultSetPanel {
     }
 
     @Override
+    public void setFocus() {
+
+    }
+
+    @Override
     public void refresh(boolean force) {
         if (presentation.getController().getVisiblePanel() == this) {
             getResultsContainer().refreshReferences();
