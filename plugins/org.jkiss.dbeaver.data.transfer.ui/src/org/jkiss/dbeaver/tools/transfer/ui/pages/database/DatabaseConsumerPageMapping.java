@@ -632,6 +632,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         if (name.equalsIgnoreCase(attr.getName())) {
                             attrMapping.setMappingType(DatabaseMappingType.existing);
                             attrMapping.setTarget(attr);
+                            attrMapping.setTargetName(name);
                             return;
                         }
                     }
