@@ -88,9 +88,9 @@ public class SQLRuleManager {
         // Add rule for single-line comments.
         for (String lineComment : dialect.getSingleLineComments()) {
             if (lineComment.startsWith("^")) {
-                rules.add(new LineCommentRule(lineComment, commentToken)); //$NON-NLS-1$
+                rules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
             } else {
-                rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+                rules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
             }
         }
 
