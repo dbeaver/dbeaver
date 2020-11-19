@@ -39,6 +39,10 @@ public class LineCommentRule extends EndOfLineRule
         super(startSequence, token, escapeCharacter, escapeContinuesLine);
     }
 
+    public LineCommentRule(String startSequence, TPToken token, char escapeCharacter, boolean escapeContinuesLine, boolean excludeLineDelimiter) {
+        super(startSequence, token, escapeCharacter, escapeContinuesLine, excludeLineDelimiter);
+    }
+
     protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume) {
 
         if (resume) {
