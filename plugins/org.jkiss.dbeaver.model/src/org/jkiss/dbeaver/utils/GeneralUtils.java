@@ -54,8 +54,9 @@ import java.util.regex.Pattern;
  * General non-ui utility methods
  */
 public class GeneralUtils {
-
     private static final Log log = Log.getLog(GeneralUtils.class);
+
+    private static final boolean IS_MACOS_BIG_SUR = isMacOS() && Objects.equals(System.getProperty("os.version"), "10.16");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -760,4 +761,7 @@ public class GeneralUtils {
         return new UUID(target.getLong(), target.getLong());
     }
 
+    public static boolean isMacosBigSur() {
+        return IS_MACOS_BIG_SUR;
+    }
 }

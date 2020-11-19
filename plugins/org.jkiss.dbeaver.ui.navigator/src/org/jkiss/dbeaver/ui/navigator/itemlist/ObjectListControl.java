@@ -528,6 +528,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
+        if (GeneralUtils.isMacosBigSur()) {
+            itemsControl.redraw();
+        }
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
