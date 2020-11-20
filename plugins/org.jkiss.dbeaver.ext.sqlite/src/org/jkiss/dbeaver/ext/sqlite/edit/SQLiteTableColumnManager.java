@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,7 +56,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         final String tableColumns = attributes.stream()
             .filter(x -> !x.getName().equals(column.getName()) && x.isPersisted())
             .map(DBUtils::getQuotedIdentifier)
-            .collect(Collectors.joining(", "));
+            .collect(Collectors.joining(",\n  "));
 
         final String tableName = DBUtils.getQuotedIdentifier(table);
 
@@ -64,19 +66,23 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         ));
         actions.add(new SQLDatabasePersistAction(
             "Create temporary table from original table",
-            "CREATE TEMPORARY TABLE temp AS SELECT " + tableColumns + " FROM " + tableName
+            "CREATE TEMPORARY TABLE temp AS\nSELECT\n  " + tableColumns + "\nFROM " + tableName
         ));
         actions.add(new SQLDatabasePersistAction(
             "Drop original table",
-            "DROP TABLE " + tableName
+            "\nDROP TABLE " + tableName + ";\n"
         ));
         actions.add(new SQLDatabasePersistAction(
-            "Create original table from temporary table",
-            "CREATE TABLE " + tableName + " AS SELECT " + tableColumns + " FROM temp"
+            "Create new table",
+            DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false)
+        ));
+        actions.add(new SQLDatabasePersistAction(
+            "Insert values from temporary table to new table",
+            "INSERT INTO " + tableName + "\n (" + tableColumns + ")\nSELECT\n  " + tableColumns + "\nFROM temp"
         ));
         actions.add(new SQLDatabasePersistAction(
             "Drop temporary table",
-            "DROP TABLE temp"
+            "\nDROP TABLE temp"
         ));
     }
 
