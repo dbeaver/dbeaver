@@ -262,7 +262,10 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                                 if (query != null) {
                                     SQLScriptContext scriptContext = new SQLScriptContext(null, contextProvider, null, new PrintWriter(System.err, true), null);
                                     SQLQueryDataContainer container = new SQLQueryDataContainer(contextProvider, new SQLQuery(dataSource, query), scriptContext, log);
-                                    DataTransferPipe pipe = new DataTransferPipe(new DatabaseTransferProducer(container), null);
+                                    DatabaseTransferProducer producer = new DatabaseTransferProducer(container);
+                                    producer.setDefaultCatalog(newInstanceName);
+                                    producer.setDefaultSchema(newObjectName);
+                                    DataTransferPipe pipe = new DataTransferPipe(producer, null);
                                     addPipeToTable(pipe);
                                     updateSettings(propertyChangeListener);
                                 }
