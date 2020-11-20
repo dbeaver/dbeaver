@@ -86,4 +86,9 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     public String[][] getBlockBoundStrings() {
         return DB2_BEGIN_END_BLOCK;
     }
+    
+    @Override
+    public String getScriptDelimiterRedefiner() {
+    	return "DELIMITER";
+    }
 }
