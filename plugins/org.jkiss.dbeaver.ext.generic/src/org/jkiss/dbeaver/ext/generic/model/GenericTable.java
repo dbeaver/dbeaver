@@ -66,10 +66,14 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
             return DBStructUtils.generateTableDDL(monitor, this, options, false);
         }
 
-        if (ddl == null) {
+        if (ddl == null || !isCacheDDL()) {
             ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
         }
         return ddl;
+    }
+
+    protected boolean isCacheDDL() {
+        return true;
     }
 
     @Override

@@ -146,7 +146,8 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 					"	INNER JOIN" + 
 					"		sys.EXA_SCHEMAS o" + 
 					"	ON" + 
-					"		o.schema_name = s.SCHEMA_NAME" 
+					"		o.schema_name = s.SCHEMA_NAME" +
+					" ORDER BY S.SCHEMA_NAME"
 					);
 		}
 		
