@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -150,6 +151,16 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding == null ? 0 : encoding.getObjectId();
         this.initCaches();
+    }
+
+    @ForTest
+    PostgreDatabase(PostgreDataSource dataSource, String databaseName) {
+        super(dataSource);
+        this.name = databaseName;
+        this.initCaches();
+        PostgreSchema sysSchema = new PostgreSchema(this, PostgreConstants.CATALOG_SCHEMA_NAME);
+        sysSchema.getDataTypeCache().loadDefaultTypes(sysSchema);
+        schemaCache.cacheObject(sysSchema);
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -471,13 +482,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
     ///////////////////////////////////////////////
     // Data types
 
+    @NotNull
     @Override
-    public DBPDataKind resolveDataKind(String typeName, int typeID) {
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int typeID) {
         return dataSource.resolveDataKind(typeName, typeID);
     }
 
     @Override
-    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException {
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         return dataSource.resolveDataType(monitor, typeFullName);
     }
 

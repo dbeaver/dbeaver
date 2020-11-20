@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,36 +42,41 @@ public class PostgreTableBaseTest {
 
     @Mock
     DBRProgressMonitor monitor;
-    @Mock
-    PostgreDataSource mockDataSource;
 
+    PostgreDataSource testDataSource;
     PostgreDatabase testDatabase;
-    PostgreRole testUSer;
+    PostgreRole testUser;
     PostgreSchema testSchema;
     private PostgreView testView;
 
     @Mock
     JDBCResultSet mockResults;
     @Mock
-    private PostgreServerExtension mockPostgreServer;
-    @Mock
-    PostgreSchema.TableCache mockTableCache;
-    @Mock
     DBPDataSourceContainer mockDataSourceContainer;
 
     private final long sampleId = 111111;
 
+    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+
     @Before
     public void setUp() throws Exception {
-        Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
-        Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
-        Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(testDatabase);
-        Mockito.when(mockDataSource.getServerType()).thenReturn(mockPostgreServer);
-        Mockito.when(mockDataSource.getContainer()).thenReturn(mockDataSourceContainer);
+        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql"));
 
-        testUSer = new PostgreRole(null, "tester", "test", true);
-        testDatabase = new PostgreDatabase(new VoidProgressMonitor(), mockDataSource, "testdb", testUSer, null, null, null);
-        testSchema = new PostgreSchema(testDatabase, "test", testUSer);
+        testDataSource = new PostgreDataSource(mockDataSourceContainer,"PG Test", "postgres") {
+            @Override
+            public boolean isServerVersionAtLeast(int major, int minor) {
+                return major <= 10;
+            }
+
+            @Override
+            public PostgreDataType getLocalDataType(String typeName) {
+                return super.getLocalDataType(typeName);
+            }
+        };
+
+        testUser = new PostgreRole(null, "tester", "test", true);
+        testDatabase = new PostgreDatabase(new VoidProgressMonitor(), testDataSource, "testdb", testUser, null, null, null);
+        testSchema = new PostgreSchema(testDatabase, "test", testUser);
 
         Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
 
@@ -90,32 +96,38 @@ public class PostgreTableBaseTest {
 
     @Test
     public void generateTableDDL_whenTableHasOneColumn_returnDDLForASingleColumn() throws Exception {
-        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema);
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
         tableRegular.setPartition(false);
         addColumn(tableRegular, "column1", "int4", 1);
         addColumn(tableRegular, "column2", "varchar", 1);
 
         String expectedDDL =
-                "CREATE TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n";
-        //DBStructUtils.generateTableDDL asks for a lot of objects that is not easy to mock
-        //Assert.assertEquals(expectedDDL, tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap()));
+            "-- Drop table" + lineBreak +
+                lineBreak +
+                "-- DROP TABLE test;" + lineBreak +
+                lineBreak +
+                "CREATE TABLE test (" + lineBreak +
+                "\tcolumn1 int4 NULL," + lineBreak +
+                "\tcolumn2 varchar NULL" + lineBreak +
+                ");" + lineBreak;
 
-        try {
-            String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
-            Assert.assertNotNull(tableDDL);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
+        Assert.assertEquals(tableDDL, expectedDDL);
     }
 
     @Test
     public void generateExtensionDDL_whenExtensionHasPublicSchemaAndNoVersion_returnDDLForExtensionWithPublicSchemaAndWithoutVersion() throws Exception {
         PostgreExtension postgreExtension = new PostgreExtension(testDatabase);
         postgreExtension.setName("extName");
-        String expectedDDL = "-- Extension: extName\n\n" +
-                                "-- DROP EXTENSION extName;\n\n" +
-                                "CREATE EXTENSION extName\n\t" +
-                                "SCHEMA \"public\"\n\t" +
+        String expectedDDL = "-- Extension: extName" + lineBreak + lineBreak +
+                                "-- DROP EXTENSION extName;" + lineBreak + lineBreak +
+                                "CREATE EXTENSION extName" + lineBreak + "\t" +
+                                "SCHEMA \"public\"" + lineBreak + "\t" +
                                 "VERSION null";
         String actualDDL = postgreExtension.getObjectDefinitionText(monitor, Collections.emptyMap());
         Assert.assertEquals(expectedDDL, actualDDL);

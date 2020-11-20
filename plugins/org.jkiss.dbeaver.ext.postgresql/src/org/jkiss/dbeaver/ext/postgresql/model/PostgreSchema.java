@@ -91,7 +91,7 @@ public class PostgreSchema implements
     private final PostgreDataTypeCache dataTypeCache;
     protected volatile boolean hasStatistics;
 
-    private PostgreSchema(PostgreDatabase database, String name) {
+    PostgreSchema(PostgreDatabase database, String name) {
         this.database = database;
         this.name = name;
 

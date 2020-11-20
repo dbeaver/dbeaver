@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -58,7 +59,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private static final String CAT_FUNCTIONS = "Functions";
     private static final String CAT_ARRAY = "Array";
 
-    private static String[] OID_TYPES = new String[] {
+    private static final String[] OID_TYPES = new String[] {
         "regproc",
         "regprocedure",
         "regoper",
@@ -237,6 +238,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
         this.attributeCache = null;
         this.enumValues = null;
+    }
+
+    @ForTest
+    PostgreDataType(PostgreSchema schema, int valueType, String name) {
+        super(schema, valueType, name, null, false, false, -1, -1, -1);
+        alias = false;
+        ownerId = 0;
+        attributeCache = null;
     }
 
     void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {

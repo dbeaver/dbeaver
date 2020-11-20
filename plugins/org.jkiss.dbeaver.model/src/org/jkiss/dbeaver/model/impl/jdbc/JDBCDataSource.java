@@ -93,13 +93,17 @@ public abstract class JDBCDataSource
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect, boolean initContext)
         throws DBException
     {
+        this(container, dialect);
+        if (initContext) {
+            initializeRemoteInstance(monitor);
+        }
+    }
+
+    protected JDBCDataSource(@NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect) {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
         this.sqlDialect = dialect;
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
-        if (initContext) {
-            initializeRemoteInstance(monitor);
-        }
     }
 
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {

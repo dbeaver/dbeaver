@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -28,19 +29,22 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreDataTypeCache
  */
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
-    private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
+    private static final Log log = Log.getLog(PostgreDataTypeCache.class);
+
+    private final LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     PostgreDataTypeCache() {
         setListOrderComparator(DBUtils.nameComparator());
@@ -54,7 +58,40 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema schema) throws DBException {
         super.loadObjects(monitor, schema);
+        mapAliases(schema);
 
+    }
+
+    void loadDefaultTypes(PostgreSchema schema) {
+
+        List<PostgreDataType> types = new ArrayList<>();
+        for (Field oidField : PostgreOid.class.getDeclaredFields()) {
+            if (!Modifier.isPublic(oidField.getModifiers()) || !Modifier.isStatic(oidField.getModifiers())) {
+                continue;
+            }
+            try {
+                Object typeId = oidField.get(null);
+                String fieldName = oidField.getName().toLowerCase(Locale.ENGLISH);
+                if (fieldName.endsWith("_array")) {
+                    fieldName = fieldName.substring(0, fieldName.length() - 6) + "_";
+                    //PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
+                    //types.add(type);
+                    // Ignore array types
+                    continue;
+                } else {
+                    PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
+                    types.add(type);
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        setCache(types);
+        // Cache aliases
+        mapAliases(schema);
+    }
+
+    private void mapAliases(PostgreSchema schema) {
         // Cache aliases
         if (schema.isCatalogSchema()) {
             mapDataTypeAliases(schema.getDataSource().getServerType().getDataTypeAliases(), false);
