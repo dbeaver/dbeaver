@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.StandardConstants;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -164,11 +165,12 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBP
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
         return
-            "-- Extension: " + getName() + "\n\n" +
-            "-- DROP EXTENSION " + getName() + ";\n\n" +
-            "CREATE EXTENSION " + getName() + "\n\t" +
-            "SCHEMA \"" + getSchema() + "\"\n\t" +
+            "-- Extension: " + getName() + lineBreak + lineBreak +
+            "-- DROP EXTENSION " + getName() + ";" + lineBreak + lineBreak +
+            "CREATE EXTENSION " + getName() + lineBreak + "\t" +
+            "SCHEMA \"" + getSchema() + "\"" + lineBreak + "\t" +
             "VERSION " + version;
     }
 

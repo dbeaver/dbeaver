@@ -260,12 +260,14 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     ddl.append(createWithClause(table, tableBase));
                 }
                 boolean hasOtherSpecs = false;
-                PostgreTablespace tablespace = table.getTablespace(monitor);
-                if (tablespace != null && table.isTablespaceSpecified()) {
-                    if (!alter) {
-                        ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                if (table.isTablespaceSpecified()) {
+                    PostgreTablespace tablespace = table.getTablespace(monitor);
+                    if (tablespace != null) {
+                        if (!alter) {
+                            ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                        }
+                        hasOtherSpecs = true;
                     }
-                    hasOtherSpecs = true;
                 }
                 if (!alter && hasOtherSpecs) {
                     ddl.append("\n");

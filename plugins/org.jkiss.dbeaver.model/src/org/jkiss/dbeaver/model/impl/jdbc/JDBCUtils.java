@@ -731,6 +731,7 @@ public class JDBCUtils {
         }
     }
 
+    @NotNull
     public static DBPDataKind resolveDataKind(@Nullable DBPDataSource dataSource, String typeName, int typeID)
     {
         if (dataSource == null) {

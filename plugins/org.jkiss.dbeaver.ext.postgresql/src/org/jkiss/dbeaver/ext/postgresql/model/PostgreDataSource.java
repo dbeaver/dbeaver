@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -78,6 +79,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         super(monitor, container, new PostgreDialect());
 
         hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
+    }
+
+    // Constructor for tests
+    @ForTest
+    public PostgreDataSource(DBPDataSourceContainer container, String serverVersion, String activeDatabaseName) {
+        super(container, new PostgreDialect());
+        this.serverVersion = serverVersion;
+        this.activeDatabaseName = activeDatabaseName;
+        this.hasStatistics = false;
+
+        databaseCache = new DatabaseCache();
+        PostgreDatabase defDatabase = new PostgreDatabase(
+            this,
+            activeDatabaseName);
+        databaseCache.setCache(Collections.singletonList(defDatabase));
+
     }
 
     @Override

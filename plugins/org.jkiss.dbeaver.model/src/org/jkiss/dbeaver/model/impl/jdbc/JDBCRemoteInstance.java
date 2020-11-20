@@ -58,6 +58,10 @@ public class JDBCRemoteInstance implements DBSInstance {
         }
     }
 
+    protected JDBCRemoteInstance(@NotNull JDBCDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @Override
     public DBSObject getParentObject() {
         return dataSource;
