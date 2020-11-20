@@ -320,7 +320,13 @@ public abstract class SQLEditorNested<T extends DBSObject>
         
         @Override
         protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
-            setSourceText(RuntimeUtils.makeMonitor(monitor), document.get());
+            DBRProgressMonitor pm = RuntimeUtils.makeMonitor(monitor);
+            pm.beginTask("Save nested editor", 1);
+            try {
+                setSourceText(pm, document.get());
+            } finally {
+                pm.done();
+            }
         }
     }
 
