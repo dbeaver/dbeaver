@@ -55,4 +55,9 @@ public class ExasolConstants {
             true);
 
     public static final String TYPE_GEOMETRY = "GEOMETRY";
+    public static final String TYPE_DECIMAL = "DECIMAL";
+    public static final String TYPE_VARCHAR = "VARCHAR";
+    public static final String TYPE_CHAR = "CHAR";
+    public static final String TYPE_HASHTYPE = "HASHTYPE";
+
 }
