@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -31,13 +30,11 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
 public class FireBirdView extends GenericView implements FireBirdTableBase, DBSObjectWithScript, DBSView {
 
-    private String ddl;
     private String ownerName;
     private Map<String, String> columnDomainTypes;
 
@@ -57,23 +54,6 @@ public class FireBirdView extends GenericView implements FireBirdTableBase, DBSO
     @Property(viewable = true, order = 20)
     public String getOwnerName() {
         return ownerName;
-    }
-
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
-            ddl = null;
-        }
-        if (ddl == null) {
-            ddl = isPersisted() ? FireBirdUtils.getViewSource(monitor, this) : "";
-        }
-        return ddl;
-    }
-
-    @Override
-    public void setObjectDefinitionText(String source) {
-        this.ddl = source;
     }
 
     @Override
