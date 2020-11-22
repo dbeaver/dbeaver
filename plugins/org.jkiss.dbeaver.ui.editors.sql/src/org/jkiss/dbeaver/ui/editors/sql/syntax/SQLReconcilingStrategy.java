@@ -27,8 +27,6 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
@@ -38,29 +36,26 @@ import java.util.*;
  * SQLReconcilingStrategy
  */
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-    private static final Log log = Log.getLog(SQLReconcilingStrategy.class);
-
     private static final Comparator<SQLScriptPosition> COMPARATOR = Comparator.comparingInt(SQLScriptPosition::getOffset).thenComparingInt(SQLScriptPosition::getLength);
+
+    private final SQLEditorBase editor;
 
     private SortedSet<SQLScriptPosition> registeredPositions = new TreeSet<>(COMPARATOR);
 
-    private SQLEditorBase editor;
-
     private IDocument document;
 
-    private IProgressMonitor monitor; //TODO use me
-
-    public SQLEditorBase getEditor() {
-        return editor;
-    }
-
-    public void setEditor(SQLEditorBase editor) {
+    public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
     }
 
     @Override
     public void setDocument(IDocument document) {
         this.document = document;
+    }
+
+    @Override
+    public void setProgressMonitor(IProgressMonitor monitor) {
+        //todo use monitor
     }
 
     @Override
@@ -74,11 +69,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     @Override
-    public void setProgressMonitor(IProgressMonitor monitor) {
-        this.monitor = monitor;
-    }
-
-    @Override
     public void initialReconcile() {
         reconcile();
     }
@@ -89,10 +79,16 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         ProjectionAnnotationModel model = editor.getAnnotationModel();
         if (model == null) {
-            log.debug("Attempt to change folding annotations on editor with empty annotation model. editor=" + editor.toString());
             return;
         }
-        Iterable<SQLScriptElement> queries = getQueries();
+        Iterable<SQLScriptElement> queries = editor.extractScriptQueries(0, document.getLength(), false, true, false);
+        if (queries == null) {
+            return;
+        }
+        reconcile(model, queries);
+    }
+
+    private void reconcile(ProjectionAnnotationModel model, Iterable<SQLScriptElement> queries) {
         Map<Annotation, Position> newAnnotations = new HashMap<>();
         SortedSet<SQLScriptPosition> newRegisteredPositions = new TreeSet<>(COMPARATOR);
         for (SQLScriptElement element: queries) {
@@ -102,12 +98,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 newAnnotations.put(position.getFoldingAnnotation(), position);
             }
         }
-        Annotation[] oldAnnotations = new Annotation[registeredPositions.size()];
-        int i = 0;
-        for (SQLScriptPosition position: registeredPositions) {
-            oldAnnotations[i] = position.getFoldingAnnotation();
-            i++;
-        }
+        Annotation[] oldAnnotations = registeredPositions.stream()
+                .map(SQLScriptPosition::getFoldingAnnotation)
+                .toArray(Annotation[]::new);
         model.modifyAnnotations(oldAnnotations, newAnnotations, null);
         registeredPositions = newRegisteredPositions;
     }
@@ -136,7 +129,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         int position = element.getOffset() + element.getLength();
         while (position < document.getLength()) {
             char c = unsafeGetChar(position);
-            if (c == '\n') { //fixme really '\n'?
+            if (c == '\n') {
                 if (position + 1 < document.getLength()) {
                     position++;
                     break;
@@ -157,19 +150,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         } catch (BadLocationException e) {
             throw new SQLReconcilingStrategyException(e);
         }
-    }
-
-    private Iterable<SQLScriptElement> getQueries() {
-        List<SQLScriptElement> queries = unsafeGetQueries();
-        if (queries == null) {
-            editor.reloadParserContext();
-        }
-        return unsafeGetQueries();
-    }
-
-    @Nullable
-    private List<SQLScriptElement> unsafeGetQueries() {
-        return editor.extractScriptQueries(0, document.getLength(), false, true, false);
     }
 
     private static class SQLReconcilingStrategyException extends RuntimeException {
