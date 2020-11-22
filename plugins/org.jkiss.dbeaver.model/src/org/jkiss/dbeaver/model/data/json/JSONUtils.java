@@ -268,6 +268,11 @@ public class JSONUtils {
         }
     }
 
+    @Nullable
+    public static Map<String, Object> getObjectOrNull(@NotNull Map<String, Object> map, @NotNull String name) {
+        return (Map<String, Object>) map.get(name);
+    }
+
     @NotNull
     public static Iterable<Map.Entry<String, Map<String, Object>>> getNestedObjects(@NotNull Map<String, Object> map, @NotNull String name) {
         Map<String, Map<String, Object>> object = (Map<String, Map<String, Object>>) map.get(name);
