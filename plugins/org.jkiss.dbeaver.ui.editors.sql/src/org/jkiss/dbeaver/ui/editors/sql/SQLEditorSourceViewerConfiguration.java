@@ -60,8 +60,10 @@ import org.jkiss.utils.ArrayUtils;
  * highlighting, auto-indent strategy, double click strategy.
  */
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
-
     private static final Log log = Log.getLog(SQLEditorSourceViewerConfiguration.class);
+
+    private final SQLReconcilingStrategy reconcilingStrategy;
+
     /**
      * The editor with which this configuration is associated.
      */
@@ -94,6 +96,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.ruleManager = editor.getRuleScanner();
         this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
         this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
+        this.reconcilingStrategy = new SQLReconcilingStrategy(editor);
     }
 
     public SQLContextInformer getContextInformer() {
@@ -375,19 +378,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     void onDataSourceChange() {
         contextInformer.refresh(editor.getSyntaxManager());
         ((IHyperlinkDetectorExtension) hyperlinkDetector).dispose();
+        reconcilingStrategy.initialReconcile();
     }
 
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
-        if (!editor.isFoldingEnabled()) {
-            return null;
-        }
-
-        SQLReconcilingStrategy strategy = new SQLReconcilingStrategy();
-        strategy.setEditor(editor);
-
-        MonoReconciler reconciler = new MonoReconciler(strategy, true);
-
-        return reconciler;
+        return new MonoReconciler(reconcilingStrategy, true);
     }
-
 }
