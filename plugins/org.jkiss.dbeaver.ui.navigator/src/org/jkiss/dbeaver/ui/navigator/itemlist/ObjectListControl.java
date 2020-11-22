@@ -73,6 +73,7 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IClipboardSource {
     private static final Log log = Log.getLog(ObjectListControl.class);
 
+    private static final boolean IS_MACOS_BIG_SUR = GeneralUtils.isMacOS() && Objects.equals(System.getProperty("os.version"), "10.16");
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
@@ -528,6 +529,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
+        if (IS_MACOS_BIG_SUR) { //[#10162]
+            itemsControl.redraw();
+        }
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
