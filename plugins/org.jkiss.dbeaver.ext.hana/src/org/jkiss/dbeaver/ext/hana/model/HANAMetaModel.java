@@ -175,8 +175,9 @@ public class HANAMetaModel extends GenericMetaModel
             return Collections.emptyList();
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TRIGGER_NAME FROM SYS.TRIGGERS WHERE SUBJECT_TABLE_NAME=?")) {
-                dbStat.setString(1, table.getName());
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TRIGGER_NAME FROM SYS.TRIGGERS WHERE SUBJECT_TABLE_SCHEMA=? AND SUBJECT_TABLE_NAME=?")) {
+                dbStat.setString(1, table.getSchema().getName());
+                dbStat.setString(2, table.getName());
                 List<GenericTrigger> result = new ArrayList<>();
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
