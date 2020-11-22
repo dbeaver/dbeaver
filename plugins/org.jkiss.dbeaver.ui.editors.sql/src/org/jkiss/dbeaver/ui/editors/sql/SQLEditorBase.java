@@ -587,8 +587,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
         IDocument document = getDocument();
-
-        reloadParserContext(dialect, document);
+        syntaxManager.init(dialect, getActivePreferenceStore());
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
+        ruleScanner.refreshRules(getDataSource(), ruleManager);
+        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
@@ -636,18 +639,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (verticalRuler != null) {
             verticalRuler.update();
         }
-    }
-
-    private void reloadParserContext(SQLDialect dialect, IDocument document) {
-        syntaxManager.init(dialect, getActivePreferenceStore());
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
-        ruleScanner.refreshRules(getDataSource(), ruleManager);
-        parserContext = new SQLParserContext(SQLEditorBase.this, syntaxManager, ruleManager, document != null ? document : new Document());
-    }
-
-    public void reloadParserContext() {
-        reloadParserContext(getSQLDialect(), getDocument());
     }
 
     boolean hasActiveQuery() {
