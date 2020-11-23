@@ -228,6 +228,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     public void deactivatePage()
     {
+        propsEditor.saveEditorValues();
         getWizard().getSettings().setProcessorProperties(propertySource.getPropertiesWithDefaults());
         super.deactivatePage();
     }
