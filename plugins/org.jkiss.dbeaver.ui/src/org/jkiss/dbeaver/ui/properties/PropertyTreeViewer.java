@@ -794,7 +794,10 @@ public class PropertyTreeViewer extends TreeViewer {
                 // This is a hack. On MacOS buttons don't get focus so when user closes dialog
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
                 // This is workaround. Calling protected method focusLost in okPressed saves the value.
-                // See https://github.com/dbeaver/dbeaver/issues/3553
+                // See:
+                // https://github.com/dbeaver/dbeaver/issues/3553
+                // https://github.com/dbeaver/dbeaver/issues/10366
+                // https://github.com/dbeaver/dbeaver/issues/10361
                 Method focusLost = CellEditor.class.getDeclaredMethod("focusLost");
                 focusLost.setAccessible(true);
                 focusLost.invoke(curCellEditor);
