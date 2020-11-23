@@ -215,6 +215,9 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_deleting_multiple_objects_column_description;
     public static String confirm_deleting_multiple_objects_cascade_checkbox;
     public static String confirm_deleting_multiple_objects_cascade_checkbox_tooltip;
+    public static String confirm_deleting_delete_contents_checkbox;
+    public static String confirm_deleting_delete_contents_checkbox_tooltip;
+    public static String confirm_deleting_project_location_label;
     public static String error_deleting_resource_title;
     public static String error_deleting_resource_message;
     public static String question_no_sql_available;
