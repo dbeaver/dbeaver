@@ -67,6 +67,7 @@ class NavigatorObjectsDeleter {
      * {@code true} if 'View Script' button should be shown
      */
     private final boolean showViewScript;
+    private final boolean showDeleteContents;
 
     /**
      * {@code true} in case of attempt to delete database nodes which belong to different data sources
@@ -76,16 +77,18 @@ class NavigatorObjectsDeleter {
     @Nullable
     private DBECommandContext commandContext;
 
-    private boolean checkCascade = false;
+    private boolean deleteCascade = false;
+    private boolean deleteContents = false;
 
     private NavigatorObjectsDeleter(final List<Object> selection, final IWorkbenchWindow window,
                                     final boolean hasNodesFromDifferentDataSources, final boolean showCascade,
-                                    final boolean showViewScript) {
+                                    final boolean showViewScript, boolean showDeleteContents) {
         this.selection = selection;
         this.window = window;
         this.hasNodesFromDifferentDataSources = hasNodesFromDifferentDataSources;
         this.showCascade = showCascade;
         this.showViewScript = showViewScript;
+        this.showDeleteContents = showDeleteContents;
     }
 
     static NavigatorObjectsDeleter of(final List<Object> selection, final IWorkbenchWindow window) {
@@ -93,7 +96,12 @@ class NavigatorObjectsDeleter {
         boolean hasNodesFromDifferentDataSources = false;
         boolean showCascade = false;
         boolean showViewScript = false;
+        boolean showKeepContents = false;
         for (Object obj: selection) {
+            if (obj instanceof DBNProject) {
+                showKeepContents = true;
+                continue;
+            }
             if (!(obj instanceof DBNDatabaseNode)) {
                 continue;
             }
@@ -132,19 +140,32 @@ class NavigatorObjectsDeleter {
                 showViewScript = true;
             }
         }
-        return new NavigatorObjectsDeleter(selection, window, hasNodesFromDifferentDataSources, showCascade, showViewScript);
+        return new NavigatorObjectsDeleter(selection, window, hasNodesFromDifferentDataSources, showCascade, showViewScript, showKeepContents);
     }
 
     boolean hasNodesFromDifferentDataSources() {
         return hasNodesFromDifferentDataSources;
     }
 
-    public boolean getShowCascade() {
+    public boolean isShowCascade() {
         return showCascade;
     }
 
-    public boolean getShowViewScript() {
+    public boolean isShowViewScript() {
         return showViewScript;
+    }
+
+    public boolean isShowDeleteContents() {
+        return showDeleteContents;
+    }
+
+    public IProject getProjectToDelete() {
+        for (Object obj: selection) {
+            if (obj instanceof DBNProject) {
+                return ((DBNProject) obj).getProject().getEclipseProject();
+            }
+        }
+        return null;
     }
 
     void delete() {
@@ -169,21 +190,22 @@ class NavigatorObjectsDeleter {
         DBNModel.updateConfigAndRefreshDatabases(folder);
     }
 
-    private void deleteResource(final DBNResource resource) {
-        final IResource iResource = resource.getResource();
+    private void deleteResource(final DBNResource resourceNode) {
+        final IResource resource = resourceNode.getResource();
         try {
-            if (iResource instanceof IFolder) {
-                ((IFolder)iResource).delete(true, true, new NullProgressMonitor());
-            } else if (iResource instanceof IProject) {
-                // Delete project (with all contents)
-                ((IProject) iResource).delete(true, true, new NullProgressMonitor());
-            } else if (iResource != null) {
-                iResource.delete(IResource.FORCE | IResource.KEEP_HISTORY, new NullProgressMonitor());
+            NullProgressMonitor monitor = new NullProgressMonitor();
+            if (resource instanceof IFolder) {
+                ((IFolder)resource).delete(true, true, monitor);
+            } else if (resource instanceof IProject) {
+                // Delete project
+                ((IProject) resource).delete(deleteContents, true, monitor);
+            } else if (resource != null) {
+                resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
             }
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.error_deleting_resource_title,
-                    NLS.bind(UINavigatorMessages.error_deleting_resource_message, iResource.getFullPath().toString()),
+                    NLS.bind(UINavigatorMessages.error_deleting_resource_message, resource.getFullPath().toString()),
                     e
             );
         }
@@ -221,7 +243,7 @@ class NavigatorObjectsDeleter {
                 // and execute command within it
             }
             Map<String, Object> deleteOptions = Collections.emptyMap();
-            if (checkCascade && supportsCascade) {
+            if (deleteCascade && supportsCascade) {
                 deleteOptions = OPTIONS_CASCADE;
             }
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
@@ -334,7 +356,7 @@ class NavigatorObjectsDeleter {
             return;
         }
         final Map<String, Object> deleteOptions;
-        if (supportsCascade && checkCascade) {
+        if (supportsCascade && deleteCascade) {
             deleteOptions = OPTIONS_CASCADE;
         } else {
             deleteOptions = Collections.emptyMap();
@@ -372,7 +394,11 @@ class NavigatorObjectsDeleter {
         sql.append(script);
     }
 
-    void setCheckCascade(final boolean checkCascade) {
-        this.checkCascade = checkCascade;
+    void setDeleteCascade(boolean checkCascade) {
+        this.deleteCascade = checkCascade;
+    }
+
+    public void setDeleteContents(boolean deleteContents) {
+        this.deleteContents = deleteContents;
     }
 }
