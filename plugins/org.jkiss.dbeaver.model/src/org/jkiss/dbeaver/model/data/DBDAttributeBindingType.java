@@ -52,9 +52,12 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
      * @return attribute index (zero based)
      */
     @Override
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition < 0 ? attribute.getOrdinalPosition() : ordinalPosition;
+    }
+
+    public void setOrdinalPosition(int ordinalPosition) {
+        this.ordinalPosition = ordinalPosition;
     }
 
     @Override
