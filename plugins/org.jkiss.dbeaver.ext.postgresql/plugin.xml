@@ -125,7 +125,8 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                        <itemType label="%tree.partition.node.name" icon="#partition" type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition"/>
                                         <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition" recursive="../..">
                                         </items>
                                     </folder>

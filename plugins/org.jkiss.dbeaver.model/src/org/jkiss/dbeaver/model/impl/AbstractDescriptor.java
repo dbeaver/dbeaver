@@ -279,7 +279,7 @@ public abstract class AbstractDescriptor {
     }
 
     @Nullable
-    protected DBPImage iconToImage(String icon)
+    public DBPImage iconToImage(String icon)
     {
         if (CommonUtils.isEmpty(icon)) {
             return null;
