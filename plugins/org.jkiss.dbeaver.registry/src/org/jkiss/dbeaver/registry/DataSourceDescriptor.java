@@ -981,13 +981,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean disconnect(final DBRProgressMonitor monitor)
-        throws DBException
     {
         return disconnect(monitor, true);
     }
 
     private boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
-        throws DBException
     {
         if (dataSource == null) {
             log.error("Datasource is not connected");
