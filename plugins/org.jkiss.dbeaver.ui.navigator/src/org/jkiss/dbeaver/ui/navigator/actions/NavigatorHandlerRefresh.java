@@ -31,12 +31,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIConfirmation;
@@ -158,6 +157,14 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     }
                     catch (Throwable ex) {
                         error = ex;
+                        if (node instanceof DBNDataSource) {
+                            DBNDataSource dataSource = (DBNDataSource) node;
+                            DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+                            if (container instanceof DataSourceDescriptor) {
+                                DataSourceDescriptor descriptor = (DataSourceDescriptor) container;
+                                descriptor.disconnect(monitor);
+                            }
+                        }
                     }
                     monitor.worked(1);
                 }
