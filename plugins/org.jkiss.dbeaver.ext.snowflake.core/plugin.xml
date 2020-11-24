@@ -37,7 +37,7 @@
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
-                    <parameter name="query-set-active-db" value="USE DATABASE ?"/>
+                    <parameter name="query-set-active-db" value="USE DATABASE &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="catalog"/>
                 </driver>
 
