@@ -104,11 +104,11 @@ public class ResultSetUtils
         }
     }
 
-    public static boolean isServerSideFiltering(IResultSetController controller)
+    public static boolean isServerSideOrdering(IResultSetController controller)
     {
         return
             controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
-                (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
+                CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder());
     }
 
     // Use linear interpolation to make gradient color in a range

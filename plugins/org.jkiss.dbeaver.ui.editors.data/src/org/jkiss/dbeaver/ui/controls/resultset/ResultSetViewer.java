@@ -2006,7 +2006,7 @@ public class ResultSetViewer extends Viewer
         assert constraint != null;
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
-            if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
+            if (ResultSetUtils.isServerSideOrdering(this) && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
                     ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                     viewerPanel.getShell(),
@@ -2035,13 +2035,14 @@ public class ResultSetViewer extends Viewer
         // Also it is required to implement default grouping ordering (count desc)
         dataFilter.setOrder(null);
 
-        if (!ResultSetUtils.isServerSideFiltering(this) || !this.isHasMoreData()) {
-            if (!this.checkForChanges()) {
-                return;
-            }
-            reorderLocally();
-        } else {
+        if (!this.checkForChanges()) {
+            return;
+        }
+
+        if (ResultSetUtils.isServerSideOrdering(this)) {
             this.refreshData(null);
+        } else {
+            reorderLocally();
         }
     }
 
