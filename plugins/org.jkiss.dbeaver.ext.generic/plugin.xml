@@ -510,6 +510,8 @@
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-multiple-results" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT DATABASE"/>
+                    <parameter name="query-set-active-db" value="DATABASE &quot;?&quot;"/>
                 </driver>
 
                 <driver
