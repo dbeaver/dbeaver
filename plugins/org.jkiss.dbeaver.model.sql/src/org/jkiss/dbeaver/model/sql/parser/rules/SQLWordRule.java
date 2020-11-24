@@ -81,7 +81,7 @@ public class SQLWordRule implements TPRule {
 
             if (functions.contains(buffer)) {
                 int length = 0;
-                while (c != TPCharacterScanner.EOF && c != '\n' && Character.isWhitespace(c)) {
+                while (c != TPCharacterScanner.EOF && Character.isWhitespace(c)) {
                     c = scanner.read();
                     length += 1;
                 }
