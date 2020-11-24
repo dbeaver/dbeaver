@@ -172,6 +172,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     private CustomSashForm presentationSash;
     private CTabFolder resultTabs;
+    private TabFolderReorder resultTabsReorder;
     private CTabItem activeResultsTab;
 
     private SQLLogPanel logViewer;
@@ -955,7 +956,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
-        new TabFolderReorder(resultTabs);
+        resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1094,6 +1095,29 @@ public class SQLEditor extends SQLEditorBase implements
                                 @Override
                                 public void run() {
                                     resultsContainer.setPinned(!isPinned);
+
+                                    CTabItem currTabItem = activeTab;
+                                    CTabItem nextTabItem;
+
+                                    if (isPinned) {
+                                        for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
+                                            nextTabItem = resultTabs.getItem(i);
+                                            if (nextTabItem.getShowClose()) {
+                                                break;
+                                            }
+                                            resultTabsReorder.swapTabs(currTabItem, nextTabItem);
+                                            currTabItem = nextTabItem;
+                                        }
+                                    } else {
+                                        for (int i = resultTabs.indexOf(activeTab) - 1; i >= 0; i--) {
+                                            nextTabItem = resultTabs.getItem(i);
+                                            if (!nextTabItem.getShowClose()) {
+                                                break;
+                                            }
+                                            resultTabsReorder.swapTabs(currTabItem, nextTabItem);
+                                            currTabItem = nextTabItem;
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -2011,24 +2035,26 @@ public class SQLEditor extends SQLEditorBase implements
             }
         } else {
             if (!export) {
-                // Use current tab.
-                // If current tab was pinned then use first tab
-                QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
-                CTabItem tabItem = firstResults.getTabItem();
-                if (firstResults.isPinned()) {
-                    curQueryProcessor = queryProcessors.get(0);
-                    firstResults = curQueryProcessor.getFirstResults();
-                    if (firstResults.isPinned()) {
-                        // The very first tab is also pinned
-                        // Well, let's create a new tab
-                        curQueryProcessor = createQueryProcessor(true, true);
-                        // Make new tab the default
-                        firstResults = curQueryProcessor.getFirstResults();
-                        if (firstResults.isPinned()) {
-                            tabItem.setShowClose(false);
+                QueryResultsContainer resultsContainer = curQueryProcessor.getFirstResults();
+
+                if (resultsContainer.isPinned()) {
+                    for (QueryProcessor processor : queryProcessors) {
+                        curQueryProcessor = processor;
+                        resultsContainer = processor.getFirstResults();
+                        if (!resultsContainer.isPinned()) {
+                            break;
                         }
                     }
                 }
+
+                if (resultsContainer.isPinned()) {
+                    // If all tabs are pinned, then create a new tab
+                    curQueryProcessor = createQueryProcessor(true, false);
+                    resultsContainer = curQueryProcessor.getFirstResults();
+                }
+
+                CTabItem tabItem = resultsContainer.getTabItem();
+
                 if (!extraTabsClosed) {
                     if (closeExtraResultTabs(curQueryProcessor, true) == IDialogConstants.CANCEL_ID) {
                         return false;
@@ -2063,10 +2089,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose)
     {
-        // Close all tabs except first one
         List<CTabItem> tabsToClose = new ArrayList<>();
-        for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
-            CTabItem item = resultTabs.getItem(i);
+        for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
                 QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
@@ -2082,7 +2106,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (tabsToClose.size() > 0) {
+        if (tabsToClose.size() > 1) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
                 confirmResult = ConfirmationDialog.showConfirmDialog(
@@ -2090,14 +2114,14 @@ public class SQLEditor extends SQLEditorBase implements
                     getSite().getShell(),
                     SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    tabsToClose.size() + 1);
+                    tabsToClose.size());
                 if (confirmResult == IDialogConstants.CANCEL_ID) {
                     return IDialogConstants.CANCEL_ID;
                 }
             }
             if (confirmResult == IDialogConstants.YES_ID) {
-                for (CTabItem item : tabsToClose) {
-                    item.dispose();
+                for (int i = 1; i < tabsToClose.size(); i++) {
+                    tabsToClose.get(i).dispose();
                 }
             }
             return confirmResult;
@@ -2621,13 +2645,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
-            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, getMaxResultsTabIndex() + 1, makeDefault);
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, getMaxResultsTabIndex(true) + 1, makeDefault);
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
 
         private QueryResultsContainer createResultsProvider(DBSDataContainer dataContainer) {
-            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultContainers.size(), getMaxResultsTabIndex(), dataContainer);
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultContainers.size(), getMaxResultsTabIndex(true), dataContainer);
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
@@ -2864,7 +2888,8 @@ public class SQLEditor extends SQLEditorBase implements
         IResultSetContainerExt,
         SQLQueryContainer,
         ISmartTransactionManager,
-        IQueryExecuteController {
+        IQueryExecuteController,
+        TabFolderReorder.IOrderChangeListener {
 
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
@@ -2914,7 +2939,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
                 int queryIndex = queryProcessors.indexOf(queryProcessor);
-                String tabName = getResultsTabName(resultSetNumber, queryIndex, getMaxResultsTabIndex() + 1, null);
+                String tabName = getResultsTabName(resultSetNumber, queryIndex, getMaxResultsTabIndex(true) + 1, null);
                 resultsTab.setText(tabName);
                 resultsTab.setImage(IMG_DATA_GRID);
                 resultsTab.setData(this);
@@ -3313,12 +3338,20 @@ public class SQLEditor extends SQLEditorBase implements
         public void handleExecuteResult(DBCExecutionResult result) {
             dumpQueryServerOutput(result);
         }
+
+        @Override
+        public void orderChanged(CTabItem item) {
+            this.resultsTab = item;
+        }
     }
 
-    private int getMaxResultsTabIndex() {
+    private int getMaxResultsTabIndex(boolean excludePinned) {
         int maxIndex = 0;
         for (CTabItem tab : resultTabs.getItems()) {
             if (tab.getData() instanceof QueryResultsContainer) {
+                if (excludePinned && !tab.getShowClose()) {
+                    continue;
+                }
                 maxIndex = Math.max(maxIndex, ((QueryResultsContainer) tab.getData()).getResultSetIndex());
             }
         }

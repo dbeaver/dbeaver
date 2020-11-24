@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 /**
@@ -32,9 +33,11 @@ import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
  */
 public class TabFolderReorder
 {
+    private final CTabFolder folder;
     private CTabItem dragItem;
 
     public TabFolderReorder(CTabFolder folder) {
+        this.folder = folder;
         final DragSource source = new DragSource(folder, DND.DROP_MOVE);
         source.setTransfer(TabTransfer.INSTANCE);
         source.addDragListener (new DragSourceListener() {
@@ -45,6 +48,10 @@ public class TabFolderReorder
                 dragItem = folder.getItem(point);
 
                 if (dragItem == null) {
+                    return;
+                }
+                if (!dragItem.getShowClose()) {
+                    event.doit = false;
                     return;
                 }
                 Rectangle columnBounds = dragItem.getBounds();
@@ -107,7 +114,11 @@ public class TabFolderReorder
             {
                 handleDragEvent(event);
                 if (event.detail == DND.DROP_MOVE) {
-                    moveTabs(folder, event);
+                    Point point = folder.toControl(folder.getDisplay().getCursorLocation());
+                    CTabItem item = folder.getItem(new Point(point.x, point.y));
+                    if (item != null && dragItem != null) {
+                        swapTabs(dragItem, item);
+                    }
                 }
             }
 
@@ -139,32 +150,40 @@ public class TabFolderReorder
         });
     }
 
-    private void moveTabs(CTabFolder folder, DropTargetEvent event) {
-        Point point = folder.toControl(folder.getDisplay().getCursorLocation());
-        CTabItem item = folder.getItem(new Point(point.x, point.y));
-        if (item != null && dragItem != null) {
-            Control dragControl = dragItem.getControl();
-            String dragText = dragItem.getText();
-            Image dragImage = dragItem.getImage();
-            String dragToolTip = dragItem.getToolTipText();
-            boolean dragShowClose = dragItem.getShowClose();
-            Object dragData = dragItem.getData();
+    public void swapTabs(@NotNull CTabItem src, @NotNull CTabItem dst) {
+        if (src == dst) {
+            return;
+        }
 
-            dragItem.setText(item.getText());
-            dragItem.setImage(item.getImage());
-            dragItem.setToolTipText(item.getToolTipText());
-            dragItem.setData(item.getData());
-            dragItem.setShowClose(item.getShowClose());
-            dragItem.setControl(item.getControl());
+        final Control dragControl = src.getControl();
+        final String dragText = src.getText();
+        final Image dragImage = src.getImage();
+        final String dragToolTip = src.getToolTipText();
+        final boolean dragShowClose = src.getShowClose();
+        final Object dragData = src.getData();
 
-            item.setText(dragText);
-            item.setImage(dragImage);
-            item.setToolTipText(dragToolTip);
-            item.setData(dragData);
-            item.setShowClose(dragShowClose);
-            item.setControl(dragControl);
+        src.setText(dst.getText());
+        src.setImage(dst.getImage());
+        src.setToolTipText(dst.getToolTipText());
+        src.setData(dst.getData());
+        src.setShowClose(dst.getShowClose());
+        src.setControl(dst.getControl());
 
-            folder.setSelection(item);
+        dst.setText(dragText);
+        dst.setImage(dragImage);
+        dst.setToolTipText(dragToolTip);
+        dst.setData(dragData);
+        dst.setShowClose(dragShowClose);
+        dst.setControl(dragControl);
+
+        folder.setSelection(dst);
+
+        if (src.getData() instanceof IOrderChangeListener) {
+            ((IOrderChangeListener) src.getData()).orderChanged(src);
+        }
+
+        if (dst.getData() instanceof IOrderChangeListener) {
+            ((IOrderChangeListener) dst.getData()).orderChanged(dst);
         }
     }
 
@@ -189,4 +208,7 @@ public class TabFolderReorder
 
     }
 
+    public interface IOrderChangeListener {
+        void orderChanged(CTabItem item);
+    }
 }
