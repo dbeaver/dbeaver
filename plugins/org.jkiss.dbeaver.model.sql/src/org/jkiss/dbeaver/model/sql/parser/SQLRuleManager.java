@@ -178,8 +178,9 @@ public class SQLRuleManager {
             // Add word rule for keywords, functions, types, and constants.
             SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken);
             for (String reservedWord : dialect.getReservedWords()) {
+                DBPKeywordType keywordType = dialect.getKeywordType(reservedWord);
                 // Functions without parentheses has type 'DBPKeywordType.OTHER' (#8710)
-                if (dialect.getKeywordType(reservedWord) == DBPKeywordType.OTHER) {
+                if (keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.OTHER) {
                     wordRule.addFunction(reservedWord);
                 } else {
                     wordRule.addWord(reservedWord, keywordToken);

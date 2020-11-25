@@ -322,6 +322,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
                 "RATIO_TO_REPORT",
                 "STDDEV",
                 "VARIANCE",
+                "COALESCE",
 
                 //Object Reference Functions:
                 "MAKE_REF",
@@ -337,7 +338,8 @@ public class OracleSQLDialect extends JDBCSQLDialect {
                 // Other #4134
                 "EXTRACT",
                 "LISTAGG",
-                "OVER"
+                "OVER",
+                "RANK"
             ));
         removeSQLKeyword("SYSTEM");
 
