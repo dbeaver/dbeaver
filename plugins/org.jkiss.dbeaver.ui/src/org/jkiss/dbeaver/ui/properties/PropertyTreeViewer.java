@@ -66,8 +66,6 @@ import java.util.*;
  * Driver properties control
  */
 public class PropertyTreeViewer extends TreeViewer {
-    private static final boolean IS_MACOS = GeneralUtils.isMacOS();
-
     public static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     public enum ExpandMode {
@@ -405,7 +403,7 @@ public class PropertyTreeViewer extends TreeViewer {
             public void widgetSelected(final SelectionEvent e)
             {
                 TreeItem item = (TreeItem) e.item;
-                if (!IS_MACOS) { // [#10279] [#10366] [#10361]
+                if (!GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
                     showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
                     return;
                 }
@@ -418,7 +416,7 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
-                if (IS_MACOS) { // [#10279] [#10366] [#10361]
+                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
                     isMouseEventOnMacos = true;
                 }
                 if (item != null) {
@@ -789,7 +787,7 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     public void saveEditorValues() {
-        if (curCellEditor != null && curCellEditor.isActivated()) {
+        if (GeneralUtils.isMacOS() && curCellEditor != null && curCellEditor.isActivated()) {
             try {
                 // This is a hack. On MacOS buttons don't get focus so when user closes dialog
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.

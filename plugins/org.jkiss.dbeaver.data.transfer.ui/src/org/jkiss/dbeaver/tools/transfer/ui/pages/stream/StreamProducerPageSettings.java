@@ -272,6 +272,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         // It is a producer so it must prepare data for consumers
 
         // Save processor properties
+        propsEditor.saveEditorValues();
         Map<String, Object> processorProperties = propertySource.getPropertiesWithDefaults();
         DataTransferSettings dtSettings = getWizard().getSettings();
         dtSettings.setProcessorProperties(processorProperties);
