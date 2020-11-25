@@ -54,8 +54,10 @@ import java.util.regex.Pattern;
  * General non-ui utility methods
  */
 public class GeneralUtils {
-
     private static final Log log = Log.getLog(GeneralUtils.class);
+
+    private static final boolean IS_MACOS = Platform.getOS().contains("macos");
+    private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -662,11 +664,11 @@ public class GeneralUtils {
     }
 
     public static boolean isWindows() {
-        return Platform.getOS().contains("win32");
+        return IS_WINDOWS;
     }
 
     public static boolean isMacOS() {
-        return Platform.getOS().contains("macos");
+        return IS_MACOS;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -730,7 +732,6 @@ public class GeneralUtils {
         return result;
     }
 
-
     public static byte[] getBytesFromUUID(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
@@ -759,5 +760,4 @@ public class GeneralUtils {
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
     }
-
 }
