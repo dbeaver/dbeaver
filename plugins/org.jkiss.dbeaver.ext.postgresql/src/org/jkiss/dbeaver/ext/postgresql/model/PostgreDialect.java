@@ -72,7 +72,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     private static final String[] OTHER_TYPES_FUNCTION = {
         "CURRENT_DATE",
         "CURRENT_TIME",
-        "CURRENT_TIMESTAMP"
+        "CURRENT_TIMESTAMP",
+        "CURRENT_ROLE",
     };
 
     //region KeyWords
