@@ -77,8 +77,10 @@ public class ERDHandlerPaste extends AbstractHandler {
                                 objects,
                                 new DiagramCollectSettingsDefault(), true);
                             if (!CommonUtils.isEmpty(erdEntities)) {
-                                Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
-                                editor.getCommandStack().execute(command);
+                                UIUtils.syncExec(() -> {
+                                    Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
+                                    editor.getCommandStack().execute(command);
+                                });
                             }
                         });
                     } catch (InvocationTargetException e) {
