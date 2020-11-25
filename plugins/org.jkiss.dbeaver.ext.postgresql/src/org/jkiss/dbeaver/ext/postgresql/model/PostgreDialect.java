@@ -74,6 +74,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "CURRENT_TIME",
         "CURRENT_TIMESTAMP",
         "CURRENT_ROLE",
+        "CURRENT_USER",
     };
 
     //region KeyWords
