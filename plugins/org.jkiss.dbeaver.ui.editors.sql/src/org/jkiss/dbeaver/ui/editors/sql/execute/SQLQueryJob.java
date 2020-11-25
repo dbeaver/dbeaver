@@ -305,6 +305,8 @@ public class SQLQueryJob extends DataSourceJob
                 "Error during SQL job execution: " + ex.getMessage());
         }
         finally {
+            monitor.done();
+
             // Notify job end
             if (listener != null) {
                 try {
@@ -313,7 +315,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
-            monitor.done();
         }
     }
 

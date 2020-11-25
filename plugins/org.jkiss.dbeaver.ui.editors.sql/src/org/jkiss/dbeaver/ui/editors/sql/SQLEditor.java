@@ -828,6 +828,12 @@ public class SQLEditor extends SQLEditorBase implements
             StyledText textWidget = viewer.getTextWidget();
             if (textWidget != null) {
                 textWidget.addModifyListener(this::onTextChange);
+                textWidget.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        refreshActions();
+                    }
+                });
             }
         }
 
