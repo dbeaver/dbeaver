@@ -302,6 +302,12 @@ public class PostgreSchema implements
     }
 
     @Association
+    public PostgreMaterializedView getMaterializedView(DBRProgressMonitor monitor, String name)
+            throws DBException {
+        return getTableCache().getObject(monitor, this, name, PostgreMaterializedView.class);
+    }
+
+    @Association
     public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreSequence.class);
