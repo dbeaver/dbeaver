@@ -74,7 +74,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         if (states.length == 0) {
             log.debug(new DBCException("Progress ended without start"));
         } else {
-            ArrayUtils.remove(ProgressState.class, states, states.length - 1);
+            states = ArrayUtils.remove(ProgressState.class, states, states.length - 1);
         }
         nestedMonitor.done();
 
