@@ -671,10 +671,10 @@ public class PostgreUtils {
                 for (PostgrePrivilege permission : permissions) {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
-                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
                                         .getPersistActions(monitor, executionContext, options));
                     } else {
-                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
+                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, permission.getPrivileges());
                         Collections.addAll(actions, grant.getPersistActions(monitor, executionContext, options));
                     }
                 }
