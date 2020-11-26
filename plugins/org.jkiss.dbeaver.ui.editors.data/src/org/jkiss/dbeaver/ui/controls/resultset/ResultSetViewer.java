@@ -2004,9 +2004,12 @@ public class ResultSetViewer extends Viewer
         DBDAttributeBinding metaColumn = columnElement;
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         assert constraint != null;
-        //int newSort;
+        int orderingMode = ResultSetUtils.getOrderingMode(this);
+        if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
+            orderingMode = ResultSetUtils.ORDERING_SERVER_SIDE;
+        }
         if (constraint.getOrderPosition() == 0) {
-            if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
+            if (orderingMode == ResultSetUtils.ORDERING_SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
                     ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                     viewerPanel.getShell(),
@@ -2035,13 +2038,24 @@ public class ResultSetViewer extends Viewer
         // Also it is required to implement default grouping ordering (count desc)
         dataFilter.setOrder(null);
 
-        if (!ResultSetUtils.isServerSideFiltering(this) || !this.isHasMoreData()) {
-            if (!this.checkForChanges()) {
-                return;
-            }
-            reorderLocally();
-        } else {
-            this.refreshData(null);
+        if (!this.checkForChanges()) {
+            return;
+        }
+
+        switch (orderingMode) {
+            case ResultSetUtils.ORDERING_SMART:
+                if (this.isHasMoreData()) {
+                    this.refreshData(null);
+                } else {
+                    this.reorderLocally();
+                }
+                break;
+            case ResultSetUtils.ORDERING_CLIENT_SIDE:
+                this.reorderLocally();
+                break;
+            case ResultSetUtils.ORDERING_SERVER_SIDE:
+                this.refreshData(null);
+                break;
         }
     }
 
@@ -2988,7 +3002,6 @@ public class ResultSetViewer extends Viewer
             filtersMenu.add(new OrderByAttributeAction(attribute, true));
             filtersMenu.add(new OrderByAttributeAction(attribute, false));
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_ORDER));
-            filtersMenu.add(new ToggleServerSideOrderingAction());
         }
     }
 
@@ -4258,13 +4271,6 @@ public class ResultSetViewer extends Viewer
         @Override
         DBPPreferenceStore getActionPreferenceStore() {
             return DBWorkbench.getPlatform().getPreferenceStore();
-        }
-    }
-
-
-    private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
-        ToggleServerSideOrderingAction() {
-            super(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, ResultSetMessages.pref_page_database_resultsets_label_server_side_order);
         }
     }
 
