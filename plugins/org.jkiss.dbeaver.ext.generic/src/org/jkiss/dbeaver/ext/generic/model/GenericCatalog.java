@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 {
-    private String catalogName;
+    private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
 

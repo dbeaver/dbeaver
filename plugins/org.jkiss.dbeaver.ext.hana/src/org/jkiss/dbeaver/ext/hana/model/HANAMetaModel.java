@@ -65,6 +65,11 @@ public class HANAMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean isSchemasOptional() {
+        return false;
+    }
+
+    @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
         GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
@@ -363,5 +368,5 @@ public class HANAMetaModel extends GenericMetaModel
             );
         }
     }
-    
+
 }

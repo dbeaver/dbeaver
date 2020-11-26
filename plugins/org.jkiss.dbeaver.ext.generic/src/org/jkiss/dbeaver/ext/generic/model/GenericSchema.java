@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject
 {
     @Nullable
-    private GenericCatalog catalog;
+    private final GenericCatalog catalog;
     @NotNull
-    private String schemaName;
+    private final String schemaName;
     private boolean virtualSchema;
 
     public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName)

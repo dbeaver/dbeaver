@@ -496,8 +496,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     // Just skip it
                     log.debug("Catalog list not supported: " + e.getMessage());
                 } catch (Throwable e) {
-                    // Error reading catalogs - just warn about it
-                    log.warn("Can't read catalog list", e);
+                    if (metaModel.isCatalogsOptional()) {
+                        // Error reading catalogs - just warn about it
+                        log.warn("Can't read catalog list", e);
+                    } else {
+                        throw new DBException("Error reading catalog list", e);
+                    }
                 }
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
@@ -519,7 +523,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                         this.schemas = tmpSchemas;
                     }
                 } catch (Throwable e) {
-                    log.warn("Can't read schema list", e);
+                    if (metaModel.isSchemasOptional()) {
+                        log.warn("Can't read schema list", e);
+                    } else {
+                        throw new DBException("Error reading schema list", e);
+                    }
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
@@ -527,6 +535,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 }
             }
         } catch (Throwable ex) {
+            if (ex instanceof DBException) {
+                throw (DBException) ex;
+            }
             throw new DBException("Error reading metadata", ex, this);
         }
     }

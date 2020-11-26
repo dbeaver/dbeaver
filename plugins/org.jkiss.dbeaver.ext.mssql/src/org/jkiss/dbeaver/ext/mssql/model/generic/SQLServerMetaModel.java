@@ -315,6 +315,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public boolean isSchemasOptional() {
+        return false;
+    }
+
+    @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         boolean showAllSchemas = SQLServerUtils.isShowAllSchemas(dataSource);
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);

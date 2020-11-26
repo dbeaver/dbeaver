@@ -123,6 +123,12 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Schema load
 
+    // True if schemas can be omitted.
+    // App will suppress any error during schema read then
+    public boolean isSchemasOptional() {
+        return true;
+    }
+
     public boolean isSystemSchema(GenericSchema schema) {
         return false;
     }
@@ -454,6 +460,12 @@ public class GenericMetaModel {
 
     //////////////////////////////////////////////////////
     // Catalog load
+
+    // True if catalogs can be omitted.
+    // App will suppress any error during catalog read then
+    public boolean isCatalogsOptional() {
+        return true;
+    }
 
     public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
         return new GenericCatalog(dataSource, catalogName);
