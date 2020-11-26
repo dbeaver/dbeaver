@@ -94,7 +94,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS;
+        return FEATURE_CATALOGS;
     }
 
     @Override
