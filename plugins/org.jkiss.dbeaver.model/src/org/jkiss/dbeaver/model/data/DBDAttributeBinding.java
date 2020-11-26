@@ -346,7 +346,12 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @Override
     public String toString() {
-        return getName() + " [" + getOrdinalPosition() + "]";
+        DBDAttributeBinding parentAttr = getParentObject();
+        if (parentAttr == null) {
+            return getName();
+        } else {
+            return parentAttr.getName() + "." + getName();
+        }
     }
 
 }
