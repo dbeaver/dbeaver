@@ -46,7 +46,7 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public long getFeatures()
     {
-        return FEATURE_SCHEMAS;
+        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
     @Override
