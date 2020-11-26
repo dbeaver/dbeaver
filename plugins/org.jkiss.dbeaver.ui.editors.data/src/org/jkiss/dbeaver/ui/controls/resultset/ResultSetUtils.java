@@ -50,6 +50,10 @@ public class ResultSetUtils
 
     private static volatile IDialogSettings viewerSettings;
 
+    public static final int ORDERING_SMART = 0;
+    public static final int ORDERING_CLIENT_SIDE = 1;
+    public static final int ORDERING_SERVER_SIDE = 2;
+
     @NotNull
     public static IDialogSettings getViewerSettings(String section) {
         if (viewerSettings == null) {
@@ -104,11 +108,8 @@ public class ResultSetUtils
         }
     }
 
-    public static boolean isServerSideFiltering(IResultSetController controller)
-    {
-        return
-            controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
-                (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
+    public static int getOrderingMode(IResultSetController controller) {
+        return controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
     }
 
     // Use linear interpolation to make gradient color in a range

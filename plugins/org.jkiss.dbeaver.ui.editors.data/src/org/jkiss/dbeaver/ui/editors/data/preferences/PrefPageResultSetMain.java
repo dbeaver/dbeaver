@@ -51,7 +51,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button rereadOnScrollingCheck;
     private Text resultSetSize;
     private Button resultSetUseSQLCheck;
-    private Button serverSideOrderingCheck;
+    private Combo orderingModeCombo;
     private Button readQueryMetadata;
     private Button readQueryReferences;
     private Text queryCancelTimeout;
@@ -90,7 +90,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_ORDERING_MODE) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
@@ -132,7 +132,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
             autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
-            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
+            orderingModeCombo = UIUtils.createLabelCombo(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_order_mode, ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            orderingModeCombo.add(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart);
+            orderingModeCombo.add(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client);
+            orderingModeCombo.add(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
             readQueryMetadata = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_metadata,
                ResultSetMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
             readQueryReferences = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_references,
@@ -198,7 +201,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             resultSetSize.setText(String.valueOf(rsSegmentSize));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
-            serverSideOrderingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+            orderingModeCombo.select(store.getInt(ResultSetPreferences.RESULT_SET_ORDERING_MODE));
             readQueryMetadata.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
@@ -229,7 +232,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_ORDERING_MODE, orderingModeCombo.getSelectionIndex());
             store.setValue(ModelPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
@@ -258,7 +261,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
         store.setToDefault(ModelPreferences.RESULT_SET_READ_METADATA);
         store.setToDefault(ModelPreferences.RESULT_SET_READ_REFERENCES);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
