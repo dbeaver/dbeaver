@@ -79,7 +79,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         if (object instanceof PostgreRole) {
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
-                objectName = ((PostgreProcedure) privilegeOwner).getFullyQualifiedName(DBPEvaluationContext.DDL);
+                objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
             } else {
                 objectName = ((PostgreRolePrivilege) permission).getFullObjectName();
             }
