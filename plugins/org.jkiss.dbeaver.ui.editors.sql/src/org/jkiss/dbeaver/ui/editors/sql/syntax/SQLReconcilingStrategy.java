@@ -27,20 +27,18 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.jgit.annotations.Nullable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * SQLReconcilingStrategy
- */
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-    private static final Comparator<SQLScriptPosition> COMPARATOR = Comparator.comparingInt(SQLScriptPosition::getOffset).thenComparingInt(SQLScriptPosition::getLength);
+    private final Collection<SQLScriptElementImpl> cache = new TreeSet<>();
 
     private final SQLEditorBase editor;
-
-    private SortedSet<SQLScriptPosition> registeredPositions = new TreeSet<>(COMPARATOR);
 
     private IDocument document;
 
@@ -81,28 +79,34 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (model == null) {
             return;
         }
-        Iterable<SQLScriptElement> queries = editor.extractScriptQueries(0, document.getLength(), false, true, false);
+        Collection<SQLScriptElement> queries = editor.extractScriptQueries(0, document.getLength(), false, true, false);
         if (queries == null) {
             return;
         }
         reconcile(model, queries);
     }
 
-    private void reconcile(ProjectionAnnotationModel model, Iterable<SQLScriptElement> queries) {
-        Map<Annotation, Position> newAnnotations = new HashMap<>();
-        SortedSet<SQLScriptPosition> newRegisteredPositions = new TreeSet<>(COMPARATOR);
-        for (SQLScriptElement element: queries) {
-            if (deservesFolding(element)) {
-                SQLScriptPosition position = retrievePosition(element);
-                newRegisteredPositions.add(position);
-                newAnnotations.put(position.getFoldingAnnotation(), position);
+    private void reconcile(ProjectionAnnotationModel model, Collection<SQLScriptElement> parsedQueries) {
+        Collection<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
+                .filter(this::deservesFolding)
+                .map(element -> new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element)))
+                .collect(Collectors.toSet());
+        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        parsedElements.forEach(element -> {
+            if (!cache.contains(element)) {
+                element.setAnnotation(new ProjectionAnnotation());
+                additions.put(element.getAnnotation(), element);
             }
-        }
-        Annotation[] oldAnnotations = registeredPositions.stream()
-                .map(SQLScriptPosition::getFoldingAnnotation)
+        });
+        Collection<SQLScriptElementImpl> deletedPositions = cache.stream()
+                .filter(element -> !parsedElements.contains(element))
+                .collect(Collectors.toList());
+        Annotation[] deletions = deletedPositions.stream()
+                .map(SQLScriptElementImpl::getAnnotation)
                 .toArray(Annotation[]::new);
-        model.modifyAnnotations(oldAnnotations, newAnnotations, null);
-        registeredPositions = newRegisteredPositions;
+        model.modifyAnnotations(deletions, additions, null);
+        cache.removeAll(deletedPositions);
+        cache.addAll(additions.values());
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
@@ -158,17 +162,71 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
     }
 
-    private SQLScriptPosition retrievePosition(SQLScriptElement element) {
-        int expandedQueryLength = expandQueryLength(element);
-        SQLScriptPosition newPosition = new SQLScriptPosition(element.getOffset(), expandedQueryLength, true, new ProjectionAnnotation());
-        SortedSet<SQLScriptPosition> registeredPositionsSubset = registeredPositions.tailSet(newPosition);
-        if (registeredPositionsSubset.isEmpty()) {
-            return newPosition;
+    private static class SQLScriptElementImpl extends Position implements SQLScriptElement, Comparable<SQLScriptElementImpl> {
+        @Nullable
+        private ProjectionAnnotation annotation;
+
+        SQLScriptElementImpl(int offset, int length) {
+            super(offset, length);
         }
-        SQLScriptPosition firstRegisteredPosition = registeredPositionsSubset.first();
-        if (firstRegisteredPosition.equals(newPosition)) {
-            return firstRegisteredPosition;
+
+        @Nullable
+        public ProjectionAnnotation getAnnotation() {
+            return annotation;
         }
-        return newPosition;
+
+        public void setAnnotation(ProjectionAnnotation annotation) {
+            this.annotation = annotation;
+        }
+
+        @Override
+        public int compareTo(@NotNull SQLScriptElementImpl o) {
+            int diff = getOffset() - o.getOffset();
+            if (diff != 0) {
+                return diff;
+            }
+            return getLength() - o.getLength();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Position)) {
+                return false;
+            }
+            Position p = (Position) o;
+            return getOffset() == p.getOffset() && getLength() == p.getLength();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getOffset(), getLength());
+        }
+
+        @NotNull
+        @Override
+        public String getOriginalText() {
+            return "";
+        }
+
+        @NotNull
+        @Override
+        public String getText() {
+            return "";
+        }
+
+        @Override
+        public Object getData() {
+            return "";
+        }
+
+        @Override
+        public void setData(Object data) {
+            //do nothing
+        }
+
+        @Override
+        public void reset() {
+            //do nothing
+        }
     }
 }
