@@ -91,8 +91,6 @@ public class PropertyTreeViewer extends TreeViewer {
     private ObjectViewerRenderer renderer;
     private ExpandMode expandMode = ExpandMode.ALL;
 
-    private boolean isMouseEventOnMacos = false; // [#10279] [#10366] [#10361]
-
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
 
     public PropertyTreeViewer(Composite parent, int style)
@@ -402,13 +400,9 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void widgetSelected(final SelectionEvent e)
             {
-                TreeItem item = (TreeItem) e.item;
                 if (!GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
-                    showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
-                    return;
+                    showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
                 }
-                showEditor(item, isMouseEventOnMacos);
-                isMouseEventOnMacos = false;
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -416,11 +410,11 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
-                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
-                    isMouseEventOnMacos = true;
-                }
                 if (item != null) {
                     selectedColumn = UIUtils.getColumnAtPos(item, e.x, e.y);
+                    if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                        showEditor(item, true);
+                    }
                 } else {
                     selectedColumn = -1;
                     if (newPropertiesAllowed) {
