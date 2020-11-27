@@ -2004,12 +2004,12 @@ public class ResultSetViewer extends Viewer
         DBDAttributeBinding metaColumn = columnElement;
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         assert constraint != null;
-        int orderingMode = ResultSetUtils.getOrderingMode(this);
+        ResultSetUtils.OrderingMode orderingMode = ResultSetUtils.getOrderingMode(this);
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
-            orderingMode = ResultSetUtils.ORDERING_SERVER_SIDE;
+            orderingMode = ResultSetUtils.OrderingMode.SERVER_SIDE;
         }
         if (constraint.getOrderPosition() == 0) {
-            if (orderingMode == ResultSetUtils.ORDERING_SERVER_SIDE && supportsDataFilter()) {
+            if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
                     ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                     viewerPanel.getShell(),
@@ -2043,17 +2043,17 @@ public class ResultSetViewer extends Viewer
         }
 
         switch (orderingMode) {
-            case ResultSetUtils.ORDERING_SMART:
+            case SMART:
                 if (this.isHasMoreData()) {
                     this.refreshData(null);
                 } else {
                     this.reorderLocally();
                 }
                 break;
-            case ResultSetUtils.ORDERING_CLIENT_SIDE:
+            case CLIENT_SIDE:
                 this.reorderLocally();
                 break;
-            case ResultSetUtils.ORDERING_SERVER_SIDE:
+            case SERVER_SIDE:
                 this.refreshData(null);
                 break;
         }
