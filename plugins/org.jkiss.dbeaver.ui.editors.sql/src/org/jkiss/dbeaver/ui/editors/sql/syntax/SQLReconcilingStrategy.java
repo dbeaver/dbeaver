@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
@@ -36,7 +33,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
-    private final Collection<SQLScriptElementImpl> cache = new TreeSet<>();
+    private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
     private final SQLEditorBase editor;
 
@@ -58,20 +55,24 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-        reconcile();
+        if (DirtyRegion.INSERT.equals(dirtyRegion.getType())) {
+            reconcile(subRegion.getOffset(), subRegion.getLength());
+        } else {
+            reconcile(subRegion.getOffset(), 0);
+        }
     }
 
     @Override
     public void reconcile(IRegion partition) {
-        reconcile();
+        reconcile(partition.getOffset(), partition.getLength());
     }
 
     @Override
     public void initialReconcile() {
-        reconcile();
+        reconcile(0, document.getLength());
     }
 
-    private void reconcile() {
+    private void reconcile(int damagedRegionOffset, int damagedRegionLength) {
         if (!editor.isFoldingEnabled()) {
             return;
         }
@@ -79,26 +80,62 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (model == null) {
             return;
         }
-        Collection<SQLScriptElement> queries = editor.extractScriptQueries(0, document.getLength(), false, true, false);
-        if (queries == null) {
+
+        SQLScriptElementImpl leftBound = cache.lower(new SQLScriptElementImpl(damagedRegionOffset, damagedRegionLength));
+        if (leftBound != null) {
+            leftBound = cache.lower(leftBound);
+        }
+        SQLScriptElementImpl rightBound = cache.ceiling(new SQLScriptElementImpl(damagedRegionOffset + damagedRegionLength, 0));
+        if (leftBound == null) {
+            damagedRegionOffset = 0;
+        } else {
+            damagedRegionOffset = leftBound.getOffset() + leftBound.getLength();
+        }
+        if (rightBound == null) {
+            damagedRegionLength = document.getLength();
+        } else {
+            damagedRegionLength = rightBound.getOffset() + rightBound.getLength() - damagedRegionOffset;
+        }
+
+        List<SQLScriptElement> parsedQueries = extractQueries(damagedRegionOffset, damagedRegionLength);
+        if (parsedQueries == null) {
             return;
         }
-        reconcile(model, queries);
-    }
 
-    private void reconcile(ProjectionAnnotationModel model, Collection<SQLScriptElement> parsedQueries) {
-        Collection<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
+        if (rightBound != null && !parsedQueries.isEmpty()) {
+            SQLScriptElement rightmostParsedQuery = parsedQueries.get(parsedQueries.size() - 1);
+            if (!rightBound.equals(new SQLScriptElementImpl(rightmostParsedQuery.getOffset(), expandQueryLength(rightmostParsedQuery)))) {
+                parsedQueries = extractQueries(damagedRegionOffset, document.getLength());
+                if (parsedQueries == null) {
+                    return;
+                }
+                rightBound = null;
+            }
+        }
+
+        Collection<SQLScriptElementImpl> cachedQueries;
+        if (leftBound == null && rightBound == null) {
+            cachedQueries = Collections.unmodifiableNavigableSet(cache);
+        } else if (leftBound == null) {
+            cachedQueries = Collections.unmodifiableNavigableSet(cache.headSet(rightBound, true));
+        } else if (rightBound == null) {
+            cachedQueries = Collections.unmodifiableNavigableSet(cache.tailSet(leftBound, false));
+        } else {
+            cachedQueries = Collections.unmodifiableNavigableSet(cache.subSet(leftBound, false, rightBound, true));
+        }
+
+        List<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
                 .filter(this::deservesFolding)
                 .map(element -> new SQLScriptElementImpl(element.getOffset(), expandQueryLength(element)))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
-        parsedElements.forEach(element -> {
-            if (!cache.contains(element)) {
+        for (SQLScriptElementImpl element: parsedElements) {
+            if (!cachedQueries.contains(element)) {
                 element.setAnnotation(new ProjectionAnnotation());
                 additions.put(element.getAnnotation(), element);
             }
-        });
-        Collection<SQLScriptElementImpl> deletedPositions = cache.stream()
+        }
+        Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
                 .filter(element -> !parsedElements.contains(element))
                 .collect(Collectors.toList());
         Annotation[] deletions = deletedPositions.stream()
@@ -107,6 +144,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         model.modifyAnnotations(deletions, additions, null);
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
+    }
+
+    @Nullable
+    private List<SQLScriptElement> extractQueries(int offset, int length) {
+        return editor.extractScriptQueries(offset, length, false, true, false);
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
@@ -129,7 +171,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     //expands query to the end of the line if there are only whitespaces after it. Returns desired length.
-    private int expandQueryLength(SQLScriptElement element) {
+    private int expandQueryLength(SQLScriptElement element) { //todo simplify
         int position = element.getOffset() + element.getLength();
         while (position < document.getLength()) {
             char c = unsafeGetChar(position);
@@ -190,11 +232,19 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Position)) {
-                return false;
+            if (o instanceof Position) {
+                Position p = (Position) o;
+                return equals(p.getOffset(), p.getLength());
             }
-            Position p = (Position) o;
-            return getOffset() == p.getOffset() && getLength() == p.getLength();
+            if (o instanceof SQLScriptElement) {
+                SQLScriptElement e = (SQLScriptElement) o;
+                return equals(e.getOffset(), e.getLength());
+            }
+            return false;
+        }
+
+        private boolean equals(int offset, int length) {
+            return getOffset() == offset && getLength() == length;
         }
 
         @Override
