@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -49,10 +50,6 @@ public class ResultSetUtils
     private static final Log log = Log.getLog(ResultSetUtils.class);
 
     private static volatile IDialogSettings viewerSettings;
-
-    public static final int ORDERING_SMART = 0;
-    public static final int ORDERING_CLIENT_SIDE = 1;
-    public static final int ORDERING_SERVER_SIDE = 2;
 
     @NotNull
     public static IDialogSettings getViewerSettings(String section) {
@@ -108,8 +105,8 @@ public class ResultSetUtils
         }
     }
 
-    public static int getOrderingMode(IResultSetController controller) {
-        return controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
+    public static OrderingMode getOrderingMode(IResultSetController controller) {
+        return OrderingMode.valueOf(controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE));
     }
 
     // Use linear interpolation to make gradient color in a range
@@ -176,5 +173,21 @@ public class ResultSetUtils
 
     static String formatRowCount(long rows) {
         return rows < 0 ? "0" : String.valueOf(rows);
+    }
+
+    public enum OrderingMode {
+        SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
+        CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
+        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
+
+        private final String text;
+
+        OrderingMode(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
     }
 }
