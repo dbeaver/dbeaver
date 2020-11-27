@@ -215,7 +215,11 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;
     public static String pref_page_database_resultsets_label_use_sql_tip;
-    public static String pref_page_database_resultsets_label_server_side_order;
+    public static String pref_page_database_resultsets_label_order_mode;
+    public static String pref_page_database_resultsets_label_order_mode_tip;
+    public static String pref_page_database_resultsets_label_order_mode_smart;
+    public static String pref_page_database_resultsets_label_order_mode_always_client;
+    public static String pref_page_database_resultsets_label_order_mode_always_server;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;
