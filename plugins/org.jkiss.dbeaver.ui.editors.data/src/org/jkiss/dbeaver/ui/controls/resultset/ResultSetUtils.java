@@ -106,7 +106,7 @@ public class ResultSetUtils
     }
 
     public static OrderingMode getOrderingMode(IResultSetController controller) {
-        return OrderingMode.valueOf(controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE));
+        return CommonUtils.valueOf(OrderingMode.class, controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), OrderingMode.SMART);
     }
 
     // Use linear interpolation to make gradient color in a range

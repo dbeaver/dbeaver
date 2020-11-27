@@ -202,7 +202,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             }
             resultSetSize.setText(String.valueOf(rsSegmentSize));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
-            orderingModeCombo.select(ResultSetUtils.OrderingMode.valueOf(store.getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE)).ordinal());
+            orderingModeCombo.select(CommonUtils.valueOf(ResultSetUtils.OrderingMode.class, store.getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), ResultSetUtils.OrderingMode.SMART).ordinal());
             readQueryMetadata.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_METADATA));
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
