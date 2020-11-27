@@ -31,6 +31,7 @@ public class PostgrePrivilegeGrant {
         TABLE,
         SEQUENCE,
         FUNCTION,
+        PROCEDURE,
         COLUMN
     }
 
@@ -54,6 +55,7 @@ public class PostgrePrivilegeGrant {
         this.isGrantable = JDBCUtils.safeGetBoolean(dbResult, "is_grantable");
 
         switch (kind) {
+            case PROCEDURE:
             case FUNCTION:
                 this.objectCatalog = JDBCUtils.safeGetString(dbResult, "specific_catalog");
                 this.objectSchema = JDBCUtils.safeGetString(dbResult, "specific_schema");
