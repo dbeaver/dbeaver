@@ -64,12 +64,12 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         pageControl = new PageControl(parent);
 
         Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
-        GridData gd = new GridData(GridData.FILL_VERTICAL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gd);
 
         newUser = !getDatabaseObject().isPersisted();
         {
-            Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
+            Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
 
             userNameText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
             userNameText.setEditable(newUser);
@@ -92,7 +92,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         {
-            Composite limitsGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite limitsGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.FILL_HORIZONTAL, 0);
 
             Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
