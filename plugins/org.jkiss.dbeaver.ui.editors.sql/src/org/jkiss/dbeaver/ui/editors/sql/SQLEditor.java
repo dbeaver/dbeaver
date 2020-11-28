@@ -224,8 +224,11 @@ public class SQLEditor extends SQLEditorBase implements
                 List<QueryResultsContainer> containers = processor.getResultContainers();
                 for (int index = containers.indexOf(data) + 1; index < containers.size(); index++) {
                     QueryResultsContainer container = containers.get(index);
-                    container.resultSetNumber--;
-                    container.resultSetIndex--;
+                    // Make sure that resultSetNumber equals to current loop index.
+                    // This must be true for every container of this query processor
+                    if (container.resultSetNumber == index) {
+                        container.resultSetNumber--;
+                    }
                 }
             }
             if (resultTabs.getItemCount() == 0) {
@@ -1133,7 +1136,7 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     });
                 }
-                if (pinnedTabsCount > 1 || resultTabsCount > 1 || activeTab != null && activeTab.getShowClose()) {
+                if (pinnedTabsCount > 1 || resultTabsCount > 1 || (activeTab != null && activeTab.getShowClose())) {
                     manager.add(new Separator());
                     if (pinnedTabsCount > 1) {
                         manager.add(new Separator());
@@ -2914,7 +2917,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final QueryProcessor queryProcessor;
         private final ResultSetViewer viewer;
         private int resultSetNumber;
-        private int resultSetIndex;
+        private final int resultSetIndex;
         private SQLScriptElement query = null;
         private SQLScriptElement lastGoodQuery = null;
         // Data container and filter are non-null only in case of associations navigation
