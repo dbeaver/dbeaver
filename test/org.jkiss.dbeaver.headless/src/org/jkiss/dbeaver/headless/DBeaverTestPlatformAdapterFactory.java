@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +20,11 @@ package org.jkiss.dbeaver.headless;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 public class DBeaverTestPlatformAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { WorkspaceResourceResolver.class, DBPPlatform.class, DBPPlatformUI.class };
+    private static final Class<?>[] CLASSES = new Class[] { DBPPlatform.class, DBPPlatformUI.class };
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.resource.links;
+package org.jkiss.dbeaver.ui.navigator.actions.links;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;

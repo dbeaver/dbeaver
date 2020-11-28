@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.resource.links;
+package org.jkiss.dbeaver.ui.navigator.actions.links;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -28,27 +28,41 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 import java.nio.file.Path;
 
-public class CreateLinkedFilesRunnable extends CreateLinkedResourcesRunnable {
+public class CreateLinkedFoldersRunnable extends CreateLinkedResourcesRunnable {
 
-    public CreateLinkedFilesRunnable(IContainer container, Path... paths) {
-        super(container, IResource.NONE, paths);
+    public CreateLinkedFoldersRunnable(IContainer container, Path... path) {
+        super(container, IResource.NONE, path);
     }
 
     public String composeErrorMessage(IResource resource, Path... paths) {
-        return NLS.bind(ModelMessages.CreateLinkedFileRunnable_e_unable_to_link, resource, paths);
+        return NLS.bind(ModelMessages.CreateLinkedFolderRunnable_e_unable_to_link, resource, paths);
     }
 
+    @Override
     public String composeCancelMessage(IResource resource, Path path) {
-        return NLS.bind(ModelMessages.CreateLinkedFileRunnable_e_cancelled_link, resource, path);
+        return NLS.bind(ModelMessages.CreateLinkedFolderRunnable_e_cancelled_link, resource, path);
     }
 
     @Override
     protected void createLink(IContainer container, Path path, int flags, IProgressMonitor monitor)
             throws CoreException {
-        String memberName = path.getFileName().toString();
+        String memberName;
+        if (path.getFileName() == null) {
+            // #3565 - external folders don't have file name
+            // Get last part of full path.
+            String pathStr = path.toString().replace('\\', '/');
+            while (pathStr.endsWith("/")) pathStr = pathStr.substring(0, pathStr.length() - 1);
+            int divPos = pathStr.lastIndexOf('/');
+            if (divPos >= 0) {
+                pathStr = pathStr.substring(divPos + 1);
+            }
+            memberName = pathStr;
+        } else {
+            memberName = path.getFileName().toString();
+        }
         org.eclipse.core.runtime.Path memberPath = new org.eclipse.core.runtime.Path(memberName);
-        final IFile linked = container.getFile(memberPath);
-        linked.createLink(path.toUri(), IResource.NONE, monitor);
+        final IFolder linked = container.getFolder(memberPath);
+        linked.createLink(path.toUri(), IResource.ALLOW_MISSING_LOCAL, monitor);
     }
 
 }
