@@ -77,8 +77,8 @@
     <plugin id="org.eclipse.emf.ecore.xmi" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.app" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.common" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.ds" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.event" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.equinox.launcher" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.preferences" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.simpleconfigurator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
