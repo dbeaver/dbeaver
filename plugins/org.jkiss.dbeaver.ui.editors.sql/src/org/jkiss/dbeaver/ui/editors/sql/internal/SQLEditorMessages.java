@@ -302,6 +302,14 @@ public class SQLEditorMessages extends NLS {
 	public static String sql_script_binding_type_radio_button_connection_unique;
 	public static String sql_script_binding_type_radio_button_connection_url;
 
+	public static String sql_generator_dialog_button_use_fully_names;
+    public static String sql_generator_dialog_button_compact_sql;
+    public static String sql_generator_dialog_button_exclude_columns;
+    public static String sql_generator_dialog_button_show_comments;
+    public static String sql_generator_dialog_button_show_permissions;
+    public static String sql_generator_dialog_button_show_full_DDL;
+
+
 	static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);

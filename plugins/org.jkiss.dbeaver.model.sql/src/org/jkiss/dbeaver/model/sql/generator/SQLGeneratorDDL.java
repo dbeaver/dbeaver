@@ -35,6 +35,11 @@ import java.util.Map;
 public class SQLGeneratorDDL extends SQLGenerator<DBPScriptObject> {
 
     @Override
+    public boolean isDDLOption() {
+        return true;
+    }
+
+    @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         boolean allTables = true;
         List<DBSTable> tableList = new ArrayList<>();
