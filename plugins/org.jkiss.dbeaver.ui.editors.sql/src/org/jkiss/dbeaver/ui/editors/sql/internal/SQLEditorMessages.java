@@ -28,7 +28,6 @@ public class SQLEditorMessages extends NLS {
 
     public static String confirm_close_result_tabs_title;
     public static String confirm_close_result_tabs_message;
-    public static String confirm_close_result_tabs_toggleMessage;
 
     public static String confirm_dangerous_sql_title;
     public static String confirm_dangerous_sql_message;
@@ -91,6 +90,13 @@ public class SQLEditorMessages extends NLS {
 	public static String script_close_behavior_delete_only_new_scripts;
 	public static String script_close_behavior_do_not_delete;
 	public static String sql_editor_menu_format;
+
+    public static String action_result_tabs_close_all_tabs;
+    public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_pin_tab;
+    public static String action_result_tabs_unpin_tab;
+    public static String action_result_tabs_set_name;
+    public static String action_result_tabs_set_name_title;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
