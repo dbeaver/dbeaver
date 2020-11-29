@@ -887,6 +887,7 @@ public class DataSourceDescriptor
                         dataSource.initialize(monitor);
                     } catch (Throwable e) {
                         log.error("Error initializing datasource", e);
+                        throw e;
                     }
                 }
 
