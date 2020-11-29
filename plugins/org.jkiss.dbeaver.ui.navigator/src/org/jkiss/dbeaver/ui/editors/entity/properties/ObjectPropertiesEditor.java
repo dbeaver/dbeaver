@@ -614,6 +614,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<TabbedFolderInfo> tabList)
     {
+        monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
             // Do not add children tabs
@@ -695,6 +696,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         }
+        monitor.done();
     }
 
     @Override
