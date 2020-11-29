@@ -72,6 +72,8 @@ public class HANAMetaModel extends GenericMetaModel
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
+        // throws exception if password or license expired
+
         GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
         int i;
         for (i = 0; i < schemas.size(); i++)
