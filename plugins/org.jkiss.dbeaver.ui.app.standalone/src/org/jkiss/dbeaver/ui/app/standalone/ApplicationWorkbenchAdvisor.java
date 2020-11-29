@@ -62,7 +62,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
-    //protected static final String MYLYN_PREF_PAGE_ID = "org.eclipse.mylyn.preferencePages.Mylyn";
     private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
 
     private static final String[] EXCLUDE_PREF_PAGES = {
@@ -75,15 +74,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
 
-        // Disable Install/Update
-        //"org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
-
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
     };
-    //private DBPPreferenceListener settingsChangeListener;
 
-    private static String[] UI_PREF_PAGES = {
+    // Move to UI
+    private static final String[] UI_PREF_PAGES = {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
@@ -94,9 +90,17 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
-    private static String[] EDITORS_PREF_PAGES = {
+    // Move to Editors
+    private static final String[] EDITORS_PREF_PAGES = {
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
     };
+
+    // Move to General
+    private static final String[] GENERAL_PREF_PAGES = {
+        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
+        "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
+    };
+
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -200,7 +204,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         }
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
-
+        patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
     }
 
     @NotNull
