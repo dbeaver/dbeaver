@@ -155,9 +155,13 @@ public class GenericMetaModel {
                             dataSource.getAllObjectsPattern());
                     catalogSchemas = true;
                 } catch (Throwable e) {
-                    // This method not supported (may be old driver version)
-                    // Use general schema reading method
-                    log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                    if (isSchemasOptional()) {
+                        // This method not supported (may be old driver version)
+                        // Use general schema reading method
+                        log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                    } else {
+                        throw e;
+                    }
                 }
             } else if (dataSource.isSchemaFiltersEnabled()) {
                 // In some drivers (e.g. jt400) reading schemas with empty catalog leads to
@@ -169,7 +173,11 @@ public class GenericMetaModel {
                             schemaFilters.getSingleMask() :
                             dataSource.getAllObjectsPattern());
                 } catch (Throwable e) {
-                    log.debug("Error reading global schemas " + " - " + e.getMessage());
+                    if (isSchemasOptional()) {
+                        log.debug("Error reading global schemas " + " - " + e.getMessage());
+                    } else {
+                        throw e;
+                    }
                 }
             }
             if (dbResult == null) {
@@ -244,9 +252,14 @@ public class GenericMetaModel {
             log.debug("Can't read schema list: " + e.getMessage());
             return null;
         } catch (Throwable ex) {
-            // Schemas do not supported - just ignore this error
-            log.warn("Can't read schema list", ex);
-            return null;
+            if (isSchemasOptional()) {
+                // Schemas are not supported - just ignore this error
+                log.warn("Can't read schema list", ex);
+                return null;
+            } else {
+                log.error("Can't read schema list", ex);
+                throw new DBException(ex, dataSource);
+            }
         }
     }
 
