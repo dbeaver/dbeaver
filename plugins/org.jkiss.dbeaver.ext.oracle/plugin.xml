@@ -208,7 +208,7 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                <folder label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="localDataTypes" icon="#data_type"/>
                     </folder>
@@ -222,7 +222,7 @@
                         <items label="%tree.recycled_object.node.name" path="object" property="userRecycledObjects" icon="#recycle_bin"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
                         <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
@@ -234,7 +234,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management">
+                <folder label="%tree.security.node.name" icon="#security" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
@@ -277,7 +277,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
 
