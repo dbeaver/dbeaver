@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>org.jkiss.dbeaver.headless</module>
         <module>org.jkiss.dbeaver.test.platform</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.postgresql.test</module>
