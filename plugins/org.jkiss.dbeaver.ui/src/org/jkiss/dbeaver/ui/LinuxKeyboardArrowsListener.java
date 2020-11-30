@@ -29,9 +29,9 @@ public class LinuxKeyboardArrowsListener implements KeyListener {
     private final Tree tree;
 
     @Nullable
-    private TreeItem item = null;
+    private TreeItem item;
 
-    private boolean wasExpanded = false;
+    private boolean wasExpanded;
 
     private LinuxKeyboardArrowsListener(Tree tree) {
         this.tree = tree;
@@ -62,7 +62,6 @@ public class LinuxKeyboardArrowsListener implements KeyListener {
         tree.setSelection(parentItem);
         tree.showSelection();
         item = null;
-        wasExpanded = false;
     }
 
     public static void installOn(Tree tree) {
