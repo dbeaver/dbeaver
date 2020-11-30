@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.sql.script;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -104,7 +102,20 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 public Image getImage(Object element) {
                     return DBeaverIcons.getImage(((DBNResource)element).getNodeIconDefault());
                 }
-
+            });
+            scriptsViewer.addDoubleClickListener(event -> {
+                StructuredSelection selection = (StructuredSelection) event.getSelection();
+                IResource resource = ((DBNResource) selection.getFirstElement()).getResource();
+                if (resource != null) {
+                    DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
+                    if (handler != null) {
+                        try {
+                            handler.openResource(resource);
+                        } catch (Exception e) {
+                            log.error("Failed to open resource " + resource, e);
+                        }
+                    }
+                }
             });
 //            GridData gd = new GridData(GridData.FILL_BOTH);
 //            gd.heightHint = 300;
