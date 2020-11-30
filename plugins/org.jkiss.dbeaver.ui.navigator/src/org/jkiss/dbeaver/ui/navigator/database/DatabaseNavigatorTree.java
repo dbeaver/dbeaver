@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -59,7 +58,6 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -160,57 +158,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             tree.addListener(SWT.MouseDown, event -> onItemMouseDown(tree, event, false));
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
-<<<<<<< Updated upstream
-        }
-
-        //See #9872. Seems to be a bug in Eclipse, the other gtk app we tried works as expected.
-        if (GeneralUtils.isLinux()) {
-            treeViewer.getTree().addKeyListener(new KeyListener() {
-                private boolean wasExpanded;
-
-                @Nullable
-                private TreeItem item;
-
-                private void init() {
-                    wasExpanded = false;
-                    item = null;
-                }
-
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    System.out.println(Platform.getOS());
-                    init();
-                    if (e.keyCode != SWT.ARROW_LEFT) {
-                        return;
-                    }
-                    Tree tree = treeViewer.getTree();
-                    TreeItem[] items = tree.getSelection();
-                    if (items.length != 1) {
-                        return;
-                    }
-                    item = items[0];
-                    wasExpanded = item.getExpanded();
-                }
-
-                @Override
-                public void keyReleased(KeyEvent e) {
-                    if (isNotLeftArrow(e) || wasExpanded || item == null) {
-                        return;
-                    }
-                    TreeItem parentItem = item.getParentItem();
-                    if (parentItem == null) {
-                        return;
-                    }
-                    tree.setSelection(parentItem);
-                    tree.showSelection();
-                }
-
-                private boolean isNotLeftArrow(KeyEvent e) {
-                    return e.keyCode != SWT.ARROW_LEFT;
-                }
-            });
-=======
->>>>>>> Stashed changes
         }
     }
 
