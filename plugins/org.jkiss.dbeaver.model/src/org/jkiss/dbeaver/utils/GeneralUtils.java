@@ -58,6 +58,7 @@ public class GeneralUtils {
 
     private static final boolean IS_MACOS = Platform.getOS().contains("macos");
     private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
+    private static final boolean IS_LINUX = Platform.getOS().contains("linux");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -672,7 +673,7 @@ public class GeneralUtils {
     }
 
     public static boolean isLinux() {
-        return Platform.getOS().contains("linux");
+        return IS_LINUX;
     }
 
     /////////////////////////////////////////////////////////////////////////
