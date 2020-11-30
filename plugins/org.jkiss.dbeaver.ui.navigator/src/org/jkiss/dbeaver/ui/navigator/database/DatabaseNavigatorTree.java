@@ -160,6 +160,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             tree.addListener(SWT.MouseDown, event -> onItemMouseDown(tree, event, false));
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
+<<<<<<< Updated upstream
         }
 
         //See #9872. Seems to be a bug in Eclipse, the other gtk app we tried works as expected.
@@ -208,6 +209,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     return e.keyCode != SWT.ARROW_LEFT;
                 }
             });
+=======
+>>>>>>> Stashed changes
         }
     }
 

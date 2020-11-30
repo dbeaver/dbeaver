@@ -676,10 +676,13 @@ public class GeneralUtils {
         return IS_LINUX;
     }
 
+<<<<<<< Updated upstream
     public static boolean isLinux() {
         return Platform.getOS().contains("linux");
     }
 
+=======
+>>>>>>> Stashed changes
     /////////////////////////////////////////////////////////////////////////
     // Adapters
     // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
