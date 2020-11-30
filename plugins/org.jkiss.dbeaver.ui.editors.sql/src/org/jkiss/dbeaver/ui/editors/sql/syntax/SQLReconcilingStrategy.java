@@ -24,8 +24,8 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
@@ -217,7 +217,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             return annotation;
         }
 
-        public void setAnnotation(ProjectionAnnotation annotation) {
+        public void setAnnotation(@Nullable ProjectionAnnotation annotation) {
             this.annotation = annotation;
         }
 
