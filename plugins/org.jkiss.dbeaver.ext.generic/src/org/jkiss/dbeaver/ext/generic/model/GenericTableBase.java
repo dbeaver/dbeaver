@@ -161,6 +161,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return this.getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
+    public void addAttribute(GenericTableColumn column) {
+        this.getContainer().getTableCache().getChildrenCache(this).cacheObject(column);
+    }
+
+    public void removeAttribute(GenericTableColumn column) {
+        this.getContainer().getTableCache().getChildrenCache(this).removeObject(column, false);
+    }
+
     @Override
     public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
