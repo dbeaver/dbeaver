@@ -58,6 +58,7 @@ public class GeneralUtils {
 
     private static final boolean IS_MACOS = Platform.getOS().contains("macos");
     private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
+    private static final boolean IS_LINUX = Platform.getOS().contains("linux");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -100,7 +101,6 @@ public class GeneralUtils {
     public static String getDefaultLocalFileEncoding() {
         return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
     }
-
 
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
@@ -669,6 +669,10 @@ public class GeneralUtils {
 
     public static boolean isMacOS() {
         return IS_MACOS;
+    }
+
+    public static boolean isLinux() {
+        return IS_LINUX;
     }
 
     /////////////////////////////////////////////////////////////////////////
