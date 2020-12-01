@@ -72,6 +72,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         reconcile(0, document.getLength());
     }
 
+    public void onDataSourceChange() {
+        if (document == null) {
+            return;
+        }
+        initialReconcile();
+    }
+
     private void reconcile(int damagedRegionOffset, int damagedRegionLength) {
         if (!editor.isFoldingEnabled()) {
             return;
