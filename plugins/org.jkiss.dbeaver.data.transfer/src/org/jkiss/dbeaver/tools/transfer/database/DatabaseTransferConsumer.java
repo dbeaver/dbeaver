@@ -191,22 +191,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
                 }
-            } else if (targetObject == null || !dynamicTarget || !(sourceObject instanceof DBSDocumentContainer)) {
+            } else if (sourceObject instanceof DBSDocumentContainer && dynamicTarget) {
+                try {
+                    DBSDocumentContainer docContainer = (DBSDocumentContainer) (targetObject instanceof DBSDocumentContainer ? targetObject : sourceObject);
+                    DBSEntityAttribute docAttribute = docContainer.getDocumentAttribute(session.getProgressMonitor());
+                    if (docAttribute != null) {
+                        columnMapping.targetAttr = new DatabaseMappingAttribute(containerMapping, columnMapping.sourceAttr);
+                        columnMapping.targetAttr.setTarget(docAttribute);
+                        columnMapping.targetAttr.setMappingType(DatabaseMappingType.existing);
+                    }
+                } catch (DBException e) {
+                    throw new DBCException("Error getting document attribute", e);
+                }
+            } else {
                 columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
                 if (columnMapping.targetAttr == null) {
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
-                }
-            } else {
-                if (targetObject instanceof DBSDocumentContainer) {
-                    try {
-                        DBSEntityAttribute docAttribute = ((DBSDocumentContainer) targetObject).getDocumentAttribute(session.getProgressMonitor());
-                        columnMapping.targetAttr = new DatabaseMappingAttribute(containerMapping, columnMapping.sourceAttr);
-                        columnMapping.targetAttr.setTarget(docAttribute);
-                    } catch (DBException e) {
-                        throw new DBCException("Error getting target document attribute", e);
-                    }
-                } else {
-                    throw new DBCException("Can not transfer data into dynamic database which doesn't support documents");
                 }
             }
             if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
