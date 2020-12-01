@@ -44,8 +44,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * SQLServerTableColumn
@@ -330,7 +330,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
         @Override
         public Object[] getPossibleValues(SQLServerTableColumn object) {
-            List<SQLServerDataType> allTypes = new ArrayList<>(object.getDataSource().getLocalDataTypes());
+            List<SQLServerDataType> allTypes = object.getDataSource().getLocalDataTypes().stream()
+                    .filter(type -> !type.getName().equals("243")).collect(Collectors.toList());
             try {
                 allTypes.addAll(object.getTable().getSchema().getDataTypes(new VoidProgressMonitor()));
             } catch (DBException e) {
