@@ -378,7 +378,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     void onDataSourceChange() {
         contextInformer.refresh(editor.getSyntaxManager());
         ((IHyperlinkDetectorExtension) hyperlinkDetector).dispose();
-        reconcilingStrategy.initialReconcile();
+        reconcilingStrategy.onDataSourceChange();
     }
 
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
