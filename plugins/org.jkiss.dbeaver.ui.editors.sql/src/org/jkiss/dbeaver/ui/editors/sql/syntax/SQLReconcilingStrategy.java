@@ -73,6 +73,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         reconcile();
     }
 
+    public void onDataSourceChange() {
+        if (document == null) {
+            return;
+        }
+        initialReconcile();
+    }
+
     private void reconcile() {
         if (!editor.isFoldingEnabled()) {
             return;
