@@ -66,6 +66,8 @@
         <module>org.jkiss.dbeaver.net.ssh.sshj</module>
         <module>org.jkiss.dbeaver.slf4j</module>
         <module>org.jkiss.dbeaver.team.git</module>
+
+        <module>org.jkiss.dbeaver.headless</module>
     </modules>
 
     <profiles>

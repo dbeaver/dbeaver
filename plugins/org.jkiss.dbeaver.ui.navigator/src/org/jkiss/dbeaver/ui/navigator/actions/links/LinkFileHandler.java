@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.navigator.actions;
+package org.jkiss.dbeaver.ui.navigator.actions.links;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,7 +80,29 @@ public class LinkFileHandler extends CreateLinkHandler {
 
     @Override
     protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) {
-        return WorkspaceResources.createLinkedFiles(container, monitor, targets);
+        return createLinkedFiles(container, monitor, targets);
     }
+
+    /**
+     * Bulk operation to create several linked files
+     *
+     * @param container
+     * @param monitor
+     * @param paths
+     * @return
+     */
+    public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
+        try {
+            workspace.run(action, monitor);
+        } catch (CoreException e) {
+            return e.getStatus();
+        } catch (Throwable e) {
+            return GeneralUtils.makeErrorStatus(action.composeErrorMessage(container, paths), e);
+        }
+        return Status.OK_STATUS;
+    }
+
 
 }

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime;
+package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.Platform;
@@ -25,7 +24,6 @@ import org.eclipse.core.runtime.content.IContentType;
 import java.util.HashMap;
 import java.util.Map;
 
-//FIXME: AF: to be moved to org.jkiss.dbeaver.runtime.core bundle
 public class ContentTypeParameterValues implements IParameterValues {
 
     @Override
