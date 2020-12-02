@@ -1138,7 +1138,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 if (pinnedTabsCount > 1 || resultTabsCount > 1 || (activeTab != null && activeTab.getShowClose())) {
                     manager.add(new Separator());
-                    if (pinnedTabsCount > 1) {
+                    if (pinnedTabsCount > 1 && !activeTab.getShowClose()) {
                         manager.add(new Separator());
                         manager.add(new Action(SQLEditorMessages.action_result_tabs_unpin_all_tabs) {
                             @Override
@@ -1153,11 +1153,42 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
                     }
-                    if (resultTabsCount - pinnedTabsCount > 1) {
+                    if (resultTabsCount - pinnedTabsCount > 1 && activeTab != null && activeTab.getShowClose() && activeTab.getData() instanceof QueryResultsContainer) {
                         manager.add(new Action(SQLEditorMessages.action_result_tabs_close_all_tabs) {
                             @Override
                             public void run() {
-                                closeExtraResultTabs(null, false);
+                                closeExtraResultTabs(null, false, false);
+                            }
+                        });
+
+                        manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
+                            @Override
+                            public void run() {
+                                QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+                                List<CTabItem> tabsToRemove = new ArrayList<>();
+                                for (CTabItem tab : resultTabs.getItems()) {
+                                    if (tab.getShowClose() && tab.getData() == container) {
+                                        tabsToRemove.add(tab);
+                                    }
+                                }
+                                for (CTabItem tab : tabsToRemove) {
+                                    tab.dispose();
+                                }
+                            }
+                        });
+                        manager.add(new Action(SQLEditorMessages.action_result_tabs_close_other_tabs) {
+                            @Override
+                            public void run() {
+                                List<CTabItem> tabsToRemove = new ArrayList<>();
+                                for (CTabItem tab : resultTabs.getItems()) {
+                                    if (tab.getShowClose() && tab != activeTab) {
+                                        tabsToRemove.add(tab);
+                                    }
+                                }
+                                for (CTabItem tab : tabsToRemove) {
+                                    tab.dispose();
+                                }
+                                setActiveResultsContainer((QueryResultsContainer) activeTab.getData());
                             }
                         });
                     }
@@ -2030,7 +2061,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
             if (!newTab && !isSingleQuery) {
-                int tabsClosed = closeExtraResultTabs(null, true);
+                int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
                 } else if (tabsClosed == IDialogConstants.NO_ID) {
@@ -2063,6 +2094,12 @@ public class SQLEditor extends SQLEditorBase implements
                 if (!foundSuitableTab) {
                     createQueryProcessor(true, false);
                 }
+            }
+
+            // Close all extra tabs of this query processor
+            // if the user is executing only single query
+            if (!newTab && isSingleQuery && curQueryProcessor.getResultContainers().size() > 1) {
+                closeExtraResultTabs(curQueryProcessor, false, true);
             }
 
             CTabItem tabItem = curQueryProcessor.getFirstResults().getTabItem();
@@ -2100,7 +2137,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose) {
+    private int closeExtraResultTabs(@Nullable QueryProcessor queryProcessor, boolean confirmClose, boolean keepFirstTab) {
         List<CTabItem> tabsToClose = new ArrayList<>();
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
@@ -2108,7 +2145,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
                 }
-                if (queryProcessor != null && queryProcessor.resultContainers.size() < 2) {
+                if (queryProcessor != null && queryProcessor.resultContainers.size() < 2 && keepFirstTab) {
                     // Do not remove first tab for this processor
                     continue;
                 }
@@ -2117,7 +2154,7 @@ public class SQLEditor extends SQLEditorBase implements
                 tabsToClose.add(item);
             }
         }
-        if (tabsToClose.size() > 1) {
+        if (tabsToClose.size() > 1 || (tabsToClose.size() == 1 && keepFirstTab)) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
                 confirmResult = ConfirmationDialog.showConfirmDialog(
@@ -2132,8 +2169,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (confirmResult == IDialogConstants.YES_ID) {
                 for (int i = 0; i < tabsToClose.size(); i++) {
-                    // Don't close first tab if no other tabs left
-                    if (i == 0 && resultTabs.getItemCount() < tabsToClose.size()) {
+                    if (i == 0 && keepFirstTab) {
                         continue;
                     }
                     tabsToClose.get(i).dispose();
@@ -2877,14 +2913,12 @@ public class SQLEditor extends SQLEditorBase implements
                 String toolTip =
                     "Connection: " + (dataSourceContainer == null ? "N/A" : dataSourceContainer.getName()) + GeneralUtils.getDefaultLineSeparator() +
                     "Time: " + new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()) + GeneralUtils.getDefaultLineSeparator() +
-                    "Query: " + queryText;
+                    "Query: " + (CommonUtils.isEmpty(queryText) ? "N/A" : queryText);
                 // Special statements (not real statements) have their name in data
                 if (isStatsResult) {
                     tabName = "Statistics";
                     int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
-                    if (queryIndex > 0) {
-                        tabName += " - " + (queryIndex + 1);
-                    }
+                    tabName += " " + (queryIndex + 1);
                 }
                 String finalTabName = tabName;
                 UIUtils.asyncExec(() -> resultsProvider.updateResultsName(finalTabName, toolTip));
@@ -2961,12 +2995,10 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 resultsTab = new CTabItem(resultTabs, SWT.NONE, tabIndex);
-                int queryIndex = queryProcessors.indexOf(queryProcessor);
-                String tabName = getResultsTabName(resultSetNumber, queryIndex, getMaxResultsTabIndex() + 1, null);
-                resultsTab.setText(tabName);
                 resultsTab.setImage(IMG_DATA_GRID);
                 resultsTab.setData(this);
                 resultsTab.setShowClose(true);
+                resultsTab.setText(getResultsTabName(resultSetNumber, getQueryIndex(), null));
                 CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
                 resultsTab.setControl(viewer.getControl());
@@ -2985,7 +3017,7 @@ public class SQLEditor extends SQLEditorBase implements
         QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, DBSDataContainer dataContainer) {
             this(queryProcessor, resultSetNumber, resultSetIndex, false);
             this.dataContainer = dataContainer;
-            updateResultsName(getResultsTabName(resultSetNumber, 0, resultSetIndex, dataContainer.getName()), null);
+            updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
         }
 
         private CTabItem getTabItem() {
@@ -2994,6 +3026,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         public int getResultSetIndex() {
             return resultSetIndex;
+        }
+
+        public int getQueryIndex() {
+            return queryProcessors.indexOf(queryProcessor);
         }
 
         void updateResultsName(String resultSetName, String toolTip) {
@@ -3373,15 +3409,15 @@ public class SQLEditor extends SQLEditorBase implements
         return maxIndex;
     }
 
-    private String getResultsTabName(int resultSetNumber, int queryIndex, int tabIndex, String name) {
+    private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
         String tabName = name;
         if (CommonUtils.isEmpty(tabName)) {
             tabName = SQLEditorMessages.editors_sql_data_grid;
         }
-        if (tabIndex > 1) {
-            tabName += " - " + tabIndex;
+        tabName += " " + (queryIndex + 1);
+        if (resultSetNumber > 0) {
+            tabName += " (" + (resultSetNumber + 1) + ")";
         }
-
         return tabName;
     }
 
@@ -3540,7 +3576,7 @@ public class SQLEditor extends SQLEditorBase implements
                             SQLQueryResult.ExecuteResult executeResult = result.getExecuteResults(resultsIndex, true);
                             String resultSetName = results.tabName;
                             if (CommonUtils.isEmpty(resultSetName)) {
-                                resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, results.getResultSetIndex(), executeResult.getResultSetName());
+                                resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
                                 results.updateResultsName(resultSetName, null);
                             }
                             ResultSetViewer resultSetViewer = results.getResultSetController();

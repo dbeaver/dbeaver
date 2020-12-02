@@ -92,6 +92,8 @@ public class SQLEditorMessages extends NLS {
 	public static String sql_editor_menu_format;
 
     public static String action_result_tabs_close_all_tabs;
+    public static String action_result_tabs_close_query_tabs;
+    public static String action_result_tabs_close_other_tabs;
     public static String action_result_tabs_unpin_all_tabs;
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
