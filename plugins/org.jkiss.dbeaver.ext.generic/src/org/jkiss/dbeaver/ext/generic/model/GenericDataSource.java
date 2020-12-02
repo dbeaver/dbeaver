@@ -526,7 +526,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     if (metaModel.isSchemasOptional()) {
                         log.warn("Can't read schema list", e);
                     } else {
-                        throw new DBException("Error reading schema list", e);
+                        if (e instanceof DBException) {
+                            throw (DBException) e;
+                        }
+                        throw new DBException("Error reading schema list", e, this);
                     }
                 }
 

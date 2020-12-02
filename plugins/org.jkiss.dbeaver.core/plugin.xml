@@ -1058,9 +1058,6 @@
             <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
             <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
         </factory>
-        <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver"/>
-        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.themes">

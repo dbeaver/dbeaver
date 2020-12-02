@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2020 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.struct;
 
-package org.jkiss.dbeaver.runtime.resource;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import java.util.Map;
 
-public interface WorkspaceResourceResolver {
-    
-    IResource resolveResource(DBSObject databaseObject);
+/**
+ * DBSDocumentLocator
+ */
+public interface DBSDocumentLocator extends DBSDocumentContainer
+{
+    /**
+     * Find document by key attributes
+     * @param monitor progress monitor
+     * @throws DBException on any DB error
+     */
+    @Nullable
+    DBDDocument findDocument(@NotNull DBRProgressMonitor monitor, Map<String, Object> key) throws DBException;
 
 }

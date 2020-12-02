@@ -63,6 +63,11 @@ public class HANASQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
+    }
+    
     /*
      * expression evaluation
      */
