@@ -87,9 +87,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         }
 
         if (userType) {
-            SQLServerDataType systemDataType = getSystemDataType();
-            this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
-            this.valueType = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
+            if (systemTypeId == SQLServerConstants.TABLE_TYPE_SYSTEM_ID) { // 243 - ID of user defined table types
+                this.dataKind = DBPDataKind.OBJECT;
+                this.valueType = Types.OTHER;
+            } else {
+                SQLServerDataType systemDataType = getSystemDataType();
+                this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
+                this.valueType = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
+            }
         } else {
             this.dataKind = getDataKindByName(this.name);
             this.valueType = getDataTypeIDByName(this.name);
