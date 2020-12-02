@@ -490,9 +490,17 @@ public class ResultSetViewer extends Viewer
         return activePresentationDescriptor != null && activePresentationDescriptor.supportsEdit();
     }
 
-    public void resetDataFilter(boolean refresh)
-    {
-        setDataFilter(model.createDataFilter(), refresh);
+    public void resetDataFilter(boolean refresh) {
+        DBDDataFilter newFilter = model.createDataFilter();
+        DBDDataFilter curFilter = model.getDataFilter();
+        if (newFilter.getConstraints().size() == curFilter.getConstraints().size()) {
+            for (int index = 0; index < newFilter.getConstraints().size(); index++) {
+                DBDAttributeConstraint dst = newFilter.getConstraints().get(index);
+                DBDAttributeConstraint src = curFilter.getConstraints().get(index);
+                dst.setOptions(src.getOptions());
+            }
+        }
+        setDataFilter(newFilter, refresh);
     }
 
     public void showFilterSettingsDialog() {
