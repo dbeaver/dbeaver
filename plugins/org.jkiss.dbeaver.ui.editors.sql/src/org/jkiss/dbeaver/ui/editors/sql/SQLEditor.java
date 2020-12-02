@@ -1164,10 +1164,11 @@ public class SQLEditor extends SQLEditorBase implements
                         manager.add(new Action(SQLEditorMessages.action_result_tabs_close_query_tabs) {
                             @Override
                             public void run() {
-                                QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+                                QueryProcessor processor = ((QueryResultsContainer) activeTab.getData()).queryProcessor;
                                 List<CTabItem> tabsToRemove = new ArrayList<>();
-                                for (CTabItem tab : resultTabs.getItems()) {
-                                    if (tab.getShowClose() && tab.getData() == container) {
+                                for (QueryResultsContainer container : processor.getResultContainers()) {
+                                    CTabItem tab = container.getTabItem();
+                                    if (tab.getShowClose() && container.queryProcessor == processor) {
                                         tabsToRemove.add(tab);
                                     }
                                 }
@@ -2916,7 +2917,7 @@ public class SQLEditor extends SQLEditorBase implements
                     "Query: " + (CommonUtils.isEmpty(queryText) ? "N/A" : queryText);
                 // Special statements (not real statements) have their name in data
                 if (isStatsResult) {
-                    tabName = "Statistics";
+                    tabName = SQLEditorMessages.editors_sql_statistics;
                     int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
                     tabName += " " + (queryIndex + 1);
                 }
