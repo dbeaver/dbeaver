@@ -87,7 +87,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         }
 
         if (userType) {
-            if (systemTypeId == 243) { // 243 - ID of user defined table types
+            if (systemTypeId == SQLServerConstants.TABLE_TYPE_SYSTEM_ID) { // 243 - ID of user defined table types
                 this.dataKind = DBPDataKind.OBJECT;
                 this.valueType = Types.OTHER;
             } else {
