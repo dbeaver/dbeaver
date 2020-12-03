@@ -109,9 +109,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     // Constructor for tests
     @ForTest
-    public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel, @NotNull SQLDialect dialect, boolean initContext)
+    public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
             throws DBException {
-        super(monitor, container, dialect, initContext);
+        super(monitor, container, dialect, false);
         this.metaModel = metaModel;
         this.dataTypeCache = metaModel.createDataTypeCache(this);
         this.tableTypeCache = new TableTypeCache();
