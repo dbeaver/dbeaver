@@ -139,7 +139,6 @@ public class ResultSetViewer extends Viewer
     public static final String DEFAULT_QUERY_TEXT = "SQL";
     public static final String CUSTOM_FILTER_VALUE_STRING = "..";
 
-
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
@@ -491,16 +490,49 @@ public class ResultSetViewer extends Viewer
     }
 
     public void resetDataFilter(boolean refresh) {
+        setDataFilter(model.createDataFilter(), refresh);
+    }
+
+    /**
+     * Creates a new data filter, keeping all visual state (visibility, etc.) from a previous one.
+     */
+    public void clearDataFilter(boolean refresh) {
         DBDDataFilter newFilter = model.createDataFilter();
         DBDDataFilter curFilter = model.getDataFilter();
-        if (newFilter.getConstraints().size() == curFilter.getConstraints().size()) {
-            for (int index = 0; index < newFilter.getConstraints().size(); index++) {
-                DBDAttributeConstraint dst = newFilter.getConstraints().get(index);
-                DBDAttributeConstraint src = curFilter.getConstraints().get(index);
-                dst.setOptions(src.getOptions());
+
+        Map<String, Map<String, Object>> states = new HashMap<>();
+
+        for (DBDAttributeConstraint constraint : curFilter.getConstraints()) {
+            Map<String, Object> state = saveConstraintVisualState(constraint);
+            if (!state.isEmpty()) {
+                states.put(constraint.getFullAttributeName(), state);
             }
         }
+
+        for (DBDAttributeConstraint constraint : newFilter.getConstraints()) {
+            Map<String, Object> state = states.get(constraint.getFullAttributeName());
+            if (state != null) {
+                restoreConstraintVisualState(constraint, state);
+            }
+        }
+
         setDataFilter(newFilter, refresh);
+    }
+
+    private Map<String, Object> saveConstraintVisualState(DBDAttributeConstraint constraint) {
+        Map<String, Object> state = new Hashtable<>();
+        state.put("visible", constraint.isVisible());
+        if (constraint.hasOption(DBDAttributeConstraintBase.OPTION_PINNED)) {
+            state.put("pinned", constraint.getOption(DBDAttributeConstraintBase.OPTION_PINNED));
+        }
+        return state;
+    }
+
+    private void restoreConstraintVisualState(DBDAttributeConstraint constraint, Map<String, Object> state) {
+        constraint.setVisible((boolean) state.get("visible"));
+        if (state.containsKey("pinned")) {
+            constraint.setOption(DBDAttributeConstraintBase.OPTION_PINNED, state.get("pinned"));
+        }
     }
 
     public void showFilterSettingsDialog() {

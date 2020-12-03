@@ -473,7 +473,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_FILTER_CLEAR_SETTING: {
-                rsv.resetDataFilter(true);
+                rsv.clearDataFilter(true);
             }
             case CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);

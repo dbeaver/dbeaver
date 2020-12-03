@@ -115,8 +115,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public static final String PRESENTATION_ID = "spreadsheet";
 
-    public static final String ATTR_OPTION_PINNED = "pinned";
-
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private static final boolean SHOW_CHECKBOX_AS_IMAGE = false;
@@ -922,14 +920,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     DBDDataFilter dataFilter = controller.getModel().getDataFilter();
                     DBDAttributeConstraint ac = dataFilter.getConstraint(attr.getTopParent());
                     if (ac != null) {
-                        Integer pinnedIndex = ac.getOption(ATTR_OPTION_PINNED);
+                        Integer pinnedIndex = ac.getOption(DBDAttributeConstraintBase.OPTION_PINNED);
                         manager.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Action(pinnedIndex != null ? "Unpin column" : "Pin column") {
                             @Override
                             public void run() {
                                 if (pinnedIndex != null) {
-                                    ac.removeOption(ATTR_OPTION_PINNED);
+                                    ac.removeOption(DBDAttributeConstraintBase.OPTION_PINNED);
                                 } else {
-                                    ac.setOption(ATTR_OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
+                                    ac.setOption(DBDAttributeConstraintBase.OPTION_PINNED, getMaxPinIndex(dataFilter) + 1);
                                 }
                                 spreadsheet.refreshData(true, true, false);
                             }
@@ -1006,7 +1004,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private static int getMaxPinIndex(DBDDataFilter dataFilter) {
         int maxIndex = 0;
         for (DBDAttributeConstraint ac : dataFilter.getConstraints()) {
-            Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+            Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.OPTION_PINNED);
             if (pinIndex != null) {
                 maxIndex = Math.max(maxIndex, pinIndex);
             }
@@ -1740,7 +1738,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 DBDAttributeBinding attr = (DBDAttributeBinding)element;
                 DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
                 if (ac != null) {
-                    Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
+                    Integer pinIndex = ac.getOption(DBDAttributeConstraintBase.OPTION_PINNED);
                     return pinIndex == null ? -1 : pinIndex;
                 }
             }
