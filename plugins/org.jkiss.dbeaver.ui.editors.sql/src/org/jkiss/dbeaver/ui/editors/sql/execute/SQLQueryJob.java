@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,8 +76,6 @@ public class SQLQueryJob extends DataSourceJob
     private static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
-
-    public static final String DEFAULT_RESULSET_NAME = "Results";
 
     private final DBSDataContainer dataContainer;
     private final List<SQLScriptElement> queries;
@@ -642,7 +641,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
                 new Date());
-            executeResult.setResultSetName("Statistics");
+            executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
@@ -651,7 +650,7 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(updateCount, query.getText(), new Date());
 
-            executeResult.setResultSetName(DEFAULT_RESULSET_NAME);
+            executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
@@ -707,7 +706,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
-                    sourceName = DEFAULT_RESULSET_NAME;
+                    sourceName = SQLEditorMessages.editors_sql_data_grid;
                 }
                 executeResult.setResultSetName(sourceName);
             }
