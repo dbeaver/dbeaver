@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -104,6 +105,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
 
         initializeRemoteInstance(monitor);
+    }
+
+    // Constructor for tests
+    @ForTest
+    public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
+            throws DBException {
+        super(monitor, container, dialect, false);
+        this.metaModel = metaModel;
+        this.dataTypeCache = metaModel.createDataTypeCache(this);
+        this.tableTypeCache = new TableTypeCache();
     }
 
     @Override
