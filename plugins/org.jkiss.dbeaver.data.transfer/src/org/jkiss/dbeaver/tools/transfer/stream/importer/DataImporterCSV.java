@@ -84,9 +84,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 }
 
                 for (int i = 0; i < header.length; i++) {
-                    String column = header[i];
+                    String column = null;
                     if (headerPosition == HeaderPosition.top) {
-                        column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
+                        column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), header[i]);
                     }
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
