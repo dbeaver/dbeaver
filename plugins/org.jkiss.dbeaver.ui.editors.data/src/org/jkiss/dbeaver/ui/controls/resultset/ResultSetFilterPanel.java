@@ -254,7 +254,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    viewer.resetDataFilter(true);
+                    viewer.clearDataFilter(true);
                 }
             });
             filtersClearButton.setEnabled(false);
