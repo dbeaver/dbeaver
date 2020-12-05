@@ -522,16 +522,16 @@ public class ResultSetViewer extends Viewer
     private Map<String, Object> saveConstraintVisualState(DBDAttributeConstraint constraint) {
         Map<String, Object> state = new Hashtable<>();
         state.put("visible", constraint.isVisible());
-        if (constraint.hasOption(DBDAttributeConstraintBase.OPTION_PINNED)) {
-            state.put("pinned", constraint.getOption(DBDAttributeConstraintBase.OPTION_PINNED));
+        if (!ArrayUtils.isEmpty(constraint.getOptions())) {
+            state.put("options", constraint.getOptions());
         }
         return state;
     }
 
     private void restoreConstraintVisualState(DBDAttributeConstraint constraint, Map<String, Object> state) {
         constraint.setVisible((boolean) state.get("visible"));
-        if (state.containsKey("pinned")) {
-            constraint.setOption(DBDAttributeConstraintBase.OPTION_PINNED, state.get("pinned"));
+        if (state.containsKey("options")) {
+            constraint.setOptions((Object[]) state.get("options"));
         }
     }
 
