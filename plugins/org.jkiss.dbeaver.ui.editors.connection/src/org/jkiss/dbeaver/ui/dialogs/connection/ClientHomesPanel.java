@@ -198,15 +198,10 @@ public class ClientHomesPanel extends Composite {
                 DBWorkbench.getPlatformUI().showError("Client download", "Failed to download client files", e.getTargetException());
             }
         }
-        try {
-            productNameText.setText(home == null ? "" : CommonUtils.notEmpty(driver.getNativeClientManager().getProductName(home.location))); //$NON-NLS-1$
-        } catch (DBException e) {
-            log.warn(e);
-        }
-        try {
-            productVersionText.setText(home == null ? "" : CommonUtils.notEmpty(driver.getNativeClientManager().getProductVersion(home.location))); //$NON-NLS-1$
-        } catch (DBException e) {
-            log.warn(e);
+        DBPNativeClientLocationManager nativeClientLocationManager = driver.getNativeClientManager();
+        if (nativeClientLocationManager != null) {
+            productNameText.setText(home == null ? "" : CommonUtils.notEmpty(nativeClientLocationManager.getProductName(home.location))); //$NON-NLS-1$
+            productVersionText.setText(home == null ? "" : CommonUtils.notEmpty(nativeClientLocationManager.getProductVersion(home.location))); //$NON-NLS-1$
         }
     }
 

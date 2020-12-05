@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.connection;
 
-import org.jkiss.dbeaver.DBException;
-
 import java.util.List;
 
 /**
@@ -26,15 +24,11 @@ import java.util.List;
  * This interface can be implemented by data source provider to support native client functions.
  */
 public interface DBPNativeClientLocationManager {
-
     List<DBPNativeClientLocation> findLocalClientLocations();
 
     DBPNativeClientLocation getDefaultLocalClientLocation();
 
-    String getProductName(DBPNativeClientLocation location)
-            throws DBException;
+    String getProductName(DBPNativeClientLocation location);
 
-    String getProductVersion(DBPNativeClientLocation location)
-            throws DBException;
-
+    String getProductVersion(DBPNativeClientLocation location);
 }

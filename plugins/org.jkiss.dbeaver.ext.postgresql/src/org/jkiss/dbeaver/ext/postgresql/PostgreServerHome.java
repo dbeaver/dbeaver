@@ -16,48 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 
 /**
  * PostgreServerHome
  */
 public class PostgreServerHome extends LocalNativeClientLocation {
+    private final String branding;
 
-    private static final Log log = Log.getLog(PostgreServerHome.class);
-
-    private String name;
-    private String version;
-    private String branding;
-    private String dataDirectory;
-
-    protected PostgreServerHome(String id, String path, String version, String branding, String dataDirectory) {
+    PostgreServerHome(String id, String path, String branding) {
         super(id, path);
-        this.name = branding == null ? id : branding;
-        this.version = version;
         this.branding = branding;
-        this.dataDirectory = dataDirectory;
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
-        return name;
-    }
-
-    public String getProductName() {
         return branding;
     }
-
-    public String getProductVersion() {
-        return version;
-    }
-
-    public String getBranding() {
-        return branding;
-    }
-
-    public String getDataDirectory() {
-        return dataDirectory;
-    }
-
 }

@@ -171,13 +171,13 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     }
 
     @Override
-    public String getProductName(DBPNativeClientLocation location) throws DBException {
+    public String getProductName(DBPNativeClientLocation location) {
         Integer oraVersion = getOracleVersion(location);
         return "Oracle" + (oraVersion == null ? "" : " " + oraVersion);
     }
 
     @Override
-    public String getProductVersion(DBPNativeClientLocation location) throws DBException {
+    public String getProductVersion(DBPNativeClientLocation location) {
         boolean isInstantClient = OCIUtils.isInstantClient(location.getName());
         return OCIUtils.getFullOraVersion(location.getName(), isInstantClient);
     }
