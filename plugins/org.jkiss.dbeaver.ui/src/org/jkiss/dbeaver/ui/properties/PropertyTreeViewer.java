@@ -79,6 +79,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private boolean expandSingleRoot = true;
     private boolean namesEditable = false;
     private boolean newPropertiesAllowed = false;
+    private boolean isMouseEventOnMacos = false; // [#10279] [#10366] [#10361]
     private TreeEditor treeEditor;
 
     private Font boldFont;
@@ -400,9 +401,13 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void widgetSelected(final SelectionEvent e)
             {
-                if (!GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
-                    showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                TreeItem item = (TreeItem) e.item;
+                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                    showEditor(item, isMouseEventOnMacos);
+                    isMouseEventOnMacos = false;
+                    return;
                 }
+                showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -410,11 +415,11 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                    isMouseEventOnMacos = true;
+                }
                 if (item != null) {
                     selectedColumn = UIUtils.getColumnAtPos(item, e.x, e.y);
-                    if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
-                        showEditor(item, true);
-                    }
                 } else {
                     selectedColumn = -1;
                     if (newPropertiesAllowed) {

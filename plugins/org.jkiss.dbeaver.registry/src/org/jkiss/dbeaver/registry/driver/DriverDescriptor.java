@@ -264,7 +264,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
-        this.category = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
+        this.category = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
         this.categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -467,12 +467,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     @Property(viewable = true, order = 2)
+    @Nullable
     public String getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategory(@Nullable String category) {
+        this.category = CommonUtils.nullIfEmpty(category);
     }
 
     @NotNull

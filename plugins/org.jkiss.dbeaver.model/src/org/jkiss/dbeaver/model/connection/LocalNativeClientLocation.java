@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
@@ -33,34 +33,42 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
         this.path = new File(path != null ? path : id);
     }
 
+    @NotNull
     @Override
     public String getName() {
         return id;
     }
 
+    @NotNull
     @Override
     public File getPath() {
         return path;
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
         return path.getAbsolutePath();
     }
 
     @Override
-    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException {
+    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) {
         return true;
     }
 
     @Override
     public String toString() {
         File path = getPath();
-        return "Local: " + (path == null ? id : path.getAbsolutePath());
+        return "Local: " + path.getAbsolutePath();
     }
 
     @Override
     public boolean equals(Object obj) {
         return obj instanceof DBPNativeClientLocation && ((DBPNativeClientLocation) obj).getName().equals(getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
 }

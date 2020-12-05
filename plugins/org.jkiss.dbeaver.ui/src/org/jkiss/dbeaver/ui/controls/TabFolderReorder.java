@@ -25,6 +25,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 /**
@@ -32,9 +34,16 @@ import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
  */
 public class TabFolderReorder
 {
+    /**
+     * The tab folder item move event.
+     */
+    public static final int ITEM_MOVE_EVENT = 1001;
+
+    private final CTabFolder folder;
     private CTabItem dragItem;
 
     public TabFolderReorder(CTabFolder folder) {
+        this.folder = folder;
         final DragSource source = new DragSource(folder, DND.DROP_MOVE);
         source.setTransfer(TabTransfer.INSTANCE);
         source.addDragListener (new DragSourceListener() {
@@ -107,7 +116,11 @@ public class TabFolderReorder
             {
                 handleDragEvent(event);
                 if (event.detail == DND.DROP_MOVE) {
-                    moveTabs(folder, event);
+                    Point point = folder.toControl(folder.getDisplay().getCursorLocation());
+                    CTabItem item = folder.getItem(new Point(point.x, point.y));
+                    if (item != null && dragItem != null) {
+                        swapTabs(dragItem, item);
+                    }
                 }
             }
 
@@ -133,39 +146,50 @@ public class TabFolderReorder
                     return false;
                 }
                 Point point = folder.toControl(folder.getDisplay().getCursorLocation());
-                return folder.getItem(new Point(point.x, point.y)) != null;
+                CTabItem item = folder.getItem(new Point(point.x, point.y));
+                return item != null && dragItem.getShowClose() == item.getShowClose();
             }
 
         });
     }
 
-    private void moveTabs(CTabFolder folder, DropTargetEvent event) {
-        Point point = folder.toControl(folder.getDisplay().getCursorLocation());
-        CTabItem item = folder.getItem(new Point(point.x, point.y));
-        if (item != null && dragItem != null) {
-            Control dragControl = dragItem.getControl();
-            String dragText = dragItem.getText();
-            Image dragImage = dragItem.getImage();
-            String dragToolTip = dragItem.getToolTipText();
-            boolean dragShowClose = dragItem.getShowClose();
-            Object dragData = dragItem.getData();
-
-            dragItem.setText(item.getText());
-            dragItem.setImage(item.getImage());
-            dragItem.setToolTipText(item.getToolTipText());
-            dragItem.setData(item.getData());
-            dragItem.setShowClose(item.getShowClose());
-            dragItem.setControl(item.getControl());
-
-            item.setText(dragText);
-            item.setImage(dragImage);
-            item.setToolTipText(dragToolTip);
-            item.setData(dragData);
-            item.setShowClose(dragShowClose);
-            item.setControl(dragControl);
-
-            folder.setSelection(item);
+    public void swapTabs(@NotNull CTabItem src, @NotNull CTabItem dst) {
+        if (src == dst) {
+            return;
         }
+
+        final Control dragControl = src.getControl();
+        final String dragText = src.getText();
+        final Image dragImage = src.getImage();
+        final String dragToolTip = src.getToolTipText();
+        final boolean dragShowClose = src.getShowClose();
+        final Object dragData = src.getData();
+
+        src.setText(dst.getText());
+        src.setImage(dst.getImage());
+        src.setToolTipText(dst.getToolTipText());
+        src.setData(dst.getData());
+        src.setShowClose(dst.getShowClose());
+        src.setControl(dst.getControl());
+
+        dst.setText(dragText);
+        dst.setImage(dragImage);
+        dst.setToolTipText(dragToolTip);
+        dst.setData(dragData);
+        dst.setShowClose(dragShowClose);
+        dst.setControl(dragControl);
+
+        folder.setSelection(dst);
+
+        Event srcEvent = new Event();
+        srcEvent.widget = folder;
+        srcEvent.item = src;
+        folder.notifyListeners(ITEM_MOVE_EVENT, srcEvent);
+
+        Event dstEvent = new Event();
+        dstEvent.widget = folder;
+        dstEvent.item = dst;
+        folder.notifyListeners(ITEM_MOVE_EVENT, dstEvent);
     }
 
     public final static class TabTransfer extends LocalObjectTransfer<CTabItem> {
@@ -188,5 +212,4 @@ public class TabFolderReorder
         }
 
     }
-
 }
