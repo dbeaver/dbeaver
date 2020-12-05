@@ -84,11 +84,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 }
 
                 for (int i = 0; i < header.length; i++) {
-                    String column = header[i];
-                    if (headerPosition == HeaderPosition.none) {
+                    String column = null;
+                    if (headerPosition == HeaderPosition.top) {
+                        column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), header[i]);
+                    }
+                    if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
-                    } else {
-                        column = DBUtils.getUnQuotedIdentifier(entityMapping.getDataSource(), column);
                     }
                     StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, MAX_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);

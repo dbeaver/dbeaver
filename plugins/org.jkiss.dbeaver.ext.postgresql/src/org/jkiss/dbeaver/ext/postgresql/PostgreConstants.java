@@ -100,9 +100,7 @@ public class PostgreConstants {
 
     public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
     public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
-    public static final String PG_INSTALL_PROP_VERSION = "Version";
     public static final String PG_INSTALL_PROP_BRANDING = "Branding";
-    public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
     public static final Map<String, String> SERIAL_TYPES = new LinkedHashMap<>();

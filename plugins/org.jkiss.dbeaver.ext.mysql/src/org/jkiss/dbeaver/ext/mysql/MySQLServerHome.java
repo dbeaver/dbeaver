@@ -16,28 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 
 /**
  * MySQLServerHome
  */
 public class MySQLServerHome extends LocalNativeClientLocation {
+    private final String name;
 
-    private static final Log log = Log.getLog(MySQLServerHome.class);
-
-    private String name;
-
-    MySQLServerHome(String path, String name)
-    {
+    MySQLServerHome(String path, String name) {
         super(path, path);
         this.name = name == null ? path : name;
     }
 
+    @NotNull
     @Override
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return name;
     }
-
 }
