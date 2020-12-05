@@ -129,11 +129,11 @@ public class DBDAttributeConstraintBase {
     }
 
     public boolean hasFilter() {
-        return hasCondition() || orderPosition > 0 || !ArrayUtils.isEmpty(options);
+        return hasCondition() || orderPosition > 0;
     }
 
     public boolean isDirty() {
-        return hasFilter() || !visible;
+        return hasFilter() || !visible || !ArrayUtils.isEmpty(options);
     }
 
     public boolean hasCondition() {
