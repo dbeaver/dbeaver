@@ -21,6 +21,8 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.internal.gtk.GTK;
+import org.eclipse.swt.internal.gtk.OS;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -56,7 +58,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     private Text portText;
     private Combo sidServiceCombo;
     private Combo serviceNameCombo;
-    private Combo tnsNameCombo;
+    private FilteredCombo tnsNameCombo;
 	private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
     private Text connectionUrlText;
@@ -68,6 +70,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     private TextWithOpenFolder tnsPathText;
 
     private boolean activated = false;
+    
+    private Collection<String> serviceNames;
 
     @Override
     public void dispose()
@@ -176,9 +180,23 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         protocolTabTNS.setControl(targetContainer);
 
         UIUtils.createControlLabel(targetContainer, "Network Alias");
-        tnsNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
+        tnsNameCombo = new FilteredCombo(targetContainer, SWT.DROP_DOWN);
         tnsNameCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         tnsNameCombo.addModifyListener(controlModifyListener);
+        tnsNameCombo.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.character != 0 || e.keyCode == 127 || e.keyCode == 8) {
+					populateTnsNameComboFiltered();
+				}
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				
+			}
+		});
 
         UIUtils.createControlLabel(targetContainer, "TNS names path");
         tnsPathText = new TextWithOpenFolder(targetContainer, "Oracle TNS names path");
@@ -190,7 +208,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         });
     }
 
-    private Collection<String> getAvailableServiceNames()
+    private Collection<String> readAvailableServiceNames()
     {
         String tnsPath = tnsPathText.getText();
         if (!CommonUtils.isEmpty(tnsPath)) {
@@ -216,7 +234,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     private void populateTnsNameCombo() {
         String oldText = tnsNameCombo.getText();
         tnsNameCombo.removeAll();
-        Collection<String> serviceNames = getAvailableServiceNames();
+        serviceNames = readAvailableServiceNames();
         if (serviceNames.isEmpty()) {
             tnsNameCombo.setEnabled(false);
         } else {
@@ -231,6 +249,35 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
                 tnsNameCombo.select(0);
             }
         }
+    }
+    
+    private void populateTnsNameComboFiltered() {
+        String filter = tnsNameCombo.getText();
+        int caretPosition = tnsNameCombo.getCaretPosition();
+        tnsNameCombo.removeAll();
+        if (serviceNames == null) {
+        	serviceNames = readAvailableServiceNames();
+        }
+        if (serviceNames.isEmpty()) {
+            tnsNameCombo.setEnabled(false);
+        } else {
+            tnsNameCombo.setEnabled(true);
+            if (filter == null || filter.isEmpty()) {
+            	for (String alias : serviceNames) {
+                	tnsNameCombo.add(alias);
+                }
+            } else {
+	            String filterLowerCased = filter.toLowerCase();
+	            for (String alias : serviceNames) {
+	            	if (alias.toLowerCase().contains(filterLowerCased)) {
+	            		tnsNameCombo.add(alias);
+	            	}
+	            }
+	            tnsNameCombo.setText(filter);
+	            tnsNameCombo.setCaretPosition(caretPosition);
+            }
+        }
+
     }
 
     private void createCustomConnectionControls(TabFolder protocolFolder)
@@ -319,7 +366,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
 
         if (serviceNameCombo.getItemCount() == 0) {
             UIUtils.asyncExec(() -> {
-                for (String alias : getAvailableServiceNames()) {
+                for (String alias : readAvailableServiceNames()) {
                     serviceNameCombo.add(alias);
                 }
             });
@@ -437,5 +484,24 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
             new DriverPropertiesDialogPage(this),
         };
     }
+    
+    private static class FilteredCombo extends Combo {
 
+		public FilteredCombo(Composite parent, int style) {
+			super(parent, style);
+		}
+		
+		@SuppressWarnings("restriction")
+		public void setCaretPosition (int position) {
+			checkWidget ();
+			long entryHandle = GTK.gtk_bin_get_child (handle);
+			GTK.gtk_editable_set_position(entryHandle, position);
+		}
+		
+		@Override
+		protected void checkSubclass() {
+			
+		}
+    	
+    }
 }
