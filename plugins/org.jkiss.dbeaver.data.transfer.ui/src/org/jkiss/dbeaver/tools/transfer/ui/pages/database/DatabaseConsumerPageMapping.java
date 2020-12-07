@@ -315,9 +315,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DatabaseMappingObject mapping = getSelectedMapping();
                 mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                 createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                final boolean hasMappings =
-                    (mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
-                    (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified);
+                final boolean hasMappings = settings.getContainerNode() != null &&
+                    ((mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
+                    (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified));
                 columnsButton.setEnabled(hasMappings);
                 ddlButton.setEnabled(hasMappings);
                 previewButton.setEnabled(hasMappings);
