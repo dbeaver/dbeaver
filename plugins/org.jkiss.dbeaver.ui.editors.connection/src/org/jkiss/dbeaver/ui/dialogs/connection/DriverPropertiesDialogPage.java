@@ -113,8 +113,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
+        if (propsControl != null) {
+            propsControl.saveEditorValues();
+        }
         if (propertySource != null) {
             final Map<String, String> properties = dataSource.getConnectionConfiguration().getProperties();
             properties.clear();
