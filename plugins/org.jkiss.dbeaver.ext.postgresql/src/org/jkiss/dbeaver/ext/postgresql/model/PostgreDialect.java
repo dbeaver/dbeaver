@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
@@ -42,6 +43,7 @@ import org.jkiss.utils.ArrayUtils;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreSQL dialect
