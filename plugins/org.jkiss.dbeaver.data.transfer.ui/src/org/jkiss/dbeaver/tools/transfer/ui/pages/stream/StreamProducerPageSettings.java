@@ -168,15 +168,21 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
         if (consumerSettings instanceof DatabaseConsumerSettings) {
-            DatabaseMappingContainer mapping = new DatabaseMappingContainer((DatabaseConsumerSettings) consumerSettings, producer.getDatabaseObject());
+            DatabaseConsumerSettings settings = (DatabaseConsumerSettings) consumerSettings;
+            DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, producer.getDatabaseObject());
             if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator) {
-                mapping.setTarget((DBSDataManipulator) pipe.getConsumer().getDatabaseObject());
+                DBSDataManipulator databaseObject = (DBSDataManipulator) pipe.getConsumer().getDatabaseObject();
+                DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, databaseObject.getParentObject(), false);
+                if (databaseNode != null) {
+                    settings.setContainerNode(databaseNode);
+                }
+                mapping.setTarget(databaseObject);
             } else {
                 mapping.setTarget(null);
                 mapping.setTargetName(generateTableName(producer.getInputFile()));
             }
 
-            ((DatabaseConsumerSettings) consumerSettings).addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
+            settings.addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
         }
     }
 
