@@ -26,8 +26,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -75,7 +78,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         }
 
         actions.add(
-            new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
+            new CreateSchemaAction(schema, script) //$NON-NLS-2$
         );
     }
 
@@ -114,6 +117,23 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
                 "Comment schema",
                 "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) +
                     " IS " + SQLUtils.quoteString(schema, comment)));
+        }
+    }
+
+    private static class CreateSchemaAction extends SQLDatabasePersistActionAtomic {
+        private final PostgreSchema schema;
+
+        public CreateSchemaAction(PostgreSchema schema, StringBuilder sql) {
+            super("Create schema", sql.toString());
+            this.schema = schema;
+        }
+
+        @Override
+        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+            super.afterExecute(session, error);
+            if (error == null) {
+                schema.readSchemaInfo(session.getProgressMonitor());
+            }
         }
     }
 

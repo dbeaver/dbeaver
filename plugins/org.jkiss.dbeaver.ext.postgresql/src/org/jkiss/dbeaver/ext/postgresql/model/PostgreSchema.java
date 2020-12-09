@@ -614,6 +614,25 @@ public class PostgreSchema implements
                || DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
+    public void readSchemaInfo(DBRProgressMonitor monitor) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read schema id")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT s.oid as schema_id\n" +
+                            "from pg_catalog.pg_namespace s\n" +
+                            "WHERE s.nspname =?"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        oid = dbResult.getLong(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Error reading schema information ", e);
+        }
+    }
+
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
 
         @NotNull
