@@ -85,8 +85,13 @@
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="firebirdReplaceIgnore" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdInsertReplaceMethod" label="UPDATE OR INSERT INTO" description="Insert replace duplicate key value"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="firebird" parent="generic" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect" label="Firebird" description="Firebird SQL dialect." icon="icons/firebird_icon.png">
+            <property name="insertMethods" value="firebirdReplaceIgnore"/>
         </dialect>
     </extension>
 
