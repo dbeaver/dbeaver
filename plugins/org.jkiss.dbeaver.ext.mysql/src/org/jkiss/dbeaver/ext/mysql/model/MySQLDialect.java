@@ -108,7 +108,7 @@ class MySQLDialect extends JDBCSQLDialect {
     private int lowerCaseTableNames;
 
     public MySQLDialect() {
-        super("MySQL");
+        super("MySQL", "mysql");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

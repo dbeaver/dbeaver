@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 public class VerticaSQLDialect extends GenericSQLDialect {
 
     public VerticaSQLDialect() {
-        super("Vertica");
+        super("Vertica", "vertica");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

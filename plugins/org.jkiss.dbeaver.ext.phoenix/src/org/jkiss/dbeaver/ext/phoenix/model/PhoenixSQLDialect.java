@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 public class PhoenixSQLDialect extends GenericSQLDialect {
 
     public PhoenixSQLDialect() {
-        super("Phoenix");
+        super("Phoenix", "apache_phoenix");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

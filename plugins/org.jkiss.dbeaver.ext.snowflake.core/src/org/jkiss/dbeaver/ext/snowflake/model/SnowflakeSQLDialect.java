@@ -32,7 +32,7 @@ import java.util.List;
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     public SnowflakeSQLDialect() {
-        super("Snowflake");
+        super("Snowflake", "snowflake");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

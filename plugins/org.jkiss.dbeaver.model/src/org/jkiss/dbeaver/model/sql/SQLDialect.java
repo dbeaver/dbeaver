@@ -55,6 +55,9 @@ public interface SQLDialect {
         INSERT_ALL
     }
 
+    @NotNull
+    String getDialectId();
+
     /**
      * Dialect name
      * @return SQL dialect name

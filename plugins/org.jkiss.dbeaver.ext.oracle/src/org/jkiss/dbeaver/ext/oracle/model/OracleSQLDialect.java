@@ -110,7 +110,7 @@ public class OracleSQLDialect extends JDBCSQLDialect {
     private DBPPreferenceStore preferenceStore;
 
     public OracleSQLDialect() {
-        super("Oracle");
+        super("Oracle", "oracle");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
