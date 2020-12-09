@@ -11,7 +11,7 @@
     <properties>
         <dbeaver-version>7.3.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>1.7.0</tycho-version>
+        <tycho-version>2.0.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
@@ -103,6 +103,11 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
+                    <!--
+                        Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
+                        Otherwise sun.security classes are not accessible.
+                    -->
+                    <compilerArgument>-XDignore.symbol.file=true</compilerArgument>
                 </configuration>
             </plugin>
 
@@ -125,10 +130,13 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.3</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArgs>
+                        <arg>-XDignore.symbol.file=true</arg>
+                    </compilerArgs>
                 </configuration>
                 <executions>
                     <execution>
