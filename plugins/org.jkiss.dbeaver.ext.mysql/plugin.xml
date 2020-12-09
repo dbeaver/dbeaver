@@ -322,7 +322,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
-            <insertMethods value="mysqlInsertIgnore,mysqlReplaceIgnore"/>
+            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>

@@ -22,8 +22,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
+import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -86,22 +88,30 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             UIUtils.createControlLabel(loadSettings, DTUIMessages.database_consumer_wizard_on_duplicate_key_insert_method_text);
             final Combo onDuplicateKeyInsertMethods = new Combo(loadSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
             onDuplicateKeyInsertMethods.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
-            List<SQLInsertReplaceMethodDescriptor> insertMethods = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethods();
 
-            if (!CommonUtils.isEmpty(insertMethods)) {
-                onDuplicateKeyInsertMethods.add(DBSDataManipulator.INSERT_NONE_METHOD);
-                for (SQLInsertReplaceMethodDescriptor insertMethod : insertMethods) {
+            DBPDataSource dataSource = settings.getContainerNode().getDataSource();
+            List<SQLInsertReplaceMethodDescriptor> insertMethodsDescriptors = null;
+            if (dataSource != null) {
+                SQLDialectDescriptor dialectDescriptor = SQLDialectRegistry.getInstance().getDialect(dataSource.getSQLDialect().getDialectId());
+                insertMethodsDescriptors = dialectDescriptor.getSupportedInsertReplaceMethodsDescriptors();
+            }
+
+            onDuplicateKeyInsertMethods.add(DBSDataManipulator.INSERT_NONE_METHOD);
+            if (!CommonUtils.isEmpty(insertMethodsDescriptors)) {
+                for (SQLInsertReplaceMethodDescriptor insertMethod : insertMethodsDescriptors) {
                     onDuplicateKeyInsertMethods.add(insertMethod.getLabel());
                 }
             } else {
                 onDuplicateKeyInsertMethods.setEnabled(false);
+                Label descLabel = new Label(loadSettings, SWT.NONE);
+                descLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+                descLabel.setText("Replace method not supported by target database");
             }
 
             onDuplicateKeyInsertMethods.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOnDuplicateKeyInsertMethodLabel(onDuplicateKeyInsertMethods.getText());
-                    //updatePageCompletion();
                 }
             });
         }
@@ -178,13 +188,16 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
 
         updatePageCompletion();
 
-        UIUtils.asyncExec(() -> {
-            DatabaseConsumerSettings settings = getSettings();
-            if (settings.isTruncateBeforeLoad() && !confirmDataTruncate()) {
-                truncateTargetTable.setSelection(false);
-                settings.setTruncateBeforeLoad(false);
-            }
-        });
+        UIUtils.asyncExec(this::loadSettings);
+    }
+
+    private void loadSettings() {
+        DatabaseConsumerSettings settings = getSettings();
+        if (settings.isTruncateBeforeLoad() && !confirmDataTruncate()) {
+
+            truncateTargetTable.setSelection(false);
+            settings.setTruncateBeforeLoad(false);
+        }
     }
 
     private boolean confirmDataTruncate() {
