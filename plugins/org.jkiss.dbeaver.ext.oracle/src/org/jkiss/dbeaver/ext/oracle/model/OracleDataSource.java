@@ -308,7 +308,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Program name
             String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
-            appName = appName.replace('(', '_').replace(')', '_'); // Replace brackets - Oracle don't like them
+            appName = appName.replaceAll("[^ a-zA-Z0-9]", "?"); // Replace any special characters - Oracle don't like them
             connectionsProps.put("v$session.program", CommonUtils.truncateString(appName, 48));
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
