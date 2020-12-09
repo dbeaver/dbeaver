@@ -619,7 +619,6 @@ public class PostgreSchema implements
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT s.oid as schema_id\n" +
                             "from pg_catalog.pg_namespace s\n" +
-                            "join pg_catalog.pg_user u on u.usesysid = s.nspowner\n" +
                             "WHERE s.nspname =?"))
             {
                 dbStat.setString(1, getName());
