@@ -91,7 +91,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     private boolean isSqlServer;
 
     public SQLServerDialect() {
-        super("SQLServer");
+        super("SQLServer", "sqlserver");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

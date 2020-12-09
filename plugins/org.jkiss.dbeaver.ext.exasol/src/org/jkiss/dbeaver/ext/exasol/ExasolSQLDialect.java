@@ -45,7 +45,7 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
 
 
     public ExasolSQLDialect() {
-        super("Exasol");
+        super("Exasol", "exasol");
     }
     
     public void addExtraFunctions(String... functions) {

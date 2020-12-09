@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 public class DB2ISQLDialect extends GenericSQLDialect {
 
     public DB2ISQLDialect() {
-        super("IBM DB2 i");
+        super("IBM DB2 i", "db2_i");
     }
 
     @Override
