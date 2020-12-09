@@ -113,7 +113,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             NativeToolUtils.VARIABLE_DATABASE,
             NativeToolUtils.VARIABLE_TABLE,
             NativeToolUtils.VARIABLE_DATE,
-            NativeToolUtils.VARIABLE_TIMESTAMP);
+            NativeToolUtils.VARIABLE_TIMESTAMP,
+            NativeToolUtils.VARIABLE_CONN_TYPE);
         ContentAssistUtils.installContentProposal(
             outputFileText,
             new SmartTextContentAdapter(),
@@ -122,7 +123,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP)));
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_CONN_TYPE)));
 
         createExtraArgsInput(outputGroup);
 
