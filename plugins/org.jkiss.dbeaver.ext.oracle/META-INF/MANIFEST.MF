@@ -7,6 +7,7 @@ Bundle-Release-Date: 20201130
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.internal.OracleActivator
 Require-Bundle: org.eclipse.core.runtime,
  com.github.jsqlparser,
+ com.google.gson,
  com.sun.jna.platform,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model,
@@ -15,6 +16,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.tasks.native;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.model,
+ org.jkiss.dbeaver.ext.oracle.model.auth,
  org.jkiss.dbeaver.ext.oracle.model.dict,
  org.jkiss.dbeaver.ext.oracle.model.lock,
  org.jkiss.dbeaver.ext.oracle.model.plan,
