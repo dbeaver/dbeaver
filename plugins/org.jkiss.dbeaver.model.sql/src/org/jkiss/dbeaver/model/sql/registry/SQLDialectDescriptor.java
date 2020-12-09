@@ -61,6 +61,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> functions;
 
     private DBDInsertReplaceMethod[] insertReplaceMethods;
+    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors = new ArrayList<>();
 
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
@@ -119,7 +120,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             try {
                 List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
                 for (String insertMethodId : insertMethods) {
-                    methodsList.add(SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId).createInsertMethod());
+                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    insertMethodDescriptors.add(method);
+                    methodsList.add(method.createInsertMethod());
                 }
                 insertReplaceMethods = methodsList.toArray(new DBDInsertReplaceMethod[0]);
             } catch (DBException e) {
@@ -266,6 +269,10 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             return insertReplaceMethods;
         }
         return new DBDInsertReplaceMethod[0];
+    }
+
+    public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
+        return insertMethodDescriptors;
     }
 
     @Override

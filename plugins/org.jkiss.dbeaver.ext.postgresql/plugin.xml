@@ -545,7 +545,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="postgresql" parent="basic" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="PostgreSQL" description="PostgreSQL dialect." icon="icons/postgresql_icon.png">
-            <insertMethods value="pgInsertIgnore,pgReplaceIgnore"/>
+            <property name="insertMethods" value="pgInsertIgnore,pgReplaceIgnore"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>
