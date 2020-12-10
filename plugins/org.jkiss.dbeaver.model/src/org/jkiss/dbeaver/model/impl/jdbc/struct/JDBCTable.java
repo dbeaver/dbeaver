@@ -329,7 +329,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (useUpsert(session)) {
                     query.append(SQLConstants.KEYWORD_UPSERT).append(" INTO");
                 } else {
-                    query.append(method.getOpeningClause());
+                    query.append(method.getOpeningClause(JDBCTable.this, session.getProgressMonitor()));
                 }
                 query.append(" ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 

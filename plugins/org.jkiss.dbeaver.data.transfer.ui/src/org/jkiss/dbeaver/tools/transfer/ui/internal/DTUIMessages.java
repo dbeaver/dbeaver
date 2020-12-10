@@ -53,6 +53,7 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_disable_import_batches_label;
 	public static String database_consumer_wizard_disable_import_batches_description;
 	public static String database_consumer_wizard_on_duplicate_key_insert_method_text;
+	public static String database_consumer_wizard_link_label_replace_method_wiki;
 	
 	public static String columns_mapping_dialog_shell_text;
 	public static String columns_mapping_dialog_composite_label_text_source_container;
