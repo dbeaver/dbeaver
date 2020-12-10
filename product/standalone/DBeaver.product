@@ -8,11 +8,10 @@
 
    <launcherArgs>
       <programArgs></programArgs>
-      <!-- GTK 2 is legacy since Eclipse 2018-09 -->
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
-      </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
+      <programArgsMac>-vm ../Eclipse/jre/Content/Home/bin/java</programArgsMac>
+
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
    </launcherArgs>
 
    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
