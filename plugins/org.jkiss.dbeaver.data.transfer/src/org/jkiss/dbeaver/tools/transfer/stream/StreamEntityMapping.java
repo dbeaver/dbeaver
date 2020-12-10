@@ -40,7 +40,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     private final File inputFile;
     private final DBPDataSource dataSource;
     private final String entityName;
-    private List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
+    private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
 
     public StreamEntityMapping(File inputFile) {
         this.inputFile = inputFile;
@@ -170,6 +170,20 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         Map<String, Object> mappings = new LinkedHashMap<>();
         mappings.put("entityId", entityName);
         return mappings;
+    }
+
+    public boolean isSameColumns(@NotNull StreamEntityMapping mapping) {
+        if (streamColumns.size() != mapping.streamColumns.size()) {
+            return false;
+        }
+        for (int index = 0; index < streamColumns.size(); index++) {
+            StreamDataImporterColumnInfo oldColumn = streamColumns.get(index);
+            StreamDataImporterColumnInfo newColumn = mapping.streamColumns.get(index);
+            if (!oldColumn.getName().equals(newColumn.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

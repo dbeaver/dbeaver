@@ -172,14 +172,21 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                         DBPDataSource dataSource = null;
 
                         DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                        DBNNode selNode = null;
+                        if (objectsTable.getItemCount() > 0) {
+                            DBPDataSource lastDataSource = getLastDataSource();
+                            if (lastDataSource != null) {
+                                selNode = rootNode.getDataSource(lastDataSource.getContainer().getId());
+                            }
+                        }
                         DBNNode node = ObjectBrowserDialog.selectObject(
-                                group.getShell(),
-                                DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
-                                rootNode,
-                                rootNode,
-                                new Class[]{DBSObjectContainer.class},
-                                new Class[]{DBPDataSource.class, DBSCatalog.class, DBSSchema.class},
-                                null);
+                            group.getShell(),
+                            DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
+                            rootNode,
+                            selNode,
+                            new Class[]{DBSObjectContainer.class},
+                            new Class[]{DBPDataSource.class, DBSCatalog.class, DBSSchema.class},
+                            null);
 
                         if (node != null) {
                             if (node instanceof DBNDataSource) {

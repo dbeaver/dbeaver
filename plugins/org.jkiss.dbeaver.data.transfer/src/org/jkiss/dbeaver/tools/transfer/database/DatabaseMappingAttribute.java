@@ -55,6 +55,15 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
+    DatabaseMappingAttribute(DatabaseMappingAttribute attribute, DatabaseMappingContainer parent) {
+        this.parent = parent;
+        this.source = attribute.source;
+        this.target = attribute.target;
+        this.targetName = attribute.targetName;
+        this.targetType = attribute.targetType;
+        this.mappingType = attribute.mappingType;
+    }
+
     public DatabaseMappingContainer getParent()
     {
         return parent;

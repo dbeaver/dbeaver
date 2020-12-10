@@ -70,6 +70,17 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(context, DatabaseMappingType.existing);
     }
 
+    public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
+        this.consumerSettings = container.consumerSettings;
+        this.source = sourceObject;
+        this.target = container.target;
+        this.targetName = container.targetName;
+        this.mappingType = container.mappingType;
+        for (DatabaseMappingAttribute attribute : container.attributeMappings) {
+            this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
+        }
+    }
+
     public DatabaseConsumerSettings getSettings() {
         return consumerSettings;
     }
