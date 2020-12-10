@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.test.swtbot;
 
 
-/*import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -69,4 +69,4 @@ public class SWTbotTest {
 
     }
     
-}*/
+}
