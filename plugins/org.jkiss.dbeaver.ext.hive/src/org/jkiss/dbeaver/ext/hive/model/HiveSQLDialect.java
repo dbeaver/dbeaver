@@ -27,7 +27,7 @@ public class HiveSQLDialect extends GenericSQLDialect {
     private static final String[][] DEFAULT_QUOTE_STRINGS = {{"`", "`"}};
 
     public HiveSQLDialect() {
-        super("HiveQL");
+        super("HiveQL", "hive");
     }
 
     private static final String[] RESERVED_KEYWORDS = {

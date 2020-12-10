@@ -402,8 +402,13 @@
         <initializer class="org.jkiss.dbeaver.ext.oracle.internal.OraclePreferencesInitializer"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="oracleInsertIgnore" class="org.jkiss.dbeaver.ext.oracle.model.OracleInsertReplaceMethodIgnore" label="INSERT IGNORE ROW INDEX" description="Insert ignore duplicate key value"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="oracle" parent="basic" class="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" label="Oracle" description="Oracle SQL dialect." icon="icons/oracle_icon.png">
+            <property name="insertMethods" value="oracleInsertIgnore"/>
         </dialect>
     </extension>
 

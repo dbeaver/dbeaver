@@ -40,7 +40,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     };
 
     public DB2SQLDialect() {
-        super("DB2 LUW");
+        super("DB2 LUW", "db2_luw");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

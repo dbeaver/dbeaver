@@ -660,7 +660,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
 
     public PostgreDialect() {
-        super("PostgreSQL");
+        super("PostgreSQL", "postgresql");
     }
 
     public void addExtraKeywords(String... keywords) {

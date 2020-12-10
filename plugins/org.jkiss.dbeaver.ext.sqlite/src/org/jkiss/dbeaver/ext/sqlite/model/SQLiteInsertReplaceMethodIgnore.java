@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.db2.zos.model;
+package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
-public class DB2ZOSSQLDialect extends GenericSQLDialect {
+public class SQLiteInsertReplaceMethodIgnore implements DBDInsertReplaceMethod {
 
-    public DB2ZOSSQLDialect() {
-        super("DB2 for z/OS", "db2_zos");
+    @NotNull
+    @Override
+    public String getOpeningClause(DBSTable table, DBRProgressMonitor monitor) {
+        return "INSERT OR IGNORE INTO";
     }
 
     @Override
-    public boolean supportsOrderByIndex() {
-        return false;
-    }
-
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
-        turnFunctionIntoKeyword("TRUNCATE");
-    }
-
-    @Override
-    public boolean supportsAliasInSelect() {
-        return true;
+    public String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes) {
+        return null;
     }
 }

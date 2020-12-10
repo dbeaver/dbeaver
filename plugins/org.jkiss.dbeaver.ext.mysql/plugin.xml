@@ -315,8 +315,14 @@
         <command id="mysql.source" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="mysqlInsertIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethodIgnore" label="INSERT IGNORE" description="Insert ignore duplicate key value"/>
+        <method id="mysqlReplaceIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethod" label="REPLACE INTO" description="Insert replace duplicate key value"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
+            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>

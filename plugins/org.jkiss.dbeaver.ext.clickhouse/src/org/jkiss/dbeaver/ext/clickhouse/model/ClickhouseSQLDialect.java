@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 public class ClickhouseSQLDialect extends GenericSQLDialect {
 
     public ClickhouseSQLDialect() {
-        super("Clickhouse SQL");
+        super("Clickhouse SQL", "clickhouse");
     }
 
     @Override

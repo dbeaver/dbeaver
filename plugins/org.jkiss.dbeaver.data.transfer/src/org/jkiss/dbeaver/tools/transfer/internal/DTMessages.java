@@ -118,6 +118,7 @@ public class DTMessages extends NLS {
 	public static String database_consumer_settings_option_use_transactions;
 	public static String database_consumer_settings_option_commit_after;
 	public static String database_consumer_settings_option_disable_batches;
+	public static String database_consumer_settings_option_on_duplicate_key_method_label;
 	public static String database_consumer_settings_option_transfer_auto_generated_columns;
 	public static String database_consumer_settings_option_truncate_before_load;
 
@@ -125,8 +126,6 @@ public class DTMessages extends NLS {
 	public static String data_transfer_settings_message_find_data_producer;
 	public static String data_transfer_settings_title_find_consumer;
 	public static String data_transfer_settings_message_find_data_consumer;
-	public static String data_transfer_settings_title_configuration_error;
-	public static String data_transfer_settings_message_error_reading_task_configuration;
 	public static String database_consumer_settings_title_init_connection;
 	public static String database_consumer_settings_message_error_connecting;
 	public static String database_mapping_container_title_attributes_read_failed;

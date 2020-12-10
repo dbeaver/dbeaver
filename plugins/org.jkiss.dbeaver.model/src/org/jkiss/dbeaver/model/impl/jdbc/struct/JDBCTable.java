@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.sql.BaseInsertMethod;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -319,9 +320,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // Make query
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
                 StringBuilder query = new StringBuilder(200);
-                query
-                    .append(useUpsert(session) ? SQLConstants.KEYWORD_UPSERT : SQLConstants.KEYWORD_INSERT)
-                    .append(" INTO ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+
+                DBDInsertReplaceMethod method = (DBDInsertReplaceMethod) options.get(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD);
+                if (method == null) {
+                    method = new BaseInsertMethod();
+                }
+
+                if (useUpsert(session)) {
+                    query.append(SQLConstants.KEYWORD_UPSERT).append(" INTO");
+                } else {
+                    query.append(method.getOpeningClause(JDBCTable.this, session.getProgressMonitor()));
+                }
+                query.append(" ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 allNulls = true;
                 for (int i = 0; i < attributes.length; i++) {
@@ -358,6 +368,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                 }
                 query.append(")"); //$NON-NLS-1$
+
+                String trailingClause = method.getTrailingClause(JDBCTable.this, session.getProgressMonitor(), attributes);
+                if (trailingClause != null) {
+                    query.append(trailingClause);
+                }
 
                 // Execute
                 DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
