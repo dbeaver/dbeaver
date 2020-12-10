@@ -21,7 +21,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
@@ -35,6 +37,8 @@ import java.util.*;
 public class SQLDialectDescriptor extends AbstractContextDescriptor implements SQLDialectMetadata {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlDialect"; //$NON-NLS-1$
+
+    private static final Log log = Log.getLog(SQLDialectDescriptor.class);
 
     private final String id;
     private final String label;
@@ -56,6 +60,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> types;
     private List<String> functions;
 
+    private DBDInsertReplaceMethod[] insertReplaceMethods;
+    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors = new ArrayList<>();
+
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
@@ -66,6 +73,8 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
         this.isAbstract = CommonUtils.getBoolean(config.getAttribute("abstract"));
         this.isHidden = CommonUtils.getBoolean(config.getAttribute("hidden"));
+
+        List<String> insertMethods = new ArrayList<>();
 
         for (IConfigurationElement propElement : config.getChildren("property")) {
             String propName = propElement.getAttribute("name");
@@ -95,12 +104,29 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                 case "functions":
                     this.functions = loadList(propValue);
                     break;
+                case "insertMethods":
+                    insertMethods = loadList(propValue);
+                    break;
                 default:
                     if (properties == null) {
                         properties = new LinkedHashMap<>();
                     }
                     this.properties.put(propName, propValue);
                     break;
+            }
+        }
+
+        if (!CommonUtils.isEmpty(insertMethods)) {
+            try {
+                List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
+                for (String insertMethodId : insertMethods) {
+                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    insertMethodDescriptors.add(method);
+                    methodsList.add(method.createInsertMethod());
+                }
+                insertReplaceMethods = methodsList.toArray(new DBDInsertReplaceMethod[0]);
+            } catch (DBException e) {
+                log.debug("Can't get SQL insert replace methods");
             }
         }
 
@@ -235,6 +261,18 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             }
         }
         return subs;
+    }
+
+    @Override
+    public DBDInsertReplaceMethod[] getSupportedInsertReplaceMethods() {
+        if (insertReplaceMethods.length != 0) {
+            return insertReplaceMethods;
+        }
+        return new DBDInsertReplaceMethod[0];
+    }
+
+    public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
+        return insertMethodDescriptors;
     }
 
     @Override

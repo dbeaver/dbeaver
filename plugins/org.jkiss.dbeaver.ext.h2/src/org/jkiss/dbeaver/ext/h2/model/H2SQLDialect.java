@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 public class H2SQLDialect extends GenericSQLDialect {
 
     public H2SQLDialect() {
-        super("H2");
+        super("H2", "h2");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class HSQLDialect extends GenericSQLDialect {
 
     public HSQLDialect() {
-        super("HSQLDB");
+        super("HSQLDB", "hsqldb");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

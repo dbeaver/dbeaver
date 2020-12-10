@@ -42,7 +42,7 @@ public class HANASQLDialect extends GenericSQLDialect {
     };
 
     public HANASQLDialect() {
-        super("HANA");
+        super("HANA", "sap_hana");
     }
 
     @Override

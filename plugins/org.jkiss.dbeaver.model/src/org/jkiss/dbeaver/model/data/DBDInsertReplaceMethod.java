@@ -14,15 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
-/**
- * Snowflake constants
- */
-public class BigQuerySQLDialect extends GenericSQLDialect {
-    public BigQuerySQLDialect() {
-        super("BigQuery", "google_bigquery");
-    }
+public interface DBDInsertReplaceMethod {
+
+    @NotNull
+    String getOpeningClause(DBSTable table, DBRProgressMonitor monitor);
+
+    String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes);
+
 }

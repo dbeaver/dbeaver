@@ -23,6 +23,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
  */
 public class AthenaSQLDialect extends GenericSQLDialect {
     public AthenaSQLDialect() {
-        super("Athena");
+        super("Athena", "aws_athena");
     }
 }

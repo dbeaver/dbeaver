@@ -24,8 +24,14 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="sqLiteInsertIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethodIgnore" label="INSERT OR IGNORE" description="Insert ignore duplicate key value"/>
+        <method id="sqLiteReplaceIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethod" label="INSERT OR REPLACE" description="Insert replace duplicate key value"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite" description="SQLite dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png">
+            <property name="insertMethods" value="sqLiteInsertIgnore,sqLiteReplaceIgnore"/>
         </dialect>
     </extension>
 

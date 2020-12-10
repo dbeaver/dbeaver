@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
  */
 public class SpannerSQLDialect extends GenericSQLDialect {
     public SpannerSQLDialect() {
-        super("Spanner");
+        super("Spanner", "spanner");
     }
 
 	@Override

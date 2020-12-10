@@ -538,8 +538,14 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="pgInsertIgnore" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreInsertReplaceMethodIgnore" label="ON CONFLICT DO NOTHING" description="Insert ignore duplicate key value"/>
+        <method id="pgReplaceIgnore" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreInsertReplaceMethod" label="ON CONFLICT DO UPDATE SET" description="Insert replace duplicate key value"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="postgresql" parent="basic" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="PostgreSQL" description="PostgreSQL dialect." icon="icons/postgresql_icon.png">
+            <property name="insertMethods" value="pgInsertIgnore,pgReplaceIgnore"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>

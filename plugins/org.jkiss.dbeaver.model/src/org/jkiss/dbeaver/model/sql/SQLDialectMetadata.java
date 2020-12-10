@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 
 import java.util.List;
 
@@ -75,5 +76,7 @@ public interface SQLDialectMetadata {
 
     @NotNull
     List<SQLDialectMetadata> getSubDialects(boolean addNested);
+
+    DBDInsertReplaceMethod[] getSupportedInsertReplaceMethods();
 
 }
