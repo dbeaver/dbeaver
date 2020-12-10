@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="7.3.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="7.3.1.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
       <programArgs></programArgs>
-      <!-- GTK 2 is legacy since Eclipse 2018-09 -->
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
-      </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
+      <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
    </launcherArgs>
 
    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
