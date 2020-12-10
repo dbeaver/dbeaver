@@ -57,10 +57,10 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 } finally {
                     listener.taskFinished(settings, error);
                     Log.setLogWriter(null);
-                }
 
-                monitor.worked(1);
-                monitor.done();
+                    monitor.worked(1);
+                    monitor.done();
+                }
             });
         } catch (InvocationTargetException e) {
             throw new DBException("Error executing native tool", e.getTargetException());
@@ -435,7 +435,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 } catch (IOException e) {
                     log.error(e);
                 }
-                monitor.done();
             }
         }
     }

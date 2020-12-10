@@ -167,8 +167,8 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
                 DBPProject finalProject = dataSourceContainer.getProject();
                 try {
                     runnableContext.run(true, true, monitor -> {
+                        monitor.beginTask("Load database object list", databaseObjectList.size());
                         try {
-                            monitor.beginTask("Load database object list", databaseObjectList.size());
                             for (String objectId : databaseObjectList) {
                                 monitor.subTask("Load " + objectId);
                                 try {
@@ -182,9 +182,10 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
                                 }
                                 monitor.worked(1);
                             }
-                            monitor.done();
                         } catch (Exception e) {
                             throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
                         }
                     });
                 } catch (InvocationTargetException e) {
