@@ -158,25 +158,46 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     private void updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, File file) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
-        StreamTransferProducer producer = new StreamTransferProducer(new StreamEntityMapping(file));
-        pipe.setProducer(producer);
+        final StreamTransferProducer oldProducer = pipe.getProducer() instanceof StreamTransferProducer ? (StreamTransferProducer) pipe.getProducer() : null;
+        final StreamTransferProducer newProducer = new StreamTransferProducer(new StreamEntityMapping(file));
 
-        producerSettings.updateProducerSettingsFromStream(
-            monitor,
-            producer,
-            getWizard().getSettings());
+        pipe.setProducer(newProducer);
+        producerSettings.updateProducerSettingsFromStream(monitor, newProducer, getWizard().getSettings());
 
         IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
         if (consumerSettings instanceof DatabaseConsumerSettings) {
-            DatabaseMappingContainer mapping = new DatabaseMappingContainer((DatabaseConsumerSettings) consumerSettings, producer.getDatabaseObject());
+            DatabaseConsumerSettings settings = (DatabaseConsumerSettings) consumerSettings;
+            DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, newProducer.getDatabaseObject());
             if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator) {
-                mapping.setTarget((DBSDataManipulator) pipe.getConsumer().getDatabaseObject());
+                DBSDataManipulator databaseObject = (DBSDataManipulator) pipe.getConsumer().getDatabaseObject();
+                DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, databaseObject.getParentObject(), false);
+                if (databaseNode != null) {
+                    settings.setContainerNode(databaseNode);
+                }
+                mapping.setTarget(databaseObject);
             } else {
                 mapping.setTarget(null);
-                mapping.setTargetName(generateTableName(producer.getInputFile()));
+                mapping.setTargetName(generateTableName(newProducer.getInputFile()));
             }
+            if (oldProducer != null) {
+                // Remove old mapping because we're just replaced file
+                DatabaseMappingContainer oldMappingContainer = settings.getDataMappings().remove(oldProducer.getDatabaseObject());
+                if (oldMappingContainer != null && oldMappingContainer.getSource() instanceof StreamEntityMapping) {
+                    StreamEntityMapping oldEntityMapping = (StreamEntityMapping) oldMappingContainer.getSource();
+                    // Copy mappings from old producer if columns are the same
+                    if (oldEntityMapping.isSameColumns(newProducer.getEntityMapping())) {
+                        StreamEntityMapping entityMapping = new StreamEntityMapping(file);
+                        settings.addDataMappings(getWizard().getRunnableContext(), entityMapping, new DatabaseMappingContainer(oldMappingContainer, entityMapping));
 
-            ((DatabaseConsumerSettings) consumerSettings).addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
+                        StreamTransferProducer producer = new StreamTransferProducer(entityMapping);
+                        pipe.setProducer(producer);
+                        producerSettings.updateProducerSettingsFromStream(monitor, producer, getWizard().getSettings());
+
+                        return;
+                    }
+                }
+            }
+            settings.addDataMappings(getWizard().getRunnableContext(), newProducer.getDatabaseObject(), mapping);
         }
     }
 
