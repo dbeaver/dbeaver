@@ -8,7 +8,7 @@
 
    <launcherArgs>
       <programArgs></programArgs>
-      <programArgsMac>-vm ../Eclipse/jre/Content/Home/bin/java</programArgsMac>
+      <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
 
       <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
