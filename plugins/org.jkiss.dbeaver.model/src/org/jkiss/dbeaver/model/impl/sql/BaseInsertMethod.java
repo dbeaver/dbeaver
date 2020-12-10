@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -25,8 +26,9 @@ public class BaseInsertMethod implements DBDInsertReplaceMethod {
     public BaseInsertMethod() {
     }
 
+    @NotNull
     @Override
-    public String getOpeningClause() {
+    public String getOpeningClause(DBSTable table, DBRProgressMonitor monitor) {
         return "INSERT INTO";
     }
 

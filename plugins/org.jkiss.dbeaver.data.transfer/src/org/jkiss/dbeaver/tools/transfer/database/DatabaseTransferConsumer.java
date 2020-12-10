@@ -303,16 +303,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         Map<String, Object> options = new HashMap<>();
         boolean disableUsingBatches = settings.isDisableUsingBatches();
-        boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodLabel() != null && !settings.getOnDuplicateKeyInsertMethodLabel().equals(DBSDataManipulator.INSERT_NONE_METHOD);
+        boolean onDuplicateKeyCaseOn = settings.getOnDuplicateKeyInsertMethodId() != null && !settings.getOnDuplicateKeyInsertMethodId().equals(DBSDataManipulator.INSERT_NONE_METHOD);
         options.put(DBSDataManipulator.OPTION_DISABLE_BATCHES, disableUsingBatches);
         if (onDuplicateKeyCaseOn) {
-            String insertMethodLabel = settings.getOnDuplicateKeyInsertMethodLabel();
-            SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethodOnLabel(insertMethodLabel);
-            try {
-                DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
-                options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
-            } catch (DBException e) {
-                log.debug("Can't get insert replace method", e);
+            String insertMethodId = settings.getOnDuplicateKeyInsertMethodId();
+            SQLInsertReplaceMethodDescriptor insertReplaceMethod = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+            if (insertReplaceMethod != null) {
+                try {
+                    DBDInsertReplaceMethod insertMethod = insertReplaceMethod.createInsertMethod();
+                    options.put(DBSDataManipulator.OPTION_INSERT_REPLACE_METHOD, insertMethod);
+                } catch (DBException e) {
+                    log.debug("Can't get insert replace method", e);
+                }
             }
         }
         if ((needCommit || disableUsingBatches) && executeBatch != null) {

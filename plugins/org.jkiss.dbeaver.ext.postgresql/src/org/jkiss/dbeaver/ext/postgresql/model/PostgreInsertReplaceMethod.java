@@ -38,8 +38,9 @@ import java.util.Optional;
 public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
     private static final Log log = Log.getLog(PostgreInsertReplaceMethod.class);
 
+    @NotNull
     @Override
-    public String getOpeningClause() {
+    public String getOpeningClause(DBSTable table, DBRProgressMonitor monitor) {
         return "INSERT INTO";
     }
 

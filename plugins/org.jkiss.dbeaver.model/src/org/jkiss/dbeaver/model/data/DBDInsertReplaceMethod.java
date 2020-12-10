@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 public interface DBDInsertReplaceMethod {
 
-    String getOpeningClause();
+    @NotNull
+    String getOpeningClause(DBSTable table, DBRProgressMonitor monitor);
 
     String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes);
 
