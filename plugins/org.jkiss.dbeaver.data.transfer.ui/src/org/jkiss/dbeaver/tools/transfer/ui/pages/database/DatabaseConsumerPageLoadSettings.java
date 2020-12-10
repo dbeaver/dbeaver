@@ -99,6 +99,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     UIUtils.launchProgram(REPLACE_METHOD_LINK);
                 }
             });
+            urlLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
         {
