@@ -72,7 +72,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void done()
     {
         if (states.length == 0) {
-            log.debug(new DBCException("Progress ended without start"));
+            log.trace(new DBCException("Progress ended without start"));
         } else {
             states = ArrayUtils.remove(ProgressState.class, states, states.length - 1);
         }
@@ -95,7 +95,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void subTask(String name)
     {
         if (states.length == 0) {
-            log.debug(new DBCException("Progress sub task without start"));
+            log.trace(new DBCException("Progress sub task without start"));
         } else {
             states[states.length - 1].subTask = name;
         }
@@ -106,7 +106,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     public void worked(int work)
     {
         if (states.length == 0) {
-            log.debug(new DBCException("Progress info without start"));
+            log.trace(new DBCException("Progress info without start"));
         } else {
             states[states.length - 1].progress += work;
         }
