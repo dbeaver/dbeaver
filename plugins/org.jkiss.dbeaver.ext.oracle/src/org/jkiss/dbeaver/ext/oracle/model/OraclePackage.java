@@ -116,9 +116,13 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return proceduresCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleDependency> getDependents(DBRProgressMonitor monitor) throws DBException {
+        return OracleDependency.readDependencies(monitor, this, true);
     }
 
     @Override
