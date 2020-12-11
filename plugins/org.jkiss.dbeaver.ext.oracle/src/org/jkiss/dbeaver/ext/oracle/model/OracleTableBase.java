@@ -161,6 +161,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getComment(monitor);
     }
 
+    @Association
+    public Collection<OracleDependency> getDependents(DBRProgressMonitor monitor) throws DBException {
+        return OracleDependency.readDependencies(monitor, this, true);
+    }
+
     protected String queryTableComment(JDBCSession session) throws SQLException {
         return JDBCUtils.queryString(
             session,
