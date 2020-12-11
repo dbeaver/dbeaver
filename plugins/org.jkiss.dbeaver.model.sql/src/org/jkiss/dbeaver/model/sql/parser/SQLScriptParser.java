@@ -270,7 +270,7 @@ public class SQLScriptParser
                             queryEndPos += tokenLength;
                         }
                         if (curBlock != null) {
-                            log.warn("Found leftover blocks in script after parsing");
+                            log.trace("Found leftover blocks in script after parsing");
                         }
                         // make script line
                         return new SQLQuery(
