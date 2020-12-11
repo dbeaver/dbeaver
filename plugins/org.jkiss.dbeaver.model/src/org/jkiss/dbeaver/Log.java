@@ -38,6 +38,8 @@ import java.util.Date;
  */
 public class Log
 {
+    private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
     private static ILog eclipseLog;
@@ -176,10 +178,18 @@ public class Log
 
     public void trace(Object message)
     {
+        if (message instanceof Throwable) {
+            trace(message.toString(), (Throwable)message);
+        } else {
+            trace(message, null);
+        }
     }
 
     public void trace(Object message, Throwable t)
     {
+        if (TRACE_LOG_ENABLED) {
+            debug(message, t);
+        }
     }
 
     public void debug(Object message)
