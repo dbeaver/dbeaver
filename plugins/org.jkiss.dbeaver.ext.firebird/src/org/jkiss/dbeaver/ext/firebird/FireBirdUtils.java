@@ -124,9 +124,6 @@ public class FireBirdUtils {
             }
             Map<String, String> domainNames = new HashMap<>();
             try (JDBCSession session = DBUtils.openUtilSession(monitor, procedure, "Load domains used in procedure")) {
-                if (session == null) {
-                    throw new DBException("Unable to open util session");
-                }
                 try (JDBCPreparedStatement stmt = session.prepareStatement(
                         "SELECT RDB$PARAMETER_NAME, RDB$FIELD_SOURCE " +
                         "FROM RDB$PROCEDURE_PARAMETERS rpp " +
