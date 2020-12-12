@@ -216,21 +216,22 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     public void selectionChanged(SelectionChangedEvent event)
     {
         this.selectedDriver = null;
-        this.setMessage("");
         ISelection selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
+            // TODO: Show current driver info somehow. setMessage is super-slow (it re-layouts entire wizard dialog)
             Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
             if (selectedObject instanceof DBPDriver) {
                 selectedDriver = (DriverDescriptor) selectedObject;
-                this.setMessage(selectedDriver.getDescription());
+                //this.setMessage(selectedDriver.getDescription());
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
-                this.setMessage(((DataSourceProviderDescriptor) selectedObject).getDescription());
+                //this.setMessage(((DataSourceProviderDescriptor) selectedObject).getDescription());
             } else if (selectedObject instanceof DriverTreeViewer.DriverCategory) {
-                this.setMessage(((DriverTreeViewer.DriverCategory) selectedObject).getName() + " drivers");
+                //this.setMessage(((DriverTreeViewer.DriverCategory) selectedObject).getName() + " drivers");
+            } else {
+                //this.setMessage("");
             }
         }
         getWizard().getContainer().updateButtons();
-        getWizard().getContainer().updateMessage();
     }
 
     @Override

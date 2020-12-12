@@ -361,9 +361,6 @@ public class AdvancedList extends Canvas {
             // Scroll down
             vScroll.setSelection(vScroll.getSelection() + vScroll.getPageIncrement());
         }
-        int topOffset = itemRow * getItemSize().y;
-        //if (vScroll.getSelection())
-        //showControl(item);
     }
 
 }
