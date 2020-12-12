@@ -16,27 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.controls.finder;
 
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.IToolTipProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.TypedListener;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,21 +39,23 @@ import java.util.List;
 /**
  * AdvancedList
  */
-public class AdvancedList extends ScrolledComposite {
+public class AdvancedList extends Canvas {
     private static final Log log = Log.getLog(AdvancedList.class);
     public static final int ITEM_SPACING = 5;
 
     private Point itemSize = new Point(64, 64);
 
-    private Canvas container;
     private List<AdvancedListItem> items = new ArrayList<>();
     private AdvancedListItem selectedItem;
 
     private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
     private final Point textSize;
+    private final ScrollBar vScroll;
+    private int topRowIndex;
+    private int topRowOffset;
 
     public AdvancedList(Composite parent, int style) {
-        super(parent, SWT.V_SCROLL | style);
+        super(parent, SWT.V_SCROLL | SWT.DOUBLE_BUFFERED | style);
 
         CSSUtils.setCSSClass(this, "List");
         this.backgroundColor = UIStyles.getDefaultTextBackground();
@@ -72,60 +69,162 @@ public class AdvancedList extends ScrolledComposite {
             setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
-        this.container = new Canvas(this, SWT.NONE) {
-            @Override
-            public Point computeSize(int wHint, int hHint) {
-                return computeSize(wHint, hHint, true);
-            }
-
-            @Override
-            public Point computeSize(int wHint, int hHint, boolean changed) {
-                if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
-                    return new Point(100, 100);
-                }
-                return super.computeSize(wHint, hHint, changed);
-/*
-        // Do not calc real size because RowLayout will fill to maximum screen width
-        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
-            //return getParent().getSize();
-            return super.computeSize(wHint, hHint, changed);
-        }
-        return new Point(wHint, hHint);
-*/
-            }
-        };
-
-        this.setContent(this.container);
-        this.setExpandHorizontal( true );
-        this.setExpandVertical( true );
-        //this.setShowFocusedControl( true );
-        //scrolledComposite.setAlwaysShowScrollBars(true);
-        this.setMinSize( 10, 10 );
-
-        this.addListener( SWT.Resize, event -> {
-            updateSize(false);
-        } );
-
         this.setBackground(backgroundColor);
-        this.container.setBackground(getBackground());
 
-        RowLayout layout = new RowLayout(SWT.HORIZONTAL);
-        layout.wrap = true;
-        layout.fill = true;
-        layout.marginHeight = 0;
-        layout.spacing = ITEM_SPACING;
-        this.container.setLayout(layout);
+        vScroll = getVerticalBar();
+        vScroll.setVisible(true);
+        vScroll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                onVerticalScroll();
+            }
+        });
 
         GC gc = new GC(getDisplay());
         textSize = gc.stringExtent("X");
         gc.dispose();
 
-        container.addFocusListener(new FocusAdapter() {
+        addPaintListener(this::onPaint);
+
+        addListener(SWT.Resize, event -> {
+            updateMeasures();
+            redraw();
+        });
+
+        this.addKeyListener(new KeyAdapter() {
             @Override
-            public void focusGained(FocusEvent e) {
-                super.focusGained(e);
+            public void keyPressed(KeyEvent e) {
+                switch (e.keyCode) {
+                    case SWT.ARROW_LEFT:
+                    case SWT.ARROW_RIGHT:
+                    case SWT.ARROW_UP:
+                    case SWT.ARROW_DOWN:
+                    case SWT.CR:
+                        if (getSelectedItem() != null) {
+                            navigateByKey(e);
+                        }
+                        break;
+                }
             }
         });
+
+        this.addMouseMoveListener(e -> onMouseMove(e));
+        this.addMouseTrackListener(new MouseTrackAdapter() {
+            @Override
+            public void mouseEnter(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExit(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseHover(MouseEvent e) {
+            }
+        });
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                notifyDefaultSelection();
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                AdvancedListItem item = getItemByPos(e.x, e.y);
+                if (item != null) {
+                    setSelection(item);
+                    setFocus();
+                }
+            }
+        });
+    }
+
+    private void onMouseMove(MouseEvent e) {
+        AdvancedListItem item = getItemByPos(e.x, e.y);
+        if (item == null) {
+            setToolTipText(null);
+        } else {
+            ILabelProvider labelProvider = item.getLabelProvider();
+            if (labelProvider instanceof IToolTipProvider) {
+                String toolTipText = ((IToolTipProvider) labelProvider).getToolTipText(item.getData());
+                if (!CommonUtils.isEmpty(toolTipText)) {
+                    setToolTipText(toolTipText);
+                }
+            }
+        }
+    }
+
+    private AdvancedListItem getItemByPos(int x, int y) {
+        Point itemSize = getItemSize();
+        int row = topRowIndex + (y + topRowOffset) / itemSize.y;
+        int col = x / itemSize.x;
+        if (col < 0 || col >= getItemsPerRow()) {
+            return null;
+        }
+        int itemIndex = row * getItemsPerRow() + col;
+        return itemIndex < items.size() ? items.get(itemIndex) : null;
+    }
+
+    private void onVerticalScroll() {
+        redraw();
+    }
+
+    private void updateMeasures() {
+        int itemsPerRow = getItemsPerRow();
+        int totalRows = itemsPerRow == 0 ? 0 : items.size() / itemsPerRow + 1;
+        int itemHeight = getItemSize().y;
+        int visibleRowCount = getVisibleRowCount();
+
+        vScroll.setValues(0, 0, totalRows * itemHeight, visibleRowCount * itemHeight, itemHeight / 2, itemHeight);
+        vScroll.setVisible(totalRows * itemHeight > getSize().y);
+    }
+
+    private void onPaint(PaintEvent e) {
+        Point itemSize = getItemSize();
+        int itemsPerRow = getItemsPerRow();
+        int itemRowsVisible = getVisibleRowCount() + 1;
+
+        topRowOffset = vScroll.getSelection();
+        topRowIndex = topRowOffset / itemSize.y;
+        topRowOffset = topRowOffset - topRowIndex * itemSize.y;
+
+        int topItemIndex = topRowIndex * itemsPerRow;
+
+        //int drawItemCount = itemRowsVisible * itemsPerRow;
+        int x = 0, y = -topRowOffset;
+        for (int i = 0; i < itemRowsVisible; i++) {
+            if (topItemIndex + i * itemsPerRow >= items.size()) {
+                break;
+            }
+            for (int k = 0; k < itemsPerRow; k++) {
+                int itemIndex = topItemIndex + i * itemsPerRow + k;
+                if (itemIndex >= items.size()) {
+                    break;
+                }
+                AdvancedListItem item = items.get(itemIndex);
+                item.painItem(e, x, y);
+
+                x += itemSize.x;
+            }
+            y += itemSize.y;
+            x = 0;
+        }
+    }
+
+    private int getVisibleRowCount() {
+        return getSize().y / getItemSize().y + 1;
+    }
+
+    Point getItemSize() {
+        Point imageSize = getImageSize();
+        int itemLength = imageSize.x + AdvancedListItem.BORDER_MARGIN * 4 + getTextSize().y;
+        return new Point(itemLength, itemLength + AdvancedListItem.BORDER_MARGIN * 2);
+    }
+
+    private int getItemsPerRow() {
+        Point itemSize = getItemSize();
+        Point containerSize = getSize();
+        return Math.floorDiv(containerSize.x, itemSize.x);
     }
 
     void navigateByKey(KeyEvent e) {
@@ -166,31 +265,6 @@ public class AdvancedList extends ScrolledComposite {
         showItem(selectedItem);
     }
 
-    private int getItemsPerRow() {
-        Point itemSize = selectedItem.getSize();
-        Point containerSize = container.getSize();
-        return Math.floorDiv(containerSize.x, itemSize.x);
-    }
-
-    public void updateSize(boolean layout) {
-        getParent().setRedraw(false);
-        try {
-            int width = this.getClientArea().width;
-            if (width > 0) {
-                if (getMinHeight() != 10) {
-                    this.setMinHeight(10);
-                }
-                Point fullSize = getParent().computeSize(width, SWT.DEFAULT);
-                this.setMinHeight(fullSize.y);
-                if (layout) {
-                    this.layout(true, true);
-                }
-            }
-        } finally {
-            getParent().setRedraw(true);
-        }
-    }
-
     Color getBackgroundColor() {
         return backgroundColor;
     }
@@ -213,10 +287,6 @@ public class AdvancedList extends ScrolledComposite {
 
     Point getTextSize() {
         return textSize;
-    }
-
-    public Canvas getContainer() {
-        return container;
     }
 
     public Point getImageSize() {
@@ -247,23 +317,18 @@ public class AdvancedList extends ScrolledComposite {
         if (this.selectedItem == item) {
             return;
         }
-        AdvancedListItem oldSelection = this.selectedItem;
         this.selectedItem = item;
-        if (oldSelection != null) {
-            oldSelection.redraw();
-        }
-        if (item != null) {
-            item.redraw();
-        }
 
         Event event = new Event();
-        event.widget = item;
+        event.widget = this;
         notifyListeners(SWT.Selection, event);
+
+        redraw();
     }
 
     void notifyDefaultSelection() {
         Event event = new Event();
-        event.widget = selectedItem;
+        event.widget = this;
         notifyListeners(SWT.DefaultSelection, event);
     }
 
@@ -280,28 +345,25 @@ public class AdvancedList extends ScrolledComposite {
     public void removeAll() {
         checkWidget ();
         setSelection(null);
-        for (AdvancedListItem item : items.toArray(new AdvancedListItem[0])) {
-            item.dispose();
-        }
-        items.clear(); // Just in case
-        this.setMinSize( 10, 10 );
+        items.clear();
     }
 
     private void showItem(AdvancedListItem item) {
-        showControl(item);
-/*
-        Point itemSize = item.getSize();
-
-        int itemsPerRow = getItemsPerRow();
+        if (!vScroll.isVisible()) {
+            return;
+        }
         int itemIndex = items.indexOf(item);
-        int rowNumber = itemIndex / itemsPerRow;
-
-        int vertOffset = (itemSize.y + ITEM_SPACING) * rowNumber;
-
-        ScrollBar verticalBar = getVerticalBar();
-        verticalBar.setSelection(vertOffset);
-        layout(true);
-*/
+        int itemRow = itemIndex / getItemsPerRow();
+        if (itemRow < topRowIndex) {
+            // Scroll up
+            vScroll.setSelection(Math.max(0, vScroll.getSelection() - vScroll.getPageIncrement()));
+        } else if (itemRow >= topRowIndex + getVisibleRowCount()) {
+            // Scroll down
+            vScroll.setSelection(vScroll.getSelection() + vScroll.getPageIncrement());
+        }
+        int topOffset = itemRow * getItemSize().y;
+        //if (vScroll.getSelection())
+        //showControl(item);
     }
 
 }
