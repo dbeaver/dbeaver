@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -308,26 +308,27 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
     }
 
     @Override
+    public Image getImage() {
+        DBPDriver driver = getSite().getDriver();
+        DBPImage iconBig = driver.getIconBig();
+        if (iconBig != null) {
+            try {
+                Image image = DBeaverIcons.getImage(iconBig);
+                if (image.getImageData().width >= 64) {
+                    return image;
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        return super.getImage();
+    }
+
+    @Override
     public void loadSettings()
     {
         super.loadSettings();
-
-        {
-            DBPDriver driver = getSite().getDriver();
-            DBPImage iconBig = driver.getIconBig();
-            if (iconBig != null) {
-                try {
-                    ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
-                    if (imageDescriptor.getImageData().width >= 64) {
-                        setImageDescriptor(imageDescriptor);
-                    } else {
-                        setImageDescriptor(null);
-                    }
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
-        }
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
