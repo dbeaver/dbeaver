@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,12 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
-{
-
-    private static final ImageDescriptor LOG_AZURE = SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png");
-    private static final ImageDescriptor LOGO_SQLSERVER = SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png");
-    private static final ImageDescriptor LOGO_SYBASE = SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png");
+public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
 
     private Text hostText;
     private Text portText;
@@ -61,17 +56,31 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
     private boolean activated;
 
+    private final Image LOGO_AZURE;
+    private final Image LOGO_SQLSERVER;
+    private final Image LOGO_SYBASE;
+
+    public SQLServerConnectionPage() {
+        LOGO_AZURE = createImage("icons/azure_logo.png");
+        LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
+        LOGO_SYBASE = createImage("icons/sybase_logo.png");
+
+    }
+
     @Override
     public void dispose()
     {
         super.dispose();
+        UIUtils.dispose(LOGO_AZURE);
+        UIUtils.dispose(LOGO_SQLSERVER);
+        UIUtils.dispose(LOGO_SYBASE);
     }
 
     @Override
     public void createControl(Composite composite)
     {
-        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
-        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
+        boolean isSqlServer = isSqlServer();
+        boolean isDriverAzure = isSqlServer && isDriverAzure();
 
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
@@ -207,20 +216,31 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     }
 
     @Override
+    public Image getImage() {
+        boolean isSqlServer = isSqlServer();
+        boolean isDriverAzure = isSqlServer && isDriverAzure();
+
+        return isSqlServer ?
+            (isDriverAzure ?
+                LOGO_AZURE :
+                LOGO_SQLSERVER) :
+            LOGO_SYBASE;
+    }
+
+    private boolean isDriverAzure() {
+        return SQLServerUtils.isDriverAzure(getSite().getDriver());
+    }
+
+    private boolean isSqlServer() {
+        return SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+    }
+
+    @Override
     public void loadSettings()
     {
         super.loadSettings();
 
-        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
-        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
-
-        {
-            setImageDescriptor(isSqlServer ?
-                (isDriverAzure ?
-                    LOG_AZURE :
-                    LOGO_SQLSERVER) :
-                LOGO_SYBASE);
-        }
+        boolean isDriverAzure = isSqlServer() && isDriverAzure();
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();

@@ -18,18 +18,17 @@
 package org.jkiss.dbeaver.ext.exasol.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolActivator;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -52,18 +51,25 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements ICom
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
 
-    private static ImageDescriptor EXASOL_LOGO_IMG = ExasolActivator.getImageDescriptor("icons/exasol.png"); //$NON-NLS-1$
+    private Image logoImage;
 
+    public ExasolConnectionPage() {
+        logoImage = createImage("icons/exasol.png"); //$NON-NLS-1$
+    }
 
     @Override
     public void dispose() {
         super.dispose();
+        UIUtils.dispose(logoImage);
+    }
+
+    @Override
+    public Image getImage() {
+        return logoImage;
     }
 
     @Override
     public void createControl(Composite composite) {
-        setImageDescriptor(EXASOL_LOGO_IMG);
-
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));

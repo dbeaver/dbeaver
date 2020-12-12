@@ -109,28 +109,34 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             //UIUtils.resizeShell(getWizard().getContainer().getShell());
         }
 
-        setDescription(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
-        DataSourceDescriptor connectionInfo = getActiveDataSource();
-        if (!activated.contains(connectionInfo)) {
-            if (this.connectionEditor != null) {
-                this.connectionEditor.loadSettings();
-            }
-            if (subPages != null) {
-                for (IDialogPage page : subPages) {
-                    Control pageControl = page.getControl();
-//                    if (pageControl == null) {
-//                        page.createControl(getControl().getParent());
-//                    }
-                    if (pageControl != null && page instanceof IDataSourceConnectionEditor) {
-                        ((IDataSourceConnectionEditor) page).loadSettings();
+        Control control = getControl();
+        control.setRedraw(false);
+        try {
+            setDescription(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
+            DataSourceDescriptor connectionInfo = getActiveDataSource();
+            if (!activated.contains(connectionInfo)) {
+                if (this.connectionEditor != null) {
+                    this.connectionEditor.loadSettings();
+                }
+                if (subPages != null) {
+                    for (IDialogPage page : subPages) {
+                        Control pageControl = page.getControl();
+    //                    if (pageControl == null) {
+    //                        page.createControl(getControl().getParent());
+    //                    }
+                        if (pageControl != null && page instanceof IDataSourceConnectionEditor) {
+                            ((IDataSourceConnectionEditor) page).loadSettings();
+                        }
                     }
                 }
+                activated.add(connectionInfo);
+            } else if (connectionEditor != null) {
+                connectionEditor.loadSettings();
             }
-            activated.add(connectionInfo);
-        } else if (connectionEditor != null) {
-            connectionEditor.loadSettings();
+            activateCurrentItem();
+        } finally {
+            control.setRedraw(true);
         }
-        activateCurrentItem();
         //getContainer().updateTitleBar();
     }
 
