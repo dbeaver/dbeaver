@@ -140,7 +140,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             NativeToolUtils.VARIABLE_DATABASE,
             NativeToolUtils.VARIABLE_TABLE,
             NativeToolUtils.VARIABLE_DATE,
-            NativeToolUtils.VARIABLE_TIMESTAMP);
+            NativeToolUtils.VARIABLE_TIMESTAMP,
+            NativeToolUtils.VARIABLE_CONN_TYPE);
         ContentAssistUtils.installContentProposal(
             outputFileText,
             new SmartTextContentAdapter(),
@@ -149,7 +150,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATABASE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TABLE),
                 GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_DATE),
-                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP)));
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_TIMESTAMP),
+                GeneralUtils.variablePattern(NativeToolUtils.VARIABLE_CONN_TYPE)));
         outputFileText.addModifyListener(e -> wizard.getSettings().setOutputFilePattern(outputFileText.getText()));
 
         createExtraArgsInput(outputGroup);

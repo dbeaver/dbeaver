@@ -9,6 +9,7 @@ public abstract class NativeToolUtils {
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
+    public static final String VARIABLE_CONN_TYPE = "connectionType";
 
     public static boolean isSecureString(AbstractNativeToolSettings settings, String string) {
         String userPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();

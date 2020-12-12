@@ -130,6 +130,8 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                     return arg.getDatabase().getName();
                 case NativeToolUtils.VARIABLE_HOST:
                     return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                case NativeToolUtils.VARIABLE_CONN_TYPE:
+                    return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getConnectionType().getId();
                 case NativeToolUtils.VARIABLE_TABLE:
                     final Iterator<MySQLTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
                     if (iterator != null && iterator.hasNext()) {
