@@ -27,11 +27,14 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ public class AdvancedList extends Canvas {
 
     private List<AdvancedListItem> items = new ArrayList<>();
     private AdvancedListItem selectedItem;
+    private AdvancedListItem hoverItem;
 
     private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
     private final Point textSize;
@@ -111,7 +115,7 @@ public class AdvancedList extends Canvas {
             }
         });
 
-        this.addMouseMoveListener(e -> onMouseMove(e));
+        this.addMouseMoveListener(this::onMouseMove);
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseEnter(MouseEvent e) {
@@ -119,6 +123,7 @@ public class AdvancedList extends Canvas {
 
             @Override
             public void mouseExit(MouseEvent e) {
+                onMouseMove(e);
             }
 
             @Override
@@ -145,6 +150,11 @@ public class AdvancedList extends Canvas {
 
     private void onMouseMove(MouseEvent e) {
         AdvancedListItem item = getItemByPos(e.x, e.y);
+        if (item == hoverItem) {
+            return;
+        }
+        AdvancedListItem[] redrawItems = new AdvancedListItem[] { item, hoverItem };
+        hoverItem = item;
         if (item == null) {
             toolTipHandler.updateToolTipText(null);
         } else {
@@ -156,9 +166,19 @@ public class AdvancedList extends Canvas {
                 }
             }
         }
+        GC gc = new GC(this);
+        try {
+            paintList(gc, redrawItems);
+        } finally {
+            gc.dispose();
+        }
     }
 
     private AdvancedListItem getItemByPos(int x, int y) {
+        Point size = getSize();
+        if (x < 0 || y < 0 || x >= size.x || y >= size.y) {
+            return null;
+        }
         Point itemSize = getItemSize();
         int row = topRowIndex + (y + topRowOffset) / itemSize.y;
         int col = x / itemSize.x;
@@ -184,6 +204,10 @@ public class AdvancedList extends Canvas {
     }
 
     private void onPaint(PaintEvent e) {
+        paintList(e.gc, null);
+    }
+
+    private void paintList(@NotNull GC gc, @Nullable AdvancedListItem[] redrawItems) {
         Point itemSize = getItemSize();
         int itemsPerRow = getItemsPerRow();
         int itemRowsVisible = getVisibleRowCount() + 1;
@@ -206,7 +230,9 @@ public class AdvancedList extends Canvas {
                     break;
                 }
                 AdvancedListItem item = items.get(itemIndex);
-                item.painItem(e, x, y);
+                if (redrawItems == null || ArrayUtils.contains(redrawItems, item)) {
+                    item.painItem(gc, x, y);
+                }
 
                 x += itemSize.x;
             }
@@ -311,6 +337,10 @@ public class AdvancedList extends Canvas {
 
     public AdvancedListItem[] getItems() {
         return items.toArray(new AdvancedListItem[0]);
+    }
+
+    AdvancedListItem getHoverItem() {
+        return hoverItem;
     }
 
     public AdvancedListItem getSelectedItem() {
