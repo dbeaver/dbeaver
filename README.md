@@ -10,7 +10,7 @@
 
 # DBeaver
 
-Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
+Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
 Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (MongoDB, Cassandra, Couchbase, Redis, BigTable, DynamoDB, etc).
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
@@ -24,14 +24,14 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 
 ## Download
 
-You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.
-You can also download <a href="https://dbeaver.io/download" target="_blank">Early Access</a> version. We publish it 1-2 times per week.
+You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.  
+You can also download <a href="https://dbeaver.io/download" target="_blank">Early Access</a> version. We publish it 1-2 times per week.  
 
 ## Running
 
-Just run an installer (or unzip an archive) and run `dbeaver`.
+Just run an installer (or unzip an archive) and run `dbeaver`.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptopenjdk.net/" target="_blank">Open JDK 11</a> is included in all DBeaver distributions. (since version 7.3.1).
+Note: DBeaver needs Java to run. <a href="https://adoptopenjdk.net/" target="_blank">Open JDK 11</a> is included in all DBeaver distributions. (since version 7.3.1).  
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -68,7 +68,7 @@ Binaries are in `product/standalone/target/products`
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 10k of stars on GitHub and continue to grow!
+Hooray, we have reached 17k of stars on GitHub and continue to grow!  
 That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
@@ -83,5 +83,5 @@ Thank you!
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
 DBeaver is a desktop client.  
-If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.
+If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.  
 It is based on DBeaver platform and thus supports any database and most of DBeaver features.
