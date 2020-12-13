@@ -25,14 +25,14 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 ## Download
 
 You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.
+You can also download <a href="https://dbeaver.io/download" target="_blank">Early Access</a> version. We publish it 1-2 times per week.
 
 ## Running
 
-DBeaver requires Java (JRE) 1.8+ to run.
+Just run an installer (or unzip an archive) and run `dbeaver`.
 
-* <b>Windows</b> and <b>MacOS X</b> installers include JRE so just use them and don't think about internals.
-* On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install openjdk-11-jdk` or something similar).
-* If you don't use installer (on Windows or Mac OS X) you may need to download Java (JDK) from <a href="https://adoptopenjdk.net/" target="_blank">Adopt OpenJDK website</a>.
+Note: DBeaver needs Java to run. <a href="https://adoptopenjdk.net/" target="_blank">Open JDK 11</a> is included in all DBeaver distributions. (since version 7.3.1).
+You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
 
