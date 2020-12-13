@@ -25,7 +25,7 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 ## Download
 
 You can download prebuilt binaries from <a href="https://dbeaver.io/download" target="_blank">official website</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.  
-You can also download <a href="https://dbeaver.io/download" target="_blank">Early Access</a> version. We publish it 1-2 times per week.  
+You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Early Access</a> version. We publish it 1-2 times per week.  
 
 ## Running
 
