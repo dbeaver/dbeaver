@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,6 +54,8 @@ public class AdvancedList extends Canvas {
     private final ScrollBar vScroll;
     private int topRowIndex;
     private int topRowOffset;
+
+    private final CustomToolTipHandler toolTipHandler;
 
     public AdvancedList(Composite parent, int style) {
         super(parent, SWT.V_SCROLL | SWT.DOUBLE_BUFFERED | style);
@@ -137,18 +140,19 @@ public class AdvancedList extends Canvas {
                 }
             }
         });
+        toolTipHandler = new CustomToolTipHandler(this);
     }
 
     private void onMouseMove(MouseEvent e) {
         AdvancedListItem item = getItemByPos(e.x, e.y);
         if (item == null) {
-            setToolTipText(null);
+            toolTipHandler.updateToolTipText(null);
         } else {
             ILabelProvider labelProvider = item.getLabelProvider();
             if (labelProvider instanceof IToolTipProvider) {
                 String toolTipText = ((IToolTipProvider) labelProvider).getToolTipText(item.getData());
                 if (!CommonUtils.isEmpty(toolTipText)) {
-                    setToolTipText(toolTipText);
+                    toolTipHandler.updateToolTipText(toolTipText);
                 }
             }
         }
