@@ -106,6 +106,10 @@ public class AdvancedList extends Canvas {
                     case SWT.ARROW_RIGHT:
                     case SWT.ARROW_UP:
                     case SWT.ARROW_DOWN:
+                    case SWT.PAGE_DOWN:
+                    case SWT.PAGE_UP:
+                    case SWT.HOME:
+                    case SWT.END:
                     case SWT.CR:
                         if (getSelectedItem() != null) {
                             navigateByKey(e);
@@ -195,7 +199,7 @@ public class AdvancedList extends Canvas {
 
     private void updateMeasures() {
         int itemsPerRow = getItemsPerRow();
-        int totalRows = itemsPerRow == 0 ? 0 : items.size() / itemsPerRow + 1;
+        int totalRows = itemsPerRow == 0 ? 0 : (items.size() / itemsPerRow) + 2;
         int itemHeight = getItemSize().y;
         int visibleRowCount = getVisibleRowCount();
 
@@ -257,7 +261,7 @@ public class AdvancedList extends Canvas {
         return Math.floorDiv(containerSize.x, itemSize.x);
     }
 
-    void navigateByKey(KeyEvent e) {
+    private void navigateByKey(KeyEvent e) {
         if (selectedItem == null) {
             return;
         }
@@ -286,6 +290,26 @@ public class AdvancedList extends Canvas {
                         nextIndex = items.size() - 1;
                     }
                     setSelection(items.get(nextIndex));
+                }
+                break;
+            case SWT.PAGE_UP:
+                itemIndex -= itemsPerRow * getVisibleRowCount();
+                if (itemIndex < 0) itemIndex = 0;
+                setSelection(items.get(itemIndex));
+                break;
+            case SWT.PAGE_DOWN:
+                itemIndex += itemsPerRow * getVisibleRowCount();
+                if (itemIndex > items.size() - 1) itemIndex = items.size() - 1;
+                setSelection(items.get(itemIndex));
+                break;
+            case SWT.HOME:
+                if (!items.isEmpty()) {
+                    setSelection(items.get(0));
+                }
+                break;
+            case SWT.END:
+                if (!items.isEmpty()) {
+                    setSelection(items.get(items.size() - 1));
                 }
                 break;
             case SWT.CR:
@@ -390,10 +414,25 @@ public class AdvancedList extends Canvas {
         int itemRow = itemIndex / getItemsPerRow();
         if (itemRow < topRowIndex) {
             // Scroll up
-            vScroll.setSelection(Math.max(0, vScroll.getSelection() - vScroll.getPageIncrement()));
-        } else if (itemRow >= topRowIndex + getVisibleRowCount()) {
-            // Scroll down
-            vScroll.setSelection(vScroll.getSelection() + vScroll.getPageIncrement());
+            if (itemRow < topRowIndex - 1) {
+                // To exact row
+                vScroll.setSelection(itemRow * getItemSize().y);
+            } else {
+                // One row up
+                vScroll.setSelection(Math.max(0, vScroll.getSelection() - vScroll.getPageIncrement()));
+            }
+        } else {
+            int bottomRowIndex = topRowIndex + getVisibleRowCount();
+            if (itemRow >= bottomRowIndex) {
+                // Scroll down
+                if (itemRow > bottomRowIndex + 1) {
+                    // Scroll to exact row
+                    vScroll.setSelection(itemRow * getItemSize().y);
+                } else {
+                    // Just one row down
+                    vScroll.setSelection(vScroll.getSelection() + vScroll.getPageIncrement());
+                }
+            }
         }
     }
 
