@@ -59,7 +59,8 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- If you have any questions, suggestions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.io or https://dbeaver.com for more information.
 - Follow us on Twitter: https://twitter.com/dbeaver_news/
