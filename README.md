@@ -1,6 +1,6 @@
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/dbeaver_news.svg?style=social&label=Follow%20%40dbeaver_news)](https://twitter.com/dbeaver_news)
 [![Build Status](https://travis-ci.org/dbeaver/dbeaver.svg?branch=devel)](https://travis-ci.org/dbeaver/dbeaver)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/70fbe55885864aa38d246b8180f5916a)](https://www.codacy.com/manual/serge/dbeaver?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa0bb9cf5a904c7d87424f8f6351ba92)](https://www.codacy.com/gh/dbeaver/dbeaver/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Java CI](https://github.com/dbeaver/dbeaver/workflows/Java%20CI/badge.svg)](https://github.com/dbeaver/dbeaver/actions?query=workflow%3A%22Java+CI%22)
 <!--[![paypal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)-->
@@ -11,10 +11,10 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
-Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (MongoDB, Cassandra, Redis, DynamoDB, etc).
+Supports any database which has JDBC driver (which basically means - ANY database). EE version also supports non-JDBC datasources (MongoDB, Cassandra, Couchbase, Redis, BigTable, DynamoDB, etc).
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
-* Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
+* Based on <a href="https://wiki.eclipse.org/Rich_Client_Platform">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Greenplum, Oracle, DB2 LUW, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
 <a href="https://dbeaver.io/product/dbeaver-ss-mock.png"><img src="https://dbeaver.io/product/dbeaver-ss-mock.png" width="400"/></a>
@@ -59,7 +59,7 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- If you have any questions, suggestions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket </a>.
+- If you have any questions, suggestions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.io or https://dbeaver.com for more information.
 - Follow us on Twitter: https://twitter.com/dbeaver_news/
@@ -82,5 +82,5 @@ Thank you!
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
 DBeaver is a desktop client.  
-If you are loooking for a web-based database management tool - check our new product: <a href="https://github.com/dbeaver/cloudbeaver/">CloudBeaver</a>.  
+If you are looking for a web-based database management tool - check our new product: <a href="https://cloudbeaver.io/">CloudBeaver</a>.
 It is based on DBeaver platform and thus supports any database and most of DBeaver features.
