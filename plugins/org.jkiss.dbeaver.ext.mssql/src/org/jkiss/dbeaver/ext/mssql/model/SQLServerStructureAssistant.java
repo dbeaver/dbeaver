@@ -98,7 +98,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             SQLServerObjectType.U,
             SQLServerObjectType.V,
             SQLServerObjectType.P,
-            };
+            SQLServerObjectType.FN,
+            SQLServerObjectType.IF,
+            SQLServerObjectType.TF,
+            SQLServerObjectType.X
+        };
     }
 
     @NotNull
@@ -131,13 +135,13 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
-            searchAllObjects(session, database, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
+            searchAllObjects(session, database, schema, objectNameMask, objectTypes, caseSensitive, globalSearch, maxResults, objects);
 
             return objects;
         }
     }
 
-    private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema, String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
+    private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema, String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> objects)
         throws DBException
     {
         final List<SQLServerObjectType> supObjectTypes = new ArrayList<>(objectTypes.length + 2);
@@ -171,11 +175,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
                 "\nWHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : " AND o.schema_id=? ") +
+                (schema == null || globalSearch ? "" : " AND o.schema_id=? ") +
                 "\nORDER BY o.name"))
         {
             dbStat.setString(1, objectNameMask);
-            if (schema != null) {
+            if (schema != null && !globalSearch) {
                 dbStat.setLong(2, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
