@@ -971,7 +971,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             request.getContext().getExecutionContext(),
             rootSC,
             objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-            makeObjectNameMask(request.getWordDetector().removeQuotes(objectName), rootSC),
+            makeObjectNameMask(objectName, rootSC),
             request.getWordDetector().isQuoted(objectName),
             request.getContext().isSearchGlobally(), 100);
         for (DBSObjectReference reference : references) {
@@ -985,9 +985,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     private String makeObjectNameMask(String objectName, @Nullable DBSObjectContainer rootSC) {
-        String[] strings = request.getWordDetector().splitIdentifier(objectName);
-        if (rootSC != null && objectName.contains(rootSC.getName()) && strings.length != 0) {
-            objectName = strings[strings.length - 1];
+        SQLWordPartDetector wordDetector = request.getWordDetector();
+        if (wordDetector.containsSeparator(objectName)) {
+            String[] strings = wordDetector.splitIdentifier(objectName);
+            if (rootSC != null && objectName.contains(rootSC.getName()) && strings.length > 1
+                    && objectName.charAt(objectName.length() - 1) != wordDetector.getStructSeparator()) {
+                objectName = wordDetector.removeQuotes(strings[strings.length - 1]);
+            }
+        } else {
+            objectName = wordDetector.removeQuotes(objectName);
         }
         if (request.getContext().isSearchInsideNames()) {
             return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
