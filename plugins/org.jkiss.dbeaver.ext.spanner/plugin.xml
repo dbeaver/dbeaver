@@ -19,7 +19,7 @@
 
                 <driver
                         id="spanner_jdbc_official"
-                        label="Google Cloud Spanner JDBC Driver"
+                        label="Google Spanner"
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
@@ -35,9 +35,9 @@
                 
                 <driver
                         id="spanner_jdbc"
-                        label="Google Cloud Spanner Community (Topicus) Driver"
-                        icon="icons/database.png"
-                        iconBig="icons/database@2x.png"
+                        label="Google Spanner (Community)"
+                        icon="icons/spanner_icon.png"
+                        iconBig="icons/spanner_icon_big.png"
                         class="nl.topicus.jdbc.CloudSpannerDriver"
                         sampleURL="jdbc:cloudspanner://localhost"
                         defaultPort=""
