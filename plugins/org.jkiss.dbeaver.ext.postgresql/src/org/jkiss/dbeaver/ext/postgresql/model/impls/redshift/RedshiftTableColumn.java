@@ -16,18 +16,29 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.SQLException;
+
 /**
  * RedshiftTableColumn base
  */
-public class RedshiftTableColumn extends PostgreTableColumn
-{
+public class RedshiftTableColumn extends PostgreTableColumn {
+    private static final int DEFAULT_SRID_IN_REDSHIFT = 0;
+
+    @Nullable
+    private String type;
+    private boolean isGeometryInfoRead = false;
 
     private String columnEncoding;
     private boolean distKey;
@@ -58,5 +69,41 @@ public class RedshiftTableColumn extends PostgreTableColumn
     @Property(viewable = false, order = 23)
     public int getSortKey() {
         return sortKey;
+    }
+
+    @Override
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException {
+        readGeometryInfo(monitor);
+        if (type == null || type.isEmpty()) {
+            return -1;
+        }
+        return DEFAULT_SRID_IN_REDSHIFT;
+    }
+
+    @Nullable
+    @Override
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
+        readGeometryInfo(monitor);
+        return type;
+    }
+
+    private void readGeometryInfo(DBRProgressMonitor monitor) throws DBCException {
+        if (isGeometryInfoRead) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load column type info")) {
+            try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT type FROM PG_TABLE_DEF t WHERE t.tablename = ? and t.column = ?")) {
+                stmt.setString(1, getTable().getName());
+                stmt.setString(2, getName());
+                try (JDBCResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        type = rs.getString(1);
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException("Error reading geometry info", e);
+            }
+        }
+        isGeometryInfoRead = true;
     }
 }

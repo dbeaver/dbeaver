@@ -95,6 +95,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         }
     }
 
+    @Nullable
     @Override
     public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
         if (geometryInfo == null) {

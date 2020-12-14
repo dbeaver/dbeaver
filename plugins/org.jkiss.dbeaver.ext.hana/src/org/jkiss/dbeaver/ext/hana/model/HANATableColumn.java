@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -58,6 +59,7 @@ public class HANATableColumn extends GenericTableColumn implements DBPNamedObjec
         return geometryInfo.srid;
     }
 
+    @Nullable
     @Override
     public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
         readGeometryInfo(monitor);
