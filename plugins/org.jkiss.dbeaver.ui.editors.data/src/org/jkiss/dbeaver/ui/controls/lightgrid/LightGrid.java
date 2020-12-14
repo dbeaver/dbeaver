@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,12 +23,12 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.utils.ArrayUtils;
@@ -118,28 +115,8 @@ public abstract class LightGrid extends Canvas {
 
     // Tooltips
 
-    private class ToolTipHandler extends UIJob {
-        private String toolTip;
-        ToolTipHandler() {
-            super("ToolTip handler");
-            setSystem(true);
-        }
-
-        @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
-            if (!monitor.isCanceled() && !LightGrid.this.isDisposed()) {
-                LightGrid.this.setToolTipText(toolTip);
-            }
-            toolTipHandler = null;
-            return Status.OK_STATUS;
-        }
-    }
-
     // Last calculated client area
     private volatile static Rectangle lastClientArea;
-
-    private volatile String prevToolTip;
-    private volatile ToolTipHandler toolTipHandler;
 
     /**
      * Tracks whether the scroll values are correct. If not they will be
@@ -292,6 +269,8 @@ public abstract class LightGrid extends Canvas {
     @NotNull
     private Cursor sortCursor;
 
+    private final CustomToolTipHandler toolTipHandler;
+
     /**
      * Index of first visible item.  The value must never be read directly.  It is cached and
      * updated when appropriate.  #getTopIndex should be called for every client (even internal
@@ -404,14 +383,7 @@ public abstract class LightGrid extends Canvas {
         final Display display = getDisplay();
         lineColor = JFaceColors.getErrorBackground(display);
         lineSelectedColor = JFaceColors.getErrorBorder(display);//SWT.COLOR_WIDGET_DARK_SHADOW;
-        //setForeground(JFaceColors.getBannerForeground(display));
-        //setBackground(JFaceColors.getBannerBackground(display));
-/*
-        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
-        setLineColor(colorRegistry.get(JFacePreferences.QUALIFIER_COLOR));
-        setForeground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_FOREGROUND_COLOR));
-        setBackground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR));
-*/
+
         sortCursor = display.getSystemCursor(SWT.CURSOR_HAND);
 
         if ((style & SWT.MULTI) != 0) {
@@ -433,6 +405,8 @@ public abstract class LightGrid extends Canvas {
         }
 
         scrollValuesObsolete = true;
+
+        toolTipHandler = new CustomToolTipHandler(this);
 
         initListeners();
 
@@ -461,8 +435,7 @@ public abstract class LightGrid extends Canvas {
 
     private void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
     {
-        for (int i = 0; i < rows.length; i++) {
-            Object row = rows[i];
+        for (Object row : rows) {
             if (row == null) {
                 continue;
             }
@@ -4016,43 +3989,14 @@ public abstract class LightGrid extends Canvas {
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
             if (newTip != null && !newTip.equals(displayedToolTipText)) {
-                updateToolTipText(newTip);
+                toolTipHandler.updateToolTipText(newTip);
             } else if (newTip == null && displayedToolTipText != null) {
-                updateToolTipText(null);
+                toolTipHandler.updateToolTipText(null);
             }
             displayedToolTipText = newTip;
         }
 
         return hoverChange;
-    }
-
-    /**
-     * Sets the tooltip for the whole Grid to the given text.  This method is made available
-     * for subclasses to override, when a subclass wants to display a different than the standard
-     * SWT/OS tooltip.  Generally, those subclasses would override this event and use this tooltip
-     * text in their own tooltip or just override this method to prevent the SWT/OS tooltip from
-     * displaying.
-     *
-     * @param text  tooltip text
-     */
-    private void updateToolTipText(@Nullable String text)
-    {
-        if (text != null) {
-            // Escape ampersands (#7101)
-            text = text.replace("&", "&&");
-        }
-        ToolTipHandler curHandler = this.toolTipHandler;
-        if (!CommonUtils.equalObjects(prevToolTip, text)) {
-            // New tooltip
-            if (curHandler != null) {
-                curHandler.cancel();
-            }
-            prevToolTip = text;
-            this.setToolTipText("");
-            this.toolTipHandler = new ToolTipHandler();
-            this.toolTipHandler.toolTip = text;
-            this.toolTipHandler.schedule(500);
-        }
     }
 
     /**

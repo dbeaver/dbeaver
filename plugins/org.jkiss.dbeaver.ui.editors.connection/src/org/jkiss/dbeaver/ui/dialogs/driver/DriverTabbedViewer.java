@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -61,16 +61,19 @@ public class DriverTabbedViewer extends StructuredViewer {
     private final TabbedFolderComposite folderComposite;
     private final List<DBPDataSourceContainer> dataSources;
     private ViewerFilter[] curFilters;
+    private Comparator<DBPDriver> listComparator;
 
-    public DriverTabbedViewer(Composite parent, int style) {
+    public DriverTabbedViewer(Composite parent, int style, List<DBPDataSourceContainer> dataSources, Comparator<DBPDriver> driverComparator) {
 
-        dataSources = DataSourceRegistry.getAllDataSources();
+        this.dataSources = dataSources;
+        this.listComparator = driverComparator;
+        //listComparator = new DriverUtils.DriverScoreComparator(dataSources);
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
-        allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        //allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
 
         List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
-        DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
+        //DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
 
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
 
@@ -152,6 +155,19 @@ public class DriverTabbedViewer extends StructuredViewer {
             return ((DriverListFolder) activeFolder).viewer;
         }
         return null;
+    }
+
+    public void setListComparator(Comparator<DBPDriver> listComparator) {
+        this.listComparator = listComparator;
+
+        TabbedFolderInfo[] folders = folderComposite.getFolders();
+        if (folders != null) {
+            for (TabbedFolderInfo folder : folders) {
+                if (folder.getContents() instanceof DriverListFolder) {
+                    ((DriverListFolder) folder.getContents()).refreshDrivers();
+                }
+            }
+        }
     }
 
     @Override
@@ -257,7 +273,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         private boolean activated;
 
         DriverListFolder(List<DBPDriver> drivers) {
-            this.drivers = drivers;
+            this.drivers = new ArrayList<>(drivers);
         }
 
         @Override
@@ -272,7 +288,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         @Override
         public void aboutToBeShown() {
             if (!activated) {
-                viewer.setInput(drivers);
+                this.refreshDrivers();
                 activated = true;
             }
         }
@@ -289,6 +305,15 @@ public class DriverTabbedViewer extends StructuredViewer {
 
         @Override
         public void dispose() {
+        }
+
+        void refreshDrivers() {
+            if (listComparator != null) {
+                drivers.sort(listComparator);
+            }
+            if (viewer != null) {
+                viewer.setInput(drivers);
+            }
         }
 
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {

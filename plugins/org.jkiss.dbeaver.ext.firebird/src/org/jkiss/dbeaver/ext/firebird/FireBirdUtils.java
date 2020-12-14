@@ -122,12 +122,34 @@ public class FireBirdUtils {
                     args.add(param);
                 }
             }
+            Map<String, String> domainNames = new HashMap<>();
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, procedure, "Load domains used in procedure")) {
+                try (JDBCPreparedStatement stmt = session.prepareStatement(
+                        "SELECT RDB$PARAMETER_NAME, RDB$FIELD_SOURCE " +
+                        "FROM RDB$PROCEDURE_PARAMETERS rpp " +
+                        "WHERE RDB$PROCEDURE_NAME = ? " +
+                        "AND LEFT(rpp.RDB$FIELD_SOURCE, 4) <> 'RDB$'")) {
+                    stmt.setString(1, procedure.getName());
+                    try (JDBCResultSet rs = stmt.executeQuery()) {
+                        while (rs.next()) {
+                            String paramName = rs.getString(1);
+                            String domainName = rs.getString(2);
+                            if (paramName != null && domainName != null) {
+                                domainNames.put(paramName.trim(), domainName.trim());
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBException("Unable to load domains used in procedure", e);
+                }
+                domainNames = Collections.unmodifiableMap(domainNames);
+            }
             if (!args.isEmpty()) {
                 sql.append("(");
                 for (int i = 0; i < args.size(); i++) {
                     GenericProcedureParameter param = args.get(i);
                     if (i > 0) sql.append(", ");
-                    printParam(sql, param);
+                    printParam(sql, param, domainNames);
                 }
                 sql.append(")\n");
             }
@@ -136,7 +158,7 @@ public class FireBirdUtils {
                 for (int i = 0; i < results.size(); i++) {
                     sql.append('\t');
                     GenericProcedureParameter param = results.get(i);
-                    printParam(sql, param);
+                    printParam(sql, param, domainNames);
                     if (i < results.size() - 1) sql.append(",");
                     sql.append('\n');
                 }
@@ -149,8 +171,15 @@ public class FireBirdUtils {
         return sql.toString();
     }
 
-    private static void printParam(StringBuilder sql, GenericProcedureParameter param) {
-        sql.append(DBUtils.getQuotedIdentifier(param)).append(" ").append(param.getTypeName());
+    private static void printParam(StringBuilder sql, GenericProcedureParameter param, Map<String, String> domainNames) {
+        String paramName = DBUtils.getQuotedIdentifier(param);
+        sql.append(paramName).append(" ");
+        String domainName = domainNames.get(paramName.trim());
+        if (domainName != null) {
+            sql.append(domainName);
+            return;
+        }
+        sql.append(param.getTypeName());
         String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
         if (typeModifiers != null) {
             sql.append(typeModifiers);
