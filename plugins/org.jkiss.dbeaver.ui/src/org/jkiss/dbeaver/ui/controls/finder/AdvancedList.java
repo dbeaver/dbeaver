@@ -152,6 +152,12 @@ public class AdvancedList extends Canvas {
         toolTipHandler = new CustomToolTipHandler(this);
     }
 
+    public void refreshFilters() {
+        selectedItem = null;
+        hoverItem = null;
+        updateMeasures();
+    }
+
     private void onMouseMove(MouseEvent e) {
         AdvancedListItem item = getItemByPos(e.x, e.y);
         if (item == hoverItem) {
