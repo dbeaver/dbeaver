@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ext.oracle.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -64,22 +63,30 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     private ControlsListener controlModifyListener;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
 
-    private static ImageDescriptor logoImage = OracleUIActivator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private TextWithOpenFolder tnsPathText;
 
     private boolean activated = false;
+    private Image logoImage;
+
+    public OracleConnectionPage() {
+        logoImage = createImage("icons/oracle_logo.png"); //$NON-NLS-1
+    }
 
     @Override
     public void dispose()
     {
         super.dispose();
+        UIUtils.dispose(logoImage);
+    }
+
+    @Override
+    public Image getImage() {
+        return logoImage;
     }
 
     @Override
     public void createControl(Composite composite)
     {
-        super.setImageDescriptor(logoImage);
-
         controlModifyListener = new ControlsListener();
 
         Composite addrGroup = new Composite(composite, SWT.NONE);

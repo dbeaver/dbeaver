@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.ext.db2.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.db2.ui.DB2Activator;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -47,21 +46,27 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements ICompos
     private Text dbText;
     private Text usernameText;
 
-    private static ImageDescriptor logoImage = DB2Activator.getImageDescriptor("icons/db2_logo.png"); //$NON-NLS-1$
+    private Image logoImage;
+
+    public DB2ConnectionPage() {
+        logoImage = createImage("icons/db2_logo.png"); //$NON-NLS-1$
+    }
 
     @Override
     public void dispose()
     {
         super.dispose();
+        UIUtils.dispose(logoImage);
+    }
+
+    @Override
+    public Image getImage() {
+        return logoImage;
     }
 
     @Override
     public void createControl(Composite composite)
     {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
-        setImageDescriptor(logoImage);
-
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));

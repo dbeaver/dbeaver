@@ -39,10 +39,13 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,12 +69,34 @@ public class DriverSelectViewer extends Viewer {
     private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
 
     private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.mode"; //$NON-NLS-1$
+    private static final String PROP_SELECTOR_ORDER_BY = "driver.selector.orderBy"; //$NON-NLS-1$
+
     private ToolItem switchItem;
-    private Comparator<DBPDriver> driverComparator;
 
     private enum SelectorViewType {
         tree,
         browser
+    }
+
+    public enum OrderBy {
+        name("Title", "Order by driver title"),
+        score("Score", "Order by driver usage score then by title");
+
+        private final String label;
+        private final String description;
+
+        OrderBy(String label, String description) {
+            this.label = label;
+            this.description = description;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getDescription() {
+            return description;
+        }
     }
 
     private final Object site;
@@ -84,6 +109,10 @@ public class DriverSelectViewer extends Viewer {
     private Text filterText;
     private Job refreshJob;
     private Composite selectorComposite;
+
+    private final List<DBPDataSourceContainer> dataSources;
+    private OrderBy orderBy;
+    private Comparator<DBPDriver> driverComparator;
 
     static {
         ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(PlatformUI.PLUGIN_ID, "$nl$/icons/full/etool16/clear_co.png"); //$NON-NLS-1$
@@ -116,11 +145,15 @@ public class DriverSelectViewer extends Viewer {
         this(parent, site, providers, expandRecent, false);
     }
 
-    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
+    DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;
         this.forceClassic = forceClassic;
+        this.dataSources = DataSourceRegistry.getAllDataSources();
+
+        OrderBy defOrderBy = CommonUtils.valueOf(OrderBy.class, DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_ORDER_BY), OrderBy.score);
+        this.setOrderBy(defOrderBy);
 
         composite = new Composite(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
@@ -141,13 +174,26 @@ public class DriverSelectViewer extends Viewer {
         createSelectorControl();
 
         refreshJob = createRefreshJob();
+    }
 
-        driverComparator = new Comparator<DBPDriver>() {
-            @Override
-            public int compare(DBPDriver o1, DBPDriver o2) {
-                return 0;
-            }
-        };
+    public OrderBy getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(OrderBy orderBy) {
+        this.orderBy = orderBy;
+        switch (orderBy) {
+            case name:
+                this.driverComparator = new DriverUtils.DriverNameComparator();
+                break;
+            case score:
+                this.driverComparator = new DriverUtils.DriverScoreComparator(dataSources);
+                break;
+        }
+        if (selectorViewer instanceof DriverTabbedViewer) {
+            ((DriverTabbedViewer) selectorViewer).setListComparator(this.driverComparator);
+        }
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SELECTOR_ORDER_BY, orderBy.name());
     }
 
     private Control getSelectorControl() {
@@ -258,7 +304,7 @@ public class DriverSelectViewer extends Viewer {
                 switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
                 switchItem.setSelection(false);
 
-                selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);
+                selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE, dataSources, driverComparator);
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
     /*

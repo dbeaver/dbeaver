@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -58,6 +59,14 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
     @Override
     public void dispose() {
         super.dispose();
+    }
+
+    @Override
+    public Image getImage() {
+        final DBPDriver driver = site.getDriver();
+
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+        return DBeaverIcons.getImage(serverType.getIcon());
     }
 
     @Override
@@ -127,11 +136,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         final DBPDriver driver = site.getDriver();
 
-        PostgreServerType serverType = PostgreUtils.getServerType(driver);
-
         super.loadSettings();
-
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(serverType.getIcon()));
 
         // Load values from new connection info
         if (hostText != null) {

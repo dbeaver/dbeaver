@@ -17,14 +17,13 @@
 package org.jkiss.dbeaver.ext.mysql.ui.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.ui.MySQLUIActivator;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,9 +47,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
     // as now we use server timestamp format by default
     private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
-    private static final ImageDescriptor LOG_MYSQL = MySQLUIActivator.getImageDescriptor("icons/mysql_logo.png");
-    private static final ImageDescriptor LOGO_MARIADB = MySQLUIActivator.getImageDescriptor("icons/mariadb_logo.png");
-
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -59,11 +55,31 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
 
     private Combo serverTimezoneCombo;
 
+    private final Image LOGO_MYSQL;
+    private final Image LOGO_MARIADB;
+
+    public MySQLConnectionPage() {
+        LOGO_MYSQL = createImage("icons/mysql_logo.png");
+        LOGO_MARIADB = createImage("icons/mariadb_logo.png");
+    }
 
     @Override
     public void dispose()
     {
         super.dispose();
+        UIUtils.dispose(LOGO_MYSQL);
+        UIUtils.dispose(LOGO_MARIADB);
+    }
+
+    @Override
+    public Image getImage() {
+        // We set image only once at activation
+        // There is a bug in Eclipse which leads to SWTException after wizard image change
+        if (getSite().getDriver().getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+            return LOGO_MARIADB;
+        } else {
+            return LOGO_MYSQL;
+        }
     }
 
     @Override
@@ -140,16 +156,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
         DBPDriver driver = getSite().getDriver();
 
         super.loadSettings();
-
-        {
-            // We set image only once at activation
-            // There is a bug in Eclipse which leads to SWTException after wizard image change
-            if (driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
-                setImageDescriptor(LOGO_MARIADB);
-            } else {
-                setImageDescriptor(LOG_MYSQL);
-            }
-        }
 
         // Load values from new connection info
         if (hostText != null) {
