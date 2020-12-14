@@ -971,7 +971,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             request.getContext().getExecutionContext(),
             rootSC,
             objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-            makeObjectNameMask(request.getWordDetector().removeQuotes(objectName)),
+            makeObjectNameMask(objectName, rootSC),
             request.getWordDetector().isQuoted(objectName),
             request.getContext().isSearchGlobally(), 100);
         for (DBSObjectReference reference : references) {
@@ -984,12 +984,38 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private String makeObjectNameMask(String objectName) {
+    private String makeObjectNameMask(String objectName, @Nullable DBSObjectContainer rootSC) {
+        SQLWordPartDetector wordDetector = request.getWordDetector();
+        if (wordDetector.containsSeparator(objectName)) {
+            String[] strings = wordDetector.splitIdentifier(objectName);
+            if (rootSC != null) {
+                boolean endsOnStructureSeparator = objectName.charAt(objectName.length() - 1) == wordDetector.getStructSeparator();
+                if (isParentNameInPatternNameArray(strings, rootSC, wordDetector, endsOnStructureSeparator)) {
+                    if (endsOnStructureSeparator) {
+                        objectName = "";
+                    } else {
+                        objectName = wordDetector.removeQuotes(strings[strings.length - 1]);
+                    }
+                }
+            }
+        } else {
+            objectName = wordDetector.removeQuotes(objectName);
+        }
         if (request.getContext().isSearchInsideNames()) {
             return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
         } else {
             return objectName + MATCH_ANY_PATTERN;
         }
+    }
+
+    private boolean isParentNameInPatternNameArray(String[] strings, @NotNull DBSObjectContainer rootSC, SQLWordPartDetector wordDetector, boolean endsOnStructureSeparator) {
+        int indexOfParent;
+        if (endsOnStructureSeparator || strings.length < 2) {
+            indexOfParent = strings.length - 1;
+        } else {
+            indexOfParent = strings.length - 2;
+        }
+        return rootSC.getName().equals(wordDetector.removeQuotes(strings[indexOfParent]));
     }
 
     private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params)
