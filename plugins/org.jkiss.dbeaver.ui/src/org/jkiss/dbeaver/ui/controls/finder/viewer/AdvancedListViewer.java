@@ -82,7 +82,7 @@ public class AdvancedListViewer extends StructuredViewer {
     }
 
     @Override
-    protected List getSelectionFromWidget() {
+    protected List<Object> getSelectionFromWidget() {
         List<Object> list = new ArrayList<>();
         AdvancedListItem item = this.control.getSelectedItem();
         if (item != null) {
@@ -125,4 +125,15 @@ public class AdvancedListViewer extends StructuredViewer {
         internalRefresh(getInput());
     }
 
+    @Override
+    public void setFilters(ViewerFilter... filters) {
+        super.setFilters(filters);
+        control.refreshFilters();
+    }
+
+    @Override
+    public void resetFilters() {
+        super.resetFilters();
+        control.refreshFilters();
+    }
 }
