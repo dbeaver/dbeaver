@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.RedshiftGeometryValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -33,7 +35,6 @@ import java.sql.Types;
  * PostgreValueHandlerProvider
  */
 public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvider {
-
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
@@ -73,6 +74,9 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
                         return PostgreMoneyValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_GEOMETRY:
                     case PostgreConstants.TYPE_GEOGRAPHY:
+                        if (((PostgreDataSource) dataSource).getServerType() instanceof PostgreServerRedshift) {
+                            return RedshiftGeometryValueHandler.INSTANCE;
+                        }
                         return PostgreGeometryValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
@@ -87,5 +91,4 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
         }
         return super.getValueHandler(dataSource, preferences, typedObject);
     }
-
 }

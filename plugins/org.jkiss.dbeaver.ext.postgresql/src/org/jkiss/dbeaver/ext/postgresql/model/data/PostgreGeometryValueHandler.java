@@ -44,7 +44,6 @@ import java.sql.Types;
  * Postgre geometry handler
  */
 public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
-
     public static final PostgreGeometryValueHandler INSTANCE = new PostgreGeometryValueHandler();
 
     @Override
@@ -114,7 +113,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-            return makeGeometryFromWKB(session, CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
+            return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
         } else {
             return makeGeometryFromWKT(session, object.toString(), 2);
         }
@@ -134,12 +133,14 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
-    private DBGeometry makeGeometryFromWKB(DBCSession session, String hexString) throws DBCException {
-        byte[] binaryData = WKBReader.hexToBytes(hexString);
+    private DBGeometry makeGeometryFromWKB(String hexString) throws DBCException {
+        return makeGeometryFromWKB(WKBReader.hexToBytes(hexString));
+    }
+
+    protected DBGeometry makeGeometryFromWKB(byte[] binary) throws DBCException {
         try {
-            Geometry geometry = new WKBReader().read(binaryData);
-            return new DBGeometry(geometry);
-        } catch (Exception e) {
+            return new DBGeometry(new WKBReader().read(binary));
+        } catch (ParseException e) {
             throw new DBCException("Error parsing WKB value", e);
         }
     }
@@ -210,5 +211,4 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return strGeom;
         }
     }
-
 }
