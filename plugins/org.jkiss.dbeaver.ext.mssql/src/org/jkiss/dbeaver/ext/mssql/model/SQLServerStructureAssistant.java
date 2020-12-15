@@ -98,7 +98,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             SQLServerObjectType.U,
             SQLServerObjectType.V,
             SQLServerObjectType.P,
-            };
+            SQLServerObjectType.FN,
+            SQLServerObjectType.IF,
+            SQLServerObjectType.TF,
+            SQLServerObjectType.X
+        };
     }
 
     @NotNull
