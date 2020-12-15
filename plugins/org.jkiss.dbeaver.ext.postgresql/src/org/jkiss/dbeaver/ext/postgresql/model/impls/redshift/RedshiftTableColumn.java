@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -26,9 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * RedshiftTableColumn base
  */
-public class RedshiftTableColumn extends PostgreTableColumn
-{
-
+public class RedshiftTableColumn extends PostgreTableColumn {
     private String columnEncoding;
     private boolean distKey;
     private int sortKey;
@@ -58,5 +58,16 @@ public class RedshiftTableColumn extends PostgreTableColumn
     @Property(viewable = false, order = 23)
     public int getSortKey() {
         return sortKey;
+    }
+
+    @Override
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
+        return GisConstants.SRID_SIMPLE;
+    }
+
+    @Nullable
+    @Override
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
+        return getTypeName();
     }
 }
