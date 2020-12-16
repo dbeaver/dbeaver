@@ -362,7 +362,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
         DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
         if (selectedObject instanceof DBSObjectContainer) {
-            sc = (DBSObjectContainer)selectedObject;
+            if (!request.getWordDetector().containsSeparator(wordPart) && request.getContext().isSearchGlobally()) {
+                //do not send information about the scheme to the assistant
+            } else {
+                sc = (DBSObjectContainer) selectedObject;
+            }
         }
         if (structureAssistant != null) {
             Map<String, Object> params = new LinkedHashMap<>();
@@ -1016,6 +1020,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             indexOfParent = strings.length - 2;
         }
         return rootSC.getName().equals(wordDetector.removeQuotes(strings[indexOfParent]));
+    }
+
+    private boolean wordEndsOnStructureSeparator(String objectName, SQLWordPartDetector wordDetector) {
+        return objectName.charAt(objectName.length() - 1) == wordDetector.getStructSeparator();
     }
 
     private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName, Map<String, Object> params)
