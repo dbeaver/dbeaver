@@ -176,7 +176,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         final String clientCertProp;
         final String clientCertKeyProp;
 
-        if (sslConfig.getProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD) == null) {
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
             // Backward compatibility
             caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
             clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);

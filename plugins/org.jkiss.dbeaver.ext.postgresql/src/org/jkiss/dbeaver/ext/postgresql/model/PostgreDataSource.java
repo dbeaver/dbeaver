@@ -211,7 +211,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         final String clientCertProp;
         final String keyCertProp;
 
-        if (sslConfig.getProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD) == null) {
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
             // Backward compatibility
             rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
             clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
