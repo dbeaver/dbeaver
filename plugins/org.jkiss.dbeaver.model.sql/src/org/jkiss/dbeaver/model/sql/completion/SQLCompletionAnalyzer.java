@@ -362,7 +362,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBSObjectContainer sc = (DBSObjectContainer) dataSource;
         DBSObject selectedObject = DBUtils.getActiveInstanceObject(request.getContext().getExecutionContext());
         if (selectedObject instanceof DBSObjectContainer) {
-            sc = (DBSObjectContainer)selectedObject;
+            if (request.getContext().isSearchGlobally() && !request.getWordDetector().containsSeparator(wordPart)) {
+                // Do not send information about the scheme to the assistant
+            } else {
+                sc = (DBSObjectContainer) selectedObject;
+            }
         }
         if (structureAssistant != null) {
             Map<String, Object> params = new LinkedHashMap<>();
