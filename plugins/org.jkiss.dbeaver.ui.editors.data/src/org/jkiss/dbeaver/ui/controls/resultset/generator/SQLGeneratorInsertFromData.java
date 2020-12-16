@@ -34,6 +34,11 @@ public class SQLGeneratorInsertFromData extends SQLGeneratorResultSet {
     }
 
     @Override
+    public boolean isDMLOption() {
+        return true;
+    }
+
+    @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) {
         for (ResultSetRow firstRow : getSelectedRows()) {
 
