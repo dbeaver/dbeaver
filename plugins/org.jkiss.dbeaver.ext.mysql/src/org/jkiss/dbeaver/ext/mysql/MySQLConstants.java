@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -43,8 +44,14 @@ public class MySQLConstants {
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
     public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";
     public static final String PROP_SSL_PUBLIC_KEY_RETRIEVE = "ssl.public.key.retrieve";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_KEY} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CA_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String PROP_SSL_DEBUG = "ssl.debug";
 

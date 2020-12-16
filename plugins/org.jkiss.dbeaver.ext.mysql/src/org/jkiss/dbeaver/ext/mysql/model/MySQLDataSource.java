@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -171,9 +172,20 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
         }
 
-        final String caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
-        final String clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
-        final String clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
+        final String caCertProp;
+        final String clientCertProp;
+        final String clientCertKeyProp;
+
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
+            clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
+        } else {
+            caCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+            clientCertKeyProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        }
 
         {
             // Trust keystore

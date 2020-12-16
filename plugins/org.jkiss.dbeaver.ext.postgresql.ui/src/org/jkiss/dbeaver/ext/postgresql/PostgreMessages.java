@@ -100,11 +100,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_extension_database;
 
     /* PostgresSSLConfigurator */
-    public static String dialog_connection_network_postgres_ssl_certificates;
-    public static String dialog_connection_network_postgres_ssl_certificates_root;
-    public static String dialog_connection_network_postgres_ssl_certificates_ca;
-    public static String dialog_connection_network_postgres_ssl_certificates_ssl;
-    public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
     public static String dialog_connection_network_postgres_ssl_advanced;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;
