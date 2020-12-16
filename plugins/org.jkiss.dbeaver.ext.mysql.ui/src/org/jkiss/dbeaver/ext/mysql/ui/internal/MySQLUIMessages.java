@@ -91,13 +91,7 @@ public class MySQLUIMessages extends NLS {
 	public static String mysql_ssl_configurator_label_cipher_suites_tip;
 	public static String mysql_ssl_configurator_checkbox_require_ssl_tip;
 	public static String mysql_ssl_configurator_checkbox_verify_server_certificate_tip;
-	public static String mysql_ssl_configurator_label_ssl_certificate;
-	public static String mysql_ssl_configurator_label_ssl_certificate_key;
 	public static String mysql_ssl_configurator_legend_advanced;
-	public static String mysql_ssl_configurator_legend_certificates;
-	public static String mysql_ssl_configurator_text_with_open_file_ca_certificate;
-	public static String mysql_ssl_configurator_text_with_open_file_ssl_certificate;
-	public static String mysql_ssl_configurator_text_with_open_file_ssl_certificate_key;
 	public static String tools_db_export_wizard_job_dump_log_reader;
 	public static String tools_db_export_wizard_message_export_completed;
 	public static String tools_db_export_wizard_monitor_bytes;
