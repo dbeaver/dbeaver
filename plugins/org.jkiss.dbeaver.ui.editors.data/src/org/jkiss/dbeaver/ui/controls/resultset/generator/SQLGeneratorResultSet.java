@@ -93,7 +93,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
         DBPDataSource dataSource = binding.getDataSource();
         Object value = rsv.getModel().getCellValue(binding, row);
         DBSAttributeBase attribute = binding.getAttribute();
-        if (attribute != null && attribute.getDataKind() == DBPDataKind.DATETIME && !dataSource.getContainer().isUseNativeDateTimeFormat()) {
+        if (attribute != null && attribute.getDataKind() == DBPDataKind.DATETIME && isUseCustomDataFormat()) {
             sql.append(
                     SQLUtils.quoteString(dataSource, SQLUtils.convertValueToSQL(dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI)));
         } else {
