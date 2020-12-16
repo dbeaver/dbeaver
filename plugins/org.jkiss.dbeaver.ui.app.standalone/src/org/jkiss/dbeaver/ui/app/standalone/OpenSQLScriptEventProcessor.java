@@ -37,7 +37,7 @@ public class OpenSQLScriptEventProcessor implements Listener {
         }
     }
 
-    /* package */ void openFiles() {
+    void openFiles() {
         if (pathsOfFilesToOpen.isEmpty()) {
             return;
         }
