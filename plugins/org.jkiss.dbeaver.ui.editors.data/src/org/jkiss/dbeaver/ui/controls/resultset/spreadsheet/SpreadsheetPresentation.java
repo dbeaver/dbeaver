@@ -1181,12 +1181,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
-                        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+                        boolean newWindow;
+                        if (GeneralUtils.isMacOS()) {
+                            newWindow = (state & SWT.COMMAND) == SWT.COMMAND;
+                        } else {
+                            newWindow = (state & SWT.CTRL) == SWT.CTRL;
+                        }
                         controller.navigateAssociation(
                             monitor,
                             controller.getModel(),
                             DBExecUtils.getAssociationByAttribute(attr),
-                            Collections.singletonList(row), ctrlPressed);
+                            Collections.singletonList(row),
+                            newWindow
+                        );
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
