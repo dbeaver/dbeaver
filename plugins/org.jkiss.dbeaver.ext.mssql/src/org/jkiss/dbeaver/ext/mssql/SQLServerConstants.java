@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerConstants {
@@ -35,7 +37,11 @@ public class SQLServerConstants {
 
     public static final String HANDLER_SSL = "mssql_ssl";
 
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_KEYSTORE} instead */
+    @Deprecated
     public static final String PROP_SSL_KEYSTORE = "sslKeyStore";
+    /** @deprecated Use {@link DBWHandlerConfiguration#getPassword()} instead */
+    @Deprecated
     public static final String PROP_SSL_KEYSTORE_PASSWORD = "sslKeyStorePassword";
     public static final String PROP_SSL_KEYSTORE_HOSTNAME = "sslKeyStoreHostname";
     public static final String PROP_SSL_TRUST_SERVER_CERTIFICATE = "sslTrustServerCertificate";
