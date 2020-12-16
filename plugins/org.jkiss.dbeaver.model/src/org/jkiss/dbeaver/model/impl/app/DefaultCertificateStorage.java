@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,6 +30,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -128,7 +130,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
-               keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+                keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
             }
 
             saveKeyStore(dataSource, certType, keyStore);
@@ -136,6 +138,27 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             throw new DBException("Error adding certificate to keystore", e);
         }
 
+    }
+
+    @Override
+    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull byte[] keyStoreStream, @Nullable char[] keyStorePassword) throws DBException {
+        final KeyStore keyStore = getKeyStore(dataSource, certType);
+        try {
+            keyStore.load(new ByteArrayInputStream(keyStoreStream), keyStorePassword);
+
+            for (Enumeration<String> aliases = keyStore.aliases(); aliases.hasMoreElements(); ) {
+                String alias = aliases.nextElement();
+                if (keyStore.isKeyEntry(alias)) {
+                    Key key = keyStore.getKey(alias, keyStorePassword);
+                    keyStore.setKeyEntry(alias, key, DEFAULT_PASSWORD, keyStore.getCertificateChain(alias));
+                    break;
+                }
+            }
+
+            saveKeyStore(dataSource, certType, keyStore);
+        } catch (Throwable e) {
+            throw new DBException("Error loading keystore", e);
+        }
     }
 
     @Override
