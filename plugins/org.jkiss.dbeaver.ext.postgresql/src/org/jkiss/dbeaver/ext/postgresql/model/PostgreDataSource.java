@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -206,15 +207,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+        final String rootCertProp;
+        final String clientCertProp;
+        final String keyCertProp;
+
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+            clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+            keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+        } else {
+            rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+            keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        }
+
         if (!CommonUtils.isEmpty(rootCertProp)) {
             props.put("sslrootcert", rootCertProp);
         }
-        final String clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+
         if (!CommonUtils.isEmpty(clientCertProp)) {
             props.put("sslcert", clientCertProp);
         }
-        final String keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+
         if (!CommonUtils.isEmpty(keyCertProp)) {
             props.put("sslkey", keyCertProp);
         }

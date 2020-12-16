@@ -17,25 +17,36 @@
 package org.jkiss.dbeaver.ui.dialogs.net;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * CasSSLConfigurator
  */
-public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI
-{
-    private TextWithOpen caCertPath;
-    private TextWithOpen clientCertPath;
-    private TextWithOpen clientKeyPath;
+public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
+    private Button certRadioButton;
+    private Button keyStoreRadioButton;
+
+    protected TextWithOpen caCertPath;
+    protected TextWithOpen clientCertPath;
+    protected TextWithOpen clientKeyPath;
+    protected TextWithOpen keyStorePath;
+    protected Text keyStorePassword;
+    protected SSLConfigurationMethod method;
+
+    protected Composite sslCertComposite;
+    protected Composite sslKeyStoreComposite;
 
     @Override
     public void createControl(Composite parent, Runnable propertyChangeListener) {
@@ -48,30 +59,83 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI
         createTrustStoreConfigGroup(composite);
     }
 
-    protected Composite createTrustStoreConfigGroup(Composite composite) {
-        Group certGroup = UIUtils.createControlGroup(composite, "Client Certificate", 2, GridData.FILL_HORIZONTAL, -1);
+    protected Group createTrustStoreConfigGroup(Composite composite) {
+        final boolean certificatesSupported = isCertificatesSupported();
+        final boolean keyStoreSupported = isKeystoreSupported();
 
-        if (useCACertificate()) {
-            UIUtils.createControlLabel(certGroup, "CA Certificate");
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 130;
-            caCertPath = new TextWithOpenFile(certGroup, "CA Certificate", new String[]{"*.*", "*.crt", "*"});
-            caCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        assert certificatesSupported || keyStoreSupported;
+
+        Group sslParameters = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_setting_ssl_configurator_legend_parameters, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+
+        if (certificatesSupported && keyStoreSupported) {
+            final SelectionAdapter methodSwitcher = new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showMethodControls((SSLConfigurationMethod) e.widget.getData());
+                }
+            };
+
+            Composite sslMethodComposite = UIUtils.createComposite(sslParameters, 3);
+
+            UIUtils.createControlLabel(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method);
+            certRadioButton = UIUtils.createRadioButton(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method_certs, SSLConfigurationMethod.CERTIFICATES, methodSwitcher);
+            keyStoreRadioButton = UIUtils.createRadioButton(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method_keystore, SSLConfigurationMethod.KEYSTORE, methodSwitcher);
         }
 
-        UIUtils.createControlLabel(certGroup, "Client Certificate");
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientCertPath = new TextWithOpenFile(certGroup, "Client Certificate", new String[]{"*.*", "*.crt", "*"});
-        clientCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        {
+            sslCertComposite = UIUtils.createComposite(sslParameters, 2);
+            sslCertComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(certGroup, "Client Private Key");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientKeyPath = new TextWithOpenFile(certGroup, "Client Key", new String[]{"*.*", "*.key", "*"});
-        clientKeyPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (useCACertificate()) {
+                UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_name);
+                caCertPath = new TextWithOpenFile(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_title, new String[]{"*.*", "*.crt", "*"});
+                caCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
 
-        return certGroup;
+            UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_name);
+            clientCertPath = new TextWithOpenFile(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_title, new String[]{"*.*", "*.crt", "*"});
+            clientCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_name);
+            clientKeyPath = new TextWithOpenFile(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_title, new String[]{"*.*", "*.key", "*"});
+            clientKeyPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        {
+            sslKeyStoreComposite = UIUtils.createComposite(sslParameters, 2);
+            sslKeyStoreComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            UIUtils.createControlLabel(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_name);
+            keyStorePath = new TextWithOpenFile(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_title, new String[]{"*.jks;*.pfx", "*.*"});
+            keyStorePath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            UIUtils.createControlLabel(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_password_name);
+            keyStorePassword = new Text(sslKeyStoreComposite, SWT.BORDER | SWT.PASSWORD);
+            keyStorePassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        return sslParameters;
+    }
+
+    private void showMethodControls(SSLConfigurationMethod configurationMethod) {
+        boolean keystore = configurationMethod == SSLConfigurationMethod.KEYSTORE;
+        showControl(sslCertComposite, !keystore);
+        showControl(sslKeyStoreComposite, keystore);
+        sslCertComposite.getParent().getParent().layout(true, true);
+        method = configurationMethod;
+    }
+
+    private void showControl(Control control, boolean flag) {
+        control.setVisible(flag);
+        ((GridData) control.getLayoutData()).exclude = !flag;
+    }
+
+    protected boolean isCertificatesSupported() {
+        return true;
+    }
+
+    protected boolean isKeystoreSupported() {
+        return false;
     }
 
     protected boolean useCACertificate() {
@@ -80,19 +144,61 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI
 
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration) {
-        if (caCertPath != null) {
-            caCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)));
+        if (isCertificatesSupported()) {
+            if (caCertPath != null) {
+                caCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)));
+            }
+            clientCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)));
+            clientKeyPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)));
         }
-        clientCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)));
-        clientKeyPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)));
+
+        if (isKeystoreSupported()) {
+            keyStorePath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE)));
+            keyStorePassword.setText(CommonUtils.notEmpty(configuration.getPassword()));
+        }
+
+        final SSLConfigurationMethod method;
+
+        if (isCertificatesSupported() && isKeystoreSupported()) {
+            method = CommonUtils.valueOf(
+                SSLConfigurationMethod.class,
+                configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD),
+                SSLConfigurationMethod.CERTIFICATES);
+
+            if (method == SSLConfigurationMethod.CERTIFICATES) {
+                certRadioButton.setSelection(true);
+            } else {
+                keyStoreRadioButton.setSelection(true);
+            }
+        } else {
+            method = isCertificatesSupported()
+                ? SSLConfigurationMethod.CERTIFICATES
+                : SSLConfigurationMethod.KEYSTORE;
+        }
+
+        showMethodControls(method);
     }
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
-        if (caCertPath != null) {
-            configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, caCertPath.getText().trim());
+        if (isCertificatesSupported()) {
+            if (caCertPath != null) {
+                configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, caCertPath.getText().trim());
+            }
+            configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, clientCertPath.getText().trim());
+            configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, clientKeyPath.getText().trim());
         }
-        configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, clientCertPath.getText().trim());
-        configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, clientKeyPath.getText().trim());
+
+        if (isKeystoreSupported()) {
+            configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE, keyStorePath.getText().trim());
+
+            final String password = keyStorePassword.getText().trim();
+            if (!CommonUtils.isEmptyTrimmed(password)) {
+                configuration.setPassword(password);
+                configuration.setSavePassword(true);
+            }
+        }
+
+        configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, method.name());
     }
 }

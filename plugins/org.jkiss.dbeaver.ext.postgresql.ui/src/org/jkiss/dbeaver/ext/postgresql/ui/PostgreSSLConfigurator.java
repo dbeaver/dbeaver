@@ -29,13 +29,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TextWithOpen;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorAbstractUI;
+import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
 import org.jkiss.utils.CommonUtils;
 
 import javax.net.ssl.SSLSocketFactory;
@@ -43,15 +42,10 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * PostgreSSLConfigurator
  */
-public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
-{
+public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private static final boolean ENABLE_PROXY = false;
 
     public static final String[] SSL_MODES = {"","disable","allow","prefer","require","verify-ca","verify-full"};
-
-    private TextWithOpen rootCertText;
-    private TextWithOpen clientCertText;
-    private TextWithOpen clientKeyText;
 
     private Combo sslModeCombo;
     private Combo sslFactoryCombo;
@@ -67,28 +61,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         composite.setLayoutData(gd);
 
         createSSLConfigHint(composite, true, 1);
-
-        {
-            Group certGroup = UIUtils.createControlGroup(composite, PostgreMessages.dialog_connection_network_postgres_ssl_certificates, 2, GridData.FILL_HORIZONTAL, -1);
-            UIUtils.createControlLabel(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_root);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 130;
-            rootCertText = new TextWithOpenFile(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_ca, new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"});
-            rootCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            UIUtils.createControlLabel(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_ssl);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 130;
-            clientCertText = new TextWithOpenFile(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_ssl, new String[]{"*.*", "*.cert", "*.pem", "*"});
-            clientCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            UIUtils.createControlLabel(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_ssl_key);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 130;
-            clientKeyText = new TextWithOpenFile(certGroup, PostgreMessages.dialog_connection_network_postgres_ssl_certificates_ssl, new String[]{"*.*", "*.cert", "*.pem", "*"});
-            clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-
+        createTrustStoreConfigGroup(composite);
 
         {
             Group advGroup = UIUtils.createControlGroup(composite, PostgreMessages.dialog_connection_network_postgres_ssl_advanced, 2, GridData.FILL_HORIZONTAL, -1);
@@ -109,10 +82,21 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
     }
 
     @Override
+    protected boolean useCACertificate() {
+        return true;
+    }
+
+    @Override
     public void loadSettings(final DBWHandlerConfiguration configuration) {
-        clientCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT)));
-        clientKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY)));
-        rootCertText.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT)));
+        super.loadSettings(configuration);
+
+        if (CommonUtils.isEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            caCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT)));
+            clientCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT)));
+            clientKeyPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY)));
+        }
+
         UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
         if (ENABLE_PROXY) {
             useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
@@ -151,9 +135,8 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration) {
-        configuration.setProperty(PostgreConstants.PROP_SSL_ROOT_CERT, rootCertText.getText().trim());
-        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText().trim());
-        configuration.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText().trim());
+        super.saveSettings(configuration);
+
         configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());
         configuration.setProperty(PostgreConstants.PROP_SSL_FACTORY, sslFactoryCombo.getText());
         if (ENABLE_PROXY) {
