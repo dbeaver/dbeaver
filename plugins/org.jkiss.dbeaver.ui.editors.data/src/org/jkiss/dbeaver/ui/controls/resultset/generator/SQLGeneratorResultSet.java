@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.generator;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -90,8 +92,14 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<IResultSetC
     {
         DBPDataSource dataSource = binding.getDataSource();
         Object value = rsv.getModel().getCellValue(binding, row);
-        sql.append(
-            SQLUtils.convertValueToSQL(dataSource, binding.getAttribute(), value));
+        DBSAttributeBase attribute = binding.getAttribute();
+        if (attribute != null && attribute.getDataKind() == DBPDataKind.DATETIME && isUseCustomDataFormat()) {
+            sql.append(
+                    SQLUtils.quoteString(dataSource, SQLUtils.convertValueToSQL(dataSource, attribute, DBUtils.findValueHandler(dataSource, attribute), value, DBDDisplayFormat.UI)));
+        } else {
+            sql.append(
+                    SQLUtils.convertValueToSQL(dataSource, attribute, value));
+        }
     }
 
 }

@@ -30,6 +30,11 @@ import java.util.Collection;
 public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
 
     @Override
+    public boolean isDMLOption() {
+        return true;
+    }
+
+    @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) throws DBException {
         for (ResultSetRow firstRow : getSelectedRows()) {
 
