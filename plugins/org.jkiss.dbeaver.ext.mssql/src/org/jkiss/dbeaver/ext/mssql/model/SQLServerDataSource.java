@@ -152,7 +152,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             final String keystoreFileProp;
             final String keystorePasswordProp;
 
-            if (sslConfig.getProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD) == null) {
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
                 // Backward compatibility
                 keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
                 keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
