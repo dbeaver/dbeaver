@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -101,6 +102,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
 
+    private final OpenSQLScriptEventProcessor processor;
+
+    protected ApplicationWorkbenchAdvisor(OpenSQLScriptEventProcessor processor) {
+        this.processor = processor;
+    }
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -285,5 +291,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     public void eventLoopException(Throwable exception) {
         super.eventLoopException(exception);
         log.error("Event loop exception", exception);
+    }
+
+    @Override
+    public void eventLoopIdle(Display display) {
+        processor.openFiles();
+        super.eventLoopIdle(display);
     }
 }

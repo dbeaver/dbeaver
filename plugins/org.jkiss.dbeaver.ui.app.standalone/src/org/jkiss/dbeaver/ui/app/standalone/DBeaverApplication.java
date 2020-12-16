@@ -65,7 +65,6 @@ import java.util.Properties;
  * This class controls all aspects of the application's execution
  */
 public class DBeaverApplication extends BaseApplicationImpl implements DBPApplicationController {
-
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
     public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.ui.app.standalone";
@@ -232,7 +231,9 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         try {
             log.debug("Run workbench");
             getDisplay();
-            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
+            OpenSQLScriptEventProcessor processor = new OpenSQLScriptEventProcessor();
+            display.addListener(SWT.OpenDocument, processor);
+            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor(processor));
 
             if (resetUIOnRestart || resetWorkspaceOnRestart) {
                 resetUISettings(instanceLoc);
@@ -494,8 +495,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     }
 
     @NotNull
-    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() {
-        return new ApplicationWorkbenchAdvisor();
+    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor(OpenSQLScriptEventProcessor processor) {
+        return new ApplicationWorkbenchAdvisor(processor);
     }
 
     @Override
@@ -679,5 +680,4 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
 
     }
-
 }
