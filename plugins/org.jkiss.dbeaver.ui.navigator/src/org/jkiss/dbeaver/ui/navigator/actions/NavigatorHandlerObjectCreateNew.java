@@ -251,8 +251,13 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
                     nodeClass = node.getChildrenClass((DBXTreeItem)metaChildren.get(0));
                 }
-                // FIXME: folder.getChildrenClass may return more precise type than node.getChildrenClass
-                // FIXME: we probably should use it then (only if it is subclass)
+                {
+                    Class<?> childrenClass = ((DBNDatabaseFolder) node).getChildrenClass();
+                    if (nodeClass == null || (childrenClass != null && nodeClass.isAssignableFrom(childrenClass))) {
+                        // folder.getChildrenClass may return more precise type than node.getChildrenClass
+                        nodeClass = childrenClass;
+                    }
+                }
                 if (nodeClass == null) {
                     nodeClass = ((DBNDatabaseFolder) node).getChildrenClass();
                 }
