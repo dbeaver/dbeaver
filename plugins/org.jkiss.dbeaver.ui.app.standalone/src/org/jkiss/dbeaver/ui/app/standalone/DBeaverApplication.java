@@ -232,6 +232,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         try {
             log.debug("Run workbench");
             getDisplay();
+            // processor must be created before we start event loop
             DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor(processor));
 
