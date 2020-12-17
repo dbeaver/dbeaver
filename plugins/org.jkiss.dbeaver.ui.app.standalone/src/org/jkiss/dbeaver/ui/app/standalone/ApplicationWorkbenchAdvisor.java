@@ -103,10 +103,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
 
+    //processor must be created before we start event loop
     private final DelayedEventsProcessor processor;
 
-    protected ApplicationWorkbenchAdvisor(DelayedEventsProcessor processor) {
-        this.processor = processor;
+    protected ApplicationWorkbenchAdvisor() {
+        this.processor = new DelayedEventsProcessor(PlatformUI.getWorkbench().getDisplay());
     }
 
     @Override
