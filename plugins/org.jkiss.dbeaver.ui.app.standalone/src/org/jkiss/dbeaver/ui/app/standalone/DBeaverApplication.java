@@ -32,7 +32,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
-import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -408,7 +407,6 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
             if (display == null) {
                 display = PlatformUI.createDisplay();
             }
-            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
         }
         return display;
     }
@@ -679,5 +677,4 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
 
     }
-
 }
