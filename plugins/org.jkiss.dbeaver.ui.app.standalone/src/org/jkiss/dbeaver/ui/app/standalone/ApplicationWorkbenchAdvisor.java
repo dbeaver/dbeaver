@@ -107,7 +107,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private final DelayedEventsProcessor processor;
 
     protected ApplicationWorkbenchAdvisor() {
-        this.processor = new DelayedEventsProcessor(PlatformUI.getWorkbench().getDisplay());
+        this.processor = new DelayedEventsProcessor(Display.getCurrent());
     }
 
     @Override
