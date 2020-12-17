@@ -32,7 +32,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
-import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -232,9 +231,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         try {
             log.debug("Run workbench");
             getDisplay();
-            // processor must be created before we start event loop
-            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
-            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor(processor));
+            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
             if (resetUIOnRestart || resetWorkspaceOnRestart) {
                 resetUISettings(instanceLoc);
@@ -495,8 +492,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     }
 
     @NotNull
-    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor(DelayedEventsProcessor processor) {
-        return new ApplicationWorkbenchAdvisor(processor);
+    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() {
+        return new ApplicationWorkbenchAdvisor();
     }
 
     @Override
