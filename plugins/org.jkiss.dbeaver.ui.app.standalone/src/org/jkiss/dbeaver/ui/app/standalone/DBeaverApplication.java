@@ -232,7 +232,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         try {
             log.debug("Run workbench");
             getDisplay();
-            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
+            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
+            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor(processor));
 
             if (resetUIOnRestart || resetWorkspaceOnRestart) {
                 resetUISettings(instanceLoc);
@@ -408,7 +409,6 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
             if (display == null) {
                 display = PlatformUI.createDisplay();
             }
-            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
         }
         return display;
     }
@@ -494,8 +494,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     }
 
     @NotNull
-    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() {
-        return new ApplicationWorkbenchAdvisor();
+    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor(DelayedEventsProcessor processor) {
+        return new ApplicationWorkbenchAdvisor(processor);
     }
 
     @Override
@@ -679,5 +679,4 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         }
 
     }
-
 }
