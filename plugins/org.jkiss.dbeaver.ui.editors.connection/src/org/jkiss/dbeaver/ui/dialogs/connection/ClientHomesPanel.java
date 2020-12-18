@@ -218,9 +218,11 @@ public class ClientHomesPanel extends Composite {
 
     public void loadHomes(DBPDriver driver) {
         homesTable.removeAll();
+        this.driver = driver;
+
         selectHome(null);
 
-        this.driver = driver;
+
         DBPNativeClientLocationManager clientManager = this.driver.getNativeClientManager();
         if (clientManager == null) {
             log.debug("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
