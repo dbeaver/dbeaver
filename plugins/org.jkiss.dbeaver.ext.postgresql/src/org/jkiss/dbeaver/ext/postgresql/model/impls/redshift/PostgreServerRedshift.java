@@ -290,5 +290,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
         }
     }
 
+    @Override
+    public boolean supportsBackslashStringEscape() {
+        return true;
+    }
 }
 

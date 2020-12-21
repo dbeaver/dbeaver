@@ -453,4 +453,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsRolesWithCreateDBAbility() {
         return supportsRoles();
     }
+
+    @Override
+    public boolean supportsBackslashStringEscape() {
+        return false;
+    }
 }
