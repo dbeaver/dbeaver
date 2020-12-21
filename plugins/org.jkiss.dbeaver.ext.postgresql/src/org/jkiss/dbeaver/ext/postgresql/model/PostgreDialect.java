@@ -760,7 +760,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     @Override
     public char getStringEscapeCharacter() {
-        if (serverExtension.supportsBackslashStringEscape()) {
+        if (serverExtension != null && serverExtension.supportsBackslashStringEscape()) {
             return '\\';
         }
         return super.getStringEscapeCharacter();
