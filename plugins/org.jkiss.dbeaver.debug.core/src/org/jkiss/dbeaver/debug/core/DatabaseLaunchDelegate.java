@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Map;
@@ -40,12 +39,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException {
-        String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
-        DBPDataSourceContainer datasourceDescriptor = DBUtils.findDataSource(datasourceId);
-        if (datasourceDescriptor == null) {
-            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
-            throw new CoreException(DebugUtils.newErrorStatus(message));
-        }
+        DBPDataSourceContainer datasourceDescriptor = DebugUtils.getDataSourceContainer(configuration);
         DBGController controller = createController(datasourceDescriptor, configuration.getAttributes());
         if (controller == null) {
             String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);

@@ -138,5 +138,7 @@ public interface PostgreServerExtension
 
     boolean supportsRolesWithCreateDBAbility();
 
+    boolean supportSerialTypes();
+
     boolean supportsBackslashStringEscape();
 }
