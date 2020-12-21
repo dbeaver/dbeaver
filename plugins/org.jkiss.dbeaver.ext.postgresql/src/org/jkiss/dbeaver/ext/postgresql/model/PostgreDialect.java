@@ -658,6 +658,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     };
     //endregion
 
+    private PostgreServerExtension serverExtension;
 
     public PostgreDialect() {
         super("PostgreSQL", "postgresql");
@@ -746,6 +747,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
         if (dataSource instanceof PostgreDataSource) {
             ((PostgreDataSource) dataSource).getServerType().configureDialect(this);
+            serverExtension = ((PostgreDataSource) dataSource).getServerType();
+            serverExtension.configureDialect(this);
         }
     }
 
@@ -753,6 +756,14 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public char getStringEscapeCharacter() {
+        if (serverExtension != null && serverExtension.supportsBackslashStringEscape()) {
+            return '\\';
+        }
+        return super.getStringEscapeCharacter();
     }
 
     @Override
