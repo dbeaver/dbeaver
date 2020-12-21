@@ -119,7 +119,7 @@ public class TabFolderReorder
                     Point point = folder.toControl(folder.getDisplay().getCursorLocation());
                     CTabItem item = folder.getItem(new Point(point.x, point.y));
                     if (item != null && dragItem != null) {
-                        swapTabs(dragItem, item);
+                        moveTab(folder, folder.indexOf(dragItem), folder.indexOf(item));
                     }
                 }
             }
@@ -151,6 +151,29 @@ public class TabFolderReorder
             }
 
         });
+    }
+
+    public void moveTab(@NotNull CTabFolder folder, int from, int to) {
+        if (from == to) {
+            return;
+        }
+
+        CTabItem currTabItem = folder.getItem(from);
+        CTabItem nextTabItem;
+
+        if (from < to) {
+            for (int i = from + 1; i <= to; i++) {
+                nextTabItem = folder.getItem(i);
+                swapTabs(currTabItem, nextTabItem);
+                currTabItem = nextTabItem;
+            }
+        } else {
+            for (int i = from - 1; i >= to; i--) {
+                nextTabItem = folder.getItem(i);
+                swapTabs(currTabItem, nextTabItem);
+                currTabItem = nextTabItem;
+            }
+        }
     }
 
     public void swapTabs(@NotNull CTabItem src, @NotNull CTabItem dst) {
