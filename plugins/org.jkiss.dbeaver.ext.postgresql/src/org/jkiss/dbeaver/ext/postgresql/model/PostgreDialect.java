@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreDollarQuoteRule;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -658,6 +659,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     };
     //endregion
 
+    private boolean isRedshiftDialect;
 
     public PostgreDialect() {
         super("PostgreSQL", "postgresql");
@@ -746,6 +748,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
 
         if (dataSource instanceof PostgreDataSource) {
             ((PostgreDataSource) dataSource).getServerType().configureDialect(this);
+            PostgreServerExtension serverExtension = ((PostgreDataSource) dataSource).getServerType();
+            serverExtension.configureDialect(this);
+            if (serverExtension instanceof PostgreServerRedshift) {
+                isRedshiftDialect = true;
+            }
         }
     }
 
@@ -753,6 +760,14 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public char getStringEscapeCharacter() {
+        if (isRedshiftDialect) {
+            return '\\';
+        }
+        return super.getStringEscapeCharacter();
     }
 
     @Override
