@@ -94,8 +94,11 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     private void mapAliases(PostgreSchema schema) {
         // Cache aliases
         if (schema.isCatalogSchema()) {
-            mapDataTypeAliases(schema.getDataSource().getServerType().getDataTypeAliases(), false);
-            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
+            PostgreServerExtension serverType = schema.getDataSource().getServerType();
+            mapDataTypeAliases(serverType.getDataTypeAliases(), false);
+            if (serverType.supportSerialTypes()) {
+                mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
+            }
         }
     }
 
