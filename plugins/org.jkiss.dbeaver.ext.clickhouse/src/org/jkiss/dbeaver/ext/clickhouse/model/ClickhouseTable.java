@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -34,6 +36,7 @@ import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * ClickhouseTable
@@ -51,6 +54,12 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
 
     ClickhouseTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+
+    @Nullable
+    @Override
+    public synchronized List<ClickhouseTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return (List<ClickhouseTableColumn>) super.getAttributes(monitor);
     }
 
     @Override

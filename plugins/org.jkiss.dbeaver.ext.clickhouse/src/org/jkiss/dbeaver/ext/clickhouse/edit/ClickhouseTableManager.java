@@ -16,13 +16,44 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Collection;
 
 /**
  * Clickhouse table manager
  */
 public class ClickhouseTableManager extends GenericTableManager {
+
+    private static final Class<?>[] CHILD_TYPES = {
+            ClickhouseTableColumn.class,
+            GenericUniqueKey.class,
+            GenericTableForeignKey.class,
+            GenericTableIndex.class
+    };
+
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes() {
+        return CHILD_TYPES;
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object, Class<? extends DBSObject> childType) throws DBException {
+        if (childType == ClickhouseTableColumn.class) {
+            return object.getAttributes(monitor);
+        }
+        return super.getChildObjects(monitor, object, childType);
+    }
 
     @Override
     protected String getDropTableType(GenericTableBase table) {
