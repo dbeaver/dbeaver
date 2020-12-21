@@ -26,6 +26,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGConstants;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -196,5 +198,17 @@ public class DebugUtils {
      */
     public static void fireTerminate(Object source) {
         fireEvent(new DebugEvent(source, DebugEvent.TERMINATE));
+    }
+
+    @NotNull
+    public static DBPDataSourceContainer getDataSourceContainer(ILaunchConfiguration configuration) throws CoreException {
+        String projectName = configuration.getAttribute(DBGConstants.ATTR_PROJECT_NAME, (String)null);
+        String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
+        DBPDataSourceContainer datasourceDescriptor = DBUtils.findDataSource(projectName, datasourceId);
+        if (datasourceDescriptor == null) {
+            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
+            throw new CoreException(newErrorStatus(message));
+        }
+        return datasourceDescriptor;
     }
 }
