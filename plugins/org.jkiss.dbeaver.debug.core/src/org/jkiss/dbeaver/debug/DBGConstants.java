@@ -22,6 +22,7 @@ public class DBGConstants {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
+    public static final String ATTR_PROJECT_NAME = BUNDLE_SYMBOLIC_NAME +  ".ATTR_PROJECT_NAME"; //$NON-NLS-1$
     public static final String ATTR_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME +  ".ATTR_DATASOURCE_ID"; //$NON-NLS-1$
     public static final String ATTR_DEBUG_TYPE = BUNDLE_SYMBOLIC_NAME + ".ATTR_DEBUG_TYPE"; //$NON-NLS-1$
 

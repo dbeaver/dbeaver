@@ -455,6 +455,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportSerialTypes() {
+        return true;
+    }
+
+    @Override
     public boolean supportsBackslashStringEscape() {
         return false;
     }

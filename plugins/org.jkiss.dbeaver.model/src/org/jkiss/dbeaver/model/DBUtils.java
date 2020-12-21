@@ -2014,6 +2014,19 @@ public final class DBUtils {
         return null;
     }
 
+    public static DBPDataSourceContainer findDataSource(String projectName, String dataSourceId) {
+        DBPProject project = null;
+        if (!CommonUtils.isEmpty(projectName)) {
+            project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+        }
+
+        if (project != null) {
+            return project.getDataSourceRegistry().getDataSource(dataSourceId);
+        } else {
+            return DBUtils.findDataSource(dataSourceId);
+        }
+    }
+
     /**
      * Compares two values read from database.
      * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type oesn't matter).

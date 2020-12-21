@@ -100,6 +100,7 @@ public class RedshiftView extends PostgreView
 
                         PostgreTableColumn viewColumn = new PostgreTableColumn(this);
                         viewColumn.setName(colName);
+                        viewColumn.setPersisted(true);
 
                         String colTypeName;
                         int colPrecision = -1, colScale = -1;

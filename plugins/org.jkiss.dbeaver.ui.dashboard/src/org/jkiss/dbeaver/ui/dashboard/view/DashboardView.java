@@ -21,7 +21,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -83,16 +82,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
                 projectName = secondaryId.substring(0, divPos);
                 dsId = secondaryId.substring(divPos + 1);
             }
-            DBPProject project = null;
-            if (!CommonUtils.isEmpty(projectName)) {
-                project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-            }
-
-            if (project != null) {
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsId);
-            } else {
-                dataSourceContainer = DBUtils.findDataSource(dsId);
-            }
+            dataSourceContainer = DBUtils.findDataSource(projectName, dsId);
             if (dataSourceContainer == null) {
                 throw new IllegalStateException("Database connection '" + dsId + "' not found");
             }

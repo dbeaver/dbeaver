@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -32,6 +33,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -101,6 +103,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
 
+    //processor must be created before we start event loop
+    private final DelayedEventsProcessor processor;
+
+    protected ApplicationWorkbenchAdvisor() {
+        this.processor = new DelayedEventsProcessor(Display.getCurrent());
+    }
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -285,5 +293,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     public void eventLoopException(Throwable exception) {
         super.eventLoopException(exception);
         log.error("Event loop exception", exception);
+    }
+
+    @Override
+    public void eventLoopIdle(Display display) {
+        processor.catchUp(display);
+        super.eventLoopIdle(display);
     }
 }
