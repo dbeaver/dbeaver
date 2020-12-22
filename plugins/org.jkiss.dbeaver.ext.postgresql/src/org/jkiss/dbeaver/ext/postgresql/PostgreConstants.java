@@ -84,6 +84,7 @@ public class PostgreConstants {
         "oid", "oid", "Row identifier", false);
 
     public static final String TYPE_UUID = "uuid";
+    public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_HSTORE = "hstore";
     public static final String TYPE_JSON = "json";
