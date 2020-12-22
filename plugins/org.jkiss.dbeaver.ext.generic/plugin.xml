@@ -849,6 +849,7 @@
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter_table_add_column" value="true"/>
                 </driver>
 
                 <!-- OrientDB -->

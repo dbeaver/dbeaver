@@ -46,6 +46,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public static final long DDL_FEATURE_USER_BRACKETS_IN_DROP = 2;
+    public static final long FEATURE_ALTER_TABLE_ADD_COLUMN = 4;
 
     public static final String QUOTE = "'";
 
@@ -156,10 +157,16 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getParentObject();
+        StringBuilder sql = new StringBuilder(256);
+        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL)).append(" ADD ");
+        if (hasDDLFeature(command.getObject(), FEATURE_ALTER_TABLE_ADD_COLUMN)) {
+            sql.append("COLUMN ");
+        }
+        sql.append(getNestedDeclaration(monitor, table, command, options));
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                "ALTER TABLE " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(monitor, table, command, options)) );
+                sql.toString()) );
     }
 
     @Override
