@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,6 +34,7 @@ import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -238,6 +240,19 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportSerialTypes() {
+        return false;
+    }
+
+    @Override
+    public Map<String, String> getDataTypeAliases() {
+        Map<String, String> aliasMap = new LinkedHashMap<>(super.getDataTypeAliases());
+        aliasMap.put("character", PostgreConstants.TYPE_BPCHAR);
+        aliasMap.put("character varying", PostgreConstants.TYPE_VARCHAR);
+        return aliasMap;
+    }
+
+    @Override
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
         return new RedshiftSchemaCache();
     }
@@ -290,5 +305,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
         }
     }
 
+    @Override
+    public boolean supportsBackslashStringEscape() {
+        return true;
+    }
 }
 
