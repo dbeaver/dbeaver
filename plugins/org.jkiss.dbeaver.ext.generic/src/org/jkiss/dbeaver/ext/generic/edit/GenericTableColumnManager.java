@@ -115,6 +115,9 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_BRACKETS))) {
             features |= DDL_FEATURE_USER_BRACKETS_IN_DROP;
         }
+        if (CommonUtils.toBoolean(object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_ALTER_TABLE_ADD_COLUMN))) {
+            features |= FEATURE_ALTER_TABLE_ADD_COLUMN;
+        }
         return features;
     }
 
