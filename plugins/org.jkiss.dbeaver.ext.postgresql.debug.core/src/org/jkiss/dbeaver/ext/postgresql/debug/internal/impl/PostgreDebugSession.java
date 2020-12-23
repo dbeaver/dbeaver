@@ -811,7 +811,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     @Override
     public boolean canStepReturn() {
-        return false; //FIXME?
+        return false;
     }
 
     /**
