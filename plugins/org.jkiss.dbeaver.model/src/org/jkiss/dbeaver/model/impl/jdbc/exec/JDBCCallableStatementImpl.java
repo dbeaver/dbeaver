@@ -179,7 +179,13 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         } else {
             container = (DBSObjectContainer) session.getDataSource();
             for (int i = 0; i < names.length - 1; i++) {
-                DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
+                String childName = CommonUtils.trim(names[i]);
+                if (CommonUtils.isEmpty(childName)) {
+                    return null;
+                }
+                DBSObject child = container.getChild(
+                    session.getProgressMonitor(),
+                    DBObjectNameCaseTransformer.transformName(session.getDataSource(), childName));
                 if (child instanceof DBSObjectContainer) {
                     container = (DBSObjectContainer) child;
                 } else {

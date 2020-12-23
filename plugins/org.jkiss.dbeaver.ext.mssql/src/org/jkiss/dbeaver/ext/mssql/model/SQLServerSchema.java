@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +53,7 @@ import java.util.Map;
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSObjectWithScript, DBPObjectStatisticsCollector {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSProcedureContainer, DBSObjectWithScript, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(SQLServerSchema.class);
 
@@ -804,11 +805,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     //////////////////////////////////////////////////
     // Procedures
 
+    @Override
     @Association
     public Collection<SQLServerProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return procedureCache.getAllObjects(monitor, this);
     }
 
+    @Override
     public SQLServerProcedure getProcedure(DBRProgressMonitor monitor, String name) throws DBException {
         return procedureCache.getObject(monitor, this, name);
     }
