@@ -323,7 +323,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public DBPProject getProject() {
-        return wizard.getDataSourceRegistry().getProject();
+        DBPDataSourceRegistry registry = wizard.getDataSourceRegistry();
+        return registry == null ? null : registry.getProject();
     }
 
     @Override
