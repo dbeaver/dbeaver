@@ -519,6 +519,7 @@ public class SQLEditor extends SQLEditorBase implements
 
                 StringBuilder assocSpecLine = new StringBuilder(EMBEDDED_BINDING_PREFIX);
                 bindingType.appendSpec(dataSourceContainer, assocSpecLine);
+                assocSpecLine.append(GeneralUtils.getDefaultLineSeparator());
 
                 if (region != null) {
                     // Remove connection association
