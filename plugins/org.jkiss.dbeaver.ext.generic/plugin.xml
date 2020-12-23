@@ -154,12 +154,12 @@
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
                     <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) drivers" type="boolean" required="false" defaultValue="false"/>
-                    <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
-                    <property id="ddl-drop-column-brackets" label="Drop column - usee brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
+                    <property id="ddl-drop-column-brackets" label="Drop column - use brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
+                    <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -239,6 +239,8 @@
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
 
                     <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
                 </driver>
