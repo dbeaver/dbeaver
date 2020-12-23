@@ -26,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -95,6 +96,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         super.dispose();
     }
 
+    @Nullable
     abstract public DBPDataSourceRegistry getDataSourceRegistry();
 
     abstract DBPDriver getSelectedDriver();
@@ -111,10 +113,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
     public DataSourceDescriptor getActiveDataSource() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
         DataSourceDescriptor info = infoMap.get(driver);
+        DBPDataSourceRegistry registry = getDataSourceRegistry();
+        if (registry == null) {
+            throw new IllegalStateException("No active project");
+        }
         if (info == null) {
             DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
             info = new DataSourceDescriptor(
-                getDataSourceRegistry(),
+                registry,
                 DataSourceDescriptor.generateNewId(getSelectedDriver()),
                 driver,
                 connectionInfo);

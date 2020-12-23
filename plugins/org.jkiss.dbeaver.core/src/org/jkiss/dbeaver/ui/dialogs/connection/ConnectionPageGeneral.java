@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -72,7 +73,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
     }
 
-    private ConnectionWizard wizard;
+    private final ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
@@ -524,8 +525,11 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         connectionFolderCombo.add(UINavigatorMessages.toolbar_datasource_selector_empty);
         connectionFolders.clear();
         connectionFolders.add(null);
-        for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(getWizard().getDataSourceRegistry().getRootFolders())) {
-            loadConnectionFolder(0, folder);
+        DBPDataSourceRegistry registry = getWizard().getDataSourceRegistry();
+        if (registry != null) {
+            for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(registry.getRootFolders())) {
+                loadConnectionFolder(0, folder);
+            }
         }
     }
 
