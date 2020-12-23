@@ -53,6 +53,7 @@ public class GenericConstants {
     public static final String PARAM_EMBEDDED = "embedded";
     public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
     public static final String PARAM_DDL_DROP_COLUMN_BRACKETS = "ddl-drop-column-brackets";
+    public static final String PARAM_ALTER_TABLE_ADD_COLUMN = "alter-table-add-column";
     public static final String PARAM_LEGACY_DIALECT = "legacy-sql-dialect";
     public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
     public static final String PARAM_USE_SEARCH_STRING_ESCAPE = "use-search-string-escape";
