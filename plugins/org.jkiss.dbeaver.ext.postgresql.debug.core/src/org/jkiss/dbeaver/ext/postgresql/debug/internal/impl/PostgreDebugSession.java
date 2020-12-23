@@ -74,7 +74,6 @@ import java.util.Map;
  * state until next breakpoint or end of procedure will be reached <br/>
  */
 public class PostgreDebugSession extends DBGJDBCSession {
-
     private final JDBCExecutionContext controllerConnection;
 
     private int functionOid = -1;
@@ -532,10 +531,11 @@ public class PostgreDebugSession extends DBGJDBCSession {
     protected String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
         String sqlPattern = attachKind == PostgreDebugAttachKind.GLOBAL ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
-
+        long lineNumber = bp.isOnStart() ? -1 : bp.getLineNo();
+        log.debug(String.format("Adding breakpoint to line #%d", lineNumber));
         return sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
             .replaceAll("\\?obj", String.valueOf(functionOid))
-            .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
+            .replaceAll("\\?line", String.valueOf(lineNumber))
             .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
     }
 
@@ -811,7 +811,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     @Override
     public boolean canStepReturn() {
-        return true;
+        return false;
     }
 
     /**
@@ -855,5 +855,4 @@ public class PostgreDebugSession extends DBGJDBCSession {
             }
         }
     }
-
 }
