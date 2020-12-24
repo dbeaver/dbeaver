@@ -26,24 +26,29 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 
 import java.util.Collection;
 
 enum FilterByAttributeType {
-    CLIPBOARD("Clipboard", UIIcon.FILTER_CLIPBOARD) {
+    CLIPBOARD(ResultSetMessages.controls_resultset_viewer_action_filter_clipboard, UIIcon.FILTER_CLIPBOARD) {
         @Override
         Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
             try {
-                return ResultSetUtils.getAttributeValueFromClipboard(attribute);
+                Object value = ResultSetUtils.getAttributeValueFromClipboard(attribute);
+                if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
+                    return "%" + value + "%";
+                }
+                return value;
             } catch (Exception e) {
                 log.debug("Error copying from clipboard", e);
                 return null;
             }
         }
     },
-    VALUE("Cell value", UIIcon.FILTER_VALUE) {
+    VALUE(ResultSetMessages.controls_resultset_viewer_action_filter_value, UIIcon.FILTER_VALUE) {
         @Override
         Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
@@ -58,7 +63,7 @@ enum FilterByAttributeType {
             return cellValue;
         }
     },
-    INPUT("Custom", UIIcon.FILTER_INPUT) {
+    INPUT(ResultSetMessages.controls_resultset_viewer_action_filter_input, UIIcon.FILTER_INPUT) {
         @Override
         Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
@@ -80,7 +85,11 @@ enum FilterByAttributeType {
                 }
                 FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, attribute, rows, operator);
                 if (dialog.open() == IDialogConstants.OK_ID) {
-                    return dialog.getValue();
+                    Object value = dialog.getValue();
+                    if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
+                        return "%" + value + "%";
+                    }
+                    return value;
                 } else {
                     return null;
                 }

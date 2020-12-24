@@ -17,18 +17,20 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 class FilterResetAttributeAction extends Action {
     private ResultSetViewer resultSetViewer;
     private final DBDAttributeBinding attribute;
     FilterResetAttributeAction(ResultSetViewer resultSetViewer, DBDAttributeBinding attribute)
     {
-        super("Remove filter for '" + attribute.getName() + "'", DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
+        super(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_filter_remove, attribute.getName()), DBeaverIcons.getImageDescriptor(UIIcon.REVERT));
         this.resultSetViewer = resultSetViewer;
         this.attribute = attribute;
     }
