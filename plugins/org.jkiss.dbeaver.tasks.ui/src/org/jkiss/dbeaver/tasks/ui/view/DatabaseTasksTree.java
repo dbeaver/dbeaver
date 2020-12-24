@@ -303,23 +303,22 @@ public class DatabaseTasksTree {
         }
     }
 
-    public void refresh() {
+    void refresh() {
         refreshTasks();
-        regroupTasks(false);
+        regroupTasks(ExpansionOptions.RETAIN);
         //taskViewer.refresh(true);
         if (refreshScheduledTasks()) {
             taskViewer.refresh(true);
         }
     }
 
-    public void loadTasks() {
+    void loadTasks() {
         refreshTasks();
         refreshScheduledTasks();
-
-        regroupTasks(true);
+        regroupTasks(ExpansionOptions.EXPAND_ALL);
     }
 
-    public void regroupTasks(boolean expandAll) {
+    void regroupTasks(ExpansionOptions options) {
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -336,10 +335,19 @@ public class DatabaseTasksTree {
             } else {
                 rootObjects.addAll(allTasks);
             }
-
-            taskViewer.setInput(rootObjects);
-            if (expandAll) {
-                taskViewer.expandAll();
+            switch (options) {
+                case EXPAND_ALL:
+                    taskViewer.setInput(rootObjects);
+                    taskViewer.expandAll();
+                    break;
+                case RETAIN:
+                    Object[] expandedElements = taskViewer.getExpandedElements();
+                    taskViewer.setInput(rootObjects);
+                    taskViewer.setExpandedElements(expandedElements);
+                    break;
+                default:
+                    log.warn("Unknown expansion option reached!");
+                    break;
             }
             taskColumnController.repackColumns();
         } finally {
@@ -448,6 +456,11 @@ public class DatabaseTasksTree {
         for (TreeItem child : item.getItems()) {
             addCheckedItem(child, tasks);
         }
+    }
+
+    enum ExpansionOptions {
+        EXPAND_ALL,
+        RETAIN,
     }
 
     private class TreeListContentProvider implements ITreeContentProvider {
@@ -710,5 +723,4 @@ public class DatabaseTasksTree {
             }
         });
     }
-
 }
