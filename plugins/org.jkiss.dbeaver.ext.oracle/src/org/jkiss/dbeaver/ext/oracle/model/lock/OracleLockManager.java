@@ -104,6 +104,7 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
             "AND hlsession.id2 = wlsession.id2";
 
     private static final String LOCK_ITEM_QUERY = "select lock_type,mode_held,mode_requested,lock_id1,lock_id2,last_convert,blocking_others from dba_lock where session_id = ?";
+    private static final String LOCK_ITEM_QUERY_8V = "SELECT TYPE lock_type, ID1 lock_id1, ID2 lock_id2, CTIME last_convert FROM gv$lock WHERE SID =?";
 
     private final OracleDataSource dataSource;
 
@@ -176,7 +177,12 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
 
             List<OracleLockItem> locks = new ArrayList<>();
 
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
+            String sql = LOCK_ITEM_QUERY;
+            if (!dataSource.isAtLeastV9()) {
+                sql = LOCK_ITEM_QUERY_8V;
+            }
+
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
 
                 String otype = (String) options.get(LockGraphManager.keyType);
 
