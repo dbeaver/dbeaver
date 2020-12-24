@@ -80,9 +80,6 @@ public class TextWithOpenFile extends TextWithOpen
         }
         try {
             final Path path = Paths.get(text);
-            if (Files.notExists(path)) {
-                return null;
-            }
             if (Files.isDirectory(path)) {
                 return path.toString();
             }
