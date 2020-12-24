@@ -120,4 +120,6 @@ public class DBConstants {
     public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 
     public static final String LABEL_NA = "N/A";
+
+    public static final String DEBUG_LOG_FILE_NAME = "dbeaver-debug.log";
 }
