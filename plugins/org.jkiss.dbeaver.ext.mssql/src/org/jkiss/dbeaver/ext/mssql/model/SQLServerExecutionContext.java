@@ -116,6 +116,10 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
         // Send notifications
         DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
+
+        if (schema != null) {
+            setDefaultSchema(monitor, schema);
+        }
     }
 
     @Override
