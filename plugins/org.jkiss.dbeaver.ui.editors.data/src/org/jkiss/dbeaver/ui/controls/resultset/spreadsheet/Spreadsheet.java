@@ -349,7 +349,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 break;
             case LightGrid.Event_FilterColumn:
             	//showFiltersMenu
-            	presentation.showFiltering(event.data);
+                if (event.data != null) {
+                    presentation.showFiltering(event.data);
+                }
             	break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and

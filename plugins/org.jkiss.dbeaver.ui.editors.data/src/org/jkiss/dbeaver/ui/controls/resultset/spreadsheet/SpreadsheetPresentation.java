@@ -113,7 +113,6 @@ import java.util.*;
  * Visualizes results as grid.
  */
 public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
-
     public static final String PRESENTATION_ID = "spreadsheet";
 
     public static final String ATTR_OPTION_PINNED = "pinned";
@@ -1321,14 +1320,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 	// Filtering
     
     public void showFiltering(Object columnElement) {
-
-    	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement) || curAttribute == null) {
-    		spreadsheet.deselectAll();
-    		controller.showDistinctFilter((DBDAttributeBinding) columnElement);
-    	}   
-    	else
-    		controller.showDistinctFilter(curAttribute);
-    	
+        if (getSelection().getSelectedRows().size() == 0) {
+            spreadsheet.deselectAll();
+        }
+        controller.showDistinctFilter((DBDAttributeBinding) columnElement);
     }
 
     ///////////////////////////////////////////////
@@ -2302,7 +2297,5 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         void unregisterEditor(IValueEditorStandalone editor) {
             openEditors.remove(this);
         }
-
     }
-
 }
