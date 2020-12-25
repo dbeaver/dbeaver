@@ -348,9 +348,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_FilterColumn:
-            	//showFiltersMenu
-                if (event.data != null) {
-                    presentation.showFiltering(event.data);
+                if (event.data instanceof DBDAttributeBinding) {
+                    deselectAll();
+                    presentation.showFiltering((DBDAttributeBinding) event.data);
                 }
             	break;
             case LightGrid.Event_NavigateLink:
