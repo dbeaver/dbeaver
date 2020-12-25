@@ -30,7 +30,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Map;
 
 public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdater {
-	
     public enum GroupBy {
         project,
         category,
@@ -53,8 +52,7 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
                 tasksTree.setGroupByType(!tasksTree.isGroupByType());
                 break;
         }
-        tasksTree.regroupTasks(true);
-
+        tasksTree.regroupTasks(DatabaseTasksTree.ExpansionOptions.EXPAND_ALL);
         return null;
     }
 
@@ -84,6 +82,4 @@ public class TaskHandlerGroupBy extends AbstractHandler implements IElementUpdat
             element.setTooltip(commandName);
         }
     }
-
-
 }
