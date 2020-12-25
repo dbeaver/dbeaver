@@ -45,7 +45,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     private DBDAttributeBinding[] columns;
     private String tableName;
-    private int maxColumnSize = 100;
+    private int maxColumnSize = 0;
     private int minColumnSize = 3;
     private boolean showNulls;
     private boolean delimLeading, delimHeader, delimTrailing;
@@ -56,7 +56,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
         Map<String, Object> properties = site.getProperties();
-        this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 100);
+        this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 0);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
@@ -95,7 +95,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
             colWidths[i] = Math.max(getAttributeName(attr).length(), maxLength);
         }
         for (int i = 0; i < colWidths.length; i++) {
-            if (colWidths[i] > maxColumnSize) {
+            if (colWidths[i] > maxColumnSize && maxColumnSize > 0) {
                 colWidths[i] = maxColumnSize;
             } else if (colWidths[i] < minColumnSize) {
                 colWidths[i] = minColumnSize;
@@ -141,8 +141,8 @@ public class DataExporterTXT extends StreamExporterAbstract {
             if (k > 0) txt.append("|");
             DBDAttributeBinding attr = columns[k];
             String displayString = getCellString(attr, row[k], DBDDisplayFormat.EDIT);
-            if (displayString.length() > colWidths[k]) {
-                displayString = CommonUtils.truncateString(displayString, colWidths[k]);
+            if (displayString.length() > maxColumnSize && maxColumnSize > 0) {
+                displayString = CommonUtils.truncateString(displayString, maxColumnSize);
             }
             txt.append(displayString);
             for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
