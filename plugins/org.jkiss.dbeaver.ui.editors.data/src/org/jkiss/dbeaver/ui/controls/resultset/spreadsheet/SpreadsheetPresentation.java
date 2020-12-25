@@ -1319,7 +1319,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 	///////////////////////////////////////////////
 	// Filtering
     
-    public void showFiltering(Object columnElement) {
+    void showFiltering(Object columnElement) {
         if (getSelection().getSelectedRows().size() == 0) {
             spreadsheet.deselectAll();
         }
