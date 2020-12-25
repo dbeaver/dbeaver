@@ -80,7 +80,31 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
         "where  " +
         "wsession.sid IN (SELECT blocking_session FROM v$session)";
 
-    public static final String LOCK_ITEM_QUERY = "select lock_type,mode_held,mode_requested,lock_id1,lock_id2,last_convert,blocking_others from dba_lock where session_id = ?";
+    private static final String LOCK_QUERY_FOR_OLD_VERSIONS = "SELECT (SELECT username\n" +
+            "FROM v$session\n" +
+            "WHERE\n" +
+            "sid = hlsession.sid) waiting_user,\n" +
+            "(SELECT SERIAL#\n" +
+            "FROM v$session\n" +
+            "WHERE\n" +
+            "sid = hlsession.sid) serial,\n" +
+            "hlsession.sid waiting_session,\n" +
+            "' is blocking ',\n" +
+            "(SELECT username\n" +
+            "FROM v$session\n" +
+            "WHERE\n" +
+            "sid = wlsession.sid) holding_user,\n" +
+            "wlsession.sid holding_session\n" +
+            "FROM v$lock hlsession,\n" +
+            "v$lock wlsession\n" +
+            "WHERE\n" +
+            "hlsession.block > 0\n" +
+            "AND wlsession.request > 0\n" +
+            "AND hlsession.id1 = wlsession.id1\n" +
+            "AND hlsession.id2 = wlsession.id2";
+
+    private static final String LOCK_ITEM_QUERY = "select lock_type,mode_held,mode_requested,lock_id1,lock_id2,last_convert,blocking_others from dba_lock where session_id = ?";
+    private static final String LOCK_ITEM_QUERY_8V = "SELECT TYPE lock_type, ID1 lock_id1, ID2 lock_id2, CTIME last_convert FROM gv$lock WHERE SID =?";
 
     private final OracleDataSource dataSource;
 
@@ -99,11 +123,16 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
 
             Map<Object, OracleLock> locks = new HashMap<>(10);
 
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_QUERY)) {
+            String sql = LOCK_QUERY;
+            if (!dataSource.isAtLeastV10()) {
+                sql = LOCK_QUERY_FOR_OLD_VERSIONS;
+            }
+
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
 
                     while (dbResult.next()) {
-                        OracleLock l = new OracleLock(dbResult);
+                        OracleLock l = new OracleLock(dbResult, dataSource);
                         locks.put(l.getId(), l);
                     }
                 }
@@ -148,7 +177,12 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
 
             List<OracleLockItem> locks = new ArrayList<>();
 
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
+            String sql = LOCK_ITEM_QUERY;
+            if (!dataSource.isAtLeastV9()) {
+                sql = LOCK_ITEM_QUERY_8V;
+            }
+
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql)) {
 
                 String otype = (String) options.get(LockGraphManager.keyType);
 
