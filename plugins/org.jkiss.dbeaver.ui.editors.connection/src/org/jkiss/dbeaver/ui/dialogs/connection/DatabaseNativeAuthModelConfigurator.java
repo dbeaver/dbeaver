@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -54,13 +55,19 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     protected void createUserNameControls(Composite authPanel, Runnable propertyChangeListener) {
-        int fontHeight = UIUtils.getFontHeight(authPanel);
 
         usernameText = new Text(authPanel, SWT.BORDER);
+        usernameText.setLayoutData(makeAuthControlLayoutData(authPanel));
+        usernameText.addModifyListener(e -> propertyChangeListener.run());
+    }
+
+    @NotNull
+    private GridData makeAuthControlLayoutData(Composite authPanel) {
+        int fontHeight = UIUtils.getFontHeight(authPanel);
+
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = fontHeight * 20;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(e -> propertyChangeListener.run());
+        return gd;
     }
 
     @Override
@@ -102,9 +109,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             UIUtils.createControlLabel(parent, label);
         }
         Composite ph = UIUtils.createPlaceholder(parent, 1);
-        ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        ph.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         passwordText = new Text(ph, SWT.BORDER | SWT.PASSWORD);
-        passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        passwordText.setLayoutData(makeAuthControlLayoutData(ph));
         return passwordText;
     }
 
