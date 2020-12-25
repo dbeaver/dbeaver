@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTypeCache;
-import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,7 +71,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return new PostgreGenericTypeCache(container);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
@@ -143,7 +142,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
@@ -204,7 +203,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
-        return new PostgreQueryPlaner(dataSource);
+        return new PostgreGenericQueryPlaner(dataSource);
     }
 
     @Override

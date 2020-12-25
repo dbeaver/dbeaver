@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.debug.ui.actions;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
@@ -31,7 +30,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
@@ -42,7 +40,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
@@ -68,7 +66,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         if (databaseObject == null) {
             return;
         }
-        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(new VoidProgressMonitor(), databaseObject, false);
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(new VoidProgressMonitor(), databaseObject, false);
         if (node == null) {
             return;
         }
@@ -91,7 +89,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         }
         int charstart = -1, charend = -1;
 
-        DBGBreakpointDescriptor breakpointDescriptor = Adapters.adapt(databaseObject, DBGBreakpointDescriptor.class);
+        DBGBreakpointDescriptor breakpointDescriptor = GeneralUtils.adapt(databaseObject, DBGBreakpointDescriptor.class);
         if (breakpointDescriptor == null) {
             throw new CoreException(GeneralUtils.makeErrorStatus(
                 "Object '" + DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI) + "' doesn't support breakpoints"));
@@ -105,7 +103,12 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {
         DBSObject databaseObject = DebugUI.extractDatabaseObject(part);
-        return WorkspaceResources.resolveWorkspaceResource(databaseObject);
+        return resolveWorkspaceResource(databaseObject);
+    }
+
+    public static IResource resolveWorkspaceResource(DBSObject dbsObject) {
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(dbsObject);
+        return node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,17 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.ISaveablePart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceTask;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,11 +39,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -96,7 +95,7 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        UIUtils.asyncExec(() -> DBUserInterface.getInstance().showError(
+                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
                             connectJob.getName(),
                             null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
                             result));
@@ -140,53 +139,6 @@ public class DataSourceHandler
         }
     }
 
-    public static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
-    {
-        dataSourceDescriptor.getRegistry().notifyDataSourceListeners(new DBPEvent(
-            DBPEvent.Action.OBJECT_UPDATE,
-            dataSourceDescriptor,
-            false));
-    }
-
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
-    {
-        final String prompt = networkHandler != null ?
-            NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
-            "'" + dataSourceContainer.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
-        final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
-        final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
-
-        DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
-            @Override
-            protected DBAAuthInfo runTask() {
-                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
-            }
-        }.execute();
-        if (authInfo == null) {
-            return false;
-        }
-
-        if (networkHandler != null) {
-            if (!passwordOnly) {
-                networkHandler.setUserName(authInfo.getUserName());
-            }
-            networkHandler.setPassword(authInfo.getUserPassword());
-            networkHandler.setSavePassword(authInfo.isSavePassword());
-        } else {
-            if (!passwordOnly) {
-                dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
-            }
-            dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
-            dataSourceContainer.setSavePassword(authInfo.isSavePassword());
-        }
-        if (authInfo.isSavePassword()) {
-            // Update connection properties
-            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
-        }
-
-        return true;
-    }
-
     public static void disconnectDataSource(DBPDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
 
         // Save users
@@ -216,15 +168,15 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (!result.isOK()) {
-                        DBUserInterface.getInstance().showError(
+                        DBWorkbench.getPlatformUI().showError(
                                 disconnectJob.getName(),
                             null,
                             result);
                     }
+                    DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
                 }
             });
-            // Run in UI thread to update actions (some Eclipse magic)
-            UIUtils.asyncExec(disconnectJob::schedule);
+            disconnectJob.schedule();
         }
     }
 
@@ -264,7 +216,7 @@ public class DataSourceHandler
                 if (QMUtils.isTransactionActive(context)) {
                     if (commitTxn == null) {
                         // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName() + " (" + context.getContextName() + ")");
                         UIUtils.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
@@ -278,12 +230,7 @@ public class DataSourceHandler
                         }
                     }
                     final boolean commit = commitTxn;
-                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            closeActiveTransaction(monitor, context, commit);
-                        }
-                    });
+                    UIUtils.runInProgressService(monitor -> closeActiveTransaction(monitor, context, commit));
                 }
             } catch (Throwable e) {
                 log.warn("Can't rollback active transaction before disconnect", e);
@@ -314,10 +261,13 @@ public class DataSourceHandler
 */
 
     public static void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
+        monitor.beginTask("Close active transaction", 1);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction")) {
             monitor.subTask("End active transaction");
             EndTransactionTask task = new EndTransactionTask(session, commitTxn);
             RuntimeUtils.runTask(task, "Close active transactions", END_TRANSACTION_WAIT_TIME);
+        } finally {
+            monitor.done();
         }
     }
 

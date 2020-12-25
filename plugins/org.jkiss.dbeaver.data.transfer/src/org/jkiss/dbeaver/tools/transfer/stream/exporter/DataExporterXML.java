@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,28 +36,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.List;
 
 /**
  * XML Exporter
  */
 public class DataExporterXML extends StreamExporterAbstract {
 
-    private PrintWriter out;
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
     }
 
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -70,16 +66,17 @@ public class DataExporterXML extends StreamExporterAbstract {
 
     private void printHeader()
     {
+        PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" ?>\n");
         tableName = escapeXmlElementName(getSite().getSource().getName());
         out.write("<!DOCTYPE " + tableName + " [\n");
         out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
         out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.size();
+        int columnsSize = columns.length;
         for (int i = 0; i < columnsSize; i++) {
-            String colName = columns.get(i).getLabel();
+            String colName = columns[i].getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getName();
+                colName = columns[i].getName();
             }
             out.write(escapeXmlElementName(colName) + "?");
             if (i < columnsSize - 1) {
@@ -88,7 +85,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         }
         out.write(")+>\n");
         for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
         }
         out.write("]>\n");
         out.write("<" + tableName + ">\n");
@@ -97,9 +94,10 @@ public class DataExporterXML extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             String columnName = escapeXmlElementName(column.getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
@@ -132,16 +130,15 @@ public class DataExporterXML extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException
-    {
-        out.write("</" + tableName + ">\n");
+    public void exportFooter(DBRProgressMonitor monitor) {
+        getWriter().write("</" + tableName + ">\n");
     }
 
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            out.write(value);
+            getWriter().write(value);
         }
     }
 
@@ -158,7 +155,7 @@ public class DataExporterXML extends StreamExporterAbstract {
             if (image != null) {
                 String imagePath = file.getAbsolutePath();
                 imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                out.write(imagePath);
+                getWriter().write(imagePath);
             }
         }
     }
@@ -174,14 +171,14 @@ public class DataExporterXML extends StreamExporterAbstract {
             }
             for (int i = 0; i < count; i++) {
                 if (buffer[i] == '<') {
-                    out.write("&lt;");
+                    getWriter().write("&lt;");
                 }
                 else if (buffer[i] == '>') {
-                    out.write("&gt;");
+                    getWriter().write("&gt;");
                 } else if (buffer[i] == '&') {
-                    out.write("&amp;");
+                    getWriter().write("&amp;");
                 } else {
-                    out.write(buffer[i]);
+                    getWriter().write(buffer[i]);
                 }
             }
         }

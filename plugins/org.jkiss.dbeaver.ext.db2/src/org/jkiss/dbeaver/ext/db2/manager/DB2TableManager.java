@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -86,15 +87,11 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Schema db2Schema,
-                                         Object copyFrom)
+    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object db2Schema,
+                                         Object copyFrom, Map<String, Object> options)
     {
-        DB2Table table = new DB2Table(db2Schema, NEW_TABLE_NAME);
-        try {
-            setTableName(monitor, db2Schema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
+        setNewObjectName(monitor, (DB2Schema) db2Schema, table);
         return table;
     }
 
@@ -138,8 +135,8 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        super.addStructObjectCreateActions(monitor, actions, command, options);
+    public void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction != null) {
@@ -152,7 +149,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         DB2Table db2Table = command.getObject();
 
@@ -177,7 +174,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    public void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),

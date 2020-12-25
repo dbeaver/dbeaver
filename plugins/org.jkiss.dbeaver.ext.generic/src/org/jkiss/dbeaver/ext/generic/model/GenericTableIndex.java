@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTable>
+public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTableBase>
 {
     private boolean nonUnique;
     private String qualifier;
@@ -39,7 +39,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
     private List<GenericTableIndexColumn> columns;
 
     public GenericTableIndex(
-        GenericTable table,
+        GenericTableBase table,
         boolean nonUnique,
         String qualifier,
         long cardinality,
@@ -93,6 +93,10 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return !nonUnique;
     }
 
+    public void setUnique(boolean unique) {
+        this.nonUnique = !unique;
+    }
+
     @Property(viewable = true, order = 5)
     public String getQualifier()
     {
@@ -117,7 +121,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<GenericTableIndexColumn> columns)
+    public void setColumns(List<GenericTableIndexColumn> columns)
     {
         this.columns = columns;
     }

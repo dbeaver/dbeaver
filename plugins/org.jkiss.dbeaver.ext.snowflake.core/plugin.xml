@@ -17,7 +17,8 @@
                 id="snowflake"
                 parent="generic"
                 label="Snowflake"
-                icon="icons/snowflake_icon.png">
+                icon="icons/snowflake_icon.png"
+                dialect="basic">
             <drivers managable="true">
 
                 <driver
@@ -25,17 +26,29 @@
                         label="Snowflake"
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
                         icon="icons/snowflake_icon.png"
+                        iconBig="icons/snowflake_icon_big.png"
                         sampleURL="jdbc:snowflake://{host}[:port]/?[db={database}]"
                         defaultPort="443"
                         description="Snowflake JDBC driver"
-                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        categories="sql,analytic">
                     <replace provider="generic" driver="snowflake_generic"/>
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
+
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE DATABASE &quot;?&quot;"/>
+                    <parameter name="active-entity-type" value="catalog"/>
                 </driver>
 
             </drivers>
 
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="snowflake" parent="generic" class="org.jkiss.dbeaver.ext.snowflake.model.SnowflakeSQLDialect" label="Snowflake" description="Snowflake SQL dialect." icon="icons/snowflake_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

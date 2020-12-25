@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,24 +61,15 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         this.charset = Charset.forName(charset);
 	}
 
-/*
-	public int hashCode() {
-		return buffer.hashCode();
-	}
+	public boolean isReadOnly() {
+        return readOnly;
+    }
 
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof StringEditorInput)) {
-			return false;
-		}
-		StringEditorInput other = (StringEditorInput) obj;
-		return buffer.equals(other.buffer);
-	}
-*/
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
 
-	@Override
+    @Override
     public boolean exists() {
 		return true;
 	}
@@ -207,6 +198,10 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
 
         public String getString() {
             return buffer.toString();
+        }
+
+        public int getLength() {
+            return buffer.length();
         }
     }
 

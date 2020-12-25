@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,28 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
  * SQLServerTriggerBase
  */
-public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBPScriptObject, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
+public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBSObjectWithScript, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject, DBPStatefulObject
 {
     private OWNER container;
     private String name;
@@ -42,8 +50,8 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     private String body;
     private long objectId;
     private boolean insteadOfTrigger;
-    private boolean disabled;
-    private boolean persisted;
+    private volatile int disabled;
+    private volatile boolean persisted;
 
     public SQLServerTriggerBase(
         OWNER container,
@@ -55,7 +63,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.type = JDBCUtils.safeGetString(dbResult, "type");
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
-        this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
+        this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled");
         this.persisted = true;
     }
 
@@ -78,10 +86,15 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.persisted = source.persisted;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -95,14 +108,26 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return insteadOfTrigger;
     }
 
-    @Property(viewable = false, order = 20)
-    public boolean isDisabled() {
-        return disabled;
+    public void setInsteadOfTrigger(boolean insteadOfTrigger) {
+        this.insteadOfTrigger = insteadOfTrigger;
     }
 
+    @Property(viewable = false, order = 20)
+    public boolean isDisabled() {
+        return disabled != 0;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = 1;
+    }
+    
     public String getBody()
     {
         return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override
@@ -132,7 +157,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        if (body == null) {
+        if (body == null && isPersisted()) {
             OWNER owner = getParentObject();
             SQLServerDatabase database = null;
             if (owner instanceof SQLServerDatabase) {
@@ -145,5 +170,39 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        if (disabled != 0) {
+            return DBSObjectState.INVALID;
+        }
+        return DBSObjectState.NORMAL;
+    }
 
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT is_disabled FROM sys.triggers WHERE object_id=?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        disabled = JDBCUtils.safeGetInt(dbResult, 1);
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+
+    }
+    
+    @Override
+    public void setObjectDefinitionText(String sourceText) {
+        this.body = sourceText;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

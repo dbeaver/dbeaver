@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -45,12 +47,12 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     //private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
 
-    public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile) {
-        super(formatterProfile);
+    public OracleTimestampValueHandler(DBDFormatSettings formatSettings) {
+        super(formatSettings);
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object != null) {
             String className = object.getClass().getName();
             if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
@@ -61,7 +63,20 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
                 }
             }
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE && value instanceof String) {
+            if (!((String) value).startsWith("TIMESTAMP")) {
+                return "TIMESTAMP'" + value + "'";
+            } else {
+                return (String) value;
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     private static Object getTimestampReadMethod(Class<?> aClass, Connection connection, Object object) throws Exception {

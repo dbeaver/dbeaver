@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,19 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * SQLServerStructureAssistant
  */
-public class SQLServerStructureAssistant implements DBSStructureAssistant
+public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLServerExecutionContext>
 {
     static protected final Log log = Log.getLog(SQLServerStructureAssistant.class);
 
@@ -62,8 +62,21 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.V,
             SQLServerObjectType.SN,
             SQLServerObjectType.P,
+            SQLServerObjectType.FN,
+            SQLServerObjectType.FT,
+            SQLServerObjectType.FS,
             SQLServerObjectType.X,
             };
+    }
+
+    @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_VIEW,
+            SQLServerObjectType.SN,
+            RelationalObjectType.TYPE_PROCEDURE,
+        };
     }
 
     @Override
@@ -74,6 +87,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.IT,
             SQLServerObjectType.V,
+            RelationalObjectType.TYPE_PROCEDURE,
         };
     }
 
@@ -84,13 +98,18 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.V,
             SQLServerObjectType.P,
-            };
+            SQLServerObjectType.FN,
+            SQLServerObjectType.IF,
+            SQLServerObjectType.TF,
+            SQLServerObjectType.X
+        };
     }
 
     @NotNull
     @Override
     public List<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerExecutionContext executionContext,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
@@ -102,14 +121,21 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             (SQLServerDatabase) parentObject :
             (parentObject instanceof SQLServerSchema ? ((SQLServerSchema) parentObject).getDatabase() : null);
         if (database == null) {
-            database = dataSource.getDefaultObject();
+            database = executionContext.getContextDefaults().getDefaultCatalog();
+        }
+        if (database == null) {
+            database = executionContext.getDataSource().getDefaultDatabase(monitor);
         }
         if (database == null) {
             return Collections.emptyList();
         }
         SQLServerSchema schema = parentObject instanceof SQLServerSchema ? (SQLServerSchema) parentObject : null;
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
+        if (schema == null && !globalSearch) {
+            schema = executionContext.getContextDefaults().getDefaultSchema();
+        }
+
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
@@ -126,6 +152,15 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         for (DBSObjectType objectType : objectTypes) {
             if (objectType instanceof SQLServerObjectType) {
                 supObjectTypes.add((SQLServerObjectType) objectType);
+            } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
+                supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerProcedure.class));
+            } else if (objectType == RelationalObjectType.TYPE_TABLE) {
+                supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerTable.class));
+            } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
+                supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerTableCheckConstraint.class));
+                supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerTableForeignKey.class));
+            } else if (objectType == RelationalObjectType.TYPE_VIEW) {
+                supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerView.class));
             }
         }
         if (supObjectTypes.isEmpty()) {
@@ -134,7 +169,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         StringBuilder objectTypeClause = new StringBuilder(100);
         for (SQLServerObjectType objectType : supObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-            objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+            objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
         if (objectTypeClause.length() == 0) {
             return;
@@ -143,12 +178,13 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         // Seek for objects (join with public synonyms)
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
-                "WHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : "AND o.schema_id=? ")))
+                "\nWHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
+                (schema == null ? "" : " AND o.schema_id=? ") +
+                "\nORDER BY o.name"))
         {
             dbStat.setString(1, objectNameMask);
             if (schema != null) {
-                dbStat.setString(2, schema.getName());
+                dbStat.setLong(2, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {

@@ -4,7 +4,17 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="clickhouse" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel" driverClass="ru.yandex.clickhouse.ClickHouseDriver"/>
+        <meta id="clickhouse" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel" driverClass="ru.yandex.clickhouse.ClickHouseDriver" dialect="clickhouse"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="clickhouse" parent="generic" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSQLDialect" label="Clickhouse" description="Yandex Clickhouse SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseTableManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable"/>
+        <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseViewManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView"/>
     </extension>
 
 </plugin>

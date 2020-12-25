@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,26 +44,46 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
     @Override
-    public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
         try {
-            if (!dataSource.getSQLDialect().supportsSubqueries()) {
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof RelationalSQLDialect && ((RelationalSQLDialect)sqlDialect).isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
-        } catch (DBException e) {
+        } catch (Throwable e) {
             log.debug("Error injecting count: " + e.getMessage());
             // Inject failed (most likely parser error)
         }
         return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+    private SQLQuery wrapSourceQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+        String queryText = null;
+        try {
+            // Remove orderings (#4652)
+            Statement statement = CCJSqlParserUtil.parse(query.getText());
+            if (statement instanceof Select) {
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    if (!CommonUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
+                        ((PlainSelect) selectBody).setOrderByElements(null);
+                        queryText = statement.toString();
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            log.debug("Error parsing query for COUNT transformation: " + e.getMessage());
+        }
         // Trim query delimiters (#2541)
-        String srcQuery = SQLUtils.trimQueryStatement(syntaxManager, query.getText(), true);
+        if (queryText == null) {
+            queryText = query.getText();
+        }
+        String srcQuery = SQLUtils.trimQueryStatement(syntaxManager, queryText, true);
         String countQuery = COUNT_WRAP_PREFIX + srcQuery + COUNT_WRAP_POSTFIX;
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 
-    private SQLQuery tryInjectCount(SQLDataSource dataSource, SQLQuery query) throws DBException {
+    private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(query.getText());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
@@ -70,7 +91,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
-                if (!CommonUtils.isEmpty(select.getGroupByColumnReferences())) {
+                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
                     throw new DBException("Can't inject COUNT into query with GROUP BY clause");
                 }
 

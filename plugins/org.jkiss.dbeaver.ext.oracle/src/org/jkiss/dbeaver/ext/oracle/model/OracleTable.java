@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,7 +48,7 @@ import java.util.Map;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPImageProvider
+public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPObjectStatistics, DBPImageProvider
 {
     private static final Log log = Log.getLog(OracleTable.class);
 
@@ -56,6 +58,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
+    private transient volatile Long tableSize;
 
     public class AdditionalInfo extends TableAdditionalInfo {
         private int pctFree;
@@ -166,6 +169,70 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
+    ///////////////////////////////////
+    // Statistics
+
+    @Override
+    public boolean hasStatistics() {
+        return tableSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return tableSize == null ? 0 : tableSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+
+    @Property(viewable = false, category = CAT_STATISTICS, formatter = ByteNumberFormat.class)
+    public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
+        if (tableSize == null) {
+            loadSize(monitor);
+        }
+        return tableSize;
+    }
+
+    public void setTableSize(Long tableSize) {
+        this.tableSize = tableSize;
+    }
+
+    private void loadSize(DBRProgressMonitor monitor) throws DBCException {
+        tableSize = null;
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            boolean hasDBA = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "DBA_SEGMENTS");
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT SUM(bytes) TABLE_SIZE\n" +
+                    "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + (hasDBA ? "DBA_SEGMENTS" : "USER_SEGMENTS") + " s\n" +
+                    "WHERE S.SEGMENT_TYPE='TABLE' AND s.SEGMENT_NAME = ?" + (hasDBA ? " AND s.OWNER = ?" : "")))
+            {
+                dbStat.setString(1, getName());
+                if (hasDBA) {
+                    dbStat.setString(2, getSchema().getName());
+                }
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        fetchTableSize(dbResult);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error reading table statistics", e);
+        } finally {
+            if (tableSize == null) {
+                tableSize = 0L;
+            }
+        }
+    }
+
+    void fetchTableSize(JDBCResultSet dbResult) throws SQLException {
+        tableSize = dbResult.getLong("TABLE_SIZE");
+    }
+
     @Override
     protected String getTableTypeName()
     {
@@ -267,6 +334,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().foreignKeyCache.clearObjectCache(this);
+        tableSize = null;
         return super.refreshObject(monitor);
     }
 
@@ -326,7 +394,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TABLES") + " WHERE OWNER=? AND TABLE_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -357,9 +425,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                     additionalInfo.loaded = true;
                 }
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+            catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
         }
 
     }

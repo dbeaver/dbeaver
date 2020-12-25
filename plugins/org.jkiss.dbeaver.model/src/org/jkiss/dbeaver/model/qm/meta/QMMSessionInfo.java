@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,12 +28,14 @@ import org.jkiss.utils.CommonUtils;
  */
 public class QMMSessionInfo extends QMMObject {
 
+    private final DBPProject project;
     private final String containerId;
-    private final String containerName;
     private final String driverId;
+    private String containerName;
     @Nullable
-    private final DBPConnectionConfiguration connectionConfiguration;
-    private final String contextName;
+    private DBPConnectionConfiguration connectionConfiguration;
+    private String instanceId;
+    private String contextName;
     @Nullable
     private SQLDialect sqlDialect;
     private boolean transactional;
@@ -43,28 +45,34 @@ public class QMMSessionInfo extends QMMObject {
     private QMMTransactionInfo transaction;
     //private Throwable stack;
 
-    public QMMSessionInfo(DBCExecutionContext context, boolean transactional)
-    {
+    public QMMSessionInfo(DBCExecutionContext context, boolean transactional) {
+        this.project = context.getDataSource().getContainer().getProject();
         this.containerId = context.getDataSource().getContainer().getId();
-        this.containerName = context.getDataSource().getContainer().getName();
         this.driverId = context.getDataSource().getContainer().getDriver().getId();
+
+        initFromContext(context, transactional);
+    }
+
+    private void initFromContext(DBCExecutionContext context, boolean transactional) {
+        this.containerName = context.getDataSource().getContainer().getName();
         this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
+        this.instanceId = context.getOwnerInstance().getName();
         this.contextName = context.getContextName();
-        if (context.getDataSource() instanceof SQLDataSource) {
-            this.sqlDialect = ((SQLDataSource) context.getDataSource()).getSQLDialect();
-        }
+        this.sqlDialect = context.getDataSource().getSQLDialect();
         this.transactional = transactional;
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);
         }
     }
 
-    public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String contextName, boolean transactional) {
+    public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String instanceID, String contextName, boolean transactional) {
         super(openTime, closeTime);
+        this.project = null;
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
         this.connectionConfiguration = connectionConfiguration;
+        this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
     }
@@ -86,8 +94,8 @@ public class QMMSessionInfo extends QMMObject {
         super.close();
     }
 
-    public void reopen()
-    {
+    public void reopen(DBCExecutionContext context) {
+        initFromContext(context, transactional);
         super.reopen();
     }
 
@@ -150,7 +158,7 @@ public class QMMSessionInfo extends QMMObject {
     {
         QMMStatementExecuteInfo execution = getExecution(statement);
         if (execution != null) {
-            if (execution.getRowCount() == -1) {
+            if (execution.getUpdateRowCount() < 0) {
                 execution.close(rows, null);
             }
         }
@@ -234,8 +242,11 @@ public class QMMSessionInfo extends QMMObject {
         return exec;
     }
 
-    public String getContainerId()
-    {
+    public DBPProject getProject() {
+        return project;
+    }
+
+    public String getContainerId() {
         return containerId;
     }
 
@@ -249,6 +260,10 @@ public class QMMSessionInfo extends QMMObject {
 
     public DBPConnectionConfiguration getConnectionConfiguration() {
         return connectionConfiguration;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
     }
 
     public String getContextName() {

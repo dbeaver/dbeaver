@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -32,7 +32,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Static struct holder.
@@ -46,15 +47,15 @@ public class JDBCCompositeStatic extends JDBCComposite {
         super(struct, monitor);
     }
 
-    public JDBCCompositeStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException
-    {
+    public JDBCCompositeStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException {
+        super(contents);
         this.type = type;
 
         // Extract structure data
         try {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (type instanceof DBSEntity) {
-                DBSEntity entity = (DBSEntity)type;
+                DBSEntity entity = (DBSEntity) type;
                 Collection<? extends DBSEntityAttribute> entityAttributes = CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()));
                 int valueCount = attrValues == null ? 0 : attrValues.length;
                 if (attrValues != null && entityAttributes.size() != valueCount) {
@@ -71,7 +72,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
                     }
                     Object value = attrValues != null ? attrValues[ordinalPosition] : null;
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attr);
-                    value = valueHandler.getValueFromObject(session, attr, value, false);
+                    value = valueHandler.getValueFromObject(session, attr, value, false, modified);
                     values[ordinalPosition] = value;
                 }
             } else {
@@ -81,14 +82,17 @@ public class JDBCCompositeStatic extends JDBCComposite {
         } catch (DBException e) {
             throw new DBCException("Can't obtain attributes meta information", e);
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
     @Override
-    public JDBCCompositeStatic cloneValue(DBRProgressMonitor monitor) throws DBCException
-    {
+    public JDBCCompositeStatic cloneValue(DBRProgressMonitor monitor) throws DBCException {
         return new JDBCCompositeStatic(this, monitor);
+    }
+
+    public String getStringRepresentation() {
+        return Arrays.toString(values);
     }
 
 }

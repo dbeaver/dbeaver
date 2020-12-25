@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,13 +44,20 @@ public interface DBPDriver extends DBPNamedObject
     DBPDataSourceProvider getDataSourceProvider();
 
     @NotNull
+    DBPDataSourceProviderDescriptor getProviderDescriptor();
+
+    @NotNull
     String getId();
 
     @NotNull
     String getProviderId();
 
+    @Deprecated
     @Nullable
     String getCategory();
+
+    @NotNull
+    List<String> getCategories();
 
     @NotNull
     String getFullName();
@@ -61,11 +68,26 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     DBPImage getIcon();
 
+    @NotNull
+    DBPImage getPlainIcon();
+
+    @NotNull
+    DBPImage getIconBig();
+
     @Nullable
     String getDriverClassName();
 
     @Nullable
     String getDefaultPort();
+
+    @Nullable
+    String getDefaultDatabase();
+
+    @Nullable
+    String getDefaultServer();
+
+    @Nullable
+    String getDefaultUser();
 
     @Nullable
     String getSampleURL();
@@ -76,17 +98,32 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getPropertiesWebURL();
 
+    @NotNull
+    SQLDialectMetadata getScriptDialect();
+
     boolean isClientRequired();
 
     boolean supportsDriverProperties();
 
     boolean isEmbedded();
     boolean isAnonymousAccess();
+    boolean isAllowsEmptyPassword();
+    boolean isLicenseRequired();
     boolean isCustomDriverLoader();
     boolean isUseURL();
-    boolean isPromoted();
+    // Can be created
     boolean isInstantiable();
+    // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries. Basically it is ODBC driver.
     boolean isInternalDriver();
+    // Custom driver: created by user
+    boolean isCustom();
+    // Temporary driver: used for automatically created drivers when connection  configuration is broken
+    boolean isTemporary();
+
+    boolean isDisabled();
+    DBPDriver getReplacedBy();
+
+    int getPromotedScore();
 
     @Nullable
     DBXTreeNode getNavigatorRoot();
@@ -95,18 +132,20 @@ public interface DBPDriver extends DBPNamedObject
     Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
 
     @NotNull
-    Map<Object, Object> getDefaultConnectionProperties();
+    Map<String, Object> getDefaultConnectionProperties();
 
     @NotNull
-    Map<Object, Object> getConnectionProperties();
+    Map<String, Object> getConnectionProperties();
 
     @NotNull
-    Map<Object, Object> getDriverParameters();
+    Map<String, Object> getDriverParameters();
 
     @Nullable
     Object getDriverParameter(String name);
 
     boolean isSupportedByLocalSystem();
+
+    String getLicense();
 
     /**
      * Client manager or null
@@ -123,8 +162,11 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<? extends DBPDriverLibrary> getDriverLibraries();
 
+    List<? extends DBPDriverFileSource> getDriverFileSources();
+
     @NotNull
-    Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
+    <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
+
 }

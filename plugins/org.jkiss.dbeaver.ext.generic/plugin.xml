@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,55 +20,55 @@
 <plugin>
     <extension-point id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval" schema="schema/org.jkiss.dbeaver.generic.meta.exsd"/>
 
-
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
             class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
             description="Generic JDBC connector"
             id="generic"
             label="Generic"
-            icon="icons/database.png">
+            icon="#database_icon_default"
+            dialect="generic">
             <tree path="generic" label="Generic data source">
                 <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="object.dataSource.info.supportsIndexes()">
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
                                     <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                 </folder>
                                 <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip" visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -76,7 +76,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" visibleIf="object.dataSource.info.supportsIndexes()">
                             <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                 <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
                                 </items>
@@ -97,7 +97,7 @@
                                 <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="%tree.sequences.node.tip" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.metaModel.supportsSynonyms(object.dataSource)">
@@ -106,10 +106,10 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                         </folder>
                     </items>
@@ -122,6 +122,7 @@
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-views" label="Driver supports views" description="Driver supports table views" type="boolean" required="false" defaultValue="true"/>
                     <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
@@ -132,7 +133,9 @@
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-catalog" label="Omit single catalog" description="Hide catalog (database) is there is only one catalog on server" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-schema" label="Omit schema(s)" description="Do not read and use schemas information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-schema" label="Omit single schema" description="Hide schema is there is only one schema on server" type="boolean" required="false" defaultValue="false"/>
+                    <property id="schema-filters-enabled" label="Use schema filters" description="Use JDBC schema filters when database doesn't support catalogs. Otherwise just read all database schemas and filter on client-side." type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
@@ -150,11 +153,13 @@
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
-                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) driverss" type="boolean" required="false" defaultValue="true"/>
+                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) drivers" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
+                    <property id="ddl-drop-column-brackets" label="Drop column - use brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
+                    <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -166,40 +171,990 @@
 
             <drivers managable="true">
 
+                <!-- Real drivers -->
+
                 <driver
-                    id="postgresql"
-                    label="PostgreSQL (Old)"
-                    icon="icons/postgresql_icon.png"
-                    class="org.postgresql.Driver"
-                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                    defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
-                    description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
+                        id="db2_iseries"
+                        label="DB2 iSeries/AS 400"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
+                        category="DB2"
+                        class="com.ibm.as400.access.AS400JDBCDriver"
+                        sampleURL="jdbc:as400://{host};[libraries={database};]"
+                        defaultPort="446"
+                        description="DB2 iSeries/AS 400 driver"
+                        categories="sql">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
 
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectTimeout" value="20"/>
+                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
+                    <file type="jar" path="drivers/db2-jt400" bundle="drivers.jt400"/>
 
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="schema-filters-enabled" value="false"/>
+
+                    <!-- Enable table/column descriptions -->
+                    <property name="translate binary" value="true"/>
+                    <property name="metadata source" value="0"/>
+                </driver>
+
+                <driver
+                    id="sap_maxdb"
+                    category="SAP"
+                    label="MaxDB"
+                    icon="icons/sap_maxdb_icon.png"
+                    iconBig="icons/sap_maxdb_icon_big.png"
+                    class="com.sap.dbtech.jdbc.DriverSapDB"
+                    sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
+                    defaultPort="7200"
+                    webURL="https://www.sdn.sap.com/irj/sdn/maxdb"
+                    description="SAP MaxDB - The SAP Database System"
+                    categories="sql">
+
+                    <file type="jar" path="drivers/maxdb" bundle="drivers.maxdb"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt" bundle="drivers.maxdb"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
                 <driver
-                    id="postgresql_generic"
-                    label="PostgreSQL (Old)"
-                    class="org.postgresql.Driver"
-                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    id="informix"
+                    label="Informix"
+                    icon="icons/informix_icon.png"
+                    iconBig="icons/informix_icon_big.png"
+                    class="com.informix.jdbc.IfxDriver"
+                    sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
+                    defaultPort="1533"
+                    webURL="https://www.developers.net/ibmshowcase/focus/Informix"
+                    description="IBM Informix Dynamic Server"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
+
+                    <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
+                    <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
+
+                    <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
+                    <parameter name="query-set-active-db" value="DATABASE ?"/>
+                    <parameter name="legacy-sql-dialect" value="true"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
+
+                    <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
+                </driver>
+                <driver
+                    id="h2_server"
+                    label="H2 Server"
+                    icon="icons/h2_icon.png"
+                    iconBig="icons/h2_icon_big.png"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
+                    defaultPort="9092"
+                    webURL="https://www.h2database.com/"
+                    description="H2 Server"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+                <driver
+                    id="h2_embedded"
+                    label="H2 Embedded"
+                    icon="icons/h2_icon.png"
+                    iconBig="icons/h2_icon_big.png"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:{file}"
+                    webURL="https://www.h2database.com/"
+                    embedded="true"
+                    description="H2 Embedded"
+                    categories="sql,embedded">
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
+
+                    <file type="jar" path="drivers/h2" bundle="drivers.h2"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+                <driver
+                    id="odbc"
+                    label="ODBC"
+                    icon="icons/odbc_icon.png"
+                    iconBig="icons/odbc_icon_big.png"
+                    class="sun.jdbc.odbc.JdbcOdbcDriver"
+                    sampleURL="jdbc:odbc:{database}"
+                    webURL="https://sun.com"
+                    description="ODBC bridge driver"
+                    promoted="1"
+                    categories="sql">
+                    <os name="win32"/>
+                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
+
+                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
+                </driver>
+                <driver
+                    id="derby"
+                    label="Derby Embedded"
+                    icon="icons/derby_icon.png"
+                    iconBig="icons/derby_icon_big.png"
+                    category="Derby"
+                    class="org.apache.derby.jdbc.EmbeddedDriver"
+                    sampleURL="jdbc:derby:{folder}"
+                    webURL="https://db.apache.org/"
+                    embedded="true"
+                    description="Derby (Java DB) embedded driver"
+                    categories="sql,embedded">
+
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
+
+                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
+                    <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
+
+                    <parameter name="create-url-param" value=";create=true"/>
+                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                </driver>
+                <driver
+                    id="derby_server"
+                    label="Derby Server"
+                    icon="icons/derby_icon.png"
+                    iconBig="icons/derby_icon_big.png"
+                    category="Derby"
+                    class="org.apache.derby.jdbc.ClientDriver"
+                    sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
+                    defaultPort="1527"
+                    webURL="http://db.apache.org/"
+                    description="Derby (Java DB) server driver"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                </driver>
+                <driver
+                    id="mimer"
+                    label="Mimer SQL"
+                    icon="icons/mimer_icon.png"
+                    iconBig="icons/mimer_icon_big.png"
+                    class="com.mimer.jdbc.Driver"
+                    sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
+                    defaultPort="1360"
+                    webURL="http://developer.mimer.com/"
+                    description="Mimer SQL TCP/IP driver"
+                    categories="sql,embedded">
+                    <file type="jar" path="repo:/drivers/mimer/mimjdbc3.jar"/>
+                </driver>
+                <driver
+                    id="hsqldb_server"
+                    label="HSQL Server"
+                    icon="icons/hsqldb_icon.png"
+                    iconBig="icons/hsqldb_icon_big.png"
+                    category="HSQLDB"
+                    class="org.hsqldb.jdbcDriver"
+                    sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
+                    defaultPort="9001"
+                    webURL="http://hsqldb.org/"
+                    description="HyperSQL DataBase - Server Mode"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
+
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb" bundle="drivers.hsqldb"/>
+
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="supports-limits" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                </driver>
+                <driver
+                    id="hsqldb_embedded"
+                    label="HSQL Embedded"
+                    icon="icons/hsqldb_icon.png"
+                    iconBig="icons/hsqldb_icon_big.png"
+                    category="HSQLDB"
+                    class="org.hsqldb.jdbc.JDBCDriver"
+                    sampleURL="jdbc:hsqldb:file:{folder}"
+                    webURL="http://hsqldb.org/"
+                    embedded="true"
+                    description="HyperSQL DataBase - Embedded Mode"
+                    categories="sql,embedded">
+
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
+
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
+                    <file type="jar" path="drivers/hsqldb" bundle="drivers.hsqldb"/>
+
+                    <property name="shutdown" value="true"/>
+                    <parameter name="create-url-param" value=";create=true"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                </driver>
+                <driver
+                    id="cache"
+                    label="Cache"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
+                    class="com.intersys.jdbc.CacheDriver"
+                    sampleURL="jdbc:Cache://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/cache/"
+                    description="InterSystems Cache"
+                    categories="sql,object">
+                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
+                    <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="iris"
+                    label="InterSystems IRIS"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
+                    class="com.intersystems.jdbc.IRISDriver"
+                    sampleURL="jdbc:IRIS://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/iris/"
+                    description="InterSystems IRIS. Replaces Cache driver."
+                    categories="sql,object">
+<!--                    <replace provider="generic" driver="cache"/>-->
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
+                </driver>
+                <driver
+                    id="ingres"
+                    label="Ingres"
+                    class="com.ingres.jdbc.IngresDriver"
+                    sampleURL="jdbc:ingres://{host}:{port}/{database}"
+                    defaultPort="II7"
+                    webURL="http://www.ingres.com/products/ingres-database/"
+                    description="Ingres Database"
+                    iconBig="icons/ingres_icon_big.png"
+                    categories="sql">
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
+                </driver>
+                <!-- SQLite -->
+                <driver
+                    id="sqlite_jdbc"
+                    label="SQLite"
+                    icon="icons/sqlite_icon.png"
+                    iconBig="icons/sqlite_icon_big.png"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="https://github.com/xerial/sqlite-jdbc"
+                    propertiesURL="https://www.sqlite.org/pragma.html"
+                    embedded="true"
+                    anonymous="true"
+                    description="SQLite JDBC driver"
+                    promoted="1"
+                    categories="sql,embedded">
+                    <replace provider="generic" driver="sqlite_zentus"/>
+                    <replace provider="generic" driver="sqlite_xerial"/>
+                    <replace provider="generic" driver="sqlite_ch_werner"/>
+
+                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
+                    <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
+
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+                <!-- Teradata -->
+                <driver
+                    id="teradata"
+                    label="Teradata"
+                    icon="icons/teradata_icon.png"
+                    iconBig="icons/teradata_icon_big.png"
+                    class="com.ncr.teradata.TeraDriver"
+                    sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
+                    defaultPort="1025"
+                    webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
+                    description="Teradata JDBC Type 4 driver"
+                    categories="sql,analytic">
+
+                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
+                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
+                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
+
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT DATABASE"/>
+                    <parameter name="query-set-active-db" value="DATABASE &quot;?&quot;"/>
+                </driver>
+
+                <driver
+                    id="csvjdbc"
+                    label="CSV"
+                    icon="icons/csv_icon.png"
+                    iconBig="icons/csv_icon_big.png"
+                    category="Flat files"
+                    class="org.relique.jdbc.csv.CsvDriver"
+                    sampleURL="jdbc:relique:csv:{folder}"
+                    embedded="true"
+                    anonymous="true"
+                    description="CsvJdbc driver for CSV files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
+                    categories="embedded,file">
+
+                    <property name="separator" value=","/>
+                    <property name="quotechar" value="&quot;"/>
+                    <property name="fileExtension" value=".csv"/>
+                    <property name="suppressHeaders" value="false"/>
+                    <property name="charset" value="UTF-8"/>
+
+                    <parameter name="supports-select-count" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="csvjdbc_dbf"
+                    label="DBF"
+                    icon="icons/dbf_icon.png"
+                    iconBig="icons/dbf_icon_big.png"
+                    category="Flat files"
+                    class="org.relique.jdbc.csv.CsvDriver"
+                    sampleURL="jdbc:relique:csv:{folder}"
+                    embedded="true"
+                    anonymous="true"
+                    description="CsvJdbc driver for DBF files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
+                    categories="embedded,file">
+
+                    <property name="fileExtension" value=".dbf"/>
+
+                    <parameter name="supports-select-count" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="repo:/drivers/dbf/dans-dbf-lib-1.0.0-beta-10.jar" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="msaccess_ucanaccess"
+                    label="MS Access (UCanAccess)"
+                    icon="icons/msaccess_icon.png"
+                    iconBig="icons/msaccess_icon_big.png"
+                    category="MS Access"
+                    class="net.ucanaccess.jdbc.UcanaccessDriver"
+                    sampleURL="jdbc:ucanaccess://{file}"
+                    webURL="http://ucanaccess.sourceforge.net/site.html"
+                    embedded="true"
+                    description="Microsoft Access driver"
+                    categories="sql,embedded,file">
+
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+
+                    <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
+                    <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
+                </driver>
+                <driver
+                    id="netezza"
+                    label="Netezza"
+                    icon="icons/netezza_icon.png"
+                    iconBig="icons/netezza_icon_big.png"
+                    class="org.netezza.Driver"
+                    sampleURL="jdbc:netezza://{host}:{port}/{database}"
+                    defaultPort="5480"
+                    webURL=""
+                    description="Netezza database driver"
+                    categories="sql,analytic">
+                </driver>
+
+                <driver
+                    id="nuodb"
+                    label="NuoDB"
+                    icon="icons/nuodb_icon.png"
+                    iconBig="icons/nuodb_icon_big.png"
+                    class="com.nuodb.jdbc.Driver"
+                    sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
+                    defaultPort=""
+                    description="NuoDB"
+                    webURL="http://www.nuodb.com/"
+                    categories="sql,cloud">
+                    <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
+                </driver>
+                <driver
+                    id="sap_hana"
+                    category="SAP"
+                    label="HANA (Old)"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.hana/icons/sap_hana_icon_big.png"
+                    class="com.sap.db.jdbc.Driver"
+                    sampleURL="jdbc:sap://{host}[:{port}]"
+                    defaultPort="30015"
+                    description=""
+                    webURL="http://scn.sap.com/community/developer-center/hana"
+                    categories="sql">
+                    <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA &quot;?&quot;"/>
+                </driver>
+
+                <!-- Hadoop -->
+                <driver
+                    id="phoenix_hbase"
+                    label="Apache Phoenix"
+                    icon="icons/phoenix_icon.png"
+                    iconBig="icons/phoenix_icon_big.png"
+                    class="org.apache.phoenix.jdbc.PhoenixDriver"
+                    sampleURL="jdbc:phoenix:{host}[:{port}]"
+                    defaultPort="2181"
+                    webURL="http://phoenix.apache.org/"
+                    description="Thin driver for Apache Phoenix HBase Database"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <parameter name="omit-type-cache" value="true"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE" ignore-dependencies="true"/>
+                </driver>
+                <driver
+                    id="gemfire_xd"
+                    label="Gemfire XD"
+                    icon="icons/gemfire_icon.png"
+                    iconBig="icons/gemfire_icon_big.png"
+                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
+                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
+                    defaultPort="1527"
+                    description="Pivotal GemfireXD"
+                    webURL="http://blog.pivotal.io/tag/gemfire-xd"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
+                </driver>
+                <driver
+                    id="snappydata_store_client"
+                    label="SnappyData"
+                    icon="icons/snappy_icon.png"
+                    iconBig="icons/snappy_icon_big.png"
+                    class="io.snappydata.jdbc.ClientDriver"
+                    sampleURL="jdbc:snappydata://{host}[:{port}]/"
+                    defaultPort="1528"
+                    description="Pivotal GemfireXD"
+                    webURL="https://snappydatainc.github.io/snappydata/"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <file type="jar" path="maven:/io.snappydata:snappydata-store-client:RELEASE"/>
+                    <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
+                </driver>
+
+                <driver
+                    id="apache_hive2"
+                    label="Apache Hive"
+                    icon="icons/hive_icon.png"
+                    iconBig="icons/hive_icon_big.png"
+                    class="org.apache.hive.jdbc.HiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10000"
+                    description="Apache Hive JDBC"
+                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
+                    category="Hadoop"
+                    categories="hadoop">
+
+                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
+                    <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
+
+                    <parameter name="supports-limits" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+                <driver
+                    id="spark_hive"
+                    label="Apache Spark"
+                    icon="icons/spark_hive_icon.png"
+                    iconBig="icons/spark_hive_icon_big.png"
+                    class="org.apache.hive.jdbc.HiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10000"
+                    description="Spark Thrift Server connector"
+                    webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+                <driver
+                    id="apache_drill"
+                    label="Apache Drill"
+                    icon="icons/drill_icon.png"
+                    iconBig="icons/drill_icon_big.png"
+                    class="org.apache.drill.jdbc.Driver"
+                    sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
+                    description="Apache Drill JDBC"
+                    webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="schema-filters-enabled" value="true"/>
+                </driver>
+
+                <!-- Cloudera -->
+                <driver
+                    id="cloudera_impala"
+                    label="Cloudera Impala"
+                    icon="icons/impala_icon.png"
+                    iconBig="icons/impala_icon_big.png"
+                    class="com.cloudera.impala.jdbc41.Driver"
+                    sampleURL="jdbc:impala://{host}:{port}/{database}"
+                    defaultPort="21050"
+                    description="Cloudera Impala. You can download JDBC driver files from https://www.cloudera.com/"
+                    webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
+                    category="Hadoop"
+                    categories="hadoop">
+
+                    <parameter name="query-get-active-db" value="select current_database()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="string-escape-char" value="\"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+
+                <!-- AWS -->
+                <driver
+                    id="aws_redshift"
+                    label="Redshift (JDBC 4.1)"
+                    category="AWS"
+                    class="com.amazon.redshift.jdbc41.Driver"
+                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                    defaultPort="5439"
+                    description="%driver.redshift.description"
+                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    categories="sql,analytic,cloud">
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
+                </driver>
+                <driver
+                    id="aws_redshift_42"
+                    label="Redshift"
+                    category="AWS"
+                    class="com.amazon.redshift.jdbc42.Driver"
+                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                    defaultPort="5439"
+                    description="%driver.redshift.description"
+                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                    categories="sql,analytic,cloud">
+                    <replace provider="generic" driver="aws_redshift"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
+                </driver>
+                <driver
+                    id="aws_athena_42"
+                    label="Athena"
+                    category="AWS"
+                    class="com.simba.athena.jdbc.Driver"
+                    sampleURL="jdbc:awsathena://AwsRegion=us-east-1;"
+                    defaultPort="5439"
+                    description="AWS Athena JDBC driver"
+                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
+                    categories="bigdata,cloud">
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                </driver>
+
+                <!-- Virtuoso  -->
+                <driver
+                    id="virtuoso_opensource"
+                    label="Virtuoso"
+                    icon="icons/virtuoso_icon.png"
+                    iconBig="icons/virtuoso_icon_big.png"
+                    class="virtuoso.jdbc4.Driver"
+                    sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
+                    defaultPort="1111"
+                    description="OpenLink Virtuoso open source driver"
+                    webURL="https://github.com/openlink/virtuoso-opensource"
+                    categories="sql,object">
+                    <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
+                </driver>
+
+                <!-- Machbase -->
+                <driver
+                    id="machbase"
+                    label="Machbase"
+                    class="com.machbase.jdbc.driver"
+                    sampleURL="jdbc:machbase://{host}/mhdb"
+                    defaultPort="5656"
+                    description="MACHBASE standard driver"
+                    webURL="http://www.machbase.com"
+                    iconBig="icons/machbase_icon_big.png"
+                    categories="timeseries">
+                    <file type="jar" path="https://www.machbase.com/dist/machbase.jar"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- Yandex ClickHouse -->
+                <driver
+                    id="yandex_clickhouse"
+                    label="ClickHouse"
+                    class="ru.yandex.clickhouse.ClickHouseDriver"
+                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                    defaultPort="8123"
+                    icon="icons/clickhouse_icon.png"
+                    iconBig="icons/clickhouse_icon_big.png"
+                    description="Yandex ClickHouse"
+                    webURL="https://github.com/yandex/clickhouse-jdbc"
+                    categories="sql,analytic,columns">
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                </driver>
+
+                <!-- OrientDB -->
+                <driver
+                    id="orientdb_jdbc"
+                    label="OrientDB"
+                    icon="icons/orientdb_icon.png"
+                    iconBig="icons/orientdb_icon_big.png"
+                    class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
+                    sampleURL="jdbc:orient:remote:{host}/{database}"
+                    defaultPort=""
+                    description="OrientDB JDBC driver"
+                    webURL="https://github.com/orientechnologies/orientdb-jdbc"
+                    categories="graph">
+                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- Neo4j -->
+                <driver
+                    id="neo4j_jdbc"
+                    label="Neo4j"
+                    icon="icons/neo4j_icon.png"
+                    iconBig="icons/neo4j_icon_big.png"
+                    class="org.neo4j.jdbc.Driver"
+                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
+                    defaultPort="7687"
+                    description="Neo4j JDBC driver"
+                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
+                    categories="graph">
+                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
+                </driver>
+
+                <!-- PrestoDB -->
+                <driver
+                    id="presto_jdbc"
+                    label="PrestoDB"
+                    icon="icons/presto_icon.png"
+                    iconBig="icons/presto_icon_big.png"
+                    class="com.facebook.presto.jdbc.PrestoDriver"
+                    sampleURL="jdbc:presto://{host}:{port}[/{database}]"
+                    defaultPort="8080"
+                    description="Facebook Presto (prestodb) JDBC driver"
+                    webURL="https://prestodb.io/"
+                    categories="sql,analytic,bigdata,hadoop">
+                    <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                </driver>
+
+                <!-- PrestoSQL -->
+                <driver
+                        id="prestosql_jdbc"
+                        label="PrestoSQL"
+                        icon="icons/presto_icon.png"
+                        iconBig="icons/presto_icon_big.png"
+                        class="io.prestosql.jdbc.PrestoDriver"
+                        sampleURL="jdbc:presto://{host}:{port}[/{database}]"
+                        defaultPort="8080"
+                        description="Community Presto (prestosql) JDBC driver"
+                        webURL="https://prestosql.io/"
+                        categories="sql,analytic,bigdata,hadoop">
+                    <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                    <parameter name="krb5.show-service" value="true"/>
+                    <parameter name="krb5.show-ssl-jks" value="true"/>
+                </driver>
+
+                <!-- CUBRID -->
+                <driver
+                        id="cubrid_jdbc"
+                        label="CUBRID"
+                        icon="icons/cubrid_icon.png"
+                        iconBig="icons/cubrid_icon_big.png"
+                        class="cubrid.jdbc.driver.CUBRIDDriver"
+                        sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
+                        defaultPort="33000"
+                        description="CUBRID JDBC driver"
+                        webURL="https://www.cubrid.org/"
+                        categories="sql">
+                    <!-- At the moment HTTPS link doesn't work. But we can't keep HTTP anyway. -->
+                    <file type="jar" path="https://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- Solr -->`
+                <driver
+                        id="apache_solrj"
+                        label="Solr"
+                        icon="icons/solr_icon.png"
+                        iconBig="icons/solr_icon_big.png"
+                        class="org.apache.solr.client.solrj.io.sql.DriverImpl"
+                        sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
+                        defaultPort="9983"
+                        description="Apache SolrJ JDBC driver"
+                        webURL="https://lucene.apache.org/solr/"
+                        categories="fulltext">
+                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- OpenEdge -->
+                <driver
+                        id="openedge_generic"
+                        label="OpenEdge"
+                        icon="icons/openedge_icon.png"
+                        iconBig="icons/openedge_icon_big.png"
+                        class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
+                        sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
+                        defaultPort="6718"
+                        description="OpenEdge Progress JDBC driver"
+                        webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
+                        categories="sql">
+                </driver>
+
+                <!-- MonetDB -->
+                <driver
+                        id="monetdb"
+                        label="MonetDB"
+                        icon="icons/monetdb_icon.png"
+                        iconBig="icons/monetdb_icon_big.png"
+                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
+                        defaultPort="50000"
+                        description="MonetDB JDBC driver"
+                        webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC"
+                        categories="sql,columns">
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
+                </driver>
+
+                <!-- Dremio -->
+
+                <driver
+                        id="dremio"
+                        label="Dremio"
+                        icon="icons/dremio_icon.png"
+                        iconBig="icons/dremio_icon_big.png"
+                        class="com.dremio.jdbc.Driver"
+                        sampleURL="jdbc:dremio:direct={host}[:{port}][;schema={database}]"
+                        defaultPort="31010"
+                        description="Dremio JDBC driver"
+                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        categories="analytic,hadoop,sql">
+                    <file type="jar" path="https://download.dremio.com/jdbc-driver/3.0.6-201812082352540436-1f684f9/dremio-jdbc-driver-3.0.6-201812082352540436-1f684f9.jar"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+
+                <!-- Apache Ignite -->
+
+                <driver
+                        id="apache_ignite"
+                        label="Apache Ignite"
+                        icon="icons/ignite_icon.png"
+                        iconBig="icons/ignite_icon_big.png"
+                        class="org.apache.ignite.IgniteJdbcThinDriver"
+                        sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
+                        defaultPort=""
+                        description="%driver.apache.ignite.description"
+                        webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
+                        categories="hadoop">
+                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
+                </driver>
+
+                <!-- OmniSci MapD -->
+
+                <driver
+                        id="omnisci_mapd"
+                        label="OmniSci (formerly MapD)"
+                        icon="icons/omnisci_icon.png"
+                        iconBig="icons/omnisci_icon_big.png"
+                        class="com.omnisci.jdbc.OmniSciDriver"
+                        sampleURL="jdbc:omnisci:{host}:{port}:{database}"
+                        defaultPort="6274"
+                        description="OmniSci (formerly MapD) SQL Analytics Engine"
+                        webURL="https://docs.omnisci.com/v5.1.1/6_jdbc.html"
+                        categories="analytics,sql">
+                    <file type="jar" path="maven:/com.omnisci:omnisci-jdbc:RELEASE"/>
+                 </driver>
+
+
+                <!-- CrateDB -->
+
+                <driver
+                    id="cratedb"
+                    label="CrateDB"
+                    icon="icons/cratedb_icon.png"
+                    iconBig="icons/cratedb_icon_big.png"
+                    class="io.crate.client.jdbc.CrateDriver"
+                    sampleURL="crate://{host}[:{port}]/"
                     defaultPort="5432"
-                    webURL="http://jdbc.postgresql.org/"
-                    description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions or some PostgreSQL based databases (before 8.x).">
+                    description="CrateDB JDBC driver"
+                    webURL="https://crate.io/docs/clients/jdbc/en/latest/"
+                    categories="sql">
+                    <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
+                </driver>
+
+                <!-- FoundationDB
+                <driver
+                        id="foundationdb"
+                        label="FoundationDB"
+                        class="com.foundationdb.sql.jdbc.Driver"
+                        sampleURL="jdbc:fdbsql://{host}[:{port}]/{database}"
+                        defaultPort="15432"
+                        description="FoundationDB JDBC driver"
+                        webURL="https://crate.io/docs/clients/jdbc/en/latest/"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.foundationdb:fdb-sql-layer-jdbc:RELEASE"/>
+                </driver>
+                -->
+
+                <!-- Pervasive SQL -->
+
+                <driver
+                    id="pervasive_jdbc"
+                    label="Pervasive SQL"
+                    iconBig="icons/pervasive_icon_big.png"
+                    class="com.pervasive.jdbc.v2.Driver"
+                    sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
+                    defaultPort="1583"
+                    description="Pervasive JDBC driver"
+                    webURL="https://docs.actian.com/psql/PSQLv11/jdbc/wwhelp/wwhimpl/common/html/wwhelp.htm#href=jdbc_gd.1.3.html&amp;single=true"
+                    categories="sql">
+                </driver>
+
+                <!-- SQream DB -->
+
+                <driver
+                        id="sqream_db"
+                        label="SQream DB"
+                        icon="icons/sqream_icon.png"
+                        iconBig="icons/sqream_icon_big.png"
+                        class="com.sqream.jdbc.SQDriver"
+                        sampleURL="jdbc:Sqream://{host}:{port}/{database};cluster=true"
+                        defaultPort="3108"
+                        description="SQream DB - SQL Data Warehouse"
+                        webURL="https://docs.sqream.com/en/latest/guides/client_drivers/jdbc/index.html"
+                        categories="sql,analytic,columns">
+                        <file type="jar" path="maven:/com.sqream:sqream-jdbc:RELEASE"/>
+                 </driver>
+
+                <!-- KDB - removed as it doesn't work anyway -->
+                <!--<driver
+                        id="kdb_jdbc"
+                        label="KDB+"
+                        icon="icons/kx_icon.png"
+                        iconBig="icons/kx_icon_big.png"
+                        class="jdbc"
+                        sampleURL="jdbc:q:{host}:{port}"
+                        defaultPort="5000"
+                        description="KX Systems KDB JDBC driver"
+                        webURL="https://code.kx.com/q/interfaces/jdbc-client-for-kdb/"
+                        categories="timeseries">
+                    <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
+                </driver>-->
+
+                <!-- Qubole
+                <driver
+                    id="qubole_jdbc"
+                    label="Qubole"
+                    icon="icons/qubole_icon.png"
+                    iconBig="icons/qubole_icon_big.png"
+                    class="com.qubole.jdbc.jdbc41.core.QDriver"
+                    sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
+                    description="Qubole JDBC driver"
+                    webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
+                    categories="bigdata,hadoop">
+                    <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
+                </driver>
+                -->
+
+                <!-- Legacy drivers -->
+
+                <driver
+                        id="mysql3"
+                        label="MySQL (Old)"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.mysql/icons/mysql_icon_big.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        defaultPort="3306"
+                        webURL="https://www.mysql.com/products/connector/"
+                        description="Driver for MySQL (4.x and earlier)">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
+                </driver>
+
+                <driver
+                        id="postgresql_generic"
+                        label="PostgreSQL (Old)"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://jdbc.postgresql.org/"
+                        description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -210,33 +1165,48 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="omit-single-catalog" value="true"/>
                 </driver>
+
+                <!-- Deprecated drivers -->
+
                 <driver
-                    id="oracle"
-                    label="Oracle"
-                    class="oracle.jdbc.OracleDriver"
-                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
-                    defaultPort="1521"
-                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle thin driver">
+                        id="postgresql"
+                        label="PostgreSQL (Old)"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://jdbc.postgresql.org/"
+                        description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
+                </driver>
+
+                <driver
+                        id="oracle"
+                        label="Oracle"
+                        class="oracle.jdbc.OracleDriver"
+                        sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                        defaultPort="1521"
+                        webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
+                        description="Oracle thin driver">
 
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
 
-                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
+                    <fileSource url="https://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
                         <file name="ojdbc6.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" description="NLS classes"/>
                         <file name="xdb6.jar" description="SQLXML support"/>
                     </fileSource>
                 </driver>
                 <driver
-                    id="db2"
-                    label="DB2"
-                    category="DB2"
-                    class="com.ibm.db2.jcc.DB2Driver"
-                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                    defaultPort="50000"
-                    webURL="http://www.ibm.com/software/data/db2/express/download.html"
-                    description="DB2 JCC driver">
+                        id="db2"
+                        label="DB2 LUW"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
+                        category="DB2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        defaultPort="50000"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
+                        description="DB2 JCC driver">
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
@@ -257,12 +1227,14 @@
 
                 <driver
                         id="db2_luw_old"
-                        label="DB2 LUW 8.x"
+                        label="DB2 LUW (Old 8.x)"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
                         category="DB2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
-                        webURL="http://www.ibm.com/software/data/db2/express/download.html"
+                        webURL="https://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
@@ -282,297 +1254,56 @@
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
 
                 </driver>
                 <driver
-                    id="db2_zos"
-                    label="DB2 z/OS"
-                    category="DB2"
-                    class="com.ibm.db2.jcc.DB2Driver"
-                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
-                    defaultPort="50000"
-                    description="DB2 z/OS driver"
-                    note="Deprecated.">
+                        id="db2_zos"
+                        label="DB2 z/OS"
+                        category="DB2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        defaultPort="50000"
+                        description="DB2 z/OS driver"
+                        note="Deprecated.">
                 </driver>
 
                 <driver
-                    id="db2_iseries"
-                    label="DB2 iSeries/AS 400"
-                    category="DB2"
-                    class="com.ibm.as400.access.AS400JDBCDriver"
-                    sampleURL="jdbc:as400://{host};[libraries={database};]"
-                    defaultPort=""
-                    description="DB2 iSeries/AS 400 driver">
-
-                    <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
-
-                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" bundle="drivers.jt400"/>
-                    <file type="jar" path="drivers/db2-jt400/jt400.jar" bundle="drivers.jt400"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-
-                <driver
-                    id="mssql"
-                    label="jTDS driver"
-                    icon="icons/sqlserver_icon.png"
-                    category="MS SQL Server"
-                    class="net.sourceforge.jtds.jdbc.Driver"
-                    sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
-                    defaultPort="1433"
-                    webURL="http://jtds.sourceforge.net/"
-                    description="jTDS SQL Server driver">
+                        id="mssql"
+                        label="jTDS driver"
+                        category="MS SQL Server"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                        defaultPort="1433"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="jTDS SQL Server driver">
                     <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
                 <driver
-                    id="mssql_ms"
-                    label="Microsoft Driver"
-                    icon="icons/sqlserver_icon.png"
-                    category="MS SQL Server"
-                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                    sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
-                    defaultPort="1433"
-                    webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
-                    description="Microsoft JDBC Driver for SQL Server ">
+                        id="mssql_ms"
+                        label="SQL Server"
+                        category="MS SQL Server"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        defaultPort="1433"
+                        webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
+                        description="Microsoft JDBC Driver for SQL Server ">
                     <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
                 <driver
-                    id="sybase"
-                    label="Sybase"
-                    icon="icons/sybase_icon.png"
-                    class="net.sourceforge.jtds.jdbc.Driver"
-                    sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
-                    defaultPort="5000"
-                    webURL="http://jtds.sourceforge.net/"
-                    description="Sybase jTDS driver">
+                        id="sybase"
+                        label="Sybase"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                        defaultPort="5000"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="Sybase jTDS driver">
                     <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
-                <driver
-                    id="sap_maxdb"
-                    category="SAP"
-                    label="MaxDB"
-                    icon="icons/sap_icon.png"
-                    class="com.sap.dbtech.jdbc.DriverSapDB"
-                    sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
-                    defaultPort="7200"
-                    webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
-                    description="SAP MaxDB - The SAP Database System">
-
-                    <file type="jar" path="drivers/maxdb/sapdbc.jar" bundle="drivers.maxdb"/>
-                    <file type="license" path="drivers/maxdb/LICENSE.txt" bundle="drivers.maxdb"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
-                    <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
-                </driver>
-                <driver
-                    id="informix"
-                    label="Informix"
-                    class="com.informix.jdbc.IfxDriver"
-                    sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
-                    defaultPort="1533"
-                    webURL="http://www.developers.net/ibmshowcase/focus/Informix"
-                    description="IBM Informix Dynamic Server">
-
-                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
-                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
-                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
-
-                    <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
-                    <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
-                    <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
-
-                    <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
-                    <parameter name="query-set-active-db" value="DATABASE ?"/>
-                    <parameter name="legacy-sql-dialect" value="true"/>
-
-                    <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
-                </driver>
-                <driver
-                    id="h2_server"
-                    label="Server"
-                    icon="icons/h2_icon.png"
-                    category="H2"
-                    class="org.h2.Driver"
-                    sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
-                    defaultPort="9092"
-                    webURL="http://www.h2database.com/"
-                    description="H2 Server">
-
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
-
-                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-                <driver
-                    id="h2_embedded"
-                    label="Embedded"
-                    icon="icons/h2_icon.png"
-                    category="H2"
-                    class="org.h2.Driver"
-                    sampleURL="jdbc:h2:{database}"
-                    webURL="http://www.h2database.com/"
-                    embedded="true"
-                    description="H2 Embedded">
-
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE" bundle="!drivers.h2"/>
-
-                    <file type="jar" path="drivers/h2/h2.jar" bundle="drivers.h2"/>
-
-                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
-                    <parameter name="query-shutdown" value="shutdown"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-                <driver
-                    id="odbc"
-                    label="ODBC"
-                    class="sun.jdbc.odbc.JdbcOdbcDriver"
-                    sampleURL="jdbc:odbc:{database}"
-                    webURL="http://sun.com"
-                    description="ODBC bridge driver"
-                    promoted="true">
-                    <os name="win32"/>
-                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
-
-                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/odbc/x86/JdbcOdbc.dll" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
-                </driver>
-                <driver
-                    id="derby"
-                    label="Embedded"
-                    icon="icons/apache_icon.png"
-                    category="Derby"
-                    class="org.apache.derby.jdbc.EmbeddedDriver"
-                    sampleURL="jdbc:derby:{folder}"
-                    webURL="http://db.apache.org/"
-                    embedded="true"
-                    description="Derby (Java DB) embedded driver">
-
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
-
-                    <file type="jar" path="drivers/derby/derby.jar" bundle="drivers.derby"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
-
-                    <parameter name="create-url-param" value=";create=true"/>
-                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
-                </driver>
-                <driver
-                    id="derby_server"
-                    label="Server"
-                    icon="icons/apache_icon.png"
-                    category="Derby"
-                    class="org.apache.derby.jdbc.ClientDriver"
-                    sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
-                    defaultPort="1527"
-                    webURL="http://db.apache.org/"
-                    description="Derby (Java DB) server driver">
-
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
-
-                    <file type="jar" path="drivers/derby/derbyclient.jar" bundle="drivers.derby"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
-                </driver>
-                <driver
-                    id="mimer"
-                    label="Mimer SQL"
-                    class="com.mimer.jdbc.Driver"
-                    sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
-                    defaultPort="1360"
-                    webURL="http://developer.mimer.com/"
-                    description="Mimer SQL TCP/IP driver">
-                    <file type="jar" path="repo:/drivers/mimer/mimjdbc3.jar"/>
-                </driver>
-                <driver
-                    id="hsqldb_server"
-                    label="Server"
-                    icon="icons/hsqldb_icon.png"
-                    category="HSQLDB"
-                    class="org.hsqldb.jdbcDriver"
-                    sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
-                    defaultPort="9001"
-                    webURL="http://hsqldb.org/"
-                    description="HyperSQL DataBase - Server Mode">
-
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
-
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="supports-limits" value="true"/>
-                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                </driver>
-                <driver
-                    id="hsqldb_embedded"
-                    label="Embedded"
-                    icon="icons/hsqldb_icon.png"
-                    category="HSQLDB"
-                    class="org.hsqldb.jdbc.JDBCDriver"
-                    sampleURL="jdbc:hsqldb:file:{folder}"
-                    webURL="http://hsqldb.org/"
-                    embedded="true"
-                    description="HyperSQL DataBase - Embedded Mode">
-
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
-
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" bundle="drivers.hsqldb"/>
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" bundle="drivers.hsqldb"/>
-
-                    <property name="shutdown" value="true"/>
-                    <parameter name="create-url-param" value=";create=true"/>
-                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                </driver>
-                <driver
-                    id="cache"
-                    label="Cache"
-                    icon="icons/cache_icon.png"
-                    class="com.intersys.jdbc.CacheDriver"
-                    sampleURL="jdbc:Cache://{host}:{port}/{database}"
-                    defaultPort="1972"
-                    webURL="http://www.intersystems.com/cache/"
-                    description="Intersystems Cache">
-                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
-                    <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
-                </driver>
-                <driver
-                    id="ingres"
-                    label="Ingres"
-                    class="com.ingres.jdbc.IngresDriver"
-                    sampleURL="jdbc:ingres://{host}:{port}/{database}"
-                    defaultPort="II7"
-                    webURL="http://www.ingres.com/products/ingres-database/"
-                    description="Ingres Database">
-                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-                <driver
+                <!--driver
                     id="linter"
                     label="Linter"
                     class="com.relx.jdbc.LinterDriver"
@@ -580,495 +1311,47 @@
                     defaultPort="1070"
                     webURL="http://linter.ru/"
                     description="Linter Database">
+                </driver-->
+                <driver
+                        id="firebird_jaybird"
+                        label="Firebird 2.x"
+                        class="org.firebirdsql.jdbc.FBDriver"
+                        sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                        defaultPort="3050"
+                        webURL=""
+                        description="Firebird 2.x Jaybird driver">
                 </driver>
                 <driver
-                    id="firebird_jaybird"
-                    label="Firebird 2.x"
-                    icon="icons/firebird_icon.png"
-                    class="org.firebirdsql.jdbc.FBDriver"
-                    sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
-                    defaultPort="3050"
-                    webURL=""
-                    description="Firebird 2.x JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[2.2.13]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-                <driver
-                    id="firebird_jaybird3"
-                    label="Firebird"
-                    icon="icons/firebird_icon.png"
-                    class="org.firebirdsql.jdbc.FBDriver"
-                    sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
-                    defaultPort="3050"
-                    webURL=""
-                    description="Firebird JayBird driver">
+                        id="firebird_jaybird3"
+                        label="Firebird"
+                        class="org.firebirdsql.jdbc.FBDriver"
+                        sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                        defaultPort="3050"
+                        webURL=""
+                        description="Firebird Jaybird driver">
                     <replace provider="generic" driver="firebird_jaybird"/>
-
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
-
-                    <property name="encoding" value="UTF8"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-                <driver
-                    id="sqlite_jdbc"
-                    label="SQLite"
-                    icon="icons/sqlite_icon.png"
-                    class="org.sqlite.JDBC"
-                    sampleURL="jdbc:sqlite:{file}"
-                    defaultPort=""
-                    webURL="https://github.com/xerial/sqlite-jdbc"
-                    propertiesURL="https://www.sqlite.org/pragma.html"
-                    embedded="true"
-                    anonymous="true"
-                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)"
-                    promoted="true">
-                    <replace provider="generic" driver="sqlite_zentus"/>
-                    <replace provider="generic" driver="sqlite_xerial"/>
-                    <replace provider="generic" driver="sqlite_ch_werner"/>
-
-                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc.jar" bundle="drivers.sqlite.xerial"/>
-
-                    <parameter name="supports-references" value="true"/>
-                    <parameter name="supports-struct-cache" value="false"/>
-                    <parameter name="supports-indexes" value="true"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <driver
-                    id="teradata"
-                    label="Teradata"
-                    class="com.ncr.teradata.TeraDriver"
-                    sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
-                    defaultPort="1025"
-                    webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
-                    description="Teradata JDBC Type 4 driver">
-
-                    <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
-                    <file type="jar" path="repo:/drivers/teradata/tdgssconfig.jar" bundle="!drivers.teradata"/>
-                    <file type="license" path="repo:/drivers/teradata/LICENSE.txt" bundle="!drivers.teradata"/>
-
-                    <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
-                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
-                    <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
-
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-                <driver
-                    id="mysql3"
-                    label="MySQL 3.x"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                    defaultPort="3306"
-                    webURL="http://www.mysql.com/products/connector/"
-                    description="Driver for MySQL 3.x and earlier">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
-                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
-                </driver>
-                <driver
-                    id="vertica"
-                    label="Vertica"
-                    icon="icons/vertica_icon.png"
-                    class="com.vertica.jdbc.Driver"
-                    sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
-                    defaultPort="5433"
-                    webURL="http://www.vertica.com/"
-                    propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
-                    description="Driver for Vertica Database">
-
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
-
-                    <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
-                    <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
-
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
-                    <parameter name="active-entity-type" value="schema"/>
-
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="supports-scroll" value="false"/>
+                        id="vertica"
+                        label="Vertica"
+                        class="com.vertica.jdbc.Driver"
+                        sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
+                        defaultPort="5433"
+                        webURL="http://www.vertica.com/"
+                        propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
+                        description="Driver for Vertica Database">
                 </driver>
 
                 <driver
-                    id="csvjdbc"
-                    label="CSV"
-                    category="Flat files"
-                    class="org.relique.jdbc.csv.CsvDriver"
-                    sampleURL="jdbc:relique:csv:{folder}"
-                    embedded="true"
-                    anonymous="true"
-                    description="CsvJdbc driver for CSV files"
-                    webURL="http://csvjdbc.sourceforge.net/"
-                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
-
-                    <property name="separator" value=","/>
-                    <property name="quotechar" value="&quot;"/>
-                    <property name="fileExtension" value=".csv"/>
-                    <property name="suppressHeaders" value="false"/>
-                    <property name="charset" value="UTF-8"/>
-
-                    <parameter name="supports-select-count" value="false"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
-                    <parameter name="use-search-string-escape" value="false"/>
-
-                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
-
-                    <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
-                </driver>
-                <driver
-                    id="csvjdbc_dbf"
-                    label="DBF"
-                    category="Flat files"
-                    class="org.relique.jdbc.csv.CsvDriver"
-                    sampleURL="jdbc:relique:csv:{folder}"
-                    embedded="true"
-                    anonymous="true"
-                    description="CsvJdbc driver for DBF files"
-                    webURL="http://csvjdbc.sourceforge.net/"
-                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
-
-                    <property name="fileExtension" value=".dbf"/>
-
-                    <parameter name="supports-select-count" value="false"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
-
-                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
-                    <file type="jar" path="maven:/nl.knaw.dans.common:dans-dbf-lib:RELEASE" bundle="!drivers.csvjdbc"/>
-
-                    <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
-                    <file type="jar" path="drivers/csvjdbc/dans-dbf-lib.jar" bundle="drivers.csvjdbc"/>
-                </driver>
-                <driver
-                    id="msaccess_ucanaccess"
-                    label="UCanAccess"
-                    icon="icons/msaccess_icon.png"
-                    category="MS Access"
-                    class="net.ucanaccess.jdbc.UcanaccessDriver"
-                    sampleURL="jdbc:ucanaccess://{file}"
-                    webURL="http://ucanaccess.sourceforge.net/site.html"
-                    embedded="true"
-                    description="Microsoft Access driver">
-
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
-
-                    <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/ucanaccess.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/byte-buddy.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/byte-buddy-agent.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/commons-lang.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/commons-logging.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
-                    <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
-                </driver>
-                <driver
-                    id="netezza"
-                    label="Netezza"
-                    class="org.netezza.Driver"
-                    sampleURL="jdbc:netezza://{host}:{port}/{database}"
-                    defaultPort="5480"
-                    webURL=""
-                    description="Netezza database driver">
-                </driver>
-
-
-                <driver
-                    id="nuodb"
-                    label="NuoDB"
-                    class="com.nuodb.jdbc.Driver"
-                    sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
-                    defaultPort=""
-                    description="NuoDB"
-                    webURL="http://www.nuodb.com/">
-                    <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
-                </driver>
-                <driver
-                    id="exasol"
-                    label="ExaSol"
-                    class="com.exasol.jdbc.EXADriver"
-                    sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
-                    defaultPort="8563"
-                    description="ExaSol"
-                    webURL="http://www.exasol.com/en/">
+                        id="exasol"
+                        label="ExaSol"
+                        class="com.exasol.jdbc.EXADriver"
+                        sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
+                        defaultPort="8563"
+                        description="ExaSol"
+                        webURL="http://www.exasol.com/en/">
                     <!--<library path="C:\Program Files\Java\lib\jdbc\exajdbc.jar"/>-->
-                </driver>
-                <driver
-                    id="sap_hana"
-                    category="SAP"
-                    label="HANA"
-                    icon="icons/sap_icon.png"
-                    class="com.sap.db.jdbc.Driver"
-                    sampleURL="jdbc:sap://{host}[:{port}]"
-                    defaultPort="30015"
-                    description=""
-                    webURL="http://scn.sap.com/community/developer-center/hana">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
-                    <parameter name="split-procedures-and-functions" value="true"/>
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA &quot;?&quot;"/>
-                </driver>
-
-                <!-- Hadoop -->
-                <driver
-                    id="phoenix_hbase"
-                    label="Apache Phoenix"
-                    class="org.apache.phoenix.jdbc.PhoenixDriver"
-                    sampleURL="jdbc:phoenix:{host}"
-                    webURL="http://phoenix.apache.org/"
-                    description="Driver for Apache Phoenix HBase Database"
-                    category="Hadoop">
-                    <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
-                </driver>
-                <driver
-                    id="gemfire_xd"
-                    label="Gemfire XD"
-                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
-                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
-                    defaultPort="1527"
-                    description="Pivotal GemfireXD"
-                    webURL="http://blog.pivotal.io/tag/gemfire-xd"
-                    category="Hadoop">
-                    <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
-                </driver>
-                <driver
-                    id="snappydata_store_client"
-                    label="SnappyData"
-                    class="io.snappydata.jdbc.ClientDriver"
-                    sampleURL="jdbc:snappydata://{host}[:{port}]/"
-                    defaultPort="1528"
-                    description="Pivotal GemfireXD"
-                    webURL="https://snappydatainc.github.io/snappydata/"
-                    category="Hadoop">
-                    <file type="jar" path="maven:/io.snappydata:snappydata-store-client:RELEASE"/>
-                    <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
-                </driver>
-
-                <driver
-                    id="apache_hive2"
-                    label="Apache Hive"
-                    icon="icons/hive_icon.png"
-                    class="org.apache.hive.jdbc.HiveDriver"
-                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
-                    defaultPort="10000"
-                    description="Apache Hive JDBC"
-                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
-                    category="Hadoop">
-
-                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"/>
-
-                    <parameter name="supports-limits" value="false"/>
-                    <parameter name="supports-references" value="false"/>
-                </driver>
-                <driver
-                    id="spark_hive"
-                    label="Spark Hive"
-                    class="org.apache.hive.jdbc.HiveDriver"
-                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
-                    defaultPort="10000"
-                    description="Spark Thrift Server connector"
-                    webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
-                    category="Hadoop">
-                    <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
-                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
-
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-references" value="false"/>
-                </driver>
-                <driver
-                    id="apache_drill"
-                    label="Apache Drill"
-                    class="org.apache.drill.jdbc.Driver"
-                    sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
-                    description="Apache Drill JDBC"
-                    webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
-                    category="Hadoop">
-                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
-
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="supports-references" value="false"/>
-                </driver>
-
-                <!-- Cloudera -->
-                <driver
-                    id="cloudera_impala"
-                    label="Cloudera Impala"
-                    class="com.cloudera.impala.jdbc41.Driver"
-                    sampleURL="jdbc:impala://{host}:{port}/{database}"
-                    defaultPort="21050"
-                    description="Cloudera Impala. You can download JDBC driver files from https://www.cloudera.com/"
-                    webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
-                    category="Hadoop">
-
-                    <parameter name="query-get-active-db" value="select current_database()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
-                    <parameter name="string-escape-char" value="\"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="supports-references" value="false"/>
-                </driver>
-
-                <!-- AWS -->
-                <driver
-                    id="aws_redshift"
-                    label="Redshift (JDBC 4.1)"
-                    category="AWS"
-                    class="com.amazon.redshift.jdbc41.Driver"
-                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                    defaultPort="5439"
-                    description="AWS Redshift JDBC driver"
-                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
-                </driver>
-                <driver
-                    id="aws_redshift_42"
-                    label="Redshift"
-                    category="AWS"
-                    class="com.amazon.redshift.jdbc42.Driver"
-                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                    defaultPort="5439"
-                    description="AWS Redshift JDBC driver"
-                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
-                    <replace provider="generic" driver="aws_redshift"/>
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
-                </driver>
-                <driver
-                    id="aws_athena_42"
-                    label="Athena"
-                    category="AWS"
-                    class="com.simba.athena.jdbc.Driver"
-                    sampleURL=" jdbc:awsathena://AwsRegion=us-east-1;"
-                    defaultPort="5439"
-                    description="AWS Athena JDBC driver"
-                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html">
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
-
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
-                </driver>
-
-                <!-- Virtuoso  -->
-                <driver
-                    id="virtuoso_opensource"
-                    label="Virtuoso"
-                    class="virtuoso.jdbc4.Driver"
-                    sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
-                    defaultPort="1111"
-                    description="OpenLink Virtuoso open source driver"
-                    webURL="https://github.com/openlink/virtuoso-opensource">
-                    <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
-                </driver>
-
-                <!-- Machbase -->
-                <driver
-                    id="machbase"
-                    label="Machbase"
-                    class="com.machbase.jdbc.driver"
-                    sampleURL="jdbc:machbase://{host}/mhdb"
-                    defaultPort="5656"
-                    description="MACHBASE standard driver"
-                    webURL="http://www.machbase.com">
-                    <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- Yandex ClickHouse -->
-                <driver
-                    id="yandex_clickhouse"
-                    label="ClickHouse"
-                    class="ru.yandex.clickhouse.ClickHouseDriver"
-                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
-                    defaultPort="8123"
-                    icon="icons/clickhouse_icon.png"
-                    description="Yandex ClickHouse"
-                    webURL="https://github.com/yandex/clickhouse-jdbc">
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
-
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
-                </driver>
-
-                <!-- OrientDB -->
-                <driver
-                    id="orientdb_jdbc"
-                    label="OrientDB"
-                    icon="icons/orientdb_icon.png"
-                    class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
-                    sampleURL="jdbc:orient:remote:{host}/{database}"
-                    defaultPort=""
-                    description="OrientDB JDBC driver"
-                    webURL="https://github.com/orientechnologies/orientdb-jdbc">
-                    <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
-
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- Neo4j -->
-                <driver
-                    id="neo4j_jdbc"
-                    label="Neo4j"
-                    icon="icons/neo4j_icon.png"
-                    class="org.neo4j.jdbc.Driver"
-                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
-                    defaultPort="7687"
-                    description="Neo4j JDBC driver"
-                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- PrestoDB -->
-                <driver
-                        id="presto_jdbc"
-                        label="PrestoDB"
-                        class="com.facebook.presto.jdbc.PrestoDriver"
-                        sampleURL="jdbc:presto://{host}:{port}/{database}"
-                        defaultPort="8080"
-                        description="PrestoDB JDBC driver"
-                        webURL="https://prestodb.io/">
-                    <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
-                </driver>
-
-                <!-- CUBRID -->
-                <driver
-                        id="cubrid_jdbc"
-                        label="CUBRID"
-                        class="cubrid.jdbc.driver.CUBRIDDriver"
-                        sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
-                        defaultPort="33000"
-                        description="CUBRID JDBC driver"
-                        webURL="https://www.cubrid.org/">
-                    <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
                 </driver>
 
                 <!-- SnowFlake -->
@@ -1076,7 +1359,6 @@
                         id="snowflake_generic"
                         label="Snowflake"
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
-                        icon="icons/snowflake_icon.png"
                         sampleURL="jdbc:snowflake://{host}/?[db={database}]"
                         defaultPort=""
                         description="Snowflake JDBC driver"
@@ -1084,68 +1366,9 @@
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
-                <!-- Solr -->
-                <driver
-                        id="apache_solrj"
-                        label="Solr"
-                        icon="icons/solr_icon.png"
-                        class="org.apache.solr.client.solrj.io.sql.DriverImpl"
-                        sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
-                        defaultPort="9983"
-                        description="Apache SolrJ JDBC driver"
-                        webURL="https://lucene.apache.org/solr/">
-                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- OpenEdge -->
-                <driver
-                        id="openedge_generic"
-                        label="OpenEdge"
-                        class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
-                        sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
-                        defaultPort="6718"
-                        description="OpenEdge Progress JDBC driver"
-                        webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
-                </driver>
-
-                <!-- MonetDB -->
-                <driver
-                        id="monetdb"
-                        label="MonetDB"
-                        icon="icons/monetdb.png"
-                        class="nl.cwi.monetdb.jdbc.MonetDriver"
-                        sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
-                        defaultPort="50000"
-                        description="MonetDB JDBC driver"
-                        webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
-                    <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
-
-                    <parameter name="use-search-string-escape" value="false"/>
-                </driver>
-
             </drivers>
 
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
-                dataSource="generic"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/database.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/database.png"
-                id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
-                dataSource="generic"
-                label="%dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
@@ -1161,42 +1384,12 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericViewManager"          objectType="org.jkiss.dbeaver.ext.generic.model.GenericView"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"   objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
         <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-                id="generic.table.ddl.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                main="false"
-                label="DDL"
-                description="Table DDL"
-                position="additions_end"
-                icon="#sql_text"
-                type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="!object.view"/>
-        </editor>
-        <editor
-                id="generic.view.source.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                main="false"
-                label="Definition"
-                description="View definition"
-                position="additions_end"
-                icon="#sql_text"
-                type="folder"
-                embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="object.view"/>
-        </editor>
-        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
-        </editor>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
@@ -1325,6 +1518,20 @@
         <repository id="monetdb-maven-repo" name="MonetDB Repository" url="https://clojars.org/repo/" order="20">
             <scope group="monetdb"/>
         </repository>
+        <repository id="cratedb-maven-repo" name="CrateDB Repository" url="https://dl.bintray.com/crate/crate" order="21">
+            <scope group="io.crate"/>
+        </repository>
+
+<!--
+        <repository id="s3-maven-qubole-releases" name="Qubole Release Repository on S3" url="http://maven-qubole.s3-website-us-east-1.amazonaws.com/maven/release">
+            <scope group="com.qubole"/>
+        </repository>
+-->
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
+        </dialect>
     </extension>
 
 </plugin>

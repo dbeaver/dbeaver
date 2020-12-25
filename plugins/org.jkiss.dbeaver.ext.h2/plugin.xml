@@ -4,7 +4,12 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="h2" class="org.jkiss.dbeaver.ext.h2.model.H2MetaModel" driverClass="org.h2.Driver"/>
+        <meta id="h2" class="org.jkiss.dbeaver.ext.h2.model.H2MetaModel" driverClass="org.h2.Driver" dialect="h2"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="h2" parent="generic" class="org.jkiss.dbeaver.ext.h2.model.H2SQLDialect" label="H2" description="H2 SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

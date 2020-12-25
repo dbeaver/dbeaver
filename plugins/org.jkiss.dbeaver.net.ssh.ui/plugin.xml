@@ -7,4 +7,10 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl" uiClass="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelConfiguratorUI"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.net.ssh.SSHImplementationJsch" class="org.jkiss.dbeaver.ui.net.ssh.jsch.JSCHUIPromptProviderAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider"/>
+        </factory>
+    </extension>
+
 </plugin>

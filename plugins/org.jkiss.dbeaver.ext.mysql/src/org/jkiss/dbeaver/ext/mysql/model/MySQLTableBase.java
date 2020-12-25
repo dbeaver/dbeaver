@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -33,12 +32,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLTable base
@@ -91,7 +95,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public Collection<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<MySQLTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<MySQLTableColumn> childColumns = getContainer().tableCache.getChildren(monitor, getContainer(), this);
@@ -129,7 +133,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         throws DBException
     {
         if (!isPersisted()) {
-            return JDBCUtils.generateTableDDL(monitor, this, options, false);
+            return DBStructUtils.generateTableDDL(monitor, this, options, false);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -28,10 +27,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -40,9 +36,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,8 +75,7 @@ public class SQLQuery implements SQLScriptElement {
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
 
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text)
-    {
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text) {
         this(dataSource, text, 0, text.length());
     }
 
@@ -98,8 +96,7 @@ public class SQLQuery implements SQLScriptElement {
         this.data = sourceQuery.data;
     }
 
-    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length)
-    {
+    public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
         this.dataSource = dataSource;
         this.originalText = this.text = text;
         this.offset = offset;
@@ -129,19 +126,28 @@ public class SQLQuery implements SQLScriptElement {
                 this.parseError = new DBException("Empty query");
                 return;
             }
-            statement = CCJSqlParserUtil.parse(text);
+            statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
-                // Detect single source table
+                // Detect single source table (no joins, no group by, no sub-selects)
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
                     PlainSelect plainSelect = (PlainSelect) selectBody;
                     if (plainSelect.getFromItem() instanceof Table &&
                         CommonUtils.isEmpty(plainSelect.getJoins()) &&
-                        CommonUtils.isEmpty(plainSelect.getGroupByColumnReferences()) &&
+                        (plainSelect.getGroupBy() == null || CommonUtils.isEmpty(plainSelect.getGroupBy().getGroupByExpressions())) &&
                         CommonUtils.isEmpty(plainSelect.getIntoTables()))
                     {
-                        fillSingleSource((Table) plainSelect.getFromItem());
+                        boolean hasSubSelects = false;
+                        for (SelectItem si : plainSelect.getSelectItems()) {
+                            if (si instanceof SelectExpressionItem && ((SelectExpressionItem) si).getExpression() instanceof SubSelect) {
+                                hasSubSelects = true;
+                                break;
+                            }
+                        }
+                        if (!hasSubSelects) {
+                            fillSingleSource((Table) plainSelect.getFromItem());
+                        }
                     }
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
@@ -157,9 +163,9 @@ public class SQLQuery implements SQLScriptElement {
                 fillSingleSource(((Insert) statement).getTable());
             } else if (statement instanceof Update) {
                 type = SQLQueryType.UPDATE;
-                List<Table> tables = ((Update) statement).getTables();
-                if (tables != null && tables.size() == 1) {
-                    fillSingleSource(tables.get(0));
+                Table table = ((Update) statement).getTable();
+                if (table != null) {
+                    fillSingleSource(table);
                 }
             } else if (statement instanceof Delete) {
                 type = SQLQueryType.DELETE;
@@ -175,8 +181,7 @@ public class SQLQuery implements SQLScriptElement {
                 statement instanceof CreateTable ||
                 statement instanceof CreateView ||
                 statement instanceof Drop ||
-                statement instanceof CreateIndex)
-            {
+                statement instanceof CreateIndex) {
                 type = SQLQueryType.DDL;
             } else {
                 type = SQLQueryType.UNKNOWN;
@@ -203,19 +208,21 @@ public class SQLQuery implements SQLScriptElement {
         if (name == null) {
             return null;
         }
-        return DBUtils.getUnQuotedIdentifier(dataSource, name);
+        return dataSource == null ?
+            DBUtils.getUnQuotedIdentifier(name, SQLConstants.DEFAULT_IDENTIFIER_QUOTE) :
+            DBUtils.getUnQuotedIdentifier(dataSource, name);
     }
 
     /**
      * Plain select is a SELECT statement without INTO clause, without LIMIT or TOP modifiers
+     *
      * @return true is this query is a plain select
      */
     public boolean isPlainSelect() {
         parseQuery();
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
-            return selectBody.getFromItem() != null &&
-                CommonUtils.isEmpty(selectBody.getIntoTables()) &&
+            return CommonUtils.isEmpty(selectBody.getIntoTables()) &&
                 selectBody.getLimit() == null &&
                 selectBody.getTop() == null &&
                 !selectBody.isForUpdate();
@@ -244,9 +251,12 @@ public class SQLQuery implements SQLScriptElement {
         return originalText;
     }
 
+    public void setOriginalText(@NotNull String originalText) {
+        this.originalText = originalText;
+    }
+
     @NotNull
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
 
@@ -272,8 +282,7 @@ public class SQLQuery implements SQLScriptElement {
         return parameters;
     }
 
-    public int getOffset()
-    {
+    public int getOffset() {
         return offset;
     }
 
@@ -281,8 +290,7 @@ public class SQLQuery implements SQLScriptElement {
         this.offset = offset;
     }
 
-    public int getLength()
-    {
+    public int getLength() {
         return length;
     }
 
@@ -292,6 +300,7 @@ public class SQLQuery implements SQLScriptElement {
 
     /**
      * User defined data object. May be used to identify statements.
+     *
      * @return data or null
      */
     public Object getData() {
@@ -313,8 +322,7 @@ public class SQLQuery implements SQLScriptElement {
         return singleTableMeta;
     }
 
-    public void setParameters(List<SQLQueryParameter> parameters)
-    {
+    public void setParameters(List<SQLQueryParameter> parameters) {
         this.parameters = parameters;
     }
 
@@ -326,8 +334,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return text;
     }
 

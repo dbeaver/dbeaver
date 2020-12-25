@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -43,8 +45,10 @@ import java.util.Map;
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, IDataSourceContainerProvider
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, IDataSourceContainerProvider, DBPContextProvider
 {
+    private static final Log log = Log.getLog(DatabaseEditorInput.class);
+
     private final NODE node;
     private final DBCExecutionContext executionContext;
     private final DBECommandContext commandContext;
@@ -63,6 +67,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         DBSObject object = node == null ? null : node.getObject();
         if (object != null) {
             this.executionContext = DBUtils.getDefaultContext(object, false);
+            if (this.executionContext == null) {
+                log.error("Database object is not associated with any execution context");
+            }
             this.commandContext = commandContext != null ?
                 commandContext :
                 new SimpleCommandContext(
@@ -89,6 +96,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public String getName()
     {
+        if (node == null) {
+            return "?";
+        }
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME)) {
             return node.getNodeFullName();
         } else {
@@ -167,7 +177,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public DBSObject getDatabaseObject()
     {
-        return node.getObject();
+        return node == null ? null : node.getObject();
     }
 
     @Override

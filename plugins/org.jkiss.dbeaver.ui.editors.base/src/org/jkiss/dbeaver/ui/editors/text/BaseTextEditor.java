@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -37,23 +38,20 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
-import org.jkiss.dbeaver.ui.editors.IStatefulEditorInput;
-import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract text editor.
@@ -66,6 +64,12 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public static final String GROUP_SQL_PREFERENCES = "sql.preferences";
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
     public static final String GROUP_SQL_EXTRAS = "sql.extras";
+
+    private List<IActionContributor> actionContributors = new ArrayList<>();
+
+    public void addContextMenuContributor(IActionContributor contributor) {
+        actionContributors.add(contributor);
+    }
 
     public static BaseTextEditor getTextEditor(IEditorPart editor)
     {
@@ -108,10 +112,13 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     }
 
     @Nullable
-    public Document getDocument()
+    public IDocument getDocument()
     {
         IDocumentProvider provider = getDocumentProvider();
-        return provider == null ? null : (Document)provider.getDocument(getEditorInput());
+        if (provider == null) {
+            return null;
+        }
+        return provider.getDocument(getEditorInput());
     }
 
     @Nullable
@@ -124,7 +131,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     @Override
     public void createPartControl(Composite parent)
     {
-        //setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
+        //setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
 
         super.createPartControl(parent);
 
@@ -146,17 +153,17 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     {
         //super.editorContextMenuAboutToShow(menu);
 
-        menu.add(new Separator(ITextEditorActionConstants.GROUP_UNDO));
-        menu.add(new GroupMarker(ITextEditorActionConstants.GROUP_SAVE));
+        menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
+        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
+        menu.add(new Separator());
         menu.add(new Separator(ITextEditorActionConstants.GROUP_COPY));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_PRINT));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_EDIT));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_FIND));
         menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_UNDO));
+        menu.add(new GroupMarker(ITextEditorActionConstants.GROUP_SAVE));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
-        menu.add(new Separator());
-        menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
-        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
         menu.add(new Separator());
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());
@@ -179,6 +186,10 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         IAction preferencesAction = getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
         if (preferencesAction != null) {
             menu.appendToGroup(GROUP_SQL_PREFERENCES, preferencesAction);
+        }
+
+        for (IActionContributor ac : actionContributors) {
+            ac.contributeActions(menu);
         }
     }
 
@@ -242,12 +253,12 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             }
         }
         catch (IOException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Can't load file",
                 "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
         }
         if (newContent != null) {
-            Document document = getDocument();
+            IDocument document = getDocument();
             if (document != null) {
                 document.set(newContent);
             }
@@ -260,29 +271,25 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         IFile curFile = EditorUtils.getFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
-        final Document document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
+        final IDocument document = getDocument();
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save as file", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }
 
         try {
-            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        StringReader cr = new StringReader(document.get());
-                        ContentUtils.saveContentToFile(cr, saveFile, GeneralUtils.UTF8_ENCODING, monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    StringReader cr = new StringReader(document.get());
+                    ContentUtils.saveContentToFile(cr, saveFile, ResourcesPlugin.getEncoding(), monitor);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InterruptedException e) {
             // do nothing
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Save failed", null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Save failed", null, e.getTargetException());
         }
 
         afterSaveToFile(saveFile);

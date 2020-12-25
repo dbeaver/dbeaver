@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,10 +22,16 @@ import org.eclipse.osgi.util.NLS;
 public class ModelMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
+	public static String error_not_connected_to_database;
+
 	public static String error_can_create_temp_dir;
 	public static String error_can_create_temp_file;
 
 	public static String common_error_sql;
+
+	public static String model_constraint_type_foreign_key;
+	public static String model_constraint_type_primary_key;
+	public static String model_constraint_type_unique_key;
 
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
@@ -120,11 +126,14 @@ public class ModelMessages extends NLS {
 
 	public static String model_navigator_Root;
 
-	public static String model_struct_Cascade;
+	public static String model_struct_Association;
+    public static String model_struct_Cascade;
 	public static String model_struct_Check;
 	public static String model_struct_Clustered;
-	public static String model_struct_Foreign_Key;
+    public static String model_struct_Foreign_Key;
 	public static String model_struct_Hashed;
+    public static String model_struct_Index;
+    public static String model_struct_Inheritance;
 	public static String model_struct_No_Action;
 	public static String model_struct_Not_NULL;
 	public static String model_struct_Other;
@@ -135,6 +144,7 @@ public class ModelMessages extends NLS {
 	public static String model_struct_Statistic;
 	public static String model_struct_Unique_Key;
     public static String model_struct_Virtual_Key;
+	public static String model_struct_Virtual_Foreign_Key;
     public static String model_struct_Pseudo_Key;
 	public static String model_struct_Unknown;
 
@@ -143,8 +153,36 @@ public class ModelMessages extends NLS {
 	public static String CreateLinkedFolderRunnable_e_cancelled_link;
 	public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
+	public static String dbp_connection_type_table_development;
 
-	static {
+	public static String dbp_connection_type_table_production;
+
+	public static String dbp_connection_type_table_production_database;
+
+	public static String dbp_connection_type_table_regular_development_database;
+
+	public static String dbp_connection_type_table_test;
+
+	public static String dbp_connection_type_table_test_database;
+
+    public static String dialog_connection_wizard_start_connection_monitor_close;
+    public static String dialog_connection_wizard_start_connection_monitor_start;
+    public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
+    public static String dialog_connection_wizard_start_connection_monitor_success;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
+    public static String dialog_connection_wizard_start_connection_monitor_thread;
+    public static String dialog_connection_wizard_start_dialog_error_message;
+
+    public static String dbp_permission_edit_data_name;
+    public static String dbp_permission_edit_data_description;
+    public static String dbp_permission_edit_metadata_name;
+    public static String dbp_permission_edit_metadata_description;
+    public static String dbp_permission_execute_scripts_name;
+    public static String dbp_permission_execute_scripts_description;
+    public static String dbp_permission_import_data_name;
+    public static String dbp_permission_import_data_description;
+
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
 	}

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -161,8 +162,9 @@ public class MySQLPackage
         return proceduresCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return MySQLProcedure.class;
     }
@@ -192,14 +194,15 @@ public class MySQLPackage
                         throw new DBCException("Package '" + getName() + "' not found");
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
     }
 
     static class ProceduresCache extends JDBCObjectCache<MySQLPackage, MySQLProcedure> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLPackage owner)
             throws SQLException

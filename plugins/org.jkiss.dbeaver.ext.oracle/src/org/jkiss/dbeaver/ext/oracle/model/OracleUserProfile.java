@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * OracleUserProfile
@@ -36,7 +35,6 @@ public class OracleUserProfile extends OracleGlobalObject
     private static final Log log = Log.getLog(OracleUserProfile.class);
 
     private String name;
-    private List<ProfileResource> resources;
 
     public OracleUserProfile(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource, resultSet != null);
@@ -53,20 +51,7 @@ public class OracleUserProfile extends OracleGlobalObject
     @Association
     public Collection<ProfileResource> getResources(DBRProgressMonitor monitor) throws DBException
     {
-        if (resources == null) {
-            getDataSource().profileCache.loadChildren(monitor, getDataSource(), this);
-        }
-        return resources;
-    }
-
-    boolean isResourcesCached()
-    {
-        return resources != null;
-    }
-
-    void setResources(List<ProfileResource> resources)
-    {
-        this.resources = resources;
+        return getDataSource().profileCache.getChildren(monitor, getDataSource(), this);
     }
 
     /**

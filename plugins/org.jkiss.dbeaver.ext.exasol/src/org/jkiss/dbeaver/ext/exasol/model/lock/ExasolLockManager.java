@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@
 package org.jkiss.dbeaver.ext.exasol.model.lock;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockGraphManager;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,9 +34,12 @@ import java.util.*;
 
 public class ExasolLockManager extends LockGraphManager
 		implements DBAServerLockManager<ExasolLock, ExasolLockItem> {
+
+	public static final String sidHold = "hsid";
+	public static final String sidWait = "wsid";
 	
 	public static final String LOCK_QUERY = 
-			"WITH LOCKED AS (\r\n" + 
+			"/*snapshot execution*/ WITH LOCKED AS (\r\n" + 
 			"SELECT \r\n" + 
 			"w.SESSION_ID AS w_session_id,w.login_time as w_login_time,\r\n" + 
 			"w.user_name AS w_user_name,\r\n" + 
@@ -94,7 +95,7 @@ public class ExasolLockManager extends LockGraphManager
 			;
 	
 	public static final String LOCK_ITEM_QUERY = 
-			"with\r\n" + 
+			"/*snapshot execution*/ with\r\n" + 
 			"	EXA_SQL as (\r\n" + 
 			"		select\r\n" + 
 			"			SESSION_ID,\r\n" + 
@@ -284,14 +285,14 @@ public class ExasolLockManager extends LockGraphManager
 			
 			try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
 				
-				String otype = (String) options.get(LockManagerViewer.keyType);
+				String otype = (String) options.get(LockGraphManager.keyType);
 				
 				switch(otype) {
-					case LockManagerViewer.typeWait:
-						dbStat.setBigDecimal(1, new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidWait)));
+					case LockGraphManager.typeWait:
+						dbStat.setBigDecimal(1, new BigDecimal((BigInteger) options.get(sidWait)));
 						break;
-					case LockManagerViewer.typeHold:
-						dbStat.setBigDecimal(1,  new BigDecimal((BigInteger) options.get(ExasolLockEditor.sidHold)));
+					case LockGraphManager.typeHold:
+						dbStat.setBigDecimal(1,  new BigDecimal((BigInteger) options.get(sidHold)));
 						break;
 						
 					default:

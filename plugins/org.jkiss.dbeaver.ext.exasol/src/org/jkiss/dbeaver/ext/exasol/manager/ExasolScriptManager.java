@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,17 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -47,7 +49,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
             throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName()))
         {
@@ -58,12 +60,24 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
 
     @Override
     protected ExasolScript createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            ExasolSchema parent, Object copyFrom) throws DBException {
-        ExasolScript newScript =  new ExasolScript(parent);
+                                                Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        ExasolScript newScript =  new ExasolScript((ExasolSchema) container);
         newScript.setName("new_script");
         newScript.setObjectDefinitionText("CREATE OR REPLACE LUA SCRIPT new_script () RETURNS TABLE AS");
         return newScript;
     }
+    
+    private String dropScript(ExasolScript script)
+    {
+    	if (script.getType().equals("ADAPTER"))
+    	{
+    		return "DROP ADAPTER SCRIPT "  + script.getFullyQualifiedName(DBPEvaluationContext.DDL);
+    	} else {
+    		return "DROP  SCRIPT "  + script.getFullyQualifiedName(DBPEvaluationContext.DDL);
+    	}
+    }
+    
+ 
     
     private void createOrReplaceScriptQuery(List<DBEPersistAction> actions, ExasolScript script, Boolean replace)
     {
@@ -71,27 +85,27 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
                 new SQLDatabasePersistAction("Create Script", "OPEN SCHEMA " + script.getSchema().getName()));
         if (replace) { 
             actions.add(
-                new SQLDatabasePersistAction("Create Script", "DROP SCRIPT " + script.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                new SQLDatabasePersistAction("Create Script", dropScript(script)));
         }
         actions.add(
             new SQLDatabasePersistAction("Create Script: ", script.getSql() , true));
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
-                new SQLDatabasePersistAction("Create Script", "DROP SCRIPT " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                new SQLDatabasePersistAction("Create Script", dropScript(command.getObject())));
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
@@ -101,13 +115,13 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                          NestedObjectCommand<ExasolScript, PropertyHandler> command, Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 
                             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                            SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+                            SQLUtils.quoteString(command.getObject(), ExasolUtils.quoteString(command.getObject().getDescription()))));
         }
     }
 

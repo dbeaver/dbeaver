@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
@@ -189,6 +189,10 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
     public DB2UniqueRule getUniqueRule()
     {
         return uniqueRule;
+    }
+
+    public void setUniqueRule(DB2UniqueRule uniqueRule) {
+        this.uniqueRule = uniqueRule;
     }
 
     @Property(viewable = false, editable = false, order = 10)

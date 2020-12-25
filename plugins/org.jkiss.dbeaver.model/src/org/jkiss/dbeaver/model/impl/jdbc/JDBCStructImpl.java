@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,12 @@ public class JDBCStructImpl implements Struct {
 
     private final String typeName;
     private final Object[] attributes;
+    private final String stringValue;
 
-    public JDBCStructImpl(String typeName, Object[] attributes) {
+    public JDBCStructImpl(String typeName, Object[] attributes, String stringValue) {
         this.typeName = typeName;
         this.attributes = attributes;
+        this.stringValue = stringValue;
     }
 
     @Override
@@ -49,4 +51,10 @@ public class JDBCStructImpl implements Struct {
     public Object[] getAttributes(Map<String, Class<?>> map) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
+
+    @Override
+    public String toString() {
+        return stringValue;
+    }
+
 }

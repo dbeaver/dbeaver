@@ -9,21 +9,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.3.1</dbeaver-version>
+        <dbeaver-version>7.3.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>1.1.0</tycho-version>
-        <tycho-versions-version>0.26.0</tycho-versions-version>
+        <tycho-version>2.0.0</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
-        <!-- SimRel 2018-09 -->
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-09/</eclipse-p2-repo.url>
-        <!-- Orbit. From Photon because we need com.ibm.icu.base -->
-        <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
-        <!-- Nebula -->
-        <nebula-p2-repo.url>http://download.eclipse.org/nebula/releases/latest</nebula-p2-repo.url>
-        <!-- DBeaver Maven dependencies -->
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2020-12/</eclipse-p2-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -33,40 +26,17 @@
         <module>bundles</module>
         <module>plugins</module>
         <module>features</module>
-
-        <!-- Products -->
-        <module>product/standalone</module>
-        <module>product/repositories</module>
-
-        <!-- Tests -->
-        <module>tests</module>
-
     </modules>
 
     <repositories>
-        <repository>
-            <id>eclipse-p2-repo</id>
-            <url>${eclipse-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>eclipse-orbit-repo</id>
-            <url>${orbit-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>nebula-repo</id>
-            <url>${nebula-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
         <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
         <repository>
-            <id>eclipse-color-theme</id>
-            <url>http://eclipse-color-theme.github.com/update</url>
+            <id>eclipse-p2-repo</id>
+            <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
     </repositories>
@@ -76,23 +46,16 @@
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
 
-            <!-- Tycho target platform -->
-<!--
+
             <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho-version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
-                    <target>
-                        <artifact>
-                            <groupId>org.example</groupId>
-                            <artifactId>target-definition</artifactId>
-                            <version>1.0.0-SNAPSHOT</version>
-                        </artifact>
-                    </target>
+                    <resources>
+                    </resources>
                 </configuration>
             </plugin>
--->
 
             <!-- Tycho build -->
             <plugin>
@@ -104,17 +67,7 @@
                         <environment>
                             <os>win32</os>
                             <ws>win32</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
                             <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86</arch>
                         </environment>
                         <environment>
                             <os>linux</os>
@@ -127,7 +80,9 @@
                             <arch>x86_64</arch>
                         </environment>
                     </environments>
+
                 </configuration>
+
             </plugin>
 
             <plugin>
@@ -137,23 +92,20 @@
                 <extensions>true</extensions>
             </plugin>
 
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-versions-plugin</artifactId>
-                <version>${tycho-versions-version}</version>
-                <extensions>true</extensions>
-            </plugin>
--->
-
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-compiler-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
+                    <useProjectSettings>false</useProjectSettings>
                     <source>1.8</source>
                     <target>1.8</target>
                     <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
+                    <!--
+                        Parameter ignore.symbol.file is needed to compile in latest Tycho and Java.
+                        Otherwise sun.security classes are not accessible.
+                    -->
+                    <compilerArgument>-XDignore.symbol.file=true</compilerArgument>
                 </configuration>
             </plugin>
 
@@ -165,8 +117,8 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Built-By>jkiss.org</Built-By>
-                            <Created-By>jkiss.org</Created-By>
+                            <Built-By>dbeaver.io</Built-By>
+                            <Created-By>dbeaver.io</Created-By>
                             <Build-Time>${maven.build.timestamp}</Build-Time>
                         </manifestEntries>
                         <addMavenDescriptor>false</addMavenDescriptor>
@@ -174,28 +126,47 @@
                 </configuration>
             </plugin>
 
+<!--
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArgs>
+                        <arg>-XDignore.symbol.file=true</arg>
+                    </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>compiletests</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+-->
+
         </plugins>
+
     </build>
 
     <profiles>
-        <!-- Profile used to switch to older (Oxygen) Eclipse platform -->
+        <!-- desktop build: includes UI components and products -->
         <profile>
-            <id>eclipse-oxygen</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <!-- Use Oxygen repo -->
-                <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
-            </properties>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <modules>
+                <!-- Tests -->
+                <module>test</module>
+
+                <!-- Products -->
+                <module>product/appstore</module>
+                <module>product/standalone</module>
+                <module>product/repositories</module>
+            </modules>
         </profile>
 
         <!-- Profile for jars sign -->
@@ -231,22 +202,5 @@
             </build>
         </profile>
     </profiles>
-
-    <!-- unit tests -->
-
-    <dependencies>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>

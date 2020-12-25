@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -46,7 +47,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
     private static final Log log = Log.getLog(RedshiftExternalSchema.class);
 
     private String esOptions;
-    public final ExternalTableCache externalTableCache = new ExternalTableCache();
+    private final ExternalTableCache externalTableCache = new ExternalTableCache();
 
     public RedshiftExternalSchema(PostgreDatabase database, String name, String esOptions, ResultSet dbResult) throws SQLException {
         super(database, name, dbResult);
@@ -57,9 +58,18 @@ public class RedshiftExternalSchema extends PostgreSchema {
         super(database, name, owner);
     }
 
+    public ExternalTableCache getExternalTableCache() {
+        return externalTableCache;
+    }
+
     @Override
     public boolean isExternal() {
         return true;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        // Not supported
     }
 
 /*
@@ -83,23 +93,29 @@ public class RedshiftExternalSchema extends PostgreSchema {
         return null;
     }
 
-    @Override
-    public Collection<RedshiftExternalTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    @Association
+    public Collection<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
         return externalTableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public Collection<RedshiftExternalTable> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return getTables(monitor);
+    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return getExternalTables(monitor);
     }
 
     @Override
-    public RedshiftExternalTable getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public Collection<RedshiftExternalTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getExternalTables(monitor);
+    }
+
+    @Override
+    public RedshiftExternalTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return externalTableCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return RedshiftExternalTable.class;
     }
 

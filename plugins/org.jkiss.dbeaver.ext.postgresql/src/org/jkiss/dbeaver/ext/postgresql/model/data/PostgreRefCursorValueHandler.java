@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
-import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
-import java.sql.Struct;
-import java.sql.Types;
-import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * PostgreArrayValueHandler
@@ -50,9 +36,25 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        String cursorName = resultSet.getString(index);
+        return new PostgreRefCursor((JDBCSession) session, cursorName);
+/*
         // Fetch as string (#1735)
         // Fetching cursor as object will close it so it won;'t be possible to use cursor in consequent queries
-        return resultSet.getString(index);
+        Object object = resultSet.getObject(index);
+        if (object instanceof ResultSet) {
+            JDBCCursor cursor = new JDBCCursor(
+                (JDBCSession) session,
+                (ResultSet) object,
+                type.getTypeName());
+            // Set cursor name
+            cursor.setCursorName(cursorName);
+            // Disable resulset close on cursor release. Otherwise cusor can't be referred by other queries (#6074)
+            cursor.setCloseResultsOnRelease(false);
+            return cursor;
+        }
+        return object;
+*/
     }
 
     @Override

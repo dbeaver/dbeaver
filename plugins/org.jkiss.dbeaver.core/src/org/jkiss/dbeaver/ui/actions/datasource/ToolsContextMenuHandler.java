@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -60,13 +61,13 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
             menuManager.dispose();
         }
         menuManager = new MenuManager();
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_CONNECT));
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_DISCONNECT));
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_INVALIDATE));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_CONNECT));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_DISCONNECT));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_INVALIDATE));
         if (part instanceof IEditorPart) {
             menuManager.add(new Separator());
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_COMMIT));
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_ROLLBACK));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_COMMIT));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ConnectionCommands.CMD_ROLLBACK));
             {
                 final MenuManager txnMenu = new MenuManager(
                     DBeaverActivator.getPluginResourceBundle().getString("command.org.jkiss.dbeaver.core.transaction_mode.name"));
@@ -76,7 +77,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         }
         menuManager.add(new Separator());
         {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_SQL_EDITOR_OPEN));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), SQLEditorCommands.CMD_SQL_EDITOR_OPEN));
 /*
             final MenuManager toolsMenu = new MenuManager(
                 DBeaverActivator.getPluginResourceBundle().getString("menu.database.tools"));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,11 +43,36 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 {
     private static final Log log = Log.getLog(PostgreTableForeignKey.class);
 
+    public enum MatchType implements DBPNamedObject {
+        f("FULL"),
+        p("PARTIAL"),
+        s("SIMPLE"),
+        u("UNKNOWN");
+
+        private final String title;
+
+        MatchType(String title) {
+            this.title = title;
+        }
+
+        @Override
+        public String getName() {
+            return title;
+        }
+    }
+
+    private MatchType matchType;
     private DBSForeignKeyModifyRule updateRule;
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;
+    private PostgreTableBase refTable;
     private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
-    private final PostgreTableBase refTable;
+
+/*
+    public PostgreTableForeignKey(DBRProgressMonitor monitor, PostgreTable table, PostgreTableForeignKey source) {
+        super(monitor, table, source);
+    }
+*/
 
     public PostgreTableForeignKey(
         @NotNull PostgreTableBase table,
@@ -54,8 +80,13 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         @NotNull JDBCResultSet resultSet) throws DBException
     {
         super(table, name, DBSEntityConstraintType.FOREIGN_KEY, resultSet);
-        updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
-        deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
+        try {
+            this.matchType = MatchType.valueOf(JDBCUtils.safeGetString(resultSet, "confmatchtype"));
+        } catch (Throwable e) {
+            log.debug("Error reading FK match type: " + e.getMessage());
+        }
+        this.updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
+        this.deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
 
         final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
         final long refSchemaId = JDBCUtils.safeGetLong(resultSet, "refnamespace");
@@ -71,13 +102,14 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     public PostgreTableForeignKey(
         @NotNull PostgreTableBase table,
-        @NotNull DBSEntityConstraint refConstraint,
+        @Nullable DBSEntityConstraint refConstraint,
         @NotNull DBSForeignKeyModifyRule deleteRule,
         @NotNull DBSForeignKeyModifyRule updateRule)
     {
         super(table, null, DBSEntityConstraintType.FOREIGN_KEY);
         this.refConstraint = refConstraint;
-        this.refTable = (PostgreTableBase) refConstraint.getParentObject();
+        this.refTable = refConstraint == null ? null : (PostgreTableBase) refConstraint.getParentObject();
+        this.matchType = MatchType.s;
         this.updateRule = updateRule;
         this.deleteRule = deleteRule;
     }
@@ -97,30 +129,48 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     }
 
     @Override
-    @Property(viewable = true, order = 50)
+    @Property(viewable = true, specific = true, order = 50)
     public PostgreTableBase getAssociatedEntity() {
         return refTable;
     }
 
     @Nullable
     @Override
-    @Property(id = "reference", viewable = true, order = 51)
+    @Property(id = "reference", viewable = true, specific = true, order = 51)
     public DBSEntityConstraint getReferencedConstraint() {
         return refConstraint;
     }
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 55)
-    public DBSForeignKeyModifyRule getDeleteRule() {
-        return deleteRule;
+    public void setReferencedConstraint(DBSEntityConstraint refConstraint) {
+        this.refConstraint = refConstraint;
+        this.refTable = refConstraint == null ? null : (PostgreTableBase) refConstraint.getParentObject();
+    }
+
+    @Property(viewable = true, specific = true, order = 54)
+    public MatchType getMatchType() {
+        return matchType;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 56)
+    @Property(viewable = true, specific = true, order = 55)
+    public DBSForeignKeyModifyRule getDeleteRule() {
+        return deleteRule;
+    }
+
+    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+        this.deleteRule = deleteRule;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, specific = true, order = 56)
     public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule;
+    }
+
+    public void setUpdateRule(DBSForeignKeyModifyRule updateRule) {
+        this.updateRule = updateRule;
     }
 
     @Nullable

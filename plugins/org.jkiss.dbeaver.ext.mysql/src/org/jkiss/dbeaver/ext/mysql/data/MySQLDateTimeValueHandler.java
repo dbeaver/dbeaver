@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.ext.mysql.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -46,13 +47,26 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     private static final String ZERO_DATE_STRING = "0000-00-00";
     private static final String ZERO_TIMESTAMP_STRING = "0000-00-00 00:00:00";
 
-    public MySQLDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
+    public MySQLDateTimeValueHandler(DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
     }
 
     @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
+        if (MySQLConstants.TYPE_YEAR.equalsIgnoreCase(type.getTypeName()) && resultSet instanceof JDBCResultSet) {
+            JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+            try {
+                int year = dbResults.getInt(index + 1);
+                if (dbResults.wasNull()) {
+                    return null;
+                } else {
+                    return year;
+                }
+            } catch (SQLException e) {
+                log.debug("Error reading year value", e);
+            }
+        }
         return super.fetchValueObject(session, resultSet, type, index);
     }
 
@@ -71,7 +85,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
             catch (SQLException e) {
                 throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
             }
-        } else if (MySQLConstants.TYPE_YEAR.equals(type.getTypeName())) {
+        } else if (MySQLConstants.TYPE_YEAR.equalsIgnoreCase(type.getTypeName())) {
             try {
                 JDBCPreparedStatement dbStat = (JDBCPreparedStatement)statement;
                 if (value instanceof Number) {
@@ -106,7 +120,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         if (object instanceof String) {
             switch (type.getTypeID()) {
                 case Types.DATE:
@@ -120,8 +134,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     }
                     break;
             }
-            return object;
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 }

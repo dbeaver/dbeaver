@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
@@ -42,7 +41,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -57,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
-
     private DBGConfigurationPanelContainer container;
     private Button kindLocal;
     private Button kindGlobal;
@@ -90,6 +88,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             kindGlobal = new Button(kindGroup, SWT.RADIO);
             kindGlobal.setText("Global");
             kindGlobal.addSelectionListener(listener);
+            kindGlobal.setEnabled(false);
         }
         createFunctionGroup(parent);
         createParametersGroup(parent);
@@ -115,11 +114,11 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             @Override
             protected void dropDown(boolean drop) {
                 if (drop) {
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                    DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
                     DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(container.getDataSource());
                     if (dsNode != null) {
                         DBNNode curNode = selectedFunction == null ? null : navigatorModel.getNodeByObject(selectedFunction);
-                        DBNNode node = DBUserInterface.getInstance().selectObject(
+                        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
                             parent.getShell(),
                             "Select function to debug",
                             dsNode,

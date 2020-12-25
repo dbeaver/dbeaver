@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,17 @@ import java.util.*;
 public class DBVTransformSettings {
     private Set<String> excludedTransformers, includedTransformers;
     private String customTransformer;
-    private Map<String, String> transformOptions;
+    private Map<String, Object> transformOptions;
+
+    DBVTransformSettings() {
+    }
+
+    DBVTransformSettings(DBVTransformSettings source) {
+        this.excludedTransformers = source.excludedTransformers == null ? null : new HashSet<>(source.excludedTransformers);
+        this.includedTransformers = source.includedTransformers == null ? null : new HashSet<>(source.includedTransformers);
+        this.customTransformer = source.customTransformer;
+        this.transformOptions = source.transformOptions == null ? null : new LinkedHashMap<>(source.transformOptions);
+    }
 
     public Set<String> getExcludedTransformers() {
         return excludedTransformers;
@@ -70,18 +80,18 @@ public class DBVTransformSettings {
         this.customTransformer = customTransformer;
     }
 
-    public Map<String, String> getTransformOptions() {
+    public Map<String, Object> getTransformOptions() {
         return transformOptions;
     }
 
-    public void setTransformOption(String name, String value) {
+    public void setTransformOption(String name, Object value) {
         if (this.transformOptions == null) {
             this.transformOptions = new LinkedHashMap<>();
         }
         this.transformOptions.put(name, value);
     }
 
-    public void setTransformOptions(Map<String, String> transformOptions) {
+    public void setTransformOptions(Map<String, Object> transformOptions) {
         this.transformOptions = transformOptions;
     }
 

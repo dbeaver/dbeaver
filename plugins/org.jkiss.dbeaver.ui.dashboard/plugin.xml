@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.dashboard" name="%extension-point.org.jkiss.dbeaver.dashboard.name" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
+
+    <extension point="org.eclipse.ui.views">
+        <view
+                id="org.jkiss.dbeaver.ui.dashboardView"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardView"
+                allowMultiple="true"
+                icon="icons/dashboard.png"
+                name="%view.dashboard.title"/>
+    </extension>
+
+    <!-- Hide dashboard view from Show View menu -->
+    <extension point="org.eclipse.ui.activities">
+        <activity id="org.jkiss.dbeaver.dashboard.view" name="Dashboard view hide"/>
+        <activityPatternBinding activityId="org.jkiss.dbeaver.dashboard.view" isEqualityPattern="true" pattern="org.jkiss.dbeaver.ui.dashboard/org.jkiss.dbeaver.ui.dashboardView"/>
+    </extension>
+
+    <!--extension point="org.eclipse.ui.newWizards">
+        <wizard
+                category="org.jkiss.dbeaver.core.new.general"
+                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardCreateWizard"
+                icon="icons/dashboard.png"
+                id="org.jkiss.dbeaver.dashboard.new.dashboard"
+                name="%wizard.org.jkiss.dbeaver.dashboard.new.dashboard.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.dashboard.new.dashboard.description
+            </description>
+        </wizard>
+    </extension-->
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.configure" name="%command.org.jkiss.dbeaver.ui.dashboard.configure.name" description="%command.org.jkiss.dbeaver.ui.dashboard.configure.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.reset" name="%command.org.jkiss.dbeaver.ui.dashboard.reset.name" description="%command.org.jkiss.dbeaver.ui.dashboard.reset.description" categoryId="org.jkiss.dbeaver.core.database"/>
+
+        <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.view" name="%command.org.jkiss.dbeaver.ui.dashboard.view.name" description="%command.org.jkiss.dbeaver.ui.dashboard.view.description" categoryId="org.jkiss.dbeaver.core.database"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="icons/dashboard.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <!-- Dashboard handlers -->
+
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.open" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardOpen">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardAddItem"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardRemoveItem"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="dashboard" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen>
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+<!--
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+-->
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.configure"/>
+            <separator name="actions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_add.png"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_remove.png"/>
+            <separator name="actions_ext" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.reset" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
+            <separator name="additions" visible="true"/>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                class="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
+                id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
+                label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
+                description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
+                icon="icons/dashboard.png"
+                singleton="false">
+                <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
+            </tool>
+        </tools>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+B"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+        <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png"
+            dataTypes="timeseries"
+            renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries">
+
+        </dashboardView>
+    </extension>
+
+</plugin>

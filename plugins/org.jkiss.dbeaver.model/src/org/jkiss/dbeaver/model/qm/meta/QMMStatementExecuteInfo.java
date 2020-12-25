@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.sql.SQLException;
@@ -30,7 +31,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private QMMTransactionSavepointInfo savepoint;
     private String queryString;
 
-    private long rowCount;
+    private long fetchRowCount;
+    private long updateRowCount = -1;
 
     private int errorCode;
     private String errorMessage;
@@ -53,18 +55,17 @@ public class QMMStatementExecuteInfo extends QMMObject {
         }
         final SQLDialect sqlDialect = statement.getSession().getSQLDialect();
         if (sqlDialect != null && queryString != null) {
-            this.transactional = sqlDialect.isTransactionModifyingQuery(queryString);
+            this.transactional = statement.getPurpose() != DBCExecutionPurpose.META && sqlDialect.isTransactionModifyingQuery(queryString);
         } else {
-            this.transactional = true;
+            this.transactional = false;
         }
-
     }
 
     public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
         super(openTime, closeTime);
         this.statement = stmt;
         this.queryString = queryString;
-        this.rowCount = rowCount;
+        this.fetchRowCount = rowCount;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.fetchBeginTime = fetchBeginTime;
@@ -82,7 +83,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
             // SQL error makes ANY statement transactional (PG specific?)
             this.transactional = true;
         }
-        this.rowCount = rowCount;
+        this.updateRowCount = rowCount;
+        if (!transactional) {
+            this.transactional = this.updateRowCount >= 0;
+        }
         super.close();
     }
 
@@ -94,7 +98,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     void endFetch(long rowCount)
     {
         this.fetchEndTime = getTimeStamp();
-        this.rowCount = rowCount;
+        this.fetchRowCount = rowCount;
     }
 
     public QMMStatementInfo getStatement()
@@ -112,9 +116,13 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return queryString;
     }
 
-    public long getRowCount()
+    public long getFetchRowCount() {
+        return fetchRowCount;
+    }
+
+    public long getUpdateRowCount()
     {
-        return rowCount;
+        return updateRowCount;
     }
 
     public int getErrorCode()
@@ -148,7 +156,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     public boolean isTransactional() {
-        return transactional;
+        return transactional || updateRowCount > 0;
     }
 
     public QMMStatementExecuteInfo getPrevious()

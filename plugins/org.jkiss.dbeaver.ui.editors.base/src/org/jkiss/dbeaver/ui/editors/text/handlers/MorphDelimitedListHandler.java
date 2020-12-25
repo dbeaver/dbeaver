@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,6 +98,29 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
         int lastLineFeed = 0;
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
+            int leadingSpaces = 0, trailingSpaces = 0;
+            {
+                boolean inIdentifier = false;
+                for (int k = 0; k < token.length(); k++) {
+                    char ch = token.charAt(k);
+                    if (Character.isWhitespace(ch)) {
+                        if (inIdentifier) {
+                            trailingSpaces++;
+                        } else {
+                            buf.append(ch);
+                            leadingSpaces++;
+                        }
+                    } else {
+                        if (trailingSpaces > 0) {
+                            trailingSpaces = 0;
+                        }
+                        inIdentifier = true;
+                    }
+                }
+            }
+            if (leadingSpaces > 0 || trailingSpaces > 0) {
+                token = token.substring(leadingSpaces, token.length() - trailingSpaces);
+            }
             if (!CommonUtils.isEmpty(settings.getQuoteString())) {
                 buf.append(settings.getQuoteString()).append(token).append(settings.getQuoteString());
                 lastLineFeed += settings.getQuoteString().length() * 2 + token.length();

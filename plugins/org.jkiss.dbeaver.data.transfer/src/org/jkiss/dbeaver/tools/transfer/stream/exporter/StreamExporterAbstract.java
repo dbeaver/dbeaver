@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 /**
  * Abstract Exporter
  */
@@ -36,6 +39,14 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
         return site;
     }
 
+    protected PrintWriter getWriter() {
+        return site.getWriter();
+    }
+
+    protected OutputStream getOutputStream() {
+        return site.getOutputStream();
+    }
+
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
@@ -47,8 +58,6 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
     {
         // do nothing
     }
-
-
 
     protected String getValueDisplayString(
         DBDAttributeBinding column,

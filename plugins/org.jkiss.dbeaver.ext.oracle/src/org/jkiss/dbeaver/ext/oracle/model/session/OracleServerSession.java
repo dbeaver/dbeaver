@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -24,9 +24,9 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 /**
-* Session
-*/
-public class OracleServerSession implements DBAServerSession {
+ * Session
+ */
+public class OracleServerSession extends AbstractServerSession {
 
     public static final String CAT_SESSION = "Session";
     public static final String CAT_SQL = "SQL";
@@ -35,13 +35,16 @@ public class OracleServerSession implements DBAServerSession {
     public static final String CAT_WAIT = "Wait";
     //public static final String CAT_STAT = "Statistics";
 
+    private long instId;
     private long sid;
-    private String serial;
+    private long serial;
+    private long sqlChildNumber; // SergDzh: to show in list
     private String user;
     private String schema;
     private String type;
     private String status;
     private String state;
+    private String sqlId;
     private String sql;
     private String event;
     private long secondsInWait;
@@ -67,15 +70,17 @@ public class OracleServerSession implements DBAServerSession {
     //private final long statCPU;
 
 
-    public OracleServerSession(ResultSet dbResult)
-    {
+    public OracleServerSession(ResultSet dbResult) {
+        this.instId = JDBCUtils.safeGetLong(dbResult, "INST_ID");
         this.sid = JDBCUtils.safeGetLong(dbResult, "SID");
-        this.serial = JDBCUtils.safeGetString(dbResult, "SERIAL#");
+        this.serial = JDBCUtils.safeGetLong(dbResult, "SERIAL#");
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
         this.type = JDBCUtils.safeGetString(dbResult, "TYPE");
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
+        this.sqlId = JDBCUtils.safeGetString(dbResult, "SQL_ID");
+        this.sqlChildNumber = JDBCUtils.safeGetLong(dbResult, "SQL_CHILD_NUMBER");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
         this.elapsedTime = JDBCUtils.safeGetLong(dbResult, "LAST_CALL_ET");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
@@ -103,103 +108,111 @@ public class OracleServerSession implements DBAServerSession {
 
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 1)
-    public long getSid()
-    {
-        return sid;
-    }
-
-    @Property(category = CAT_SESSION, viewable = false, order = 2)
-    public String getSerial()
-    {
-        return serial;
+    @Property(category = CAT_SESSION, viewable = false, order = 1)
+    public long getInstId() {
+        return instId;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 2)
-    public String getUser()
-    {
-        return user;
+    public long getSid() {
+        return sid;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 3)
-    public String getSchema()
-    {
-        return schema;
+    @Property(category = CAT_SESSION, viewable = false, order = 3)
+    public long getSerial() {
+        return serial;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 4)
-    public String getType()
-    {
-        return type;
+    public String getUser() {
+        return user;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 5)
-    public String getStatus()
-    {
-        return status;
+    public String getSchema() {
+        return schema;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 6)
-    public String getState()
-    {
-        return state;
+    public String getType() {
+        return type;
+    }
+
+    @Property(category = CAT_SESSION, viewable = true, order = 7)
+    public String getStatus() {
+        return status;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 8)
-    public long getElapsedTime()
-    {
+    public String getState() {
+        return state;
+    }
+
+    @Property(category = CAT_SESSION, viewable = true, order = 9)
+    public long getElapsedTime() {
         return elapsedTime;
     }
 
-    @Property(category = CAT_SESSION, order = 9)
-    public Timestamp getLogonTime()
-    {
+    @Property(category = CAT_SESSION, order = 10)
+    public Timestamp getLogonTime() {
         return logonTime;
     }
 
-    @Property(category = CAT_SESSION, order = 10)
-    public String getServiceName()
-    {
+    @Property(category = CAT_SESSION, order = 11)
+    public String getServiceName() {
         return serviceName;
     }
 
-    @Property(category = CAT_SQL, order = 50)
-    public String getSql()
-    {
+    @Property(category = CAT_SQL, order = 20)
+    public String getSql() {
         return sql;
+    }
+
+    @Property(category = CAT_SQL, order = 21)
+    public String getSqlId() {
+        return sqlId;
+    }
+
+    @Property(category = CAT_SQL, order = 22) // SergDzh: to show in list
+    public long getSqlChildNumber() {
+        return sqlChildNumber;
     }
 
     @Property(category = CAT_PROCESS, viewable = true, order = 30)
     public String getServer() {
         return server;
     }
+
     @Property(category = CAT_PROCESS, viewable = true, order = 30)
-    public String getRemoteHost()
-    {
+    public String getRemoteHost() {
         return remoteHost;
     }
+
     @Property(category = CAT_PROCESS, viewable = true, order = 31)
-    public String getRemoteUser()
-    {
+    public String getRemoteUser() {
         return remoteUser;
     }
+
     @Property(category = CAT_PROCESS, viewable = true, order = 32)
-    public String getRemoteProgram()
-    {
+    public String getRemoteProgram() {
         return remoteProgram;
     }
+
     @Property(category = CAT_PROCESS, viewable = false, order = 32)
     public String getModule() {
         return module;
     }
+
     @Property(category = CAT_PROCESS, viewable = false, order = 32)
     public String getAction() {
         return action;
     }
+
     @Property(category = CAT_PROCESS, viewable = false, order = 32)
     public String getClientInfo() {
         return clientInfo;
     }
+
     @Property(category = CAT_PROCESS, viewable = false, order = 32)
     public String getProcess() {
         return process;
@@ -209,26 +222,29 @@ public class OracleServerSession implements DBAServerSession {
     public long getBlockGets() {
         return blockGets;
     }
+
     @Property(category = CAT_IO, viewable = false, order = 70)
     public long getConsistentGets() {
         return consistentGets;
     }
+
     @Property(category = CAT_IO, viewable = false, order = 70)
     public long getPhysicalReads() {
         return physicalReads;
     }
+
     @Property(category = CAT_IO, viewable = false, order = 70)
     public long getBlockChanges() {
         return blockChanges;
     }
+
     @Property(category = CAT_IO, viewable = false, order = 70)
     public long getConsistentChanges() {
         return consistentChanges;
     }
 
     @Property(category = CAT_WAIT, viewable = true, order = 41)
-    public String getEvent()
-    {
+    public String getEvent() {
         return event;
     }
 
@@ -243,14 +259,17 @@ public class OracleServerSession implements DBAServerSession {
 //    }
 
     @Override
-    public String getActiveQuery()
-    {
+    public String getActiveQuery() {
         return sql;
     }
 
     @Override
-    public String toString()
-    {
+    public Object getActiveQueryId() {
+        return sqlId;
+    }
+
+    @Override
+    public String toString() {
         return sid + " - " + event;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -37,6 +41,9 @@ public class ActiveWizardDialog extends WizardDialog
 
     private Set<String> resizedShells = new HashSet<>();
     private boolean adaptContainerSizeToPages = false;
+
+    private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
+    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
@@ -68,6 +75,18 @@ public class ActiveWizardDialog extends WizardDialog
     }
 
     @Override
+    public int getShellStyle() {
+        if (isModalWizard() || UIUtils.isInDialog()) {
+            return super.getShellStyle();
+        }
+        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+    }
+
+    protected boolean isModalWizard() {
+        return true;
+    }
+
+    @Override
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings("DBeaver.ActiveWizardDialog." + getWizard().getClass().getSimpleName());
@@ -86,4 +105,21 @@ public class ActiveWizardDialog extends WizardDialog
         }
     }
 
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+
+        Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
+        cancelButton.setText(cancelButtonLabel);
+        Button finishButton = getButton(IDialogConstants.FINISH_ID);
+        finishButton.setText(finishButtonLabel);
+    }
+
+    public void setFinishButtonLabel(String finishButtonLabel) {
+        this.finishButtonLabel = finishButtonLabel;
+    }
+
+    public void setCancelButtonLabel(String cancelButtonLabel) {
+        this.cancelButtonLabel = cancelButtonLabel;
+    }
 }

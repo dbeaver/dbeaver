@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import java.util.*;
  * Common utils
  */
 public class CommonUtils {
+
+    public static final char PARAGRAPH_CHAR = (char) 182;
 
     public static boolean isJavaIdentifier(@NotNull CharSequence str) {
         if (str.length() == 0 || !Character.isJavaIdentifierStart(str.charAt(0))) {
@@ -85,10 +87,10 @@ public class CommonUtils {
         return res.toString();
     }
 
-    @Nullable
+    @NotNull
     public static String escapeFileName(@Nullable String str) {
         if (str == null) {
-            return null;
+            return "";
         }
         StringBuilder res = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
@@ -123,6 +125,33 @@ public class CommonUtils {
             return str;
         }
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+    }
+
+
+    public static String toCamelCase(String str) {
+        if (isEmpty(str)) {
+            return str;
+        }
+
+        final StringBuilder ret = new StringBuilder(str.length());
+
+        boolean isWordStart = true;
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (Character.isLetterOrDigit(ch)) {
+                if (isWordStart) {
+                    ret.append(Character.toUpperCase(ch));
+                    isWordStart = false;
+                } else {
+                    ret.append(Character.toLowerCase(ch));
+                }
+            } else {
+                ret.append(ch);
+                isWordStart = true;
+            }
+        }
+
+        return ret.toString();
     }
 
     @NotNull
@@ -178,6 +207,11 @@ public class CommonUtils {
     @NotNull
     public static String notEmpty(@Nullable String value) {
         return value == null ? "" : value;
+    }
+
+    @Nullable
+    public static String nullIfEmpty(@Nullable String value) {
+        return value == null || value.isEmpty() ? null : value;
     }
 
     public static boolean isTrue(Boolean value) {
@@ -241,6 +275,21 @@ public class CommonUtils {
         return equalObjects(s1, s2) || (isEmpty(s1) && isEmpty(s2));
     }
 
+    public static boolean equalsContents(@Nullable Collection<?> c1, @Nullable Collection<?> c2) {
+        if (CommonUtils.isEmpty(c1) && CommonUtils.isEmpty(c2)) {
+            return true;
+        }
+        if (c1 == null || c2 == null || c1.size() != c2.size()) {
+            return false;
+        }
+        for (Object o : c1) {
+            if (!c2.contains(o)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @NotNull
     public static String toString(@Nullable Object object) {
         if (object == null) {
@@ -275,7 +324,11 @@ public class CommonUtils {
             try {
                 return Integer.parseInt(toString(object));
             } catch (NumberFormatException e) {
-                return def;
+                try {
+                    return (int)Double.parseDouble(toString(object));
+                } catch (NumberFormatException e1) {
+                    return def;
+                }
             }
         }
     }
@@ -298,17 +351,24 @@ public class CommonUtils {
             }
         }
     }
-
     public static long toLong(@Nullable Object object) {
+        return toLong(object, 0);
+    }
+
+    public static long toLong(@Nullable Object object, long defValue) {
         if (object == null) {
-            return 0;
+            return defValue;
         } else if (object instanceof Number) {
             return ((Number) object).longValue();
         } else {
             try {
                 return Long.parseLong(toString(object));
             } catch (NumberFormatException e) {
-                return -1;
+                try {
+                    return (int)Double.parseDouble(toString(object));
+                } catch (NumberFormatException e1) {
+                    return defValue;
+                }
             }
         }
     }
@@ -324,6 +384,62 @@ public class CommonUtils {
                 return true;
             } catch (NumberFormatException e) {
                 return false;
+            }
+        }
+    }
+
+    public static double toDouble(@Nullable Object object) {
+        if (object == null) {
+            return 0.0;
+        } else if (object instanceof Number) {
+            return ((Number) object).doubleValue();
+        } else {
+            try {
+                return Double.parseDouble(toString(object));
+            } catch (NumberFormatException e) {
+                return Double.NaN;
+            }
+        }
+    }
+
+    public static double toDouble(@Nullable Object object, double def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof Number) {
+            return ((Number) object).doubleValue();
+        } else {
+            try {
+                return Double.parseDouble(toString(object));
+            } catch (NumberFormatException e) {
+                return def;
+            }
+        }
+    }
+
+    public static float toFloat(@Nullable Object object) {
+        if (object == null) {
+            return 0.0f;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return Float.NaN;
+            }
+        }
+    }
+
+    public static float toFloat(@Nullable Object object, float def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof Number) {
+            return ((Number) object).floatValue();
+        } else {
+            try {
+                return Float.parseFloat(toString(object));
+            } catch (NumberFormatException e) {
+                return def;
             }
         }
     }
@@ -347,6 +463,15 @@ public class CommonUtils {
             hexChars[i * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static byte[] parseHexString(String hex) {
+        int strLength = hex.length();
+        byte[] data = new byte[strLength / 2];
+        for (int i = 0; i < strLength; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
+        }
+        return data;
     }
 
     public static String toBinaryString(long longValue, int bitCount) {
@@ -379,6 +504,15 @@ public class CommonUtils {
                 result.add(st.nextToken());
             }
             return result;
+        }
+    }
+
+    @NotNull
+    public static String[] split(@Nullable String str, String delimiter) {
+        if (CommonUtils.isEmpty(str)) {
+            return new String[0];
+        } else {
+            return str.split(delimiter);
         }
     }
 
@@ -436,19 +570,23 @@ public class CommonUtils {
         return (value & mask) == mask;
     }
 
-    @Nullable
-    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
-        return valueOf(type, name, false);
+    public static boolean isBitSet(long value, long mask) {
+        return (value & mask) == mask;
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces) {
+    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
+        return valueOf(type, name, null, false);
+    }
+
+    @Nullable
+    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
         if (name == null) {
-            return null;
+            return defValue;
         }
         name = name.trim();
         if (name.length() == 0) {
-            return null;
+            return defValue;
         }
         if (underscoreSpaces) {
             name = name.replace(' ', '_');
@@ -457,7 +595,19 @@ public class CommonUtils {
             return Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return defValue;
+        }
+    }
+
+    public static <T extends Enum<T>> T valueOf(Class<T> enumType, String str, T defValue) {
+        if (isEmpty(str)) {
+            return defValue;
+        }
+        try {
+            return Enum.valueOf(enumType, str);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return defValue;
         }
     }
 
@@ -546,10 +696,15 @@ public class CommonUtils {
             return false;
         }
         Object optionValue = options.get(name);
-        if (optionValue == null) {
-            return defValue;
+        return getBoolean(optionValue, defValue);
+    }
+
+    public static Map<String, Object> makeStringMap(Map<Object, Object> objMap) {
+        Map<String, Object> strMap = new LinkedHashMap<>(objMap.size());
+        for (Map.Entry<Object, Object> e : objMap.entrySet()) {
+            strMap.put(toString(e.getKey(), null), e.getValue());
         }
-        return Boolean.TRUE.equals(optionValue);
+        return strMap;
     }
 
     public static String fixedLengthString(String string, int length) {
@@ -563,4 +718,98 @@ public class CommonUtils {
         return str.regionMatches(true, 0, startPart, 0, startPart.length());
     }
 
+    public static String niceFormatFloat(float val) {
+        if (val == (int) val)
+            return String.valueOf((int)val);
+        else
+            return String.valueOf(val);
+    }
+
+    public static String niceFormatDouble(double val) {
+        if (val == (long) val)
+            return String.valueOf((long)val);
+        else
+            return String.valueOf(val);
+    }
+
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
+
+    public static String compactWhiteSpaces(String str) {
+        return str.replaceAll("\\s+", " ");
+    }
+
+    public static String getSingleLineString(String displayString) {
+        return displayString
+            .replace('\n', PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace("\t", " ")
+            .replace((char)0, ' ');
+    }
+
+    public static int compare(Object o1, Object o2) {
+        if (o1 == o2) {
+            return 0;
+        }
+        if (o1 == null) {
+            return -1;
+        } else if (o2 == null) {
+            return 1;
+        }
+        if (o1.getClass() == o2.getClass() && o1 instanceof Comparable) {
+            return ((Comparable) o1).compareTo(o2);
+        }
+        return toString(o1).compareTo(toString(o2));
+    }
+
+    public static int compareNumbers(Number value1, Number value2) {
+        double numDiff = value1.doubleValue() - value2.doubleValue();
+        return numDiff < 0 ? -1 : (numDiff > 0 ? 1 : 0);
+    }
+
+    public static String cutExtraLines(String message, int maxLines) {
+        if (message == null || message.indexOf('\n') == -1) {
+            return message;
+        }
+        int lfCount = 0;
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == '\n') {
+                lfCount++;
+            }
+            buf.append(c);
+            if (lfCount == maxLines) {
+                buf.append("...");
+                break;
+            }
+        }
+        return buf.toString();
+    }
+
+    public static boolean isSameDay(@NotNull Date date1, @NotNull Date date2) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(date1);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTime(date2);
+        return isSameDay(cal1, cal2);
+    }
+
+    public static boolean isSameDay(@NotNull Calendar cal1, @NotNull Calendar cal2) {
+        return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
+            cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+            cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
+    }
+
+    public static String escapeBourneShellString(@NotNull String s) {
+        return "'" + s.replace("'", "'\\''") + "'";
+    }
+
+    public static String unescapeBourneShellString(@NotNull String s) {
+        if (!s.startsWith("'") || !s.endsWith("'") || s.length() < 2) { //not an escaped bourne shell string
+            return s;
+        }
+        return s.substring(1, s.length() - 1).replace("'\\''", "'");
+    }
 }

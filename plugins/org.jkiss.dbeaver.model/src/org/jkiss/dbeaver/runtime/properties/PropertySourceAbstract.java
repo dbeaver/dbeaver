@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +52,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private final Map<Object, Object> lazyValues = new HashMap<>();
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
     private Job lazyLoadJob;
+    private String locale;
+    private boolean enableFilters = true;
 
     /**
      * constructs property source
@@ -74,7 +76,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.put(prop.getId(), prop);
     }
 
-    public synchronized void addProperty(@Nullable String category, Object id, String name, Object value)
+    public synchronized void addProperty(@Nullable String category, String id, String name, Object value)
     {
         props.add(new PropertyDescriptor(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
@@ -104,10 +106,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return props.isEmpty();
     }
 
-    public DBPPropertyDescriptor[] getProperties() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
-    }
-
     public DBPPropertyDescriptor getProperty(String id) {
         for (DBPPropertyDescriptor prop : props) {
             if (prop.getId().equals(id)) {
@@ -115,11 +113,6 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isDirty(Object id) {
-        return false;
     }
 
     public Object getSourceObject()
@@ -134,8 +127,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+    public DBPPropertyDescriptor[] getProperties() {
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 /*
     public IPropertyDescriptor getPropertyDescriptor(final Object id)
@@ -150,7 +143,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 */
 
     @Override
-    public boolean isPropertySet(Object id)
+    public boolean isPropertySet(String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -164,7 +157,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     public boolean isPropertySet(Object object, ObjectPropertyDescriptor prop)
     {
         try {
-            return !prop.isLazy(object, true) && prop.readValue(object, null) != null;
+            return !prop.isLazy(object, true) && prop.readValue(object, null, false) != null;
         } catch (Exception e) {
             log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return false;
@@ -172,18 +165,18 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object id)
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
-            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
+            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value, true);
         }
         return value;
     }
 
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop, boolean formatValue)
     {
         try {
             if (monitor == null && prop.isLazy(object, true) && !prop.supportsPreview()) {
@@ -204,8 +197,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                             // We assume that it can be called ONLY by properties viewer
                             // So, start lazy loading job to update it after value will be loaded
                             lazyLoadJob = DBWorkbench.getPlatformUI().createLoadingService(
-                                new PropertySheetLoadService(),
-                                new PropertySheetLoadVisualizer());
+                                new PropertyValueLoadService(),
+                                new PropertyValueLoadVisualizer());
                             lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
                                 @Override
                                 public void done(IJobChangeEvent event)
@@ -227,7 +220,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     return null;
                 }
             } else {
-                return prop.readValue(object, monitor);
+                return prop.readValue(object, monitor, formatValue);
             }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -239,7 +232,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(Object id)
+    public boolean isPropertyResettable(String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -257,7 +250,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
@@ -274,12 +267,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void resetPropertyValueToDefault(Object id) {
+    public void resetPropertyValueToDefault(String id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
@@ -303,37 +296,61 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.clear();
 
         final Object editableValue = getEditableValue();
-        IPropertyFilter filter;
-        if (editableValue instanceof DBSObject) {
-            filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
-        } else if (editableValue instanceof DBPContextProvider) {
-            DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
-            filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
-        } else {
-            filter = new DataSourcePropertyFilter();
-        }
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
-        for (final ObjectPropertyDescriptor desc : annoProps) {
-            addProperty(desc);
-        }
-        if (editableValue instanceof DBPPropertySource) {
-            DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
-            DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
-            if (!ArrayUtils.isEmpty(ownProperties)) {
-                for (DBPPropertyDescriptor prop : ownProperties) {
-                    props.add(prop);
-                    propValues.put(prop.getId(), ownPropSource.getPropertyValue(null, prop.getId()));
+        if (editableValue != null) {
+            IPropertyFilter filter;
+            if (isEnableFilters()) {
+                if (editableValue instanceof DBSObject) {
+                    filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
+                } else if (editableValue instanceof DBPContextProvider) {
+                    DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
+                    filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
+                } else {
+                    filter = new DataSourcePropertyFilter();
+                }
+            } else {
+                filter = null;
+            }
+            List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter, locale);
+            for (final ObjectPropertyDescriptor desc : annoProps) {
+                if (desc.isPropertyVisible(editableValue, editableValue)) {
+                    addProperty(desc);
+                }
+            }
+            if (editableValue instanceof DBPPropertySource) {
+                DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
+                DBPPropertyDescriptor[] ownProperties = ownPropSource.getProperties();
+                if (!ArrayUtils.isEmpty(ownProperties)) {
+                    for (DBPPropertyDescriptor prop : ownProperties) {
+                        props.add(prop);
+                        propValues.put(prop.getId(), ownPropSource.getPropertyValue(null, prop.getId()));
+                    }
                 }
             }
         }
         return !props.isEmpty();
     }
 
-    private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
+
+    public boolean isEnableFilters() {
+        return enableFilters;
+    }
+
+    public void setEnableFilters(boolean enableFilters) {
+        this.enableFilters = enableFilters;
+    }
+
+    public boolean getEnableFilters() {
+        return enableFilters;
+    }
+
+    private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 
         public static final String TEXT_LOADING = "...";
 
-        public PropertySheetLoadService()
+        public PropertyValueLoadService()
         {
             super(TEXT_LOADING);
         }
@@ -348,7 +365,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    result.put(prop, prop.readValue(getEditableValue(), monitor));
+                    result.put(prop, prop.readValue(getEditableValue(), monitor, true));
                 }
                 return result;
             } catch (Throwable ex) {
@@ -380,12 +397,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
     }
 
-    private class PropertySheetLoadVisualizer implements ILoadVisualizer<Map<ObjectPropertyDescriptor, Object>> {
+    private class PropertyValueLoadVisualizer implements ILoadVisualizer<Map<ObjectPropertyDescriptor, Object>> {
         //private Object propertyId;
         //private int callCount = 0;
         private boolean completed = false;
 
-        private PropertySheetLoadVisualizer()
+        private PropertyValueLoadVisualizer()
         {
         }
 
@@ -412,7 +429,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             case 2: dots = ".."; break;
             case 3: default: dots = "..."; break;
             }
-            propValues.put(propertyId, PropertySheetLoadService.TEXT_LOADING + dots);
+            propValues.put(propertyId, PropertyValueLoadService.TEXT_LOADING + dots);
             refreshProperties(false);
 */
         }

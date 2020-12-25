@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.utils.CommonUtils;
@@ -94,7 +94,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             }
             return row.getValue(properties.get(index).getName());
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -104,7 +104,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         try {
             return row.getValue(name);
         } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -141,7 +141,9 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     @Override
     public boolean moveTo(int position) throws DBCException
     {
-        throw new DBCException("Not Implemented");
+        this.iterator = rows.iterator();
+        while (position-- > 0) nextRow();
+        return true;
     }
 
     @NotNull
@@ -153,6 +155,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
     @Override
     public String getResultSetName() throws DBCException {
+        return null;
+    }
+
+    @Override
+    public Object getFeature(String name) {
         return null;
     }
 
@@ -222,6 +229,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         @Override
         public long getMaxLength()
         {
+            return 0;
+        }
+
+        @Override
+        public long getTypeModifiers() {
             return 0;
         }
 

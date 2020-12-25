@@ -1,11 +1,8 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
-import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory;
-import com.vividsolutions.jts.io.*;
+import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
+import org.locationtech.jts.io.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,6 +16,7 @@ import java.io.IOException;
  * of byte[] because of codegen.
  */
 public class GeometryConverter {
+    public static final InvertCoordinateFilter INVERT_COORDINATE_FILTER = new InvertCoordinateFilter();
     /**
      * Little endian or Big endian
      */
@@ -42,10 +40,18 @@ public class GeometryConverter {
         return INSTANCE;
     }
 
+    public Geometry fromWKT(String str) {
+        try {
+            return new WKTReader().read(str);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     /**
      * Convert byte array containing SRID + WKB Geometry into Geometry object
      */
-    public Geometry from(byte[] bytes) {
+    public Geometry fromWKB(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -60,16 +66,10 @@ public class GeometryConverter {
 
             // Read Geometry
             WKBReader wkbReader = new WKBReader(geometryFactory);
-            return wkbReader.read(new InputStreamInStream(inputStream));
-        } catch (IOException | ParseException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
+            Geometry geometry = wkbReader.read(new InputStreamInStream(inputStream));
 
-    public Geometry from(String str) {
-        try {
-            return new WKTReader().read(str);
-        } catch (ParseException e) {
+            return geometry;
+        } catch (IOException | ParseException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -77,7 +77,7 @@ public class GeometryConverter {
     /**
      * Convert Geometry object into byte array containing SRID + WKB Geometry
      */
-    public byte[] to(Geometry userObject) {
+    public byte[] toWKB(Geometry userObject) {
         if (userObject == null) {
             return null;
         }
@@ -92,6 +92,14 @@ public class GeometryConverter {
             return outputStream.toByteArray();
         } catch (IOException ioe) {
             throw new IllegalArgumentException(ioe);
+        }
+    }
+
+    private static class InvertCoordinateFilter implements CoordinateFilter {
+        public void filter(Coordinate coord) {
+            double oldX = coord.x;
+            coord.x = coord.y;
+            coord.y = oldX;
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.netezza.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -39,16 +39,16 @@ public class NetezzaMetaModel extends GenericMetaModel
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT v.definition " +
-                "FROM _v_view v, _v_objs_owned o " +
-                "WHERE v.objid = o.objid AND o.DATABASE=? AND v.VIEWNAME=?"))
+                "FROM _v_view v " +
+                "WHERE v.VIEWNAME=?"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                //dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(1, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                         return
@@ -70,15 +70,15 @@ public class NetezzaMetaModel extends GenericMetaModel
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.proceduresignature,p.returns,p.proceduresource " +
                 "FROM _v_procedure p " +
-                "WHERE p.owner=? AND p.procedure=?"))
+                "WHERE p.procedure=?"))
             {
-                dbStat.setString(1, sourceObject.getContainer().getName());
-                dbStat.setString(2, sourceObject.getName());
+                //dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(1, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                         return
                             "CREATE OR REPLACE PROCEDURE " + dbResult.getString(1) + " RETURNS " + dbResult.getString(2) +
-                            "LANGUAGE NZPLSQL AS BEGIN_PROC\n" + dbResult.getString(3) + "\nEND_PROC;";
+                            " LANGUAGE NZPLSQL AS BEGIN_PROC\n" + dbResult.getString(3).trim() + "\nEND_PROC;";
                     }
                     return "-- Netezza procedure source not found";
                 }

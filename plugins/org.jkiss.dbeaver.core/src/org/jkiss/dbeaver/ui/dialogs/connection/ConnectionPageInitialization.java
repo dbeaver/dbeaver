@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,18 +45,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,6 +82,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private Button autocommit;
     private Combo isolationLevel;
+    private Combo defaultCatalog;
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
 
@@ -101,7 +107,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         this();
         this.dataSourceDescriptor = dataSourceDescriptor;
 
-        bootstrapQueries = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries();
+        bootstrapQueries = new ArrayList<>(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries());
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
     }
 
@@ -125,14 +131,15 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     DBPDataSource dataSource = originalDataSource.getDataSource();
                     loadDatabaseSettings(dataSource);
                 }
-                defaultSchema.setText(CommonUtils.notEmpty(
-                    conConfig.getBootstrap().getDefaultObjectName()));
+                defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
+                defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
                 activated = true;
             }
         } else {
             // Default settings
             isolationLevel.setEnabled(false);
+            defaultCatalog.setText("");
             defaultSchema.setText("");
         }
     }
@@ -143,18 +150,19 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 loadDatabaseSettings(new DefaultProgressMonitor(monitor), dataSource);
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Database info reading", "Error reading information from database", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Database info reading", "Error reading information from database", e.getTargetException());
         } catch (InterruptedException e) {
             //
         }
     }
 
-    private void loadDatabaseSettings(DBRProgressMonitor monitor, DBPDataSource dataSource) throws InvocationTargetException, InterruptedException {
+    private void loadDatabaseSettings(DBRProgressMonitor monitor, DBPDataSource dataSource)  {
+        DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
         Collection<DBPTransactionIsolation> txnLevels = CommonUtils.safeCollection(dataSource.getInfo().getSupportedTransactionsIsolation());
-        Integer levelCode = dataSourceDescriptor.getDefaultTransactionsIsolation();
+        Integer levelCode = dataSourceContainer.getDefaultTransactionsIsolation();
 
         UIUtils.syncExec(() -> {
-            autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
+            autocommit.setSelection(dataSourceContainer.isDefaultAutoCommit());
             //isolationLevel.setEnabled(!autocommit.getSelection());
             supportedLevels.clear();
 
@@ -171,10 +179,13 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 }
             }
 
+            isolationLevel.removeAll();
+            supportedLevels.clear();
             for (DBPTransactionIsolation level : txnLevels) {
                 if (!level.isEnabled()) {
                     continue;
                 }
+
                 isolationLevel.add(level.getTitle());
                 supportedLevels.add(level);
 
@@ -185,28 +196,47 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         });
 
         if (dataSource instanceof DBSObjectContainer) {
-            DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+            DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
+            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBSObjectContainer catalogContainer = DBUtils.getChangeableObjectContainer(contextDefaults, (DBSObjectContainer) dataSource, DBSCatalog.class);
+            if (catalogContainer != null) {
+                loadSelectableObject(monitor, catalogContainer, defaultCatalog, contextDefaults, true);
+            }
+            DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer(contextDefaults, (DBSObjectContainer) dataSource, DBSSchema.class);
+            loadSelectableObject(monitor, schemaContainer, defaultSchema, contextDefaults, false);
+        }
 
+        txnOptionsLoaded = true;
+    }
+
+    private void loadSelectableObject(DBRProgressMonitor monitor, DBSObjectContainer objectContainer, Combo objectCombo, DBCExecutionContextDefaults contextDefaults, boolean isCatalogs) {
+        if (objectContainer != null) {
             try {
-                final List<String> schemaNames = new ArrayList<>();
-                Collection<? extends DBSObject> children = schemaContainer.getChildren(monitor);
+                final List<String> objectNames = new ArrayList<>();
+                Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                 if (children != null) {
                     for (DBSObject child : children) {
                         if (child instanceof DBSObjectContainer) {
-                            schemaNames.add(child.getName());
+                            objectNames.add(child.getName());
                         }
                     }
                 }
-                if (!schemaNames.isEmpty()) {
+                if (!objectNames.isEmpty()) {
                     UIUtils.syncExec(() -> {
-                        if (!defaultSchema.isDisposed()) {
-                            String oldText = defaultSchema.getText();
-                            defaultSchema.removeAll();
-                            for (String name : schemaNames) {
-                                defaultSchema.add(name);
+                        if (!objectCombo.isDisposed()) {
+                            String oldText = objectCombo.getText();
+                            objectCombo.removeAll();
+                            for (String name : objectNames) {
+                                objectCombo.add(name);
                             }
                             if (!CommonUtils.isEmpty(oldText)) {
-                                defaultSchema.setText(oldText);
+                                objectCombo.setText(oldText);
+                            }
+                            if (contextDefaults != null) {
+                                DBSObject defaultObject = isCatalogs ? contextDefaults.getDefaultCatalog() : contextDefaults.getDefaultSchema();
+                                if (defaultObject != null) {
+                                    objectCombo.setText(defaultObject.getName());
+                                }
                             }
                         }
                     });
@@ -215,8 +245,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 log.warn("Can't read schema list", e);
             }
         }
-
-        txnOptionsLoaded = true;
     }
 
     @Override
@@ -245,6 +273,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
             isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level,
                 CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            defaultCatalog = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_database,
+                    CoreMessages.dialog_connection_wizard_final_label_default_database_tooltip, SWT.DROP_DOWN);
+            ((GridData)defaultCatalog.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultCatalog) * 20;
             defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema,
                 CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
             ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
@@ -264,6 +295,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     public void widgetSelected(SelectionEvent e) {
                         EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
                             getShell(),
+                            dataSourceDescriptor,
                             bootstrapQueries,
                             ignoreBootstrapErrors);
                         if (dialog.open() == IDialogConstants.OK_ID) {
@@ -293,29 +325,27 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource) {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
         }
-        try {
-            dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true, null);
-            if (txnOptionsLoaded) {
+        dataSource.setDefaultAutoCommit(autocommit.getSelection());
+        if (txnOptionsLoaded) {
+            if (CommonUtils.isEmpty(isolationLevel.getText())) {
+                dataSource.setDefaultTransactionsIsolation(null);
+            } else {
                 int levelIndex = isolationLevel.getSelectionIndex();
-                if (levelIndex <= 0) {
-                    dataSource.setDefaultTransactionsIsolation(null);
-                } else {
-                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
+                if (levelIndex >= 0) {
+                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex));
                 }
             }
-        } catch (DBException e) {
-            log.error(e);
         }
-        dataSource.setDefaultActiveObject(defaultSchema.getText());
-
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
-
         DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
+        bootstrap.setDefaultCatalogName(defaultCatalog.getText());
+        bootstrap.setDefaultSchemaName(defaultSchema.getText());
+
         bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
         bootstrap.setInitQueries(bootstrapQueries);
 
@@ -340,13 +370,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void testConnection(DBCSession session) {
-        try {
-            loadDatabaseSettings(session.getProgressMonitor(), session.getDataSource());
-        } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Database info reading", "Error reading database settings", e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
+        // We load settings to fill txn isolation levels and schema names (#6794)
+        loadDatabaseSettings(session.getProgressMonitor(), session.getDataSource());
     }
 
 }

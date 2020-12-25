@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,35 +26,27 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
  */
 public class SQLDatabasePersistActionAtomic extends SQLDatabasePersistAction {
 
+    private boolean makeAtomic;
     private boolean wasTransactional = false;
 
     public SQLDatabasePersistActionAtomic(String title, String script) {
-        super(title, script);
+        this(title, script, true);
     }
 
-    public SQLDatabasePersistActionAtomic(String title, String script, boolean complex) {
-        super(title, script, complex);
-    }
-
-    public SQLDatabasePersistActionAtomic(String title, String script, ActionType type) {
-        super(title, script, type);
-    }
-
-    public SQLDatabasePersistActionAtomic(String title, String script, ActionType type, boolean complex) {
-        super(title, script, type, complex);
-    }
-
-    public SQLDatabasePersistActionAtomic(String script) {
-        super(script);
+    public SQLDatabasePersistActionAtomic(String title, String script, boolean makeAtomic) {
+        super(title, script, false);
+        this.makeAtomic = makeAtomic;
     }
 
     @Override
     public void beforeExecute(DBCSession session) throws DBCException {
         super.beforeExecute(session);
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-        if (!txnManager.isAutoCommit()) {
-            txnManager.setAutoCommit(session.getProgressMonitor(), true);
-            wasTransactional = true;
+        if (this.makeAtomic) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                txnManager.setAutoCommit(session.getProgressMonitor(), true);
+                wasTransactional = true;
+            }
         }
     }
 
@@ -63,7 +55,9 @@ public class SQLDatabasePersistActionAtomic extends SQLDatabasePersistAction {
         super.afterExecute(session, error);
         if (wasTransactional) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-            txnManager.setAutoCommit(session.getProgressMonitor(), false);
+            if (txnManager != null) {
+                txnManager.setAutoCommit(session.getProgressMonitor(), false);
+            }
         }
     }
 

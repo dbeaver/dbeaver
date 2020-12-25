@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,17 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolFunction;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -47,7 +49,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
             throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName()))
         {
@@ -58,10 +60,10 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
 
     @Override
     protected ExasolFunction createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-            ExasolSchema parent, Object copyFrom) throws DBException {
-        ExasolFunction newScript =  new ExasolFunction(parent);
-        newScript.setName("new_script");
-        newScript.setObjectDefinitionText("FUNCTION new_script ()RETURNS INTEGER");
+                                                  Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        ExasolFunction newScript =  new ExasolFunction((ExasolSchema) container);
+        newScript.setName("function_name");
+        newScript.setObjectDefinitionText("FUNCTION function_name() RETURNS INTEGER");
         return newScript;
     }
     
@@ -79,20 +81,20 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
     
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
-                new SQLDatabasePersistAction("Create Script", "DROP SCRIPT " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+                new SQLDatabasePersistAction("Create Script", "DROP FUNCTION " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
     
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
@@ -102,13 +104,13 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
     
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                          NestedObjectCommand<ExasolFunction, PropertyHandler> command, Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON FUNCTION " + 
                             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                            SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+                            SQLUtils.quoteString(command.getObject(), ExasolUtils.quoteString(command.getObject().getDescription()))));
         }
     }
 

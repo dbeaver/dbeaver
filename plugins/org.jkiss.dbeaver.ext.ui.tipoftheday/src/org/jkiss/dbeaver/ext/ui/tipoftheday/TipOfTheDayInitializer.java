@@ -1,24 +1,30 @@
 package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (doNotShowTips()) {
+        if (!isTipsEnabled() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
         ShowTipOfTheDayHandler.showTipOfTheDay(window);
     }
 
-    private static boolean doNotShowTips() {
-        boolean enabled = DBeaverCore.getGlobalPreferenceStore().getBoolean(ShowTipOfTheDayHandler.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
-        boolean emptyDatasource = DataSourceRegistry.getAllDataSources().isEmpty();
-        return !enabled || emptyDatasource;
+    private static boolean isTipsEnabled() {
+        if (DataSourceRegistry.getAllDataSources().isEmpty()) {
+            return false;
+        }
+        String tipsEnabledStr = DBWorkbench.getPlatform().getPreferenceStore().getString(ShowTipOfTheDayHandler.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
+        if (CommonUtils.isEmpty(tipsEnabledStr)) {
+            return true;
+        }
+        return CommonUtils.toBoolean(tipsEnabledStr);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -47,6 +43,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,8 +78,8 @@ public class OracleDataType extends OracleObject<DBSObject>
     static  {
         PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBPDataKind.CONTENT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
-        PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 63, 127, -84));
-        PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, 63, 127, -84));
+        PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 38, 127, -84));
+        PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, 38, 127, -84));
         PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.CONTENT, Types.BLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("CANONICAL", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBPDataKind.CONTENT, Types.OTHER, 0, 0, 0));
@@ -91,24 +88,23 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0));
         // DATE IS TIMESTAMP. It always keeps time value. But sometimes it is visualized as DATE (see #2457)
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 63, 127, -84));
-        PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 63, 127, -84));
-        PREDEFINED_TYPES.put("FLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, 63, 127, -84));
-        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 38, 127, -84));
+        PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 38, 127, -84));
+        PREDEFINED_TYPES.put("FLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.FLOAT, 38, 127, -84));
+        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84));
         PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("CONTENT POINTER", new TypeDesc(DBPDataKind.CONTENT, Types.BLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(DBPDataKind.OBJECT, Types.STRUCT, 0, 0, 0));
-        PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBPDataKind.NUMERIC, Types.NUMERIC, 63, 127, -84));
+        PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBPDataKind.NUMERIC, Types.NUMERIC, 38, 127, -84));
         PREDEFINED_TYPES.put("OCTET", new TypeDesc(DBPDataKind.BINARY, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("OID", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 63, 127, -84));
+        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 38, 127, -84));
         PREDEFINED_TYPES.put("REF", new TypeDesc(DBPDataKind.REFERENCE, Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 38, 127, -84));
+        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 38, 127, -84));
         PREDEFINED_TYPES.put("TABLE", new TypeDesc(DBPDataKind.OBJECT, Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
@@ -117,7 +113,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 38, 127, -84));
         PREDEFINED_TYPES.put("UROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 0, 0, 0));
@@ -126,14 +122,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("VARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("ROWID", new TypeDesc(DBPDataKind.ROWID, Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("LONG", new TypeDesc(DBPDataKind.BINARY, Types.LONGVARBINARY, 0, 0, 0));
-        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(DBPDataKind.BINARY, Types.LONGVARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(DBPDataKind.STRING, Types.NVARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCHAR", new TypeDesc(DBPDataKind.STRING, Types.NCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.NCLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBPDataKind.CONTENT, Types.BLOB, 0, 0, 0));
 
-        PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBPDataKind.REFERENCE, -10, 0, 0, 0));
+        PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBPDataKind.OBJECT, -10, 0, 0, 0));
 
         for (TypeDesc type : PREDEFINED_TYPES.values()) {
             PREDEFINED_TYPE_IDS.put(type.valueType, type);
@@ -271,7 +267,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(
@@ -335,6 +331,11 @@ public class OracleDataType extends OracleObject<DBSObject>
     public long getMaxLength()
     {
         return CommonUtils.toInt(getPrecision());
+    }
+
+    @Override
+    public long getTypeModifiers() {
+        return 0;
     }
 
     @Override
@@ -445,7 +446,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Association
-    public Collection<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;
@@ -503,7 +504,9 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load collection types")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?")) {
+                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM " +
+                    OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?"))
+            {
                 dbStat.setString(1, schema.getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResults = dbStat.executeQuery()) {
@@ -604,11 +607,12 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
             dbStat.setString(1, OracleDataType.this.parent.getName());
             dbStat.setString(2, getName());
@@ -622,13 +626,14 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
-                "FROM SYS.ALL_TYPE_METHODS m\n" +
-                "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
+                "FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_TYPE_METHODS m\n" +
+                "LEFT OUTER JOIN "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
                 "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
                 "ORDER BY m.METHOD_NO");
             dbStat.setString(1, OracleDataType.this.parent.getName());

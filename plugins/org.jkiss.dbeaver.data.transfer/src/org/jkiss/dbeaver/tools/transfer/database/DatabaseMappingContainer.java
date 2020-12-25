@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,32 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Select;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * DatabaseMappingContainer
@@ -57,11 +63,22 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(IRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+    public DatabaseMappingContainer(DBRRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
         refreshMappingType(context, DatabaseMappingType.existing);
+    }
+
+    public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
+        this.consumerSettings = container.consumerSettings;
+        this.source = sourceObject;
+        this.target = container.target;
+        this.targetName = container.targetName;
+        this.mappingType = container.mappingType;
+        for (DatabaseMappingAttribute attribute : container.attributeMappings) {
+            this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
+        }
     }
 
     public DatabaseConsumerSettings getSettings() {
@@ -75,6 +92,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public void setTarget(DBSDataManipulator target) {
         this.target = target;
+        this.targetName = null;
     }
 
     @Override
@@ -82,7 +100,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    public void refreshMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException {
+    public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType) throws DBException {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
         if (!CommonUtils.isEmpty(mappings)) {
@@ -120,15 +138,45 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     @Override
     public String getTargetName() {
+        String targetTableName = targetName;
+        if (CommonUtils.isEmpty(targetTableName)) {
+            if (target != null) {
+                targetTableName = target.getName();
+            } else if (source != null) {
+                if (source instanceof IAdaptable) {
+                    DBSDataContainer adapterSource = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                    if (adapterSource != null) {
+                        source = adapterSource;
+                    }
+                }
+                if (source instanceof SQLQueryContainer) {
+                    final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) source;
+                    if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
+                        final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
+                        if (sqlQuery.getStatement() instanceof Select) {
+                            final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
+                            if (table != null) {
+                                targetTableName = table.getName();
+                            }
+                        }
+                    }
+                }
+                if (CommonUtils.isEmpty(targetTableName)) {
+                    targetTableName = source.getName();
+                }
+            } else {
+                targetTableName = "";
+            }
+        }
         switch (mappingType) {
             case existing:
                 return target.getName();
             case create:
-                return targetName;
+                return targetTableName;
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default:
-                return "?";
+                return targetTableName;
         }
     }
 
@@ -145,13 +193,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return null;
     }
 
-    public Collection<DatabaseMappingAttribute> getAttributeMappings(IRunnableContext runnableContext) {
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRRunnableContext runnableContext) {
         if (attributeMappings.isEmpty()) {
             try {
                 // Do not use runnable context! It changes active focus and locks UI which breakes whole jface editing framework
                 readAttributes(new VoidProgressMonitor());
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_mapping_container_title_attributes_read_failed,
+                        NLS.bind(DTMessages.database_mapping_container_message_get_attributes_from, DBUtils.getObjectFullName(source, DBPEvaluationContext.UI)), e);
             }
         }
         return attributeMappings;
@@ -162,14 +211,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             try {
                 readAttributes(monitor);
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source, DBPEvaluationContext.UI), e);
+                DBWorkbench.getPlatformUI().showError(DTMessages.database_mapping_container_title_attributes_read_failed,
+                        NLS.bind(DTMessages.database_mapping_container_message_get_attributes_from, DBUtils.getObjectFullName(source, DBPEvaluationContext.UI)), e);
             }
         }
         return attributeMappings;
     }
 
     private void readAttributes(DBRProgressMonitor monitor) throws DBException {
-        if (source instanceof DBSEntity) {
+        if (source instanceof DBSEntity && !(source instanceof DBSDocumentContainer)) {
             for (DBSEntityAttribute attr : CommonUtils.safeCollection(((DBSEntity) source).getAttributes(monitor))) {
                 if (DBUtils.isHiddenObject(attr)) {
                     continue;
@@ -180,16 +230,31 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             // Seems to be a dynamic query. Execute it to get metadata
             DBPDataSource dataSource = source.getDataSource();
             assert (dataSource != null);
-            try (DBCSession session = DBUtils.openUtilSession(monitor, source, "Read query meta data")) {
-                MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
-                for (DBCAttributeMetaData attr : receiver.attributes) {
-                    if (DBUtils.isHiddenObject(attr)) {
-                        continue;
-                    }
-                    addAttributeMapping(monitor, attr);
-                }
+            DBCExecutionContext context;
+            if (source instanceof DBPContextProvider) {
+                context = ((DBPContextProvider) source).getExecutionContext();
+            } else {
+                context = DBUtils.getDefaultContext(source, false);
             }
+            if (context == null) {
+                throw new DBCException("No execution context");
+            }
+            DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), monitor1 -> {
+                try (DBCSession session = context.openSession(monitor1, DBCExecutionPurpose.META, "Read query meta data")) {
+                    MetadataReceiver receiver = new MetadataReceiver();
+                    try {
+                        source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
+                        for (DBDAttributeBinding attr : receiver.attributes) {
+                            if (DBUtils.isHiddenObject(attr)) {
+                                continue;
+                            }
+                            addAttributeMapping(monitor1, attr);
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
         }
     }
 
@@ -199,30 +264,34 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         attributeMappings.add(mapping);
     }
 
-    public void saveSettings(IDialogSettings settings) {
-        if (targetName != null) {
+    public void saveSettings(Map<String, Object> settings) {
+        if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
+        } else if (target != null) {
+            settings.put("targetName", target.getName());
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
         }
         if (!attributeMappings.isEmpty()) {
-            IDialogSettings attrsSection = settings.addNewSection("attributes");
+            Map<String, Object> attrsSection = new LinkedHashMap<>();
+            settings.put("attributes", attrsSection);
             for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                 DBSAttributeBase sourceAttr = attrMapping.getSource();
                 if (sourceAttr != null) {
-                    IDialogSettings attrSettings = attrsSection.addNewSection(sourceAttr.getName());
+                    Map<String, Object> attrSettings = new LinkedHashMap<>();
+                    attrsSection.put(sourceAttr.getName(), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
             }
         }
     }
 
-    public void loadSettings(IRunnableContext context, IDialogSettings settings) {
-        targetName = settings.get("targetName");
+    public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
+        targetName = CommonUtils.toString(settings.get("targetName"), targetName);
         if (settings.get("mappingType") != null) {
             try {
-                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
@@ -246,12 +315,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         if (!attributeMappings.isEmpty()) {
-            IDialogSettings attrsSection = settings.getSection("attributes");
+            Map<String, Object> attrsSection = (Map<String, Object>) settings.get("attributes");
             if (attrsSection != null) {
                 for (DatabaseMappingAttribute attrMapping : attributeMappings) {
                     DBSAttributeBase sourceAttr = attrMapping.getSource();
                     if (sourceAttr != null) {
-                        IDialogSettings attrSettings = attrsSection.getSection(sourceAttr.getName());
+                        Map<String, Object> attrSettings = (Map<String, Object>) attrsSection.get(sourceAttr.getName());
                         if (attrSettings != null) {
                             attrMapping.loadSettings(attrSettings);
                         }
@@ -261,13 +330,37 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         }
     }
 
-    private static class MetadataReceiver implements DBDDataReceiver {
+    public boolean isSameMapping(DatabaseMappingContainer mapping) {
+        if (!CommonUtils.equalObjects(source, mapping.source) ||
+            attributeMappings.size() != mapping.attributeMappings.size()) {
+            return false;
+        }
+        for (int i = 0; i < attributeMappings.size(); i++) {
+            if (!CommonUtils.equalObjects(
+                attributeMappings.get(i).getSource().getName(),
+                mapping.attributeMappings.get(i).getSource().getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-        private List<DBCAttributeMetaData> attributes;
+    public String getTargetFullName() {
+        DBSObjectContainer container = consumerSettings.getContainer();
+
+        if (container instanceof DBSSchema || container instanceof DBSCatalog) {
+            return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
+        }
+        return targetName;
+    }
+
+    private class MetadataReceiver implements DBDDataReceiver {
+
+        private DBDAttributeBinding[] attributes;
 
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-            attributes = resultSet.getMeta().getAttributes();
+            attributes = DBUtils.makeLeafAttributeBindings(session, source, resultSet);
         }
 
         @Override

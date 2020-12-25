@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,39 +17,50 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
 
 /**
  * Attribute constraint
  */
 public class DBDAttributeConstraintBase {
 
+    public static int NULL_VISUAL_POSITION = -1;
+
     private int orderPosition;
     private boolean orderDescending;
 
+    @Nullable
     private String criteria;
+    @Nullable
     private DBCLogicalOperator operator;
     private boolean reverseOperator;
+    @Nullable
     private Object value;
 
     private boolean visible;
     private int visualPosition;
 
-    // USed to generate expressions
+    // Used to generate expressions
+    @Nullable
     private String entityAlias;
+
+    @Nullable
+    private Object[] options;
 
     public DBDAttributeConstraintBase() {
     }
 
-    public DBDAttributeConstraintBase(DBDAttributeConstraintBase source)
-    {
+    public DBDAttributeConstraintBase(@NotNull DBDAttributeConstraintBase source) {
         copyFrom(source);
     }
 
-    public void copyFrom(DBDAttributeConstraintBase source) {
+    public void copyFrom(@NotNull DBDAttributeConstraintBase source) {
         this.orderPosition = source.orderPosition;
         this.orderDescending = source.orderDescending;
         this.criteria = source.criteria;
@@ -58,46 +69,43 @@ public class DBDAttributeConstraintBase {
         this.value = source.value;
         this.visible = source.visible;
         this.visualPosition = source.visualPosition;
+        this.options = source.options;
     }
 
-    public int getOrderPosition()
-    {
+    public int getOrderPosition() {
         return orderPosition;
     }
 
-    public void setOrderPosition(int orderPosition)
-    {
+    public void setOrderPosition(int orderPosition) {
         this.orderPosition = orderPosition;
     }
 
-    public boolean isOrderDescending()
-    {
+    public boolean isOrderDescending() {
         return orderDescending;
     }
 
-    public void setOrderDescending(boolean orderDescending)
-    {
+    public void setOrderDescending(boolean orderDescending) {
         this.orderDescending = orderDescending;
     }
 
-    public String getCriteria()
-    {
+    @Nullable
+    public String getCriteria() {
         return criteria;
     }
 
-    public void setCriteria(@Nullable String criteria)
-    {
+    public void setCriteria(@Nullable String criteria) {
         this.criteria = criteria;
         this.operator = null;
         this.reverseOperator = false;
         this.value = null;
     }
 
+    @Nullable
     public DBCLogicalOperator getOperator() {
         return operator;
     }
 
-    public void setOperator(DBCLogicalOperator operator) {
+    public void setOperator(@Nullable DBCLogicalOperator operator) {
         this.criteria = null;
         this.operator = operator;
     }
@@ -110,6 +118,7 @@ public class DBDAttributeConstraintBase {
         this.reverseOperator = reverseOperator;
     }
 
+    @Nullable
     public Object getValue() {
         return value;
     }
@@ -119,32 +128,31 @@ public class DBDAttributeConstraintBase {
         this.value = value;
     }
 
-    public boolean hasFilter()
-    {
-        return hasCondition() || orderPosition > 0 || !visible;
+    public boolean hasFilter() {
+        return hasCondition() || orderPosition > 0;
+    }
+
+    public boolean isDirty() {
+        return hasFilter() || !visible || !ArrayUtils.isEmpty(options);
     }
 
     public boolean hasCondition() {
         return !CommonUtils.isEmpty(criteria) || operator != null;
     }
 
-    public boolean isVisible()
-    {
+    public boolean isVisible() {
         return visible;
     }
 
-    public void setVisible(boolean visible)
-    {
+    public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
-    public int getVisualPosition()
-    {
+    public int getVisualPosition() {
         return visualPosition;
     }
 
-    public void setVisualPosition(int visualPosition)
-    {
+    public void setVisualPosition(int visualPosition) {
         this.visualPosition = visualPosition;
     }
 
@@ -160,8 +168,70 @@ public class DBDAttributeConstraintBase {
         this.entityAlias = entityAlias;
     }
 
-    public void reset()
-    {
+    @Nullable
+    public Object[] getOptions() {
+        return options;
+    }
+
+    public void setOptions(@Nullable Object[] options) {
+        this.options = options;
+    }
+
+    public boolean hasOption(String option) {
+        if (options == null) {
+            return false;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public <T> T getOption(String option) {
+        if (options == null) {
+            return null;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                return (T) options[i + 1];
+            }
+        }
+        return null;
+    }
+
+    public void setOption(String option, Object value) {
+        Object[] newOptions = { option, value };
+        if (options == null) {
+            options = newOptions;
+        } else {
+            for (int i = 0; i < options.length; i += 2) {
+                if (options[i].equals(option)) {
+                    options[i + 1] = value;
+                    return;
+                }
+            }
+            options = ArrayUtils.concatArrays(options, newOptions);
+        }
+    }
+
+    public boolean removeOption(String option) {
+        if (options == null) {
+            return false;
+        }
+        for (int i = 0; i < options.length; i += 2) {
+            if (options[i].equals(option)) {
+                options =
+                    ArrayUtils.remove(Object.class,
+                        ArrayUtils.remove(Object.class, options, i), i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void reset() {
         this.orderPosition = 0;
         this.orderDescending = false;
         this.criteria = null;
@@ -169,10 +239,10 @@ public class DBDAttributeConstraintBase {
         this.reverseOperator = false;
         this.value = null;
         this.visible = true;
+        this.options = null;
     }
 
-    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders)
-    {
+    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders) {
         if (compareOrders) {
             if (this.orderPosition != obj.orderPosition ||
                 this.orderDescending != obj.orderDescending) {
@@ -181,40 +251,39 @@ public class DBDAttributeConstraintBase {
         }
         return
             CommonUtils.equalObjects(this.criteria, obj.criteria) &&
-            CommonUtils.equalObjects(this.operator, obj.operator) &&
-            CommonUtils.equalObjects(this.reverseOperator, obj.reverseOperator) &&
-            CommonUtils.equalObjects(this.value, obj.value);
+                CommonUtils.equalObjects(this.operator, obj.operator) &&
+                CommonUtils.equalObjects(this.reverseOperator, obj.reverseOperator) &&
+                CommonUtils.equalObjects(this.value, obj.value);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return
             orderPosition +
-            (orderDescending ? 1 : 0) +
-            (this.criteria == null ? 0 : this.criteria.hashCode()) +
-            (this.operator == null ? 0 : this.operator.hashCode()) +
-            (reverseOperator ? 1 : 0) +
-            (this.value == null ? 0 : this.value.hashCode()) +
-            (visible ? 1 : 0) +
-            visualPosition
+                (orderDescending ? 1 : 0) +
+                (this.criteria == null ? 0 : this.criteria.hashCode()) +
+                (this.operator == null ? 0 : this.operator.hashCode()) +
+                (reverseOperator ? 1 : 0) +
+                (this.value == null ? 0 : this.value.hashCode()) +
+                (visible ? 1 : 0) +
+                visualPosition
             ;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj instanceof DBDAttributeConstraintBase) {
             DBDAttributeConstraintBase source = (DBDAttributeConstraintBase) obj;
             return
                 this.orderPosition == source.orderPosition &&
-                this.orderDescending == source.orderDescending &&
-                CommonUtils.equalObjects(this.criteria, source.criteria) &&
-                CommonUtils.equalObjects(this.operator, source.operator) &&
-                this.reverseOperator == source.reverseOperator &&
-                CommonUtils.equalObjects(this.value, source.value) &&
-                this.visible == source.visible &&
-                this.visualPosition == source.visualPosition;
+                    this.orderDescending == source.orderDescending &&
+                    CommonUtils.equalObjects(this.criteria, source.criteria) &&
+                    CommonUtils.equalObjects(this.operator, source.operator) &&
+                    this.reverseOperator == source.reverseOperator &&
+                    CommonUtils.equalObjects(this.value, source.value) &&
+                    this.visible == source.visible &&
+                    this.visualPosition == source.visualPosition &&
+                    Arrays.equals(this.options, source.options);
         } else {
             return false;
         }

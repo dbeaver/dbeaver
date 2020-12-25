@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,23 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -47,23 +48,24 @@ import java.util.Map;
 /**
  * Network handlers edit dialog page
  */
+@Deprecated
 public class ConnectionPageNetwork extends ConnectionWizardPage {
 
     public static final String PAGE_NAME = ConnectionPageNetwork.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageNetwork.class);
-    private CTabFolder handlersFolder;
+    private TabFolder handlersFolder;
     private DataSourceDescriptor prevDataSource;
 
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
-        private final CTabItem tabItem;
+        private final TabItem tabItem;
         ControlEnableState blockEnableState;
         private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, CTabItem tabItem)
+        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -86,7 +88,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        handlersFolder = new CTabFolder(parent, SWT.TOP | SWT.FLAT);
+        handlersFolder = new TabFolder(parent, SWT.TOP | SWT.FLAT);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         setControl(handlersFolder);
@@ -107,7 +109,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
             return;
         }
 
-        CTabItem tabItem = new CTabItem(handlersFolder, SWT.NONE);
+        TabItem tabItem = new TabItem(handlersFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
 
@@ -127,22 +129,22 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
                 enableHandlerContent(descriptor);
             }
         });
-        Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
+        Composite handlerComposite = UIUtils.createComposite(composite, 1);
         configurations.put(descriptor, new HandlerBlock(configurator, handlerComposite, useHandlerCheck, tabItem));
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite);
+        configurator.createControl(handlerComposite, this::updatePageCompletion);
     }
 
     @Override
     public void activatePage() {
         DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
-        DriverDescriptor driver = wizard.getSelectedDriver();
+        DBPDriver driver = wizard.getSelectedDriver();
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
 
         if (prevDataSource == null || prevDataSource != dataSource) {
-            for (CTabItem item : handlersFolder.getItems()) {
+            for (TabItem item : handlersFolder.getItems()) {
                 item.dispose();
             }
             for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
@@ -159,11 +161,11 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
 //            }
         }
 
-        CTabItem selectItem = null;
+        TabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
-                configuration = new DBWHandlerConfiguration(descriptor, driver);
+                configuration = new DBWHandlerConfiguration(descriptor, dataSource);
             }
             HandlerBlock handlerBlock = configurations.get(descriptor);
             if (handlerBlock == null) {
@@ -202,7 +204,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource) {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         boolean foundHandlers = false;
         java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<>();
         for (HandlerBlock handlerBlock : configurations.values()) {

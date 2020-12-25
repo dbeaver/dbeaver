@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,22 +121,26 @@ public class TrayIconHandler {
 
     public void notify(String message, int status)
     {
-        if (trayItem == null) {
-            try {
-                show();
-            } catch (Exception e) {
-                log.warn("Can't show tray item", e);
-                return;
+        try {
+            if (trayItem == null) {
+                try {
+                    show();
+                } catch (Exception e) {
+                    log.warn("Can't show tray item", e);
+                    return;
+                }
             }
+            TrayIcon.MessageType type;
+            switch (status) {
+                case IStatus.INFO: type = TrayIcon.MessageType.INFO; break;
+                case IStatus.ERROR: type = TrayIcon.MessageType.ERROR; break;
+                case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
+                default: type = TrayIcon.MessageType.NONE; break;
+            }
+            trayItem.displayMessage(GeneralUtils.getProductTitle(), message, type);
+        } catch (Throwable e) {
+            log.error("Error showing tray notification", e);
         }
-        TrayIcon.MessageType type;
-        switch (status) {
-            case IStatus.INFO: type = TrayIcon.MessageType.INFO; break;
-            case IStatus.ERROR: type = TrayIcon.MessageType.ERROR; break;
-            case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
-            default: type = TrayIcon.MessageType.NONE; break;
-        }
-        trayItem.displayMessage(GeneralUtils.getProductTitle(), message, type);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,34 +19,38 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.IDocumentDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
 
 /**
  * JSON Exporter
  */
-public class DataExporterJSON extends StreamExporterAbstract {
+public class DataExporterJSON extends StreamExporterAbstract implements IDocumentDataExporter {
 
     public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
 
-    private PrintWriter out;
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
     private String tableName;
     private int rowNum = 0;
 
@@ -57,7 +61,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
     }
@@ -65,7 +68,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -79,6 +81,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
 
     private void printHeader()
     {
+        PrintWriter out = getWriter();
         if (printTableName) {
             out.write("{\n");
             out.write("\"" + JSONUtils.escapeJsonString(tableName) + "\": ");
@@ -89,62 +92,83 @@ public class DataExporterJSON extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         if (rowNum > 0) {
             out.write(",\n");
         }
         rowNum++;
-        out.write("\t{\n");
-        for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
-            String columnName = column.getLabel();
-            if (CommonUtils.isEmpty(columnName)) {
-                columnName = column.getName();
-            }
-            out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" : ");
-            Object cellValue = row[i];
-            if (DBUtils.isNullValue(cellValue)) {
-                writeTextCell(null);
-            } else if (cellValue instanceof DBDContent) {
-                // Content
-                // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent) cellValue;
-                try {
-                    DBDContentStorage cs = content.getContents(session.getProgressMonitor());
-                    if (cs != null) {
-                        if (ContentUtils.isTextContent(content)) {
-                            try (Reader in = cs.getContentReader()) {
-                                out.write("\"");
-                                writeCellValue(in);
-                                out.write("\"");
+        if (isJsonDocumentResults(session.getProgressMonitor(), row)) {
+            DBDDocument document = (DBDDocument) row[0];
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            document.serializeDocument(session.getProgressMonitor(), buffer, StandardCharsets.UTF_8);
+            String jsonText = buffer.toString(StandardCharsets.UTF_8.name());
+            out.write(jsonText);
+        } else {
+            out.write("\t{\n");
+            for (int i = 0; i < columns.length; i++) {
+                DBDAttributeBinding column = columns[i];
+                String columnName = column.getLabel();
+                if (CommonUtils.isEmpty(columnName)) {
+                    columnName = column.getName();
+                }
+                out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" : ");
+                Object cellValue = row[column.getOrdinalPosition()];
+                if (DBUtils.isNullValue(cellValue)) {
+                    writeTextCell(null);
+                } else if (cellValue instanceof DBDContent) {
+                    // Content
+                    // Inline textual content and handle binaries in some special way
+                    DBDContent content = (DBDContent) cellValue;
+                    try {
+                        DBDContentStorage cs = content.getContents(session.getProgressMonitor());
+                        if (cs != null) {
+                            if (ContentUtils.isTextContent(content)) {
+                                try (Reader in = cs.getContentReader()) {
+                                    out.write("\"");
+                                    writeCellValue(in);
+                                    out.write("\"");
+                                }
+                            } else {
+                                getSite().writeBinaryData(cs);
                             }
-                        } else {
-                            getSite().writeBinaryData(cs);
                         }
+                    } finally {
+                        content.release();
+                    }
+                } else {
+                    if (cellValue instanceof Number || cellValue instanceof Boolean) {
+                        out.write(cellValue.toString());
+                    } else if (cellValue instanceof Date && formatDateISO) {
+                        writeTextCell(JSONUtils.formatDate((Date) cellValue));
+                    } else {
+                        writeTextCell(super.getValueDisplayString(column, cellValue));
                     }
                 }
-                finally {
-                    content.release();
+                if (i < columns.length - 1) {
+                    out.write(",");
                 }
-            } else {
-                if (cellValue instanceof Number || cellValue instanceof Boolean) {
-                    out.write(cellValue.toString());
-                } else if (cellValue instanceof Date && formatDateISO) {
-                    writeTextCell(JSONUtils.formatDate((Date) cellValue));
-                } else {
-                    writeTextCell(super.getValueDisplayString(column, cellValue));
-                }
+                out.write("\n");
             }
-            if (i < row.length - 1) {
-                out.write(",");
-            }
-            out.write("\n");
+            out.write("\t}");
         }
-        out.write("\t}");
+    }
+
+    private boolean isJsonDocumentResults(DBRProgressMonitor progressMonitor, Object[] row) {
+        if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.DOCUMENT) {
+            if (row.length > 0 && !DBUtils.isNullValue(row[0]) && row[0] instanceof DBDDocument) {
+                DBDDocument document = (DBDDocument) row[0];
+                if (MimeTypes.TEXT_JSON.equalsIgnoreCase(document.getDocumentContentType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
+        PrintWriter out = getWriter();
         out.write("\n]");
         if (printTableName) {
             out.write("}");
@@ -155,9 +179,9 @@ public class DataExporterJSON extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            out.write("\"" + JSONUtils.escapeJsonString(value) + "\"");
+            getWriter().write("\"" + JSONUtils.escapeJsonString(value) + "\"");
         } else {
-            out.write("null");
+            getWriter().write("null");
         }
     }
 
@@ -170,7 +194,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
             if (count <= 0) {
                 break;
             }
-            out.write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
+            getWriter().write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -48,7 +47,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
 
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return object.getContainer().tableCache;
+        return object.getContainer().getSchema().getTableCache();
     }
 
     @Override
@@ -58,7 +57,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
@@ -67,30 +66,19 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected PostgreSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreSchema parent, Object copyFrom)
+    protected PostgreSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new UITask<PostgreSequence>() {
-            @Override
-            protected PostgreSequence runTask() {
-                CreateSequencePage editPage = new CreateSequencePage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                PostgreSequence newProcedure = new PostgreSequence(parent);
-                newProcedure.setName(editPage.getSequenceName());
-                return newProcedure;
-            }
-        }.execute();
+        return new PostgreSequence((PostgreSchema) container);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceSequenceQuery(actions, command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceSequenceQuery(actionList, command.getObject());
@@ -98,7 +86,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop sequence", "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
@@ -112,10 +100,10 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Rename sequence",
-                "ALTER SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "ALTER SEQUENCE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())));
     }
 
@@ -126,7 +114,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment sequence",

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +17,18 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +39,7 @@ import java.util.Map;
 /**
  * SQLServer table manager
  */
-public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLServerSchema> implements DBEObjectRenamer<SQLServerTable> {
+public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         SQLServerTableColumn.class,
@@ -58,24 +50,16 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     };
 
     @Override
-    public DBSObjectCache<SQLServerSchema, SQLServerTable> getObjectsCache(SQLServerTable object) {
-        return (DBSObjectCache) object.getSchema().getTableCache();
-    }
-
-    @Override
-    protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerSchema parent, Object copyFrom)
+    protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        SQLServerTable table = new SQLServerTable(parent);
-        try {
-            setTableName(monitor, parent, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+        SQLServerSchema schema = (SQLServerSchema) container;
+        SQLServerTable table = new SQLServerTable(schema);
+        setNewObjectName(monitor, schema, table);
         return table; //$NON-NLS-1$
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
@@ -86,27 +70,7 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, NestedObjectCommand<SQLServerTable, PropertyHandler> command, Map<String, Object> options) {
-        final SQLServerTable table = command.getObject();
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            boolean isUpdate = SQLServerUtils.isCommentSet(
-                monitor,
-                table.getDatabase(),
-                SQLServerObjectClass.OBJECT_OR_COLUMN,
-                table.getObjectId(),
-                0);
-            actionList.add(
-                new SQLDatabasePersistAction(
-                    "Add table comment",
-                    "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', '" + table.getSchema().getName() + "'," +
-                        " 'table', '" + table.getName() + "'"));
-        }
-    }
-
-    @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         // ALTER
 /*
@@ -124,22 +88,9 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
-        SQLServerTable table = command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Rename table",
-                "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), "sp_rename") +
-                    " '" + table.getSchema().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName()) +
-                    "' , '" + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName()) + "', 'TABLE'")
-        );
-    }
-
-    @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        SQLServerTable object = command.getObject();
+        SQLServerTableBase object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
@@ -158,26 +109,28 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, SQLServerTable object, String newName) throws DBException
+    public void renameObject(DBECommandContext commandContext, SQLServerTableBase object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
     }
 
     @Override
-    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
-        return !index.isPrimary() && super.isIncludeIndexInDDL(index);
+    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        return !index.isPrimary() && super.isIncludeIndexInDDL(monitor, index);
     }
 
-    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, StructCreateCommand createCommand) {
-        SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTable> ccm = getObjectEditor(
+    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTableBase table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {
+        SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTableBase> ccm = getObjectEditor(
             table.getDataSource().getContainer().getPlatform().getEditorsRegistry(),
             SQLServerTableCheckConstraint.class);
         if (ccm != null) {
             try {
-                Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(table.getCheckConstraints(monitor));
-                if (!CommonUtils.isEmpty(checkConstraints)) {
-                    for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
-                        createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint));
+                if (table instanceof SQLServerTable) {
+                    Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(((SQLServerTable) table).getCheckConstraints(monitor));
+                    if (!CommonUtils.isEmpty(checkConstraints)) {
+                        for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
+                            createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint, options));
+                        }
                     }
                 }
             } catch (DBException e) {

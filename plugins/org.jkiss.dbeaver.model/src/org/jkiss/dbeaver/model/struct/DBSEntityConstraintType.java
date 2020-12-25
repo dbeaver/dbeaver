@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,17 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
  */
 public class DBSEntityConstraintType
 {
-    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", ModelMessages.model_struct_Foreign_Key, true, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("virtual", "VIRTUAL KEY", ModelMessages.model_struct_Virtual_Key, false, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", ModelMessages.model_struct_Pseudo_Key, false, true, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", ModelMessages.model_struct_Check, false, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", ModelMessages.model_struct_Not_NULL, false, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", "Index", false, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", "Association", true, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", "Inheritance", true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", ModelMessages.model_struct_Foreign_Key, true, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", ModelMessages.model_struct_Primary_Key, false, true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", ModelMessages.model_struct_Unique_Key, false, true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("vpk", "VIRTUAL PRIMARY KEY", ModelMessages.model_struct_Virtual_Key, false, true, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType VIRTUAL_FOREIGN_KEY = new DBSEntityConstraintType("vfk", "VIRTUAL FOREIGN KEY", ModelMessages.model_struct_Virtual_Foreign_Key, true, true, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", ModelMessages.model_struct_Pseudo_Key, false, true, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", ModelMessages.model_struct_Check, false, false, true, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", ModelMessages.model_struct_Not_NULL, false, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", ModelMessages.model_struct_Index, false, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType ASSOCIATION = new DBSEntityConstraintType("association", "Association", ModelMessages.model_struct_Association, true, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType INHERITANCE = new DBSEntityConstraintType("inheritance", "Inheritance", ModelMessages.model_struct_Inheritance, true, false, false, false); //$NON-NLS-1$
 
     private final String id;
     private final String name;
@@ -40,8 +41,9 @@ public class DBSEntityConstraintType
     private final boolean association;
     private final boolean unique;
     private final boolean custom;
+    private final boolean logical;
 
-    public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique, boolean custom)
+    public DBSEntityConstraintType(String id, String name, String localizedName, boolean association, boolean unique, boolean custom, boolean logical)
     {
         this.id = id;
         this.name = name;
@@ -49,6 +51,7 @@ public class DBSEntityConstraintType
         this.association = association;
         this.unique = unique;
         this.custom = custom;
+        this.logical = logical;
     }
 
     public String getId() {
@@ -79,6 +82,10 @@ public class DBSEntityConstraintType
      */
     public boolean isCustom() {
         return custom;
+    }
+
+    public boolean isLogical() {
+        return logical;
     }
 
     public String toString()

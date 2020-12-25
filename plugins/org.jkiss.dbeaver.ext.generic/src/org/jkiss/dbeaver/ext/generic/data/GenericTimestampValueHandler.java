@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.generic.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -32,9 +32,9 @@ public class GenericTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     private final GenericDataSource dataSource;
 
-    public GenericTimestampValueHandler(GenericDataSource dataSource, DBDDataFormatterProfile formatterProfile)
+    public GenericTimestampValueHandler(GenericDataSource dataSource, DBDFormatSettings formatSettings)
     {
-        super(formatterProfile);
+        super(formatSettings);
 
         this.dataSource = dataSource;
     }

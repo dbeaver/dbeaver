@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,21 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
  * Generic index manager
  */
-public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, GenericTable> {
+public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, GenericTableBase> {
 
     @Nullable
     @Override
@@ -49,47 +42,24 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     }
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof GenericTable && ((GenericTable) container).getDataSource().getInfo().supportsIndexes();
+    }
+
+    @Override
     protected GenericTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
-        Object from)
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
     {
-        return new UITask<GenericTableIndex>() {
-            @Override
-            protected GenericTableIndex runTask() {
-                EditIndexPage editPage = new EditIndexPage(
-                    "Create index",
-                    parent,
-                    Collections.singletonList(DBSIndexType.OTHER));
-                if (!editPage.edit()) {
-                    return null;
-                }
-                final GenericTableIndex index = parent.getDataSource().getMetaModel().createIndexImpl(
-                    parent,
-                    !editPage.isUnique(),
-                    null,
-                    0,
-                    null,
-                    editPage.getIndexType(),
-                    false);
-                StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    if (colIndex == 1) {
-                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
-                    }
-                    index.addColumn(
-                        new GenericTableIndexColumn(
-                            index,
-                            (GenericTableColumn) tableColumn,
-                            colIndex++,
-                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
-                }
-                idxName.append("_IDX");
-                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-                return index;
-            }
-        }.execute();
+        GenericTableBase tableBase = (GenericTableBase) container;
+        return tableBase.getDataSource().getMetaModel().createIndexImpl(
+            tableBase,
+            true,
+            null,
+            0,
+            null,
+            DBSIndexType.OTHER,
+            false);
     }
 
 }

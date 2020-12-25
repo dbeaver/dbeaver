@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Map;
@@ -40,12 +42,14 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private DateTimeFormatter dateTimeFormatter;
 
     @Override
-    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         dateFormat = new ExtendedDateFormat(
             pattern,
             locale);
+        // We shouldn't use lanient formatter (#7244)
+        dateFormat.setLenient(false);
         buffer = new StringBuffer();
         position = new FieldPosition(0);
         // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
@@ -75,7 +79,11 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
         if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
-            return dateTimeFormatter.parse(value);
+            try {
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            } catch (DateTimeParseException e) {
+                throw new ParseException(e.getParsedString(), e.getErrorIndex());
+            }
         }
         return dateFormat.parse(value);
     }

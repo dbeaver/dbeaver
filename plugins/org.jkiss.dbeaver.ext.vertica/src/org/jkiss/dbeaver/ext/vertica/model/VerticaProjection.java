@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -166,27 +168,27 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     }
 
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().projectionCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
         return getContainer().projectionCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

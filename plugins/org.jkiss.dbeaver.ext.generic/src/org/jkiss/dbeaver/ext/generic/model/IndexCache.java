@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -41,7 +40,7 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableIndex, GenericTableIndexColumn> {
+class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableIndex, GenericTableIndexColumn> {
 
     private final GenericMetaObject indexObject;
 
@@ -49,7 +48,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     {
         super(
             tableCache,
-            GenericTable.class,
+            GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.TABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.INDEX_NAME));
         indexObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_INDEX);
@@ -57,22 +56,23 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
         try {
             return session.getMetaData().getIndexInfo(
                     owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                    owner.getSchema() == null ? null : owner.getSchema().getName(),
+                    owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
                     forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
                     false,
                     true).getSourceStatement();
-        } catch (SQLException e) {
-            throw e;
         } catch (Exception e) {
             if (forParent == null) {
                 throw new SQLException("Global indexes read not supported", e);
             } else {
+                if (e instanceof SQLException) {
+                    throw (SQLException)e;
+                }
                 throw new SQLException(e);
             }
         }
@@ -80,7 +80,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @Nullable
     @Override
-    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, JDBCResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String indexName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -128,14 +128,14 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     @Override
     protected GenericTableIndexColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableIndex object, JDBCResultSet dbResult)
+        GenericTableBase parent, GenericTableIndex object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
-        if (ordinalPosition == 0 || CommonUtils.isEmpty(columnName)) {
+        if (CommonUtils.isEmpty(columnName)) {
             // Maybe a statistics index without column
             return null;
         }

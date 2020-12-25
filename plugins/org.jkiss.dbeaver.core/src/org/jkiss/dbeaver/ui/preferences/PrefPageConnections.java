@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,29 +17,51 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 /**
  * PrefPageConnections
  */
 public class PrefPageConnections extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.client.connections"; //$NON-NLS-1$
+
+    private static final String[] ALLOWED_VARIABLES = new String[] {
+        DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_PORT,
+        DBPConnectionConfiguration.VARIABLE_SERVER,
+        DBPConnectionConfiguration.VARIABLE_DATABASE,
+        DBPConnectionConfiguration.VARIABLE_USER,
+        DBPConnectionConfiguration.VARIABLE_PASSWORD,
+        DBPConnectionConfiguration.VARIABLE_URL,
+        DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
+
+        DBConstants.VAR_CONTEXT_NAME,
+        DBConstants.VAR_CONTEXT_ID,
+
+        SystemVariablesResolver.VAR_WORKSPACE,
+        SystemVariablesResolver.VAR_HOME,
+        SystemVariablesResolver.VAR_DBEAVER_HOME,
+        SystemVariablesResolver.VAR_APP_NAME,
+        SystemVariablesResolver.VAR_APP_VERSION,
+        SystemVariablesResolver.VAR_APP_PATH,
+        SystemVariablesResolver.VAR_LOCAL_IP,
+    };
 
     private Button disableClientApplicationNameCheck;
     private Button overrideClientApplicationNameCheck;
@@ -92,19 +114,19 @@ public class PrefPageConnections extends TargetPrefPage
                     updateClientAppEnablement();
                 }
             });
-            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, "");
+            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, ""); //$NON-NLS-1$
 
-            UIUtils.installContentProposal(
+            ContentAssistUtils.installContentProposal(
                 clientApplicationNameText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(DataSourceDescriptor.CONNECT_PATTERNS));
-            UIUtils.setContentProposalToolTip(clientApplicationNameText, "Client application name variables", DataSourceDescriptor.CONNECT_PATTERNS);
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(ALLOWED_VARIABLES));
+            UIUtils.setContentProposalToolTip(clientApplicationNameText, CoreMessages.pref_page_connections_application_name_text, ALLOWED_VARIABLES);
         }
 
         {
-            Group connGroup = UIUtils.createControlGroup(composite, "General", 2, GridData.FILL_HORIZONTAL, 0);
+            Group connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-            connUseEnvVariables = UIUtils.createCheckbox(connGroup, "Use environment variables in connection parameters", null, false, 2);
+            connUseEnvVariables = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_connection_label_use_environment, null, false, 2);
         }
         return composite;
     }

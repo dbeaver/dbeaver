@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,17 +17,22 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+
+import java.util.Map;
 
 /**
  * MySQL constraint manager
@@ -38,44 +43,35 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     @Override
     public DBSObjectCache<MySQLCatalog, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
     {
-        return object.getTable().getContainer().getConstraintCache();
+        if (object.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return object.getTable().getContainer().getCheckConstraintCache();
+        } else {
+            return object.getTable().getContainer().getUniqueKeyCache();
+        }
     }
 
     @Override
     protected MySQLTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
-        Object from)
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
     {
-        return new UITask<MySQLTableConstraint>() {
-            @Override
-            protected MySQLTableConstraint runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    MySQLMessages.edit_constraint_manager_title,
-                    parent,
-                    new DBSEntityConstraintType[] {
-                        DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY });
-                if (!editPage.edit()) {
-                    return null;
-                }
+        return new MySQLTableConstraint(
+            (MySQLTable) container,
+            "NewConstraint",
+            null,
+            DBSEntityConstraintType.PRIMARY_KEY,
+            false);
+    }
 
-                final MySQLTableConstraint constraint = new MySQLTableConstraint(
-                    parent,
-                    editPage.getConstraintName(),
-                    null,
-                    editPage.getConstraintType(),
-                    false);
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    constraint.addColumn(
-                        new MySQLTableConstraintColumn(
-                            constraint,
-                            (MySQLTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return constraint;
-            }
-        }.execute();
+    @NotNull
+    @Override
+    protected String getAddConstraintTypeClause(MySQLTableConstraint constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return MySQLConstants.CONSTRAINT_UNIQUE; //$NON-NLS-1$
+        } else if (constraint.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return MySQLConstants.CONSTRAINT_CHECK; //$NON-NLS-1$
+        }
+        return super.getAddConstraintTypeClause(constraint);
     }
 
     @Override
@@ -83,9 +79,20 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     {
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP PRIMARY KEY"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        } else if (constraint.getConstraintType() == DBSEntityConstraintType.CHECK) {
+            return "ALTER TABLE " + constraint.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " DROP CONSTRAINT " + DBUtils.getQuotedIdentifier(constraint);
         } else {
             return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(" (").append((command.getObject()).getCheckClause()).append(")");
+        } else {
+            super.appendConstraintDefinition(decl, command);
+        }
+    }
 }

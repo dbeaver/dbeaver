@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 /**
  * AbstractDatabaseEditor
  */
-public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDatabaseEditor, DBPContextProvider
+public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IEditorInput> extends EditorPart implements IDatabaseEditor, DBPContextProvider
 {
     private DatabaseEditorListener listener;
     private Image editorImage;

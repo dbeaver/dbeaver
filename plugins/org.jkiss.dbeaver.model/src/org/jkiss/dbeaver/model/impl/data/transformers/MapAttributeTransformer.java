@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -35,9 +37,12 @@ import java.util.Map;
  */
 public class MapAttributeTransformer implements DBDAttributeTransformer {
 
+    private static final boolean FILTER_SIMPLE_COLLECTIONS = false;
+
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
-        if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
+        if (!CommonUtils.isEmpty(attribute.getNestedBindings()) ||
+            !session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
         resolveMapsFromData(session, attribute, rows);
@@ -54,6 +59,9 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 DBDCollection collection = (DBDCollection) value;
                 if (collection.getItemCount() > 0) {
                     value = collection.getItem(0);
+                } else {
+                    // Skip empty collections - we can't get any info out of them
+                    continue;
                 }
             }
 
@@ -87,38 +95,37 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             }
         }
         if (valueAttributes != null && !valueAttributes.isEmpty()) {
-            createNestedMapBindings(session, attribute, valueAttributes);
+            createNestedMapBindings(session, attribute, valueAttributes, rows);
         }
     }
 
-    private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes) throws DBException {
+    private static void createNestedMapBindings(DBCSession session, DBDAttributeBinding topAttribute, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes, List<Object[]> rows) throws DBException {
         int maxPosition = 0;
-        for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
-            maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
-        }
         List<DBDAttributeBinding> nestedBindings = topAttribute.getNestedBindings();
         if (nestedBindings == null) {
             nestedBindings = new ArrayList<>();
-        } else {
-            for (DBDAttributeBinding binding : nestedBindings) {
-                maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
-            }
         }
+        for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
+            DBSAttributeBase attribute = nestedAttr.getFirst();
+            maxPosition = Math.max(maxPosition, attribute.getOrdinalPosition());
+            DBDAttributeBinding nestedBinding = DBUtils.findObject(nestedBindings, attribute.getName());
+            if (nestedBinding == null) {
+                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute, nestedBindings.size());
+                nestedBindings.add(nestedBinding);
+            }
+            maxPosition = Math.max(maxPosition, nestedBinding.getOrdinalPosition());
+        }
+
+
         Object[] fakeRow = new Object[maxPosition + 1];
 
         List<Object[]> fakeRows = Collections.singletonList(fakeRow);
         for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
             DBSAttributeBase attribute = nestedAttr.getFirst();
             Object[] values = nestedAttr.getSecond();
-            DBDAttributeBinding nestedBinding = null;
-            for (DBDAttributeBinding binding : nestedBindings) {
-                if (binding.getName().equals(attribute.getName())) {
-                    nestedBinding = binding;
-                    break;
-                }
-            }
+            DBDAttributeBinding nestedBinding = DBUtils.findObject(nestedBindings, attribute.getName());
             if (nestedBinding == null) {
-                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute);
+                nestedBinding = new DBDAttributeBindingType(topAttribute, attribute, nestedBindings.size());
                 nestedBindings.add(nestedBinding);
             }
             if (attribute.getDataKind().isComplex()) {
@@ -130,7 +137,21 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                     fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
                     nestedBinding.lateBinding(session, fakeRows);
                 }
+            } else {
+                nestedBinding.lateBinding(session, fakeRows);
             }
+        }
+
+        if (FILTER_SIMPLE_COLLECTIONS) {
+            // Remove empty collection attributes from nested bindings
+            // They can't be used anyway
+            nestedBindings.removeIf(
+                attribute -> {
+                    if (attribute.getDataKind() == DBPDataKind.ARRAY && CommonUtils.isEmpty(attribute.getNestedBindings())) {
+                        return true;
+                    }
+                    return false;
+                });
         }
 
         if (!nestedBindings.isEmpty()) {

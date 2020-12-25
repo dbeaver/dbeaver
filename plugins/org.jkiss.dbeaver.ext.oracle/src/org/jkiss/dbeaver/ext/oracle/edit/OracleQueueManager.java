@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +23,11 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -39,14 +36,17 @@ import java.util.Map;
 public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchema> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command) throws DBException
-    {
+    public boolean canCreateObject(Object container) {
+        return false;
+    }
+
+    @Override
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Queue name cannot be empty");
         }
@@ -54,45 +54,31 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleQueue> getObjectsCache(OracleQueue object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleQueue> getObjectsCache(OracleQueue object) {
         return object.getSchema().queueCache;
     }
 
     @Override
-    protected OracleQueue createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                               final OracleSchema schema,
-                                               Object copyFrom)
-    {
-        return new UITask<OracleQueue>() {
-            @Override
-            protected OracleQueue runTask() {
-                EntityEditPage page = new EntityEditPage(schema.getDataSource(), DBSEntityType.SEQUENCE);
-                if (!page.edit()) {
-                    return null;
-                }
-
-                final OracleQueue queue = new OracleQueue(schema, page.getEntityName());
-                return queue;
-            }
-        }.execute();
+    protected OracleQueue createDatabaseObject(
+        DBRProgressMonitor monitor, DBECommandContext context,
+        final Object container,
+        Object copyFrom, Map<String, Object> options) {
+        OracleSchema schema = (OracleSchema) container;
+        return new OracleQueue(schema, "NEW_QUEUE");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
 
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
 
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
 
     }
 }

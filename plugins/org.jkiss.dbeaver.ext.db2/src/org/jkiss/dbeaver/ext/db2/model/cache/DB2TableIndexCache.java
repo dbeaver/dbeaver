@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
@@ -31,6 +29,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.SQLException;
+
 /**
  * Cache for DB2 Indexes for a given Table
  * 
@@ -40,6 +40,7 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2TableBase, DB2Index> 
 
     private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table)
         throws SQLException

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
@@ -28,9 +30,9 @@ public class DBXTreeObject extends DBXTreeNode
     private String description;
     private String editorId;
 
-    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String id, String visibleIf, String label, String description, String editorId)
+    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String visibleIf, String label, String description, String editorId)
     {
-        super(source, parent, id, true, false, false, false, visibleIf, null);
+        super(source, parent, config, true, false, false, false, visibleIf, null);
         this.label = label;
         this.description = description;
         this.editorId = editorId;
@@ -49,13 +51,13 @@ public class DBXTreeObject extends DBXTreeNode
     }
 
     @Override
-    public String getNodeType(DBPDataSource dataSource)
+    public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale)
     {
         return label;
     }
 
     @Override
-    public String getChildrenType(DBPDataSource dataSource)
+    public String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, String locale)
     {
         return label;
     }

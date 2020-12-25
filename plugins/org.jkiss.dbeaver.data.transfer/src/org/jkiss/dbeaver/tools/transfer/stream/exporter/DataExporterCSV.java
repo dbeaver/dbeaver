@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -37,7 +38,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +46,7 @@ import java.util.Map;
 public class DataExporterCSV extends StreamExporterAbstract {
 
     private static final String PROP_DELIMITER = "delimiter";
+    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
@@ -54,6 +55,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
 
     private static final String DEF_QUOTE_CHAR = "\"";
+    private boolean formatNumbers;
 
     enum HeaderPosition {
         none,
@@ -61,15 +63,17 @@ public class DataExporterCSV extends StreamExporterAbstract {
         bottom,
         both
     }
+
+    private static final String ROW_DELIMITER_DEFAULT = "default";
+
     private String delimiter;
     private char quoteChar = '"';
     private boolean useQuotes = true;
-    private boolean quoteAlways = true;
+    private QuoteStrategy quoteStrategy = QuoteStrategy.DISABLED;
     private String rowDelimiter;
     private String nullString;
     private HeaderPosition headerPosition;
-    private PrintWriter out;
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
 
     private final StringBuilder buffer = new StringBuilder();
 
@@ -77,8 +81,12 @@ public class DataExporterCSV extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        Map<Object, Object> properties = site.getProperties();
+        Map<String, Object> properties = site.getProperties();
         this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
+        this.rowDelimiter = StreamTransferUtils.getDelimiterString(properties, PROP_ROW_DELIMITER);
+        if (ROW_DELIMITER_DEFAULT.equalsIgnoreCase(this.rowDelimiter.trim())) {
+            this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
+        }
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
@@ -91,26 +99,21 @@ public class DataExporterCSV extends StreamExporterAbstract {
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
-        quoteAlways = CommonUtils.toBoolean(properties.get(PROP_QUOTE_ALWAYS));
-        out = site.getWriter();
-        rowDelimiter = GeneralUtils.getDefaultLineSeparator();
-        try {
-            headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
-        } catch (Exception e) {
-            headerPosition = HeaderPosition.top;
-        }
+        quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
+
+        headerPosition = CommonUtils.valueOf(HeaderPosition.class, String.valueOf(properties.get(PROP_HEADER)), HeaderPosition.top);
+        formatNumbers = CommonUtils.toBoolean(getSite().getProperties().get(PROP_FORMAT_NUMBERS));
     }
 
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
     @Override
     protected DBDDisplayFormat getValueExportFormat(DBDAttributeBinding column) {
-        if (column.getDataKind() == DBPDataKind.NUMERIC && !Boolean.TRUE.equals(getSite().getProperties().get(PROP_FORMAT_NUMBERS))) {
+        if (column.getDataKind() == DBPDataKind.NUMERIC && !formatNumbers) {
             return DBDDisplayFormat.NATIVE;
         }
         return super.getValueExportFormat(column);
@@ -127,11 +130,15 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private void printHeader()
     {
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            DBDAttributeBinding column = columns.get(i);
-            String colName = column.getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = column.getName();
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+            DBDAttributeBinding column = columns[i];
+            String colLabel = column.getLabel();
+            String colName = column.getName();
+            if (CommonUtils.equalObjects(colLabel, colName)) {
+                colName = column.getParentObject() == null ? column.getName() : DBUtils.getObjectFullName(column, DBPEvaluationContext.UI);
+            } else if (!CommonUtils.isEmpty(colLabel)) {
+                // Label has higher priority
+                colName = colLabel;
             }
             writeCellValue(colName, true);
             if (i < columnsSize - 1) {
@@ -144,11 +151,11 @@ public class DataExporterCSV extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
-        for (int i = 0; i < row.length && i < columns.size(); i++) {
-            DBDAttributeBinding column = columns.get(i);
+        for (int i = 0; i < row.length && i < columns.length; i++) {
+            DBDAttributeBinding column = columns[i];
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
-                    out.write(nullString);
+                    getWriter().write(nullString);
                 }
             } else if (row[i] instanceof DBDContent) {
                 // Content
@@ -172,9 +179,20 @@ public class DataExporterCSV extends StreamExporterAbstract {
             } else {
                 String stringValue = super.getValueDisplayString(column, row[i]);
                 boolean quote = false;
-                if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date) && Character.isDigit(stringValue.charAt(0))) {
-                    // Quote string values which starts from number
-                    quote = true;
+
+                if (quoteStrategy == QuoteStrategy.DISABLED) {
+                    if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date) && Character.isDigit(stringValue.charAt(0))) {
+                        // Quote string values which starts from number
+                        quote = true;
+                    }
+                } else if (quoteStrategy == QuoteStrategy.STRINGS) {
+                    if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date)) {
+                        quote = true;
+                    }
+                } else if (quoteStrategy == QuoteStrategy.ALL_BUT_NUMBERS) {
+                    if (!(row[i] instanceof Number)) {
+                        quote = true;
+                    }
                 }
                 writeCellValue(stringValue, quote);
             }
@@ -186,8 +204,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) {
         if (headerPosition == HeaderPosition.bottom || headerPosition == HeaderPosition.both) {
             printHeader();
         }
@@ -200,7 +217,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
         }
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
-        if (quoteAlways || (useQuotes && value.isEmpty())) {
+
+        if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
@@ -212,6 +230,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
                 quote = true;
             }
         }
+
         if (quote && hasQuotes) {
             // escape quotes with double quotes
             buffer.setLength(0);
@@ -224,6 +243,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             }
             value = buffer.toString();
         }
+        PrintWriter out = getWriter();
         if (quote && useQuotes) out.write(quoteChar);
         out.write(value);
         if (quote && useQuotes) out.write(quoteChar);
@@ -232,9 +252,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private void writeCellValue(Reader reader) throws IOException
     {
         try {
+            PrintWriter out = getWriter();
             if (useQuotes) out.write(quoteChar);
             // Copy reader
-            char buffer[] = new char[2000];
+            char[] buffer = new char[2000];
             for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
@@ -255,12 +276,12 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private void writeDelimiter()
     {
-        out.write(delimiter);
+        getWriter().write(delimiter);
     }
 
     private void writeRowLimit()
     {
-        out.write(rowDelimiter);
+        getWriter().write(rowDelimiter);
     }
 
 }

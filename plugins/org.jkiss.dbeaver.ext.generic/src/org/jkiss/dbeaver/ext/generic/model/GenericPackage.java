@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,8 +124,9 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return DBUtils.findObject(procedures, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return GenericProcedure.class;
     }

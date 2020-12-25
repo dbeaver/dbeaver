@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.debug.core;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,9 +26,9 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGResolver;
@@ -37,11 +36,14 @@ import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +81,7 @@ public class DebugUtils {
             return extracted;
         }
         for (Object object : scope) {
-            DBSObject adapted = Adapters.adapt(object, DBSObject.class, true);
+            DBSObject adapted = GeneralUtils.adapt(object, DBSObject.class, true);
             if (adapted != null) {
                 extracted.add(adapted);
             }
@@ -97,7 +99,7 @@ public class DebugUtils {
 
     public static DBSObject resolveDatabaseObject(DBPDataSourceContainer container, Map<String, Object> context,
             Object identifier, DBRProgressMonitor monitor) throws DBException {
-        DBGResolver finder = Adapters.adapt(container, DBGResolver.class);
+        DBGResolver finder = GeneralUtils.adapt(container, DBGResolver.class);
         if (finder == null) {
             return null;
         }
@@ -113,7 +115,7 @@ public class DebugUtils {
         if (dataSource == null) {
             return result;
         }
-        DBGResolver finder = Adapters.adapt(dataSource.getContainer(), DBGResolver.class);
+        DBGResolver finder = GeneralUtils.adapt(dataSource.getContainer(), DBGResolver.class);
         if (finder == null) {
             return result;
         }
@@ -136,7 +138,7 @@ public class DebugUtils {
             if (dbsObject == null) {
                 return null;
             }
-            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), dbsObject, false);
             if (node != null) {
                 return node.getNodeItemPath();
@@ -196,5 +198,17 @@ public class DebugUtils {
      */
     public static void fireTerminate(Object source) {
         fireEvent(new DebugEvent(source, DebugEvent.TERMINATE));
+    }
+
+    @NotNull
+    public static DBPDataSourceContainer getDataSourceContainer(ILaunchConfiguration configuration) throws CoreException {
+        String projectName = configuration.getAttribute(DBGConstants.ATTR_PROJECT_NAME, (String)null);
+        String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
+        DBPDataSourceContainer datasourceDescriptor = DBUtils.findDataSource(projectName, datasourceId);
+        if (datasourceDescriptor == null) {
+            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
+            throw new CoreException(newErrorStatus(message));
+        }
+        return datasourceDescriptor;
     }
 }

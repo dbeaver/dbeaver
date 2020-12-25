@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,24 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
-import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * Generic foreign manager
  */
-public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableForeignKey, GenericTable> {
+public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableForeignKey, GenericTableBase> {
 
     @Nullable
     @Override
@@ -43,49 +44,35 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTable table, Object from)
-    {
-        return new UITask<GenericTableForeignKey>() {
-            @Override
-            protected GenericTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    "Create foreign key",
-                    table,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final GenericTableForeignKey foreignKey = new GenericTableForeignKey(
-                    table,
-                    null,
-                    null,
-                    (GenericPrimaryKey) editPage.getUniqueConstraint(),
-                    editPage.getOnDeleteRule(),
-                    editPage.getOnUpdateRule(),
-                    DBSForeignKeyDeferability.NOT_DEFERRABLE,
-                    false);
-                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new GenericTableForeignKeyColumnTable(
-                            foreignKey,
-                            (GenericTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (GenericTableColumn) tableColumn.getRefColumn()));
-                }
-                return foreignKey;
-            }
-        }.execute();
+    public boolean canCreateObject(Object container) {
+        return container instanceof GenericTable &&
+            (!((GenericTable) container).isPersisted() ||
+            ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint());
     }
 
     @Override
-    protected boolean isLegacyForeignKeySyntax(GenericTable owner) {
+    public boolean canDeleteObject(GenericTableForeignKey object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
+    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options) {
+        GenericTableBase tableBase = (GenericTableBase)container;
+        GenericTableForeignKey foreignKey = new GenericTableForeignKey(
+            tableBase,
+            null,
+            null,
+            null,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyDeferability.NOT_DEFERRABLE,
+            false);
+        foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+        return foreignKey;
+    }
+
+    @Override
+    protected boolean isLegacyForeignKeySyntax(GenericTableBase owner) {
         return GenericUtils.isLegacySQLDialect(owner);
     }
 }

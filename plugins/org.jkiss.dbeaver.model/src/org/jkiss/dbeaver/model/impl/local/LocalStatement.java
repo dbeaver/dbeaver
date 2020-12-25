@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,50 +17,28 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * LocalResultSet
  */
-public class LocalStatement implements DBCStatement
+public class LocalStatement extends AbstractStatement<DBCSession>
 {
-    private final DBCSession session;
     private String text;
-    private DBCExecutionSource source;
 
     public LocalStatement(DBCSession session, String text) {
-        this.session = session;
+        super(session);
         this.text = text;
-    }
-
-    @Override
-    public DBCSession getSession() {
-        return session;
     }
 
     @Override
     public String getQueryString() {
         return text;
-    }
-
-    @Override
-    public DBCExecutionSource getStatementSource() {
-        return source;
-    }
-
-    @Override
-    public void setStatementSource(DBCExecutionSource source) {
-        this.source = source;
     }
 
     @Override
@@ -80,7 +58,7 @@ public class LocalStatement implements DBCStatement
 
     @Override
     public DBCResultSet openResultSet() throws DBCException {
-        return new LocalResultSet<>(session, this);
+        return new LocalResultSet<>(connection, this);
     }
 
     @Override
@@ -110,6 +88,11 @@ public class LocalStatement implements DBCStatement
 
     @Override
     public void setStatementTimeout(int timeout) throws DBCException {
+
+    }
+
+    @Override
+    public void setResultsFetchSize(int fetchSize) throws DBCException {
 
     }
 

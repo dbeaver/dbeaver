@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.action.StatusLineLayoutData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -35,6 +37,8 @@ public class StatusLineContributionItemEx extends ContributionItem {
     private CLabel label;
     private String text = "";
     private String toolTip = "";
+    private Runnable doubleClickListener;
+    private int maxWidth = 0;
 
     public StatusLineContributionItemEx(String id) {
         super(id);
@@ -51,11 +55,21 @@ public class StatusLineContributionItemEx extends ContributionItem {
         if (toolTip != null) {
             label.setToolTipText(toolTip);
         }
+        if (doubleClickListener != null) {
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    doubleClickListener.run();
+                }
+            });
+        }
 
         // compute the size of the label to get the width hint for the contribution
         Point preferredSize = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        int widthHint = preferredSize.x;
+        int widthHint = Math.max(maxWidth, preferredSize.x);
         int heightHint = preferredSize.y;
+
+        maxWidth = widthHint;
 
         StatusLineLayoutData data = new StatusLineLayoutData();
         data.widthHint = widthHint;
@@ -64,6 +78,10 @@ public class StatusLineContributionItemEx extends ContributionItem {
         data = new StatusLineLayoutData();
         data.heightHint = heightHint;
         sep.setLayoutData(data);
+    }
+
+    public void setDoubleClickListener(Runnable doubleClickListener) {
+        this.doubleClickListener = doubleClickListener;
     }
 
     public void setText(String text) {

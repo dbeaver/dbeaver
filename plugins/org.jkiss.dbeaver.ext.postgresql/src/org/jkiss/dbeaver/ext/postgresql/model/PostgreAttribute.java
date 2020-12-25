@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
@@ -45,11 +47,11 @@ import java.util.TreeSet;
  * PostgreAttribute
  */
 public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
-    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
-    @NotNull
+    @Nullable
     private PostgreDataType dataType;
     private String comment;
     private long charLength;
@@ -59,13 +61,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     private PostgreAttributeIdentity identity;
     private boolean isLocal;
-    private long objectId;
+    private long collationId;
     private Object acl;
+    private long typeId;
+    private int typeMod;
 
     protected PostgreAttribute(
         OWNER table)
     {
         super(table, false);
+        this.isLocal = true;
     }
 
     public PostgreAttribute(
@@ -77,25 +82,78 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         loadInfo(monitor, dbResult);
     }
 
+    public PostgreAttribute(
+        DBRProgressMonitor monitor,
+        OWNER table,
+        PostgreAttribute source)
+        throws DBException
+    {
+        super(table, source, true);
+
+        this.dataType = source.dataType;
+        this.comment = source.comment;
+        this.charLength = source.charLength;
+        this.arrayDim = source.arrayDim;
+        this.inheritorsCount = source.inheritorsCount;
+        this.description = source.description;
+        this.identity = source.identity;
+        this.isLocal = source.isLocal;
+        this.collationId = source.collationId;
+        this.acl = source.acl;
+        this.typeId = source.typeId;
+        this.typeMod = source.typeMod;
+    }
+
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return getTable().getDatabase();
     }
 
-    @Property(viewable = false, order = 26)
     @Override
     public long getObjectId() {
-        return objectId;
+        return getOrdinalPosition();
+    }
+
+    @Override
+    public void setMaxLength(long maxLength) {
+        super.setMaxLength(maxLength);
+        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
+            this.precision = (int)maxLength;
+        }
+    }
+
+    @Override
+    public void setPrecision(Integer precision) {
+        super.setPrecision(precision);
+        if (getDataKind() == DBPDataKind.STRING) {
+            this.maxLength = CommonUtils.toInt(precision);
+        }
     }
 
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {
+        PostgreDataSource dataSource = getDataSource();
+
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
-        objectId = JDBCUtils.safeGetLong(dbResult, "attr_id");
-        final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
+        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq";
+        //set serial types manually
+        if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
+                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
+            if (typeId == PostgreOid.INT4) {
+                typeId = PostgreOid.SERIAL;
+            } else if (typeId == PostgreOid.INT2) {
+                typeId = PostgreOid.SMALLSERIAL;
+            } else if (typeId == PostgreOid.INT8) {
+                typeId = PostgreOid.BIGSERIAL;
+            }
+        }
+        setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
@@ -103,7 +161,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         } else {
             // TODO: [#2824] Perhaps we should just use type names declared in pg_catalog
             // Replacing them with "convenient" types names migh cause some issues
-            if (false && dataType.getCanonicalName() != null && getDataSource().isServerVersionAtLeast(9, 6)) {
+            if (false && dataType.getCanonicalName() != null && dataSource.isServerVersionAtLeast(9, 6)) {
                 // se canonical type names. But only for PG >= 9.6 (because I can't test with earlier versions)
                 PostgreDataType canonicalType = getTable().getDatabase().getDataType(monitor, dataType.getCanonicalName());
                 if (canonicalType != null) {
@@ -113,8 +171,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
-        int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
+        typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();
         if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
@@ -137,14 +194,19 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
         this.isLocal =
-            !getDataSource().getServerType().supportsInheritance() ||
+            !dataSource.getServerType().supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
 
-        if (getDataSource().isServerVersionAtLeast(10, 0)) {
+        if (dataSource.isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
             if (!CommonUtils.isEmpty(identityStr)) {
                 identity = PostgreAttributeIdentity.getByCode(identityStr);
             }
+        }
+
+        // Collation
+        if (dataSource.getServerType().supportsCollations()) {
+            this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
@@ -170,19 +232,20 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return dataType;
     }
 
+    @Override
     public void setDataType(@NotNull PostgreDataType dataType) {
         this.dataType = dataType;
-        setTypeName(dataType.getTypeName());
-        setValueType(dataType.getTypeID());
+        this.typeName = dataType.getTypeName();
+        this.valueType = dataType.getTypeID();
     }
 
     @Override
     public DBPDataKind getDataKind() {
-        return dataType.getDataKind();
+        return dataType == null ? super.getDataKind() : dataType.getDataKind();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 21)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 25)
     public long getMaxLength()
     {
         return super.getMaxLength();
@@ -191,25 +254,25 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public String getTypeName()
     {
-        return dataType.getTypeName();
+        return dataType == null ? super.getTypeName() : dataType.getTypeName();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
     public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 27)
     public Integer getScale()
     {
         return super.getScale();
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, order = 24)
+    @Property(viewable = true, editable = true, order = 28)
     public PostgreAttributeIdentity getIdentity() {
         return identity;
     }
@@ -218,7 +281,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.identity = identity;
     }
 
-    @Property(order = 25)
+    @Property(order = 29)
     public boolean isLocal() {
         return isLocal;
     }
@@ -248,6 +311,22 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return super.getDefaultValue();
     }
 
+    @Property(viewable = true, order = 31, visibleIf = PostgreTableHasIntervalTypeValidator.class)
+    public String getIntervalTypeField() {
+        if (typeId == PostgreOid.INTERVAL) {
+            return PostgreUtils.getIntervalField(typeMod);
+        }
+        return null;
+    }
+
+    public long getTypeId() {
+        return typeId;
+    }
+
+    public int getTypeMod() {
+        return typeMod;
+    }
+
     @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
@@ -257,6 +336,19 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Property(viewable = true, editable = true, order = 30, listProvider = CollationListProvider.class)
+    public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
+        if (collationId <= 0) {
+            return null;
+        } else {
+            return getDatabase().getCollation(monitor, collationId);
+        }
+    }
+
+    public void setCollation(PostgreCollation collation) {
+        this.collationId = collation == null ? 0 : collation.getObjectId();
     }
 
     @Override
@@ -270,6 +362,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     public String getFullTypeName() {
+        if (dataType == null) {
+            return super.getFullTypeName();
+        }
         String fqtn = dataType.getTypeName();
         if (dataType.getDataKind() != DBPDataKind.CONTENT) {
             return DBUtils.getFullTypeName(this);
@@ -311,6 +406,31 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             } else {
                 throw new IllegalArgumentException("Invalid type value: " + value);
             }
+        }
+    }
+
+    public static class CollationListProvider implements IPropertyValueListProvider<PostgreAttribute> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(PostgreAttribute object) {
+            try {
+                return object.getDatabase().getCollations(new VoidProgressMonitor()).toArray();
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
+            }
+        }
+    }
+
+    public static class PostgreTableHasIntervalTypeValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+            return object.getTypeId() == PostgreOid.INTERVAL;
         }
     }
 }

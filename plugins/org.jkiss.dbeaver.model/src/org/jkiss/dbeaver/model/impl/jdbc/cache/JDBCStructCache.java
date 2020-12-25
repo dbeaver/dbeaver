@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.DBSStructCache;
-import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.cache.DBSStructCache;
+import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -87,7 +87,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load child objects")) {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
@@ -101,7 +101,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                     try {
                         while (dbResult.next()) {
                             if (monitor.isCanceled()) {
-                                break;
+                                return;
                             }
                             OBJECT object = forObject;
                             if (object == null) {
@@ -160,13 +160,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                                 // Now set empty column list for other tables
                                 for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
                                     if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
-                                        cacheChildren(tmpObject, new ArrayList<CHILD>());
+                                        cacheChildren(tmpObject, new ArrayList<>());
                                     }
                                 }
                                 this.childrenCached = true;
                             }
                         } else if (!objectMap.containsKey(forObject)) {
-                            cacheChildren(forObject, new ArrayList<CHILD>());
+                            cacheChildren(forObject, new ArrayList<>());
                         }
                     } finally {
                         dbResult.close();
@@ -208,7 +208,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 // This may happen only when invoked for newly created object (e.g. when we create new column
                 // in a new created table)
                 nestedCache = new SimpleObjectCache<>();
-                nestedCache.setCache(new ArrayList<CHILD>());
+                nestedCache.setCache(new ArrayList<>());
                 childrenCache.put(forObject, nestedCache);
             }
             return nestedCache;

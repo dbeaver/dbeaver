@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,13 @@ public abstract class JDBCTableForeignKey<
                     this.referencedKey = (PRIMARY_KEY) srcRefConstraint;
                 } else {
                     // Try to find table with the same name as referenced constraint owner
-                    DBSObject refTable = table.getContainer().getChild(monitor, refEntity.getName());
-                    if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
-                        List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer)referencedKey);
-                        this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                    DBSObject tableContainer = table.getContainer();
+                    if (tableContainer instanceof DBSObjectContainer) {
+                        DBSObject refTable = ((DBSObjectContainer)tableContainer).getChild(monitor, refEntity.getName());
+                        if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
+                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedKey);
+                            this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                        }
                     }
                 }
             }
@@ -97,6 +100,10 @@ public abstract class JDBCTableForeignKey<
     public TABLE getReferencedTable()
     {
         return referencedKey == null ? null : (TABLE) referencedKey.getParentObject();
+    }
+
+    public void setReferencedKey(PRIMARY_KEY referencedKey) {
+        this.referencedKey = referencedKey;
     }
 
     @Nullable

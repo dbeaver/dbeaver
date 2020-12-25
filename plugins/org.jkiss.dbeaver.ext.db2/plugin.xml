@@ -3,7 +3,7 @@
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2014 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
-              description="DB2 connector"
-              icon="icons/db2_icon.png"
-              id="db2"
-              label="DB2">
+                class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
+                description="DB2 connector"
+                icon="icons/db2_icon.png"
+                id="db2"
+                label="DB2"
+                dialect="db2_luw">
             <tree
                   icon="icons/db2_icon.png"
                   label="DB2 data source"
@@ -110,9 +111,9 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" virtual="true">
                             <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
-                               <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" />
+                               <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Sequence" label="%tree.sequences.node.name" icon="#folder_sequence" description="Sequences">
@@ -257,17 +258,9 @@
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="icons/storage_group.gif"/>
                     </folder>
                 </folder>
-                <folder type="" 
-                       label="%tree.administer.node.name" 
-                       icon="#folder_admin" 
-                       description="Maintenance/Settings"
-                       visibleIf="object.dataSource.authorisedForAdminister">
-                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication" 
-                            label="%tree.applications.node.name" 
-                            icon="#admin" 
-                            description="Server application manager" 
-                            editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-                            visibleIf="object.dataSource.authorisedForApplications"/>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
                             label="%tree.dbparameters.node.name" 
                             icon="icons/parameter_db.gif" 
@@ -281,8 +274,7 @@
                             description="Database Manager Configuration"
                             visibleIf="object.dataSource.authorisedForDBCFG">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="icons/parameter_db.gif" navigable="false" virtual="true"/>
-                    </folder>
-                </folder>
+                    </folder>               
                 
                 <!-- 
                    DF: Exclusion of the whole Security folder because:
@@ -291,7 +283,7 @@
                 -->
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" 
                         label="%tree.security.node.name" 
-                        icon="icons/folder_security.gif" 
+                        icon="#security"
                         description="Security management" 
                         visibleIf="object.dataSource.atLeastV9_5">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
@@ -364,11 +356,14 @@
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     useURL="false"
+                    icon="icons/db2_icon.png"
+                    iconBig="icons/db2_icon_big.png"
                     defaultPort="50000"
-                    webURL="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                    webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052038.html"
                     description="DB2 for Linux/Unix/Windows driver"
-                    promoted="true">
+                    promoted="1"
+                    categories="sql">
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
@@ -378,42 +373,14 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
-                        name="DB2 JCC drivers"
-                        instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
-<!--
-                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
-                        name="DB2 10.5 GA drivers"
-                        instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
--->
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.0.0]" bundle="!drivers.db2"/>
+
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
 
                 </driver>
             </drivers>
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
-                dataSource="db2"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
-                icon="icons/db2_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
-                dataSource="db2"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
-        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
@@ -442,46 +409,6 @@
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
     </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-    
-        <editor id="source.declaration" 
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.declaration.name"
-                description="%editor.source.declaration.description"
-                icon="#sql_text" 
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
-                type="folder"
-                embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
-        </editor>
-
-        <editor id="source.ddl"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.ddl.name"
-                description="%editor.source.ddl.description"
-                icon="#sql_text"
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
-                type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-        </editor>
-        <editor id="source.routine.ddl" 
-                class="org.jkiss.dbeaver.ext.db2.editors.DB2RoutineDDLEditor"
-                label="%editor.source.ddl.name" 
-                description="%editor.source.ddl.description" 
-                icon="#sql_text" 
-                position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
-                type="folder">
-           <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
-        </editor>
-
-    </extension>
     
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
        <provider
@@ -497,77 +424,37 @@
             <type name="DATE"/>
             <type name="DATETIME"/>
             <type name="TIMESTAMP"/>
-        </provider>
+            <!--<type kind="NUMERIC"/>-->
+
+       </provider>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.tools">
-        <tools>
-            <toolGroup id="org.jkiss.dbeaver.ext.db2.tools.maintenance" label="Statistics"/>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.DB2ToolShowError"
-                    description="Display SQL Error Message"
-                    id="org.jkiss.dbeaver.ext.db2.tools.DB2ToolShowError"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.showerror.name"
-                    singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2DataSource"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2RunstatsTool"
-                    description="Runstats"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2RunstatsTool"
-                    group="org.jkiss.dbeaver.ext.db2.tools.maintenance"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.table.runstats.name"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTableTool"
-                    description="Reorg table"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTableTool"
-                    group="org.jkiss.dbeaver.ext.db2.tools.maintenance"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorg.name"
-                    singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgIndexTool"
-                    description="Reorg index"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgIndexTool"
-                    group="org.jkiss.dbeaver.ext.db2.tools.maintenance"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgix.name"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgCheckTableTool"
-                    description="Reorg check table"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgCheckTableTool"
-                    group="org.jkiss.dbeaver.ext.db2.tools.maintenance"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgcheck.name"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2TruncateTool"
-                    description="Truncate table"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2Truncate"
-                    group="org.jkiss.dbeaver.ext.db2.tools.maintenance"
-                    label="%tool.org.jkiss.dbeaver.ext.db2.table.truncate.name"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-            </tool>
-        </tools>
-
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="DB2 LUW" description="IBM DB2 LUW SQL dialect." icon="icons/db2_icon.png">
+        </dialect>
     </extension>
 
-    <extension point="org.eclipse.ui.editors">
-        <editor
-            name="%editor.org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor.name"
-            icon="icons/compile.png"
-            class="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-            id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="db2" name="DB2" description="DB2 database tasks" icon="icons/db2_icon.png"/>
+        <category id="db2Tool" parent="db2" name="Tools" description="DB2 database tools" icon="icons/db2_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="db2ToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ToolTableTruncate">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
+        <task id="db2ToolTableReorgCheck" name="%tasks.reorgcheck.node.name" description="%tasks.reorgcheck.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgCheckTableTool">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
+        <task id="db2ToolTableReorgIndex" name="%tasks.reorgindex.node.name" description="%tasks.reorgindex.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgIndexTool">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
+        <task id="db2ToolTableRunstats" name="%tasks.runstats.node.name" description="%tasks.runstats.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2RunstatsTool">
+            <datasource id="db2"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
+        </task>
     </extension>
-    
+
 </plugin>

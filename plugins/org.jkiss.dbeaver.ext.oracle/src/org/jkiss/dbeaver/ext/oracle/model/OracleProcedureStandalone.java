@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -72,6 +72,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return valid;
     }
 
+    @NotNull
     @Override
     public OracleSchema getSchema()
     {
@@ -117,7 +118,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(

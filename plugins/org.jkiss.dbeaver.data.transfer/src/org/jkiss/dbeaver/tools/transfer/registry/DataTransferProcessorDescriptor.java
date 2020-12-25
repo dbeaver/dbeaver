@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,21 +37,24 @@ import java.util.List;
 /**
  * DataTransferProcessorDescriptor
  */
-public class DataTransferProcessorDescriptor extends AbstractDescriptor implements DBPRegistryDescriptor<IDataTransferProcessor>
-{
+public class DataTransferProcessorDescriptor extends AbstractDescriptor implements DBPRegistryDescriptor<IDataTransferProcessor> {
     private final DataTransferNodeDescriptor node;
     private final String id;
     private final ObjectType processorType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
     private final String description;
+    private final String contentType;
+    private final String appFileExtension;
+    private final String appName;
+    private final int order;
     @NotNull
     private final DBPImage icon;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final DBPPropertyDescriptor[] properties;
     private boolean isBinary;
+    private boolean isHTML;
 
-    DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
-    {
+    DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config) {
         super(config);
         this.node = node;
         this.id = config.getAttribute("id");
@@ -59,38 +63,53 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.description = config.getAttribute("description");
         this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
         this.isBinary = CommonUtils.getBoolean(config.getAttribute("binary"), false);
+        this.isHTML = CommonUtils.getBoolean(config.getAttribute("html"), false);
+        this.contentType = CommonUtils.toString(config.getAttribute("contentType"), MimeTypes.OCTET_STREAM);
+        this.appFileExtension = config.getAttribute("appFileExtension");
+        this.appName = config.getAttribute("appName");
+        this.order = CommonUtils.toInt(config.getAttribute("order"));
 
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
         }
 
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
-        }
+        this.properties = PropertyDescriptor.extractPropertyGroups(config);
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
+    public String getContentType() {
+        return contentType;
+    }
+
+    public String getAppFileExtension() {
+        return appFileExtension;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
     @NotNull
-    public DBPImage getIcon()
-    {
+    public DBPImage getIcon() {
         return icon;
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
+    public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 
@@ -103,8 +122,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return null;
     }
 
-    boolean appliesToType(Class objectType)
-    {
+    boolean appliesToType(Class objectType) {
         if (sourceTypes.isEmpty()) {
             return true;
         }
@@ -128,8 +146,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return false;
     }
 
-    public IDataTransferProcessor getInstance()
-    {
+    public IDataTransferProcessor getInstance() {
         try {
             processorType.checkObjectClass(IDataTransferProcessor.class);
             Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
@@ -139,8 +156,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         }
     }
 
-    public DataTransferNodeDescriptor getNode()
-    {
+    public DataTransferNodeDescriptor getNode() {
         return node;
     }
 
@@ -148,4 +164,16 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return isBinary;
     }
 
+    public boolean isHTMLFormat() {
+        return isHTML;
+    }
+
+    public String getFullId() {
+        return node.getId() + ":" + getId();
+    }
+
+    @Override
+    public String toString() {
+        return getFullId();
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.text.SimpleDateFormat;
@@ -57,14 +58,14 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     }
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
 
         EpochUnit unit = EpochUnit.milliseconds;
         if (options.containsKey(PROP_UNIT)) {
             try {
-                unit = EpochUnit.valueOf(options.get(PROP_UNIT));
+                unit = EpochUnit.valueOf(CommonUtils.toString(options.get(PROP_UNIT)));
             } catch (IllegalArgumentException e) {
                 log.error("Bad unit option", e);
             }
@@ -98,7 +99,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (object instanceof String) {
                 try {
                     switch (unit) {
@@ -113,7 +114,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
                     log.debug("Error parsing time value", e);
                 }
             }
-            return super.getValueFromObject(session, type, object, copy);
+            return super.getValueFromObject(session, type, object, copy, validateValue);
         }
     }
 }

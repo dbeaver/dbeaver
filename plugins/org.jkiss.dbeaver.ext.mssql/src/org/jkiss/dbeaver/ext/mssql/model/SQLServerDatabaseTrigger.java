@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -66,7 +67,7 @@ public class SQLServerDatabaseTrigger extends SQLServerTriggerBase<SQLServerData
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getTriggerCache().refreshObject(monitor, getDatabase(), this);
     }
 

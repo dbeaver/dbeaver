@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -51,17 +52,20 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
     public static final String URL_TYPE_NAME = "URL.Preview";
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(
             new TransformerPresentationAttribute(attribute, URL_TYPE_NAME, -1, DBPDataKind.STRING));
 
         String pattern = null;
         if (options.containsKey(PROP_PATTERN)) {
             try {
-                pattern = options.get(PROP_PATTERN);
+                pattern = CommonUtils.toString(options.get(PROP_PATTERN));
             } catch (IllegalArgumentException e) {
                 log.error("Bad unit option", e);
             }
+        }
+        if (pattern == null) {
+            pattern = "http://${value}";
         }
         attribute.setTransformHandler(new URLValueHandler(attribute.getValueHandler(), pattern));
     }
@@ -88,16 +92,16 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
 
         @Nullable
         @Override
-        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
             if (pattern == null) {
-                return super.getValueFromObject(session, type, object, copy);
+                return super.getValueFromObject(session, type, object, copy, validateValue);
             } else if (DBUtils.isNullValue(object)) {
                 return null;
             } else {
                 try {
                     Object[] parsedValues = messageFormat.parse(object.toString());
                     if (parsedValues.length > 0) {
-                        return super.getValueFromObject(session, type, parsedValues[0], copy);
+                        return super.getValueFromObject(session, type, parsedValues[0], copy, validateValue);
                     }
                     return object;
                 } catch (ParseException e) {

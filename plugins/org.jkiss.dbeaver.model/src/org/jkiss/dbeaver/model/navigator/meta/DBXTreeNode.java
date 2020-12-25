@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,20 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.jexl2.JexlException;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.JexlExpression;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,6 +45,7 @@ public abstract class DBXTreeNode
 
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;
+    private final IConfigurationElement config;
     private final String id;
     private List<DBXTreeNode> children;
     private DBPImage defaultIcon;
@@ -50,18 +55,19 @@ public abstract class DBXTreeNode
     private final boolean virtual;
     private boolean standaloneNode;
     //private final boolean embeddable;
-    private Expression visibleIf;
+    private JexlExpression visibleIf;
     private DBXTreeNode recursiveLink;
     private List<DBXTreeNodeHandler> handlers = null;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
     {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
             parent.addChild(this);
         }
-        this.id = id;
+        this.config = config;
+        this.id = config == null ? null : config.getAttribute("id");
         this.navigable = navigable;
         this.inline = inline;
         this.virtual = virtual;
@@ -90,6 +96,7 @@ public abstract class DBXTreeNode
         if (parent != null) {
             parent.addChild(this);
         }
+        this.config = node.config;
         this.id = node.id;
         this.navigable = node.navigable;
         this.inline = node.inline;
@@ -124,14 +131,24 @@ public abstract class DBXTreeNode
         }
     }
 
+    protected IConfigurationElement getConfig() {
+        return config;
+    }
+
     public AbstractDescriptor getSource()
     {
         return source;
     }
 
-    public abstract String getNodeType(DBPDataSource dataSource);
+    /**
+     * Human readable node type
+     */
+    public abstract String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
-    public abstract String getChildrenType(DBPDataSource dataSource);
+    /**
+     * Human readable child nodes type
+     */
+    public abstract String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     public boolean isNavigable()
     {
@@ -244,8 +261,10 @@ public abstract class DBXTreeNode
         return recursiveLink;
     }
 
-    public DBPImage getDefaultIcon()
-    {
+    public DBPImage getDefaultIcon() {
+        if (defaultIcon == null && this instanceof DBXTreeFolder) {
+            return DBIcon.TREE_FOLDER;
+        }
         return defaultIcon;
     }
 
@@ -283,14 +302,14 @@ public abstract class DBXTreeNode
                     }
                 } catch (JexlException e) {
                     // do nothing
-                    log.debug("Error evaluating expression '" + icon.getExprString() + "'", e);
+                    log.debug("Error evaluating expression '" + icon.getExprString() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
                 }
             }
         }
         return getDefaultIcon();
     }
 
-    public Expression getVisibleIf()
+    public JexlExpression getVisibleIf()
     {
         return visibleIf;
     }
@@ -344,6 +363,21 @@ public abstract class DBXTreeNode
                     && ((DBNDatabaseNode) node).getValueObject() != null;
             }
         };
+    }
+
+    public void moveChildAfter(DBXTreeNode child, DBXTreeItem afterItem) {
+        int afterIndex = -1;
+        for (int i = 0; i < children.size(); i++) {
+            DBXTreeNode n = children.get(i);
+            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
+                afterIndex = i;
+                break;
+            }
+        }
+        if (afterIndex >= 0) {
+            children.remove(child);
+            children.add(afterIndex + 1, child);
+        }
     }
 
 }

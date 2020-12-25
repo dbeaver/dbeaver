@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -92,6 +93,9 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
+        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+            return DBUtils.getFullQualifiedName(getDataSource(), schema, this);
+        }
         return DBUtils.getFullQualifiedName(getDataSource(),
             schema.getDatabase(),
             schema,
@@ -101,13 +105,17 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
     @Property(viewable = true, order = 20)
     @Override
     public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        String schemaName;
+        String objectName;
+
         int divPos = targetObjectName.indexOf("].[");
         if (divPos == -1) {
-            log.debug("Bad target object name '" + targetObjectName + "' for synonym '" + getName() + "'");
-            return null;
+            schemaName = schema.getName();
+            objectName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName);
+        } else {
+            schemaName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(0, divPos + 1));
+            objectName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(divPos + 2));
         }
-        String schemaName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(0, divPos + 1));
-        String objectName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(divPos + 2));
         SQLServerSchema targetSchema = schema.getDatabase().getSchema(monitor, schemaName);
         if (targetSchema == null) {
             log.debug("Schema '" + schemaName + "' not found for synonym '" + getName() + "'");

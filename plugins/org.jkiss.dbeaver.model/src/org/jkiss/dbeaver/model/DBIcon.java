@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_TABLE_ALIAS = new DBIcon("table_alias", "tree/table_alias.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_LINK = new DBIcon("table_link", "tree/table_link.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_INDEX = new DBIcon("table_index", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TABLE_SYSTEM = new DBIcon("table_system", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TABLE_EXTERNAL = new DBIcon("table_external", "tree/table_external.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_VIEW = new DBIcon("view", "tree/view.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FUNCTION = new DBIcon("function", "tree/function.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PROCEDURE = new DBIcon("procedure", "tree/procedure.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -71,6 +73,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_SESSIONS = new DBIcon("sessions", "tree/sessions.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_LOCKS = new DBIcon("locks", "tree/locks.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PACKAGE = new DBIcon("package", "tree/package.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TASK = new DBIcon("task", "tree/task.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATA_TYPE = new DBIcon("data_type", "tree/data_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SEQUENCE = new DBIcon("sequence", "tree/sequence.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SYNONYM = new DBIcon("synonym", "tree/synonym.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -85,7 +88,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_CLASS = new DBIcon("class", "tree/class.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_ASSOCIATION = new DBIcon("association", "tree/association.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SERVER = new DBIcon("server", "tree/server.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_SERVERS = new DBIcon("servers", "tree/servers.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_SERVERS = new DBIcon("folder_server", "tree/servers.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_RECYCLE_BIN = new DBIcon("recycle_bin", "tree/recycle_bin.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_EVENT = new DBIcon("event", "tree/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -135,6 +138,13 @@ public class DBIcon implements DBPImage
     public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon JAR = new DBIcon("jar", "misc/jar.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private static Map<String, DBPImage> iconMap = new HashMap<>();
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_READ_PSEUDO           = 1 << 1;
     long FLAG_USE_SELECTED_ROWS     = 1 << 2;
     long FLAG_USE_SELECTED_COLUMNS  = 1 << 3;
+    long FLAG_FETCH_SEGMENT         = 1 << 4;
+    long FLAG_REFRESH               = 1 << 8;
 
     @Nullable
     DBPDataSource getDataSource();
@@ -63,6 +65,7 @@ public interface DBSDataContainer extends DBSObject {
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
      * @param flags read flags. See FLAG_ constants
+     * @param fetchSize
      * @return number of fetched rows
      * @throws DBCException on any error
      */
@@ -74,7 +77,8 @@ public interface DBSDataContainer extends DBSObject {
         @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
-        long flags)
+        long flags,
+        int fetchSize)
         throws DBCException;
 
     /**

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,19 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -117,7 +118,7 @@ public class RuntimeUtils {
         if (!dumpBinary.exists()) {
             dumpBinary = new File(home.getPath(), binName);
             if (!dumpBinary.exists()) {
-                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
+                throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "' (" + home.getPath().getAbsolutePath() + ")");
             }
         }
         return dumpBinary;
@@ -193,21 +194,23 @@ public class RuntimeUtils {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
         Job monitorJob = new AbstractJob(taskName) {
             {
-                if (hidden) {
-                    setSystem(true);
-                    setUser(false);
-                }
+                setSystem(hidden);
+                setUser(!hidden);
             }
 
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask(getName(), 1);
                 try {
+                    monitor.subTask("Execute task");
                     monitoringTask.run(monitor);
                 } catch (InvocationTargetException e) {
                     log.error(getName() + " - error", e.getTargetException());
                     return Status.OK_STATUS;
                 } catch (InterruptedException e) {
                     // do nothing
+                } finally {
+                    monitor.done();
                 }
                 return Status.OK_STATUS;
             }
@@ -222,7 +225,9 @@ public class RuntimeUtils {
                 break;
             }
             try {
-                Thread.sleep(50);
+                if (!DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                    Thread.sleep(50);
+                }
             } catch (InterruptedException e) {
                 log.debug("Task '" + taskName + "' was interrupted");
                 break;
@@ -230,6 +235,46 @@ public class RuntimeUtils {
         }
 
         return monitoringTask.finished;
+    }
+
+    public static String executeProcess(String binPath, String ... args) throws DBException {
+        try {
+            String[] cmdBin = {binPath};
+            String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
+            Process p = Runtime.getRuntime().exec(cmd);
+            try {
+                StringBuilder out = new StringBuilder();
+                readStringToBuffer(p.getInputStream(), out);
+
+                if (out.length() == 0) {
+                    StringBuilder err = new StringBuilder();
+                    readStringToBuffer(p.getErrorStream(), err);
+                    return err.toString();
+                }
+
+                return out.length() == 0 ? null: out.toString();
+            } finally {
+                p.destroy();
+            }
+        }
+        catch (Exception ex) {
+            throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
+            for (;;) {
+                String line = input.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (out.length() > 0) {
+                    out.append("\n");
+                }
+                out.append(line);
+            }
+        }
     }
 
     public static boolean isPlatformMacOS() {
@@ -263,7 +308,6 @@ public class RuntimeUtils {
             try {
                 task.run(monitor);
             } finally {
-                monitor.done();
                 finished = true;
             }
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,24 @@
  */
 package org.jkiss.dbeaver.runtime.net;
 
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -39,6 +44,18 @@ import java.net.PasswordAuthentication;
 public class GlobalProxyAuthenticator extends Authenticator {
 
     private SecuredPasswordEncrypter encrypter;
+
+    private final IProxyService proxyService;
+
+    public GlobalProxyAuthenticator() {
+        BundleContext bundleContext = ModelActivator.getInstance().getBundle().getBundleContext();
+        ServiceReference<IProxyService> proxyServiceRef = bundleContext.getServiceReference(IProxyService.class);
+        if (proxyServiceRef != null) {
+            proxyService = bundleContext.getService(proxyServiceRef);
+        } else {
+            proxyService = null;
+        }
+    }
 
     @Nullable
     @Override
@@ -53,7 +70,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
                 String userName = store.getString(ModelPreferences.UI_PROXY_USER);
                 String userPassword = decryptPassword(store.getString(ModelPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                    DBAAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
+                    DBPAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
                     if (authInfo != null) {
                         userName = authInfo.getUserName();
                         userPassword = authInfo.getUserPassword();
@@ -76,12 +93,12 @@ public class GlobalProxyAuthenticator extends Authenticator {
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
                 DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
                 if (activeContext != null) {
-                    for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getDeclaredHandlers()) {
+                    for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getHandlers()) {
                         if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
                             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                                DBAAuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
+                                DBPAuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
                                 if (authInfo != null) {
                                     userName = authInfo.getUserName();
                                     userPassword = authInfo.getUserPassword();
@@ -103,6 +120,19 @@ public class GlobalProxyAuthenticator extends Authenticator {
             }
         }
 
+        if (proxyService != null) {
+            // Try to use Eclispe proxy config for global proxies
+            IProxyData[] proxyData = proxyService.getProxyData();
+            if (proxyData != null) {
+                for (IProxyData pd : proxyData) {
+                    if (getRequestingProtocol().startsWith(pd.getType()) && pd.getUserId() != null && pd.getHost() != null && pd.getPort() == this.getRequestingPort() && pd.getHost().equalsIgnoreCase(getRequestingHost())) {
+                        return new PasswordAuthentication(pd.getUserId(), pd.getPassword().toCharArray());
+                    }
+                }
+
+                return null;
+            }
+        }
         return null;
     }
 
@@ -131,8 +161,8 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
     }
 
-    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
-        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false, true);
+    private DBPAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
+        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
     }
 
 }

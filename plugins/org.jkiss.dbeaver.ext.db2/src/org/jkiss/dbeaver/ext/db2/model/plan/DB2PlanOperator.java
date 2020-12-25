@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
@@ -34,7 +35,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanOperator extends DB2PlanNode {
+public class DB2PlanOperator extends DB2PlanNode implements DBCPlanCostNode {
 
     private static final String SEL_BASE_SELECT;
 
@@ -109,6 +110,16 @@ public class DB2PlanOperator extends DB2PlanNode {
     public String getNodeName()
     {
         return nodename;
+    }
+
+    @Override
+    public String getNodeType() {
+        return CommonUtils.toString(operatorType);
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return null;
     }
 
     // --------
@@ -207,5 +218,25 @@ public class DB2PlanOperator extends DB2PlanNode {
         sqlStmt.setInt(7, db2Statement.getStmtNo());
         sqlStmt.setInt(8, db2Statement.getSectNo());
         sqlStmt.setInt(9, operatorId);
+    }
+
+    @Override
+    public Number getNodeCost() {
+        return totalCost;
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        return null;
     }
 }

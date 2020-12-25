@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlGenerator" name="%extension-point.org.jkiss.dbeaver.sqlGenerator.name" schema="schema/org.jkiss.dbeaver.sqlGenerator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlDialect.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlInsertMethod" name="%extension-point.org.jkiss.dbeaver.sqlInsertMethod" schema="schema/org.jkiss.dbeaver.sqlInsertMethod.exsd"/>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
+    </extension>
+
+    <!-- SQL Formatters -->
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" label="%sql.formatter.default.name" description="%sql.formatter.default.tip"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="%sql.formatter.compact.name" description="%sql.formatter.compact.tip"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
+    </extension>
+
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="tableSelect" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSelect" label="SELECT" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInsert" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInsert" label="INSERT" description="INSERT into table" order="2">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableUpdate" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorUpdate" label="UPDATE" description="UPDATE table" order="3">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableDelete" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDelete" label="DELETE" description="DELETE from table" order="4">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableMerge" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorMerge" label="MERGE" description="MERGE table" order="5">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorJoin" label="JOIN" description="JOIN tables" order="6" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+        </generator>
+        <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
+            <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
+        </generator>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="set" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
+        <command id="unset" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandUnset" label="Unset" description="Removes variable/parameter"/>
+        <command id="echo" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
+        <command id="export" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="basic" class="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="SQL" description="Base SQL dialect for all other dialects." icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png" abstract="true">
+            <property name="keywords" value=""/>
+            <property name="ddlKeywords" value="CREATE,ALTER,DROP"/>
+            <property name="dmlKeywords" value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
+            <property name="execKeywords" value=""/>
+            <property name="types" value=""/>
+            <property name="functions" value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
+</plugin>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Spanner -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.spanner.SpannerDataSourceProvider"
+                description="%datasource.spanner.description"
+                id="google_spanner"
+                parent="generic"
+                label="Google Cloud Spanner"
+                icon="icons/spanner_icon.png"
+                dialect="spanner">
+            <drivers managable="true">
+
+                <driver
+                        id="spanner_jdbc_official"
+                        label="Google Spanner"
+                        icon="icons/spanner_icon.png"
+                        iconBig="icons/spanner_icon_big.png"
+                        class="com.google.cloud.spanner.jdbc.JdbcDriver"
+                        sampleURL="jdbc:cloudspanner:/projects/my-project/instances/my-instance/databases/my-database"
+                        defaultPort=""
+                        description="Google Cloud Spanner Open Source JDBC Driver"
+                        webURL="https://cloud.google.com/spanner/docs/use-oss-jdbc"
+                        categories="sql,bigdata,cloud">
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE"/>
+                </driver>
+                
+                <driver
+                        id="spanner_jdbc"
+                        label="Google Spanner (Community)"
+                        icon="icons/spanner_icon.png"
+                        iconBig="icons/spanner_icon_big.png"
+                        class="nl.topicus.jdbc.CloudSpannerDriver"
+                        sampleURL="jdbc:cloudspanner://localhost"
+                        defaultPort=""
+                        description="Google Spanner JDBC community (Topicus) driver"
+                        webURL="https://github.com/olavloite/spanner-jdbc"
+                        categories="sql,bigdata,cloud">
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <file type="jar" path="maven:/nl.topicus:spanner-jdbc:RELEASE"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="spanner" parent="generic" class="org.jkiss.dbeaver.ext.spanner.model.SpannerSQLDialect" label="Spanner" description="Google Spanner SQL dialect." icon="icons/spanner_icon.png">
+        </dialect>
+    </extension>
+
+
+
+</plugin>

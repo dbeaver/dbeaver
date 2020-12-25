@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.text.Format;
 
 /**
  * Property
@@ -63,11 +64,15 @@ public @interface Property
      */
     boolean editable() default false;
 
+    String editableExpr() default "";
+
     /**
      * Updatable flag. If set to true then property can be changed on any object
      * @return updatable flag
      */
     boolean updatable() default false;
+
+    String updatableExpr() default "";
 
     /**
      * Viewable flag. Viewable properties are displayed in lists.
@@ -86,6 +91,11 @@ public @interface Property
     boolean multiline() default false;
 
     /**
+     * Specific properties ae rendered separate from others
+     */
+    boolean specific() default false;
+
+    /**
      * Optional property. Won't be rendered at all if value is null.
      */
     boolean optional() default false;
@@ -97,11 +107,21 @@ public @interface Property
     boolean linkPossible() default false;
 
     /**
+     * Hyperlink property
+     */
+    boolean href() default false;
+
+    /**
      * Makes sense only for lazy properties. If set to true then this property value can be read
      * in non-lazy way with null progress monitor. In this case it will return "preview" value.
      * @return preview support flag
      */
     boolean supportsPreview() default false;
+
+    /**
+     * Property holds password. Must be secured in UI.
+     */
+    boolean password() default false;
 
     int order() default Integer.MAX_VALUE;
 
@@ -112,10 +132,16 @@ public @interface Property
      */
     String format() default ""; //NON-NLS-1
 
+    Class<? extends Format> formatter() default Format.class; //NON-NLS-1
+
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;
 
     Class<? extends IPropertyValueTransformer> valueRenderer() default IPropertyValueTransformer.class;
+
+    Class<? extends IPropertyValueValidator> valueValidator() default IPropertyValueValidator.class;
+
+    Class<? extends IPropertyValueValidator> visibleIf() default IPropertyValueValidator.class;
 
 }

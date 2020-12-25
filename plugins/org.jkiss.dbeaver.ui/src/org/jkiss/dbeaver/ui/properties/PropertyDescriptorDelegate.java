@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +51,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
                 DBPImage image = DBValueFormatting.getObjectImage((DBPObject) element, false);
 /*
                 if (image == null && element instanceof DBSObject) {
-                    final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBSObject) element);
+                    final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode((DBSObject) element);
                     if (node != null) {
                         image = node.getNodeIcon();
                     }
@@ -79,7 +78,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
         if (!delegate.isEditable(propSource.getEditableValue())) {
             return null;
         }
-        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), delegate, SWT.NONE);
+        return PropertyEditorUtils.createCellEditor(parent, propSource.getEditableValue(), delegate, SWT.NONE);
     }
 
     @Override

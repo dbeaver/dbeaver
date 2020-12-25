@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -29,17 +31,24 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /**
- * JDBC strict string value handler.
+ * PostgreDateTimeValueHandler.
  */
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
 
-    public PostgreDateTimeValueHandler(DBDDataFormatterProfile formatterProfile) {
-        super(formatterProfile);
+    public PostgreDateTimeValueHandler(DBDFormatSettings formatSettings) {
+        super(formatSettings);
     }
 
     @Override
-    public void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject type, int index, Object value) throws DBCException {
+    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
+        Object value = super.fetchValueObject(session, resultSet, type, index);
+        //if (value instanceof )
+        return value;
+    }
+
+    @Override
+    public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
         if (value instanceof String) {
             try {
                 ((JDBCPreparedStatement)statement).setObject(index + 1, value.toString(), Types.OTHER);
@@ -51,4 +60,5 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         super.bindValueObject(session, statement, type, index, value);
     }
+
 }

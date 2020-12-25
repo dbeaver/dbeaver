@@ -27,7 +27,7 @@ Command line parameters
 
   -data <path>
     Store all projects/configuration in folder <path>. By default DBeaver
-	stores all its data in user's home ".dbeaver4" folder.
+	stores all its data in user's home "DBeaverData" folder.
 	<path> can be an absolute or relative directory name.
 	If you want to use DBeaver as redistributable program start it
 	with arguments like "dbeaver -data workspace".
@@ -56,7 +56,6 @@ Web
 ==========
   Main web site: https://dbeaver.io
   Source code: https://github.com/dbeaver/dbeaver
+  Issue tracker: https://github.com/dbeaver/dbeaver/issues
 
-Contacts
-==============
-  dbeaver@jkiss.org       - Technical support, feature suggestions and any other questions.
+  Please use out issue tracker for technical support, feature suggestions and any other questions

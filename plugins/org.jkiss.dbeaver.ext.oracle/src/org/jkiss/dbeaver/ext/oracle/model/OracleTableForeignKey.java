@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -48,7 +48,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         @NotNull OracleTableBase oracleTable,
         @Nullable String name,
         @Nullable OracleObjectStatus status,
-        @NotNull OracleTableConstraint referencedKey,
+        @Nullable OracleTableConstraint referencedKey,
         @NotNull DBSForeignKeyModifyRule deleteRule)
     {
         super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
@@ -90,7 +90,22 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         }
 
         String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
-        this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSForeignKeyModifyRule.CASCADE : DBSForeignKeyModifyRule.NO_ACTION;
+        if (CommonUtils.isEmpty(deleteRuleName)) {
+            this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+        } else {
+            switch (deleteRuleName) {
+                case "CASCADE":
+                    this.deleteRule = DBSForeignKeyModifyRule.CASCADE;
+                    break;
+                case "SET NULL":
+                    this.deleteRule = DBSForeignKeyModifyRule.SET_NULL;
+                    break;
+                case "NO ACTION":
+                default:
+                    this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+                    break;
+            }
+        }
     }
 
     @Property(viewable = true, order = 3)
@@ -107,12 +122,20 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return referencedKey;
     }
 
+    public void setReferencedConstraint(OracleTableConstraint referencedKey) {
+        this.referencedKey = referencedKey;
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSForeignKeyModifyRule getDeleteRule()
     {
         return deleteRule;
+    }
+
+    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+        this.deleteRule = deleteRule;
     }
 
     // Update rule is not supported by Oracle

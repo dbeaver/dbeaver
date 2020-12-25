@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.format.sqlworkbenchj;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class SQLWorkbenchJFormatter implements SQLFormatter {
 
             return SQLWorkbenchJManager.getInstance().format(configuration.getDataSource(), source);
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Workbench format error", "Error formatting with SQL Workbench/J", e);
+            DBWorkbench.getPlatformUI().showError("Workbench format error", "Error formatting with SQL Workbench/J", e);
             return source;
         }
     }

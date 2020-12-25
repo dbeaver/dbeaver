@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.lock;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.ResultSet;
 
 public class OracleLockItem implements DBAServerLockItem{
 

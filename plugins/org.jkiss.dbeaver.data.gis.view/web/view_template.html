@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html style="height: 100%;">
+
+<head>
+    <title>Quick Start - Leaflet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="inc/leaflet.css" />
+    <script src="inc/leaflet.js"></script>
+    <script src="inc/wkx.min.js"></script>
+
+    <style>
+        .leaflet-touch .leaflet-control-layers-toggle {
+            background-image: url(inc/layers.png);
+            width: 30px;
+            height: 30px;
+	    }
+    </style>
+</head>
+
+<body style="height: 100%; margin: 0;">
+
+    <div id="gisMap" style="width: 100%; height: 100%;"></div>
+    <script>
+        var sourceValues = [ ${geomValues} ];
+        var sourceTips = [ ${geomTipValues} ];
+        var geomSRID = ${geomSRID};
+
+        var wkx = require('wkx');
+        var geoMap = L.map('gisMap', {
+		    crs: L.CRS.${geomCRS}
+	    });
+
+        if (${showMap}) {
+            let baseLayersObj = {
+                'Street': L.tileLayer(${defaultTiles}),
+                'Topography': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  {
+                    maxZoom: 17,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>,' +
+                      ' &copy; <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a>,' +
+                      ' &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a>',
+                  }),
+            };
+            L.control.layers(baseLayersObj).addTo(geoMap);
+
+            L.tileLayer(${defaultTiles}).addTo(geoMap);
+        }
+
+
+        const geojsonMarkerOptions = {
+            radius: 4,
+            weight: 3,
+        };
+        const popupOption = {
+            closeButton: true,
+            minWidth: 260,
+            maxWidth: 800,
+            maxHeight: 500,
+        };
+
+        var lastClickCoordinates = "";
+        function onEachFeature(feature, layer) {
+            var tip = feature.tip;
+            if (tip != null) {
+                var tipText = "";
+                if (tip.id != null) {
+                    var color = tip.color;
+                    if (color == null) color = "black";
+                    tipText += "<h3 style='color:" + color + "'>" + tip.id + "</h3>";
+                }
+                tipText += "<table>";
+                var objInfo = tip.info;
+                if (objInfo == null) objInfo = tip;
+                if (objInfo != null) {
+                    for (var propName in objInfo) {
+                        tipText += "<tr><td>" + propName + "</td><td>" + objInfo[propName] + "</td></tr>";
+                    }
+                }
+                tipText += "</table>";
+                layer.bindPopup(tipText, popupOption);
+            }
+        }
+
+        function polyStyle(feature) {
+            var objColor = 'blue';
+            if (feature.geometry.tip && feature.geometry.tip.color) objColor = feature.geometry.tip.color;
+            return {
+                weight: 2,
+                color: objColor,
+            };
+        }
+
+        var vectorLayer = L.geoJSON([], {
+            style: polyStyle,
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, geojsonMarkerOptions);
+            },
+            onEachFeature: onEachFeature
+        });
+        vectorLayer.addTo(geoMap);
+
+        if (${showMap}) {
+            // Make streetview active
+            var layerControlElement = document.getElementsByClassName('leaflet-control-layers')[0];
+            layerControlElement.getElementsByTagName('input')[0].click();
+        }
+
+        for (i = 0; i < sourceValues.length; i++) {
+            var geomValue = sourceValues[i];
+
+            var polyTest = wkx.Geometry.parse(geomValue);
+            var geoJSON = polyTest.toGeoJSON();
+            geoJSON.tip = sourceTips[i];
+            vectorLayer.addData(geoJSON);
+        }
+
+        var bounds = vectorLayer.getBounds();
+
+        if ('${geomCRS}' == 'Simple') {
+            let maxDimension = Math.max(bounds.getNorth() - bounds.getSouth(), bounds.getEast() - bounds.getWest());
+            geoMap.setMinZoom(-5); // Small enough?
+            if (maxDimension > 0) {
+                geoMap.fitBounds(bounds);
+            } else {
+                geoMap.setView(bounds.getCenter(), geoMap.getZoom());
+            }
+        } else {
+            geoMap.fitBounds(bounds);
+        }
+
+        function showTools(toolsVisible) {
+            var elementsVisibility = toolsVisible ? 'visible' : 'hidden';
+            document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility=elementsVisibility;
+            if (${showMap}) {
+                document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
+            }
+            document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
+        }
+
+        showTools(${showTools});
+    </script>
+</body>
+
+</html>

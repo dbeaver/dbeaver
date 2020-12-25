@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,11 +35,11 @@ public class SnowflakeDataSource extends GenericDataSource {
     public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new SnowflakeSQLDialect());
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) {
         Map<String, String> props = new HashMap<>();
         String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
         if (!CommonUtils.isEmpty(authProp)) {
@@ -47,5 +47,21 @@ public class SnowflakeDataSource extends GenericDataSource {
         }
 
         return props;
+    }
+
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
+
+    @Override
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        super.initializeContextState(monitor, context, initFrom);
+        ((SnowflakeExecutionContext) context).useDefaultSchema(monitor);
+    }
+
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new SnowflakeExecutionContext(instance, type);
     }
 }

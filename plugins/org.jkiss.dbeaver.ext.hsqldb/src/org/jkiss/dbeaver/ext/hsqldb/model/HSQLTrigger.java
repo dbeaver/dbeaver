@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ext.hsqldb.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 /**
  * HSQLTrigger
@@ -35,14 +35,14 @@ public class HSQLTrigger extends GenericTrigger {
 
     private String statement;
 
-    HSQLTrigger(GenericStructContainer container, GenericTable table, String name, JDBCResultSet dbResult) {
+    HSQLTrigger(GenericStructContainer container, GenericTableBase table, String name, JDBCResultSet dbResult) {
         super(container, table, name, null);
         manipulation = JDBCUtils.safeGetString(dbResult, "EVENT_MANIPULATION");
         orientation = JDBCUtils.safeGetString(dbResult, "ACTION_ORIENTATION");
         timing = JDBCUtils.safeGetString(dbResult, "ACTION_TIMING");
         statement = JDBCUtils.safeGetString(dbResult, "ACTION_STATEMENT");
         if (statement != null) {
-            statement = SQLUtils.formatSQL(getDataSource(), statement);
+            statement = SQLFormatUtils.formatSQL(getDataSource(), statement);
         }
     }
 

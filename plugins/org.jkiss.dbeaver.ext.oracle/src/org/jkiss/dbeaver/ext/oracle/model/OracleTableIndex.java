@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -31,18 +33,21 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OracleTableIndex
  */
-public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy
+public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy, DBPScriptObject
 {
 
     private Object tablespace;
     private boolean nonUnique;
     private List<OracleTableIndexColumn> columns;
+    private String indexDDL;
 
     public OracleTableIndex(
         OracleSchema schema,
@@ -88,6 +93,10 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
     public boolean isUnique()
     {
         return !nonUnique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.nonUnique = !unique;
     }
 
     @Override
@@ -150,4 +159,22 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
     {
         return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
+
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (indexDDL == null && isPersisted()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
+                indexDDL = JDBCUtils.queryString(session,"SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
+                        getName(),
+                        getTable().getSchema().getName());
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+        return indexDDL;
+    }
+
+
+    
 }

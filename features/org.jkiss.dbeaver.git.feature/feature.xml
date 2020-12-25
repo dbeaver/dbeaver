@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.git.feature"
+      label="%featureName"
+      version="1.0.35.qualifier"
+      provider-name="%providerName">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <requires>
+      <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.egit" version="1.0.0"/>
+   </requires>
+
+<!--
+   <plugin id="javaewah" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+   <plugin id="org.bouncycastle.bcpg" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcpkix" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.bouncycastle.bcprov" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+   &lt;!&ndash; EGIT and JGIT deps &ndash;&gt;
+   <plugin id="org.eclipse.jgit" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.http.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.ssh.apache" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.jgit.archive" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+   <plugin id="org.eclipse.egit" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.core" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+   <plugin id="org.eclipse.egit.gitflow" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.eclipse.egit.gitflow.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+-->
+
+   <!-- DBeaver deps -->
+   <plugin id="org.jkiss.dbeaver.team.git" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.team.git.ui" arch="x86_64" download-size="0" install-size="0" version="0.0.0"/>
+
+</feature>

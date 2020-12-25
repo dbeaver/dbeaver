@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.graph;
 
-import java.util.List;
-
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.IFigure;
@@ -26,7 +24,11 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.editpolicies.NonResizableEditPolicy;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphEdge;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphNode;
+
+import java.util.List;
 
 public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 	
@@ -41,7 +43,7 @@ public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 
 	@Override
 	protected IFigure createFigure() {
-		LockGraphNode node = (LockGraphNode) getModel(); 
+		LockGraphNode node = (LockGraphNode) getModel();
 		LockGraph graph = (LockGraph) getParent().getModel();
 		LockGraphNodeFigure nodeFigure = new LockGraphNodeFigure(node.getTitle(),(node == graph.getSelection()));
 		this.targetAnchor = new LockGraphConnectionAnchor(nodeFigure);
@@ -116,11 +118,13 @@ public class LockGraphNodeEditPart extends AbstractGraphicalEditPart {
 		@Override
 		protected void showSelection() {
 
+/*
 			LockManagerViewer viewer = ((LockGraph)getHost().getParent().getModel()).getLockManagerViewer();
 
 			if (viewer != null) {
 				viewer.setTableLockSelect(((LockGraphNode)getHost().getModel()).getLock());
 			}
+*/
 
 		}
 	}

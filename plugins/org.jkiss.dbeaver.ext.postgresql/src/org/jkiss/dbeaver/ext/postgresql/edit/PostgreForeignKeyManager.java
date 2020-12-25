@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,20 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -54,41 +55,16 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase table, Object from)
+    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
     {
-        return new UITask<PostgreTableForeignKey>() {
-            @Override
-            protected PostgreTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    "Edit foreign key",
-                    table,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
-                    table,
-                    editPage.getUniqueConstraint(),
-                    editPage.getOnDeleteRule(),
-                    editPage.getOnUpdateRule());
-                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new PostgreTableForeignKeyColumn(
-                            foreignKey,
-                            (PostgreTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (PostgreTableColumn) tableColumn.getRefColumn()));
-                }
-                return foreignKey;
-            }
-        }.execute();
+        PostgreTableBase table = (PostgreTableBase) container;
+        final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
+            table,
+            null,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyModifyRule.NO_ACTION);
+        foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+        return foreignKey;
     }
 
     @Override
@@ -106,11 +82,20 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                 log.warn("Can't extract FK DDL", e);
             }
         }
-        return super.getNestedDeclaration(monitor, owner, command, options);
+        StringBuilder sql = super.getNestedDeclaration(monitor, owner, command, options);
+
+        if (fk.isDeferrable()) {
+            sql.append(" DEFERRABLE");
+        }
+        if (fk.isDeferred()) {
+            sql.append(" INITIALLY DEFERRED");
+        }
+
+        return sql;
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             PostgreConstraintManager.addConstraintCommentAction(actionList, command.getObject());

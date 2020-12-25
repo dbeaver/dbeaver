@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,15 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GenericSQLDialect extends JDBCSQLDialect {
 
+    public static final String GENERIC_DIALECT_ID = "generic";
+
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private String scriptDelimiter;
     private char stringEscapeCharacter = '\0';
     private String scriptDelimiterRedefiner;
     private boolean legacySQLDialect;
-    private boolean suportsUpsert;
+    private boolean supportsUpsert;
     private boolean quoteReservedWords;
     private boolean useSearchStringEscape;
     private String dualTable;
@@ -48,11 +50,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean callableQueryInBrackets;
 
     public GenericSQLDialect() {
-        super("Generic");
+        super("Generic", "generic");
     }
 
-    protected GenericSQLDialect(String name) {
-        super(name);
+    protected GenericSQLDialect(String name, String id) {
+        super(name, id);
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -67,11 +69,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         this.hasDelimiterAfterQuery = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_QUERY));
         this.hasDelimiterAfterBlock = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_BLOCK));
         this.legacySQLDialect = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
-        this.suportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
-        if (this.suportsUpsert) {
+        this.supportsUpsert = ((GenericDataSource)dataSource).getMetaModel().supportsUpsertStatement();
+        if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
-        this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), true);
+        this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
         if (CommonUtils.isEmpty(this.testSQL)) {
@@ -100,6 +102,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInSelect() {
+        return super.supportsAliasInSelect();
+    }
+
+    @Override
     public boolean isDelimiterAfterQuery() {
         return hasDelimiterAfterQuery;
     }
@@ -122,7 +129,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean supportsUpsertStatement() {
-        return suportsUpsert;
+        return supportsUpsert;
     }
 
     @Override
@@ -149,6 +156,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         return dualTable;
     }
 
+    @NotNull
     @Override
     public String getSearchStringEscape() {
         if (useSearchStringEscape) {

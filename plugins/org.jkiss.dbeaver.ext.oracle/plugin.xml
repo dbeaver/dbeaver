@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,11 +23,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
-              description="Oracle connector"
-              icon="icons/oracle_icon.png"
-              id="oracle"
-              label="Oracle">
+            class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
+            description="Oracle connector"
+            icon="icons/oracle_icon.png"
+            id="oracle"
+            label="Oracle"
+            dialect="oracle">
             <tree
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
@@ -73,15 +74,20 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
-                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true" visibleIf="object.hasSubPartitions()">
-                                        </items>
+                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.subpartitions.node.name" icon="#partitions" description="tree.subpartitions.node.name">
+                                            <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
+                                            </items>
+                                        </folder>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="Table Privileges" navigable="false">
                                     <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
                                     </items>
                                 </folder>
-
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependents.node.name" icon="#link" navigable="false">
+                                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#link">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="%tree.views.node.name" icon="#folder_view" description="Views">
@@ -106,10 +112,30 @@
                                     <items label="%tree.privilege.node.name" path="tablePrivs" property="tablePrivs" icon="#privilege">
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependents.node.name" icon="#link" navigable="false">
+                                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#link">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
                             <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="View constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
@@ -144,6 +170,10 @@
                                         </items>
                                     </items>
                                 </items>
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependents.node.name" icon="#link" navigable="false">
+                                    <items label="%tree.dependent.node.name" path="dependent" property="dependents" icon="#link">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
@@ -162,16 +192,16 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="Table triggers">
                             <items label="%tree.table.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#folder_link" description="Database Links (DBLinks)">
                             <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
                         </folder>
-                        <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
-                        </folder-->
+                        </folder>
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" description="Scheduler objects">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
                                 <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="icons/scheduled_job.png">
@@ -189,7 +219,7 @@
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                <folder label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="localDataTypes" icon="#data_type"/>
                     </folder>
@@ -203,7 +233,7 @@
                         <items label="%tree.recycled_object.node.name" path="object" property="userRecycledObjects" icon="#recycle_bin"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
                         <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
@@ -215,7 +245,7 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management">
+                <folder label="%tree.security.node.name" icon="#security" description="Security management">
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="users" property="users" icon="#user">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
@@ -258,12 +288,8 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
-                    <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
-                    <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"/>
-                    <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Global Recycle Bin" icon="#recycle_bin" description="Global recycle bin" visibleIf="object.dataSource.admin">
-                        <items label="Recycled Object" path="object" property="adminRecycleBin" icon="#recycle_bin"/>
-                    </folder-->
+                <folder label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
 
             </tree>
@@ -276,63 +302,37 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     useURL="false"
                     defaultPort="1521"
-                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
+                    defaultDatabase="ORCL"
+                    defaultUser="system"
+                    webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
+                    icon="icons/oracle_icon.png"
+                    iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
-                    description="Oracle thin driver. Doesn't require Oracle client."
-                    promoted="true">
+                    description="%driver.oracle.description"
+                    promoted="1"
+                    categories="sql">
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="useFetchSizeWithLongColumn" value="true"/>
+                    <!-- Disable FAN events: #9002 -->
+                    <property name="oracle.jdbc.fanEnabled" value="false"/>
 
-                    <!--<file path="maven:/com.oracle.jdbc:ojdbc8:RELEASE" type="jar"/>-->
-
-                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
-                        <file name="ojdbc8.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
-                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
-                    </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
-                        <file name="ojdbc6.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
-                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
-                    </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/database/index-100632.html" name="Oracle XML Developers Kit">
-                        <file name="xmlparserv2.jar " description="XML Parser"/>
-                    </fileSource>
+                    <file type="jar" path="maven:/com.oracle.database.jdbc:ojdbc8:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.nls:orai18n:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xdb6:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
+                    <file type="jar" path="maven:/com.oracle.database.xml:xmlparserv2:RELEASE[12.2.0.1]" bundle="!drivers.oracle"/>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/ojdbc8.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xdb6.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
-
+                    <file type="jar" path="drivers/oracle" bundle="drivers.oracle"/>
                 </driver>
             </drivers>
             <templates>
                 <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>
             </templates>
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
-                icon="icons/oracle_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
-                dataSource="oracle"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
-        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
@@ -346,51 +346,12 @@
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleMaterializedViewManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleProcedureManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
+        <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleQueueManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleQueue"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OraclePackageManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleTableTriggerManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.oracle.edit.OracleSequenceManager" objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
     </extension>
     
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDeclarationEditor"
-            label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger"/>
-        </editor>
-        <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDefinitionEditor"
-            label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
-        </editor>
-        <editor id="schedulerJob.action" class="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobActionEditor"
-            label="%editor.scheduler.job.action.name" description="%editor.schedulerJob.action.description" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
-        </editor>
-        <editor id="source.ddl" class="org.jkiss.dbeaver.ext.oracle.editors.OracleObjectDDLEditor"
-            label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-        </editor>
-        <editor
-                id="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobLogEditor"
-                class="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobLogEditor"
-                objectType="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"
-                main="false"
-                label="%editor.scheduler.job.log.name"
-                description="%editor.scheduler.job.log.description"
-                position="additions_start"
-                icon="icons/job_log.png">
-        </editor>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
             class="org.jkiss.dbeaver.ext.oracle.data.OracleValueHandlerProvider"
@@ -402,6 +363,7 @@
 
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
+            <type name="REFCURSOR"/>
             <type kind="CONTENT"/>
             <type kind="DATETIME"/>
             <type name="TIMESTAMP"/>
@@ -409,207 +371,96 @@
             <type name="TIMESTAMP WITH LOCAL TZ"/>
             <type name="TIMESTAMP WITH TIME ZONE"/>
             <type name="TIMESTAMP WITH LOCAL TIME ZONE"/>
-            <!--type standard="STRUCT"/-->
+            <!--<type standard="STRUCT"/>--> <!-- Struct disabled to allow exact object types mappings, e.g. geometries -->
 
         </provider>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.tools">
-        <tools>
-            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.statistics" label="Statistics"/>
-            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.maintenance" label="Maintenance"/>
-            <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
-                    description="Execute script with native client"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
-                    label="Execute in SQL*Plus">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolValidateStructure"
-                    description="Validate Structure"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    group="org.jkiss.dbeaver.ext.oracle.tools.statistics"
-                    label="Validate Structure"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
-                    description="Gather statistics"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
-                    group="org.jkiss.dbeaver.ext.oracle.tools.statistics"
-                    label="Gather Statistics"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    description="Truncate table"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    group="org.jkiss.dbeaver.ext.oracle.tools.maintenance"
-                    label="Truncate"
-                    singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-            </tool>
-        </tools>
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="oracle_native"
+                label="Database Native"
+                description="Oracle native authentication (name/password)"
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative">
+            <replace model="native"/>
+            <datasource id="oracle"/>
+        </authModel>
+        <authModel
+                id="oracle_os"
+                label="OS Authentication"
+                description="OS authentication allows Oracle to pass control of user authentication to the operating system."
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS">
+            <datasource id="oracle"/>
+        </authModel>
     </extension>
 
-    <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.oracle" name="Oracle" description="Oracle Commands"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.oracle"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.code.package.navigate" name="Go to source code" description="Navigate to object source code" categoryId="org.jkiss.dbeaver.ext.oracle"/>
-        <command id="org.jkiss.dbeaver.ext.oracle.job.run" name="Run" description="Run Job" categoryId="org.jkiss.dbeaver.ext.oracle"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.oracle.code.compile" icon="icons/compile.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate" icon="icons/source_navigate.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.oracle.job.run" icon="icons/run.png"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.oracle.code.compile" class="org.jkiss.dbeaver.ext.oracle.actions.CompileHandler">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <!-- Here and below we use double check - adapt + instanceof.
-                                sing <adapt> with final (Oracle-specific) type will force plugin activation (since E4.6)
-                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
-                            -->
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                                <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate" class="org.jkiss.dbeaver.ext.oracle.actions.PackageNavigateHandler">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
-                        </adapt>
-                        <!--<adapt type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>-->
-                    </iterate>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.ext.oracle.job.run" class="org.jkiss.dbeaver.ext.oracle.actions.JobRunHandler">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <!-- Here and below we use double check - adapt + instanceof.
-                                sing <adapt> with final (Oracle-specific) type will force plugin activation (since E4.6)
-                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
-                            -->
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                                <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>
-        </handler>
-    </extension>
-
-    <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.oracle.code.compile">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.ext.oracle.job.run">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-        </menuContribution>
-    </extension>
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.oracle.actions.OracleObjectAdapter">
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.oracle.model.OracleObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" class="org.jkiss.dbeaver.ext.oracle.sql.OracleDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
+        </factory>
     </extension>
+
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ext.oracle.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F9"/>
     </extension>
 
-    <extension point="org.eclipse.ui.editors">
-        <editor
-            name="Session Manager"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-            class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
-            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
-        <editor
-            name="Lock Manager"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
-            class="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor">
-        </editor>
-    </extension>
-
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="org.jkiss.dbeaver.ext.oracle.OraclePreferencesInitializer"/>
+        <initializer class="org.jkiss.dbeaver.ext.oracle.internal.OraclePreferencesInitializer"/>
     </extension>
 
-    <extension point="org.eclipse.ui.preferencePages">
-        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.oracle.general" class="org.jkiss.dbeaver.ext.oracle.views.PrefPageOracle" name="Oracle">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-        </page>
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="oracleInsertIgnore" class="org.jkiss.dbeaver.ext.oracle.model.OracleInsertReplaceMethodIgnore" label="INSERT IGNORE ROW INDEX" description="Insert ignore duplicate key value"/>
     </extension>
 
-    <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.oracle.main" class="org.jkiss.dbeaver.ext.oracle.views.PrefPageOracle" name="%page.org.jkiss.dbeaver.preferences.oracle.main.name">
-            <enabledWhen>
-                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
-                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="oracle_thin"/>
-                </adapt>
-            </enabledWhen>
-        </page>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="oracle" parent="basic" class="org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect" label="Oracle" description="Oracle SQL dialect." icon="icons/oracle_icon.png">
+            <property name="insertMethods" value="oracleInsertIgnore"/>
+        </dialect>
     </extension>
 
-    <extension point="org.eclipse.ui.importWizards">
-        <wizard
-            category="org.jkiss.dbeaver.import_config.third-party"
-            class="org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper.ConfigImportWizardSqlDeveloper"
-            id="org.jkiss.dbeaver.import_config.sqldeveloper"
-            name="Oracle SQL Developer"
-            icon="icons/sqldeveloper.png">
-            <description>Oracle SQL Developer</description>
-        </wizard>
-    </extension>
+    <!--
+        <extension point="org.jkiss.dbeaver.mavenRepository">
+            <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
+                <scope group="com.oracle.jdbc"/>
+            </repository>
+        </extension>
+    -->
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="oracle" name="Oracle" description="Oracle database task" icon="icons/oracle_icon.png"/>
+        <category id="oracleTool" parent="oracle" name="Tools" description="Oracle database tools" icon="icons/oracle_icon.png"/>
 
-<!--
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
-            <scope group="com.oracle.jdbc"/>
-        </repository>
+        <task id="oracleScriptExecute" name="Oracle SQL*Plus script" description="Oracle SQL*Plus script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+        </task>
+
+        <!-- SQL tools -->
+        <task id="oracleToolValidateStructure" name="%tasks.validate.structure.table.node.name" description="%tasks.validate.structure.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableValidateStructure">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
+        <task id="oracleToolTableTruncate" name="%tasks.truncate.table.node.name" description="%tasks.truncate.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTruncate">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
+        <task id="oracleToolTableGatherStatistics" name="%tasks.gather.statistics.table.node.name" description="%tasks.gather.statistics.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolsTableGatherStatistics">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
+        </task>
+        <task id="oracleToolIndexGatherStatistics" name="%tasks.gather.statistics.index.node.name" description="%tasks.gather.statistics.index.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolIndexGatherStatistics">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
+        </task>
+        <task id="oracleToolMViewRefresh" name="%tasks.refresh.mview.node.name" description="%tasks.refresh.mview.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolMViewRefresh">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+        </task>
     </extension>
--->
 
 </plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -63,7 +62,11 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
         this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
         this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
         this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
-        this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
+        if (CommonUtils.isEmpty(this.name)) {
+            this.mode =OracleParameterMode.RETURN;
+        } else {
+            this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
+        }
         final String dataType = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
         this.type = CommonUtils.isEmpty(dataType) ? null : OracleDataType.resolveDataType(
             monitor,
@@ -167,6 +170,11 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public String getTypeName()
     {
         return type == null ? packageTypeName : type.getName();
@@ -214,7 +222,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     }
 
     @Association
-    public Collection<OracleProcedureArgument> getAttributes()
+    public List<OracleProcedureArgument> getAttributes()
     {
         return attributes;
     }

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017-2017 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -28,17 +26,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,46 +50,15 @@ public class ExasolPrimaryKeyManager
 
 	@Override
 	protected ExasolTableUniqueKey createDatabaseObject(
-			DBRProgressMonitor monitor, DBECommandContext context,
-			ExasolTable parent, Object copyFrom) throws DBException
+		DBRProgressMonitor monitor, DBECommandContext context,
+		Object container, Object copyFrom, Map<String, Object> options) throws DBException
 	{
-		return new UITask<ExasolTableUniqueKey>() {
-			@Override
-			protected ExasolTableUniqueKey runTask()
-			{
-				EditConstraintPage editPage = new EditConstraintPage(
-						ExasolMessages.edit_exasol_constraint_manager_dialog_title, 
-						parent, 
-						new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY },
-						true);
-				if (!editPage.edit()) {
-					return null;
-				}
-				
-				final ExasolTableUniqueKey constraint = new ExasolTableUniqueKey(
-						parent, 
-						editPage.getConstraintType(), 
-						editPage.isEnableConstraint(), 
-						editPage.getConstraintName()
-						);
-				
-				List<ExasolTableKeyColumn> constColumns = new ArrayList<ExasolTableKeyColumn>();
-				int ordinalPosition = 0;
-				for(DBSEntityAttribute tableColumn  : editPage.getSelectedAttributes())
-				{
-					ExasolTableKeyColumn col;
-					try {
-						col = new ExasolTableKeyColumn(constraint, parent.getAttribute(monitor, tableColumn.getName()), ++ordinalPosition);
-					} catch (DBException e) {
-						log.error("Could not find column " + tableColumn.getName() + " in table " + parent.getFullyQualifiedName(DBPEvaluationContext.DDL));
-						return null;
-					}
-					constColumns.add(col);
-				}
-				constraint.setColumns(constColumns);
-				return constraint;
-			}
-		}.execute();
+		return new ExasolTableUniqueKey(
+			(ExasolTable) container,
+			DBSEntityConstraintType.PRIMARY_KEY,
+			true,
+			"CONSTRAINT"
+		);		
 	}
 	
 	@Override
@@ -104,7 +68,7 @@ public class ExasolPrimaryKeyManager
 	}
 	
 	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
 	{
 		ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();
@@ -124,7 +88,7 @@ public class ExasolPrimaryKeyManager
 	}
 	
 	@Override
-	protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey constraint = command.getObject();
@@ -143,8 +107,8 @@ public class ExasolPrimaryKeyManager
 	
 	
 	@Override
-	protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
+	protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+										  ObjectRenameCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey key = command.getObject();
 		actions.add(

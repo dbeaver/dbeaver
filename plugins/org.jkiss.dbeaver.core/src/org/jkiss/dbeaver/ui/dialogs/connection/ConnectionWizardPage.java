@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 /**
@@ -29,6 +29,6 @@ public abstract class ConnectionWizardPage extends ActiveWizardPage<ConnectionWi
         super(pageName);
     }
 
-    public abstract void saveSettings(DataSourceDescriptor dataSourceDescriptor);
+    public abstract void saveSettings(DBPDataSourceContainer dataSourceDescriptor);
 
 }

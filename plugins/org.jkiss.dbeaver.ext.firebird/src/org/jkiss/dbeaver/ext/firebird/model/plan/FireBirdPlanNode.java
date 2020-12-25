@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-
-public class FireBirdPlanNode implements DBCPlanNode {
+/**
+ * Firebird plan node implementation.
+ *
+ * @author tomashorak@post.cz
+ */
+public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 
 	String plan;
 	FireBirdPlanNode parent;
@@ -32,7 +38,22 @@ public class FireBirdPlanNode implements DBCPlanNode {
 		this.plan = plan;
 		this.nested = new ArrayList<>();
 	}
-	
+
+	@Override
+	public String getNodeName() {
+		return plan;
+	}
+
+	@Override
+	public String getNodeType() {
+		return "Plan";
+	}
+
+	@Override
+	public String getNodeDescription() {
+		return plan;
+	}
+
 	@Override
 	public DBCPlanNode getParent() {
 		return parent;

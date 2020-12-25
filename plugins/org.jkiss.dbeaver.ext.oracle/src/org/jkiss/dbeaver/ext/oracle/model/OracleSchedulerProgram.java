@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,11 +163,12 @@ public class OracleSchedulerProgram extends OracleSchemaObject {
 
     static class ArgumentsCache extends JDBCObjectCache<OracleSchedulerProgram, OracleSchedulerProgramArgument> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerProgram program) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAM_ARGS " +
+                "SELECT * FROM ALL_SCHEDULER_PROGRAM_ARGS " +
                         "WHERE OWNER=? AND PROGRAM_NAME=? " +
                         "ORDER BY ARGUMENT_POSITION");
             dbStat.setString(1, program.getSchema().getName());

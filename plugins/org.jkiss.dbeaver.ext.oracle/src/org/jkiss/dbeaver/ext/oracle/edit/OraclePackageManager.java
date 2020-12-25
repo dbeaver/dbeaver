@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +24,13 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -52,42 +49,21 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom)
+    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new UITask<OraclePackage>() {
-            @Override
-            protected OraclePackage runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.PACKAGE);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                String packName = editPage.getEntityName();
-                OraclePackage oraclePackage = new OraclePackage(
-                    parent,
-                    packName);
-                oraclePackage.setObjectDefinitionText(
-                    "CREATE OR REPLACE PACKAGE " + packName + "\n" +
-                    "AS\n" +
-                    "-- Package header\n" +
-                    "END " + packName +";");
-                oraclePackage.setExtendedDefinitionText(
-                    "CREATE OR REPLACE PACKAGE BODY " + packName + "\n" +
-                        "AS\n" +
-                        "-- Package body\n" +
-                        "END " + packName +";");
-                return oraclePackage;
-            }
-        }.execute();
+        return new OraclePackage(
+            (OracleSchema) container,
+            "NEW_PACKAGE");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(executionContext, actions, objectCreateCommand.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OraclePackage object = objectDeleteCommand.getObject();
         actions.add(
@@ -97,9 +73,9 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(executionContext, actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -108,10 +84,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OraclePackage pack)
+    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OraclePackage pack)
     {
         try {
-            String header = pack.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+            String header = pack.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS).trim();
+            if (!header.endsWith(";")) {
+                header += ";";
+            }
             if (!CommonUtils.isEmpty(header)) {
                 actionList.add(
                     new OracleObjectValidateAction(
@@ -121,6 +100,10 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
             }
             String body = pack.getExtendedDefinitionText(new VoidProgressMonitor());
             if (!CommonUtils.isEmpty(body)) {
+                body = body.trim();
+                if (!body.endsWith(";")) {
+                    body += ";";
+                }
                 actionList.add(
                     new OracleObjectValidateAction(
                         pack, OracleObjectType.PACKAGE_BODY,
@@ -137,7 +120,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         } catch (DBException e) {
             log.warn(e);
         }
-        OracleUtils.addSchemaChangeActions(actionList, pack);
+        OracleUtils.addSchemaChangeActions(executionContext, actionList, pack);
     }
 
 }

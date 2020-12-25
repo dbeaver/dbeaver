@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,7 +47,7 @@ import java.util.List;
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBPNamedObject2, DBPOrderedObject
+public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
@@ -72,6 +74,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private MySQLCollation collation;
     private KeyType keyType;
     private String extraInfo;
+    private String genExpression;
+    private long modifiers;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -104,6 +108,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             this.collation = mySource.collation;
             this.keyType = mySource.keyType;
             this.extraInfo = mySource.extraInfo;
+            this.genExpression = mySource.genExpression;
             this.fullTypeName = mySource.fullTypeName;
             if (mySource.enumValues != null) {
                 this.enumValues = new ArrayList<>(mySource.enumValues);
@@ -117,8 +122,8 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private void loadInfo(ResultSet dbResult)
         throws DBException
     {
-        setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION));
+        name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
+        ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
         String typeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DATA_TYPE);
         assert typeName != null;
         String keyTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_KEY);
@@ -141,9 +146,9 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             setMaxLength(this.charLength);
         }
         this.comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT);
-        setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
-        setScale(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
-        setPrecision(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
+        this.required = !"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE));
+        this.setScale(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
+        this.setPrecision(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         String defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         if (defaultValue != null) {
             switch (getDataKind()) {
@@ -171,6 +176,21 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.fullTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(fullTypeName) && (isTypeEnum() || isTypeSet())) {
             enumValues = parseEnumValues(fullTypeName);
+        }
+
+        if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
+            genExpression = JDBCUtils.safeGetString(dbResult, "GENERATION_EXPRESSION");
+        }
+
+        for (String modifier : CommonUtils.notEmpty(fullTypeName).toLowerCase().split(" ")) {
+            switch (modifier) {
+                case "zerofill":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES;
+                    break;
+                case "unsigned":
+                    modifiers |= DBSTypedObject.TYPE_MOD_NUMBER_UNSIGNED;
+                    break;
+            }
         }
     }
 
@@ -220,14 +240,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return fullTypeName;
     }
 
-    public void setFullTypeName(String fullTypeName) {
+    @Override
+    public void setFullTypeName(String fullTypeName) throws DBException {
+        super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
-        int divPos = fullTypeName.indexOf('(');
-        if (divPos != -1) {
-            super.setTypeName(fullTypeName.substring(0, divPos).trim());
-        } else {
-            super.setTypeName(fullTypeName);
-        }
     }
 
     @Override
@@ -242,6 +258,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public boolean isTypeEnum() {
         return typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM);
+    }
+
+    @Override
+    public long getTypeModifiers() {
+        return super.getTypeModifiers() | modifiers;
     }
 
     //@Property(viewable = true, editable = true, updatable = true, order = 40)
@@ -280,6 +301,18 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
+    public void setAutoGenerated(boolean autoGenerated) {
+        if (autoGenerated) {
+            extraInfo = (CommonUtils.notEmpty(extraInfo) + " " + MySQLConstants.EXTRA_AUTO_INCREMENT).trim();
+        } else {
+            if (extraInfo != null) {
+                extraInfo = extraInfo.replace(MySQLConstants.EXTRA_AUTO_INCREMENT, " ").trim();
+            }
+        }
+        super.setAutoGenerated(autoGenerated);
+    }
+
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
@@ -294,6 +327,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public void setExtraInfo(String extraInfo) {
         this.extraInfo = extraInfo;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 72)
+    public String getGenExpression() {
+        return genExpression;
+    }
+
+    public void setGenExpression(String genExpression) {
+        this.genExpression = genExpression;
     }
 
     @Override

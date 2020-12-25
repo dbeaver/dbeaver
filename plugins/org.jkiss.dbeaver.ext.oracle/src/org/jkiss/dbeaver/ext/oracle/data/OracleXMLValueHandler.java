@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -75,25 +74,25 @@ public class OracleXMLValueHandler extends OracleCLOBValueHandler {
         }
 
         if (object == null) {
-            return new OracleContentXML(session.getDataSource(), null);
+            return new OracleContentXML(session.getExecutionContext(), null);
         } else if (object.getClass().getName().equals(OracleConstants.XMLTYPE_CLASS_NAME)) {
-            return new OracleContentXML(session.getDataSource(), new OracleXMLWrapper(object));
+            return new OracleContentXML(session.getExecutionContext(), new OracleXMLWrapper(object));
         } else if (object instanceof SQLXML) {
-            return new OracleContentXML(session.getDataSource(), (SQLXML) object);
+            return new OracleContentXML(session.getExecutionContext(), (SQLXML) object);
         } else {
             throw new DBCException("Unsupported object type: " + object.getClass().getName());
         }
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
-            return new OracleContentXML(session.getDataSource(), null);
+            return new OracleContentXML(session.getExecutionContext(), null);
         } else if (object instanceof OracleContentXML) {
             return copy ? (OracleContentXML)((OracleContentXML) object).cloneValue(session.getProgressMonitor()) : (OracleContentXML) object;
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
 }

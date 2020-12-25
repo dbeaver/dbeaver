@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.eclipse.core.runtime.Adapters;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -91,7 +93,7 @@ public class QMControllerImpl implements QMController {
             return defaultEventBrowser;
         }
         if (eventBrowser == null) {
-            eventBrowser = Adapters.adapt(this, QMEventBrowser.class);
+            eventBrowser = GeneralUtils.adapt(this, QMEventBrowser.class);
             if (eventBrowser == null) {
                 // Default browser
                 this.eventBrowser = defaultEventBrowser;
@@ -174,10 +176,12 @@ public class QMControllerImpl implements QMController {
         @Override
         public QMEventCursor getQueryHistoryCursor(
             @NotNull DBRProgressMonitor monitor,
-            @NotNull QMEventCriteria criteria)
+            @NotNull QMEventCriteria criteria,
+            @Nullable QMEventFilter filter)
             throws DBException
         {
             List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
+            Collections.reverse(pastEvents);
             if (criteria.getObjectTypes() != null || criteria.getQueryTypes() != null) {
                 // Filter by query type and object type
                 for (Iterator<QMMetaEvent> iter = pastEvents.iterator(); iter.hasNext(); ) {
@@ -187,6 +191,10 @@ public class QMControllerImpl implements QMController {
                             iter.remove();
                             continue;
                         }
+                    }
+                    if (filter != null && !filter.accept(event)) {
+                        iter.remove();
+                        continue;
                     }
                     if (criteria.getQueryTypes() != null) {
                         QMMStatementInfo statementInfo = null;
@@ -209,7 +217,9 @@ public class QMControllerImpl implements QMController {
                 String searchString = criteria.getSearchString().toLowerCase();
                 List<QMMetaEvent> filtered = new ArrayList<>();
                 for (QMMetaEvent event : pastEvents) {
-                    if (event.getObject().getText().toLowerCase().contains(searchString)) {
+                    if (event.getObject().getText().toLowerCase().contains(searchString) &&
+                        (filter == null || filter.accept(event)))
+                    {
                         filtered.add(event);
                     }
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,9 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.runtime.CoreException;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.UUID;
+import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 
 /**
  * DBeaver workspace.
@@ -37,62 +28,20 @@ import java.util.UUID;
  * Additionally holds information about remote workspace.
  * Identified by unique ID (random UUID).
  */
-public class DBeaverWorkspace implements DBPWorkspace {
+public class DBeaverWorkspace extends BaseWorkspaceImpl {
 
-    private static final String WORKSPACE_ID = "workspace-id";
-
-    private DBPPlatform platform;
-    private IWorkspace eclipseWorkspace;
     private String workspaceId;
 
     DBeaverWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
-        this.platform = platform;
-        this.eclipseWorkspace = eclipseWorkspace;
+        super(platform, eclipseWorkspace);
 
-        // Check workspace ID
-        Properties workspaceInfo = DBeaverCore.readWorkspaceInfo(GeneralUtils.getMetadataFolder());
-        workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
-        if (CommonUtils.isEmpty(workspaceId)) {
-            // Generate new UUID
-            workspaceId = "D" + Long.toString(
-                Math.abs(SecurityUtils.generateRandomLong()),
-                36).toUpperCase();
-            workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
-            DBeaverCore.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
-        }
+        workspaceId = readWorkspaceId();
     }
 
-    @Override
-    public IWorkspace getEclipseWorkspace() {
-        return eclipseWorkspace;
-    }
-
-    @Override
-    public DBPPlatform getPlatform() {
-        return platform;
-    }
-
+    @NotNull
     @Override
     public String getWorkspaceId() {
         return workspaceId;
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
-
-    @Override
-    public File getAbsolutePath() {
-        return eclipseWorkspace.getRoot().getFullPath().toFile();
-    }
-
-    public void save(DBRProgressMonitor monitor) throws DBException {
-        try {
-            eclipseWorkspace.save(true, monitor.getNestedMonitor());
-        } catch (CoreException e) {
-            throw new DBException("Error saving Eclipse workspace", e);
-        }
     }
 
 }

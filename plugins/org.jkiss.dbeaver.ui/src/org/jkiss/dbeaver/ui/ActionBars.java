@@ -1,15 +1,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorActionBarContributor;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.intro.IIntroSite;
 import org.eclipse.ui.part.EditorActionBarContributor;
 

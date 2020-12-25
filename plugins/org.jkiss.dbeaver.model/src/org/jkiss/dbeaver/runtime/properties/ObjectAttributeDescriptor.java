@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -79,7 +81,7 @@ public abstract class ObjectAttributeDescriptor {
             final LazyProperty lazyInfo = getter.getAnnotation(LazyProperty.class);
             if (lazyInfo != null) {
                 try {
-                    cacheValidator = lazyInfo.cacheValidator().newInstance();
+                    cacheValidator = lazyInfo.cacheValidator().getConstructor().newInstance();
                 } catch (Exception e) {
                     log.warn("Can't instantiate lazy cache validator '" + lazyInfo.cacheValidator().getName() + "'", e);
                 }
@@ -108,13 +110,17 @@ public abstract class ObjectAttributeDescriptor {
         return id;
     }
 
+    public <T extends Annotation> T getAnnotation(Class<T> annoType) {
+        return getter == null ? null : getter.getAnnotation(annoType);
+    }
+
     public Method getGetter()
     {
         return getter;
     }
 
     public boolean isNameProperty() {
-        return id.equals(DBConstants.PROP_ID_NAME);
+        return id.equals(DBConstants.PROP_ID_NAME) || orderNumber == 1;
     }
 
     public boolean isRemote()
@@ -162,12 +168,13 @@ public abstract class ObjectAttributeDescriptor {
     public abstract String getDescription();
 
     public static List<ObjectPropertyDescriptor> extractAnnotations(
-        DBPPropertySource source,
+        @Nullable DBPPropertySource source,
         Class<?> theClass,
-        IPropertyFilter filter)
+        IPropertyFilter filter,
+        @Nullable String locale)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        extractAnnotations(source, null, theClass, annoProps, filter);
+        extractAnnotations(source, null, theClass, annoProps, filter, locale);
         return annoProps;
     }
 
@@ -178,14 +185,21 @@ public abstract class ObjectAttributeDescriptor {
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<>();
         for (Class<?> objectClass : classList) {
-            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter));
+            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter, null));
         }
-        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
         return annoProps;
     }
 
-    static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
+    static void extractAnnotations(
+        @Nullable DBPPropertySource source,
+        @Nullable ObjectPropertyGroupDescriptor parent,
+        Class<?> theClass,
+        List<ObjectPropertyDescriptor> annoProps,
+        IPropertyFilter filter,
+        @Nullable String locale)
     {
+        Object object = source == null ? null : source.getEditableValue();
         Method[] methods = theClass.getMethods();
         Map<String, Method> passedNames = new HashMap<>();
         for (Method method : methods) {
@@ -203,7 +217,7 @@ public abstract class ObjectAttributeDescriptor {
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
                 // Property group
-                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter);
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter, locale);
                 annoProps.addAll(groupDescriptor.getChildren());
             } else {
                 final Property propInfo = method.getAnnotation(Property.class);
@@ -211,23 +225,20 @@ public abstract class ObjectAttributeDescriptor {
                     continue;
                 }
                 // Single property
-                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method);
-                if (filter != null && !filter.select(desc)) {
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale);
+                if (filter != null && !filter.select(object, desc)) {
                     continue;
                 }
                 if (prevMethod != null) {
                     // Remove previous anno
-                    for (Iterator<ObjectPropertyDescriptor> iter = annoProps.iterator(); iter.hasNext(); ) {
-                        if (iter.next().getId().equals(desc.getId())) {
-                            iter.remove();
-                        }
-                    }
+                    annoProps.removeIf(
+                        objectPropertyDescriptor -> objectPropertyDescriptor.getId().equals(desc.getId()));
                 }
                 annoProps.add(desc);
                 passedNames.put(methodFullName, method);
             }
         }
-        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.Map;
  */
 public class VerticaProjectionColumnManager extends SQLTableColumnManager<VerticaProjectionColumn, VerticaProjection> {
     @Override
-    public boolean canCreateObject(VerticaProjection parent) {
+    public boolean canCreateObject(Object container) {
         return false;
     }
 
@@ -56,7 +57,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
     }
 
     @Override
-    protected VerticaProjectionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, VerticaProjection parent, Object copyFrom) throws DBException {
+    protected VerticaProjectionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         return null;
     }
 
@@ -65,7 +66,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
      * TODO: Vertica is originally based on PG. Maybe we should refactor this stuff somehow.
      */
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final VerticaProjectionColumn column = command.getObject();
 

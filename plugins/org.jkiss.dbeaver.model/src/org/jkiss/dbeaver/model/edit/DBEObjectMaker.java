@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.model.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
 import java.util.Map;
 
@@ -35,6 +35,17 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_CREATE_FROM_PASTE      = 2;
     long FEATURE_EDITOR_ON_CREATE       = 4;
     long FEATURE_DELETE_CASCADE         = 8;
+    long FEATURE_SUPPORTS_COPY          = 16;
+
+    /**
+     * New object container.
+     * Usually it is a navigator node (DBNNode).
+     */
+    String OPTION_CONTAINER = "container";
+    /**
+     * Object type (class)
+     */
+    String OPTION_OBJECT_TYPE = "objectType";
 
     String OPTION_DELETE_CASCADE = "deleteCascade";
 
@@ -49,7 +60,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     @Nullable
     DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
-    boolean canCreateObject(CONTAINER_TYPE parent);
+    boolean canCreateObject(Object container);
 
     boolean canDeleteObject(OBJECT_TYPE object);
 
@@ -60,17 +71,19 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
      *
-     * @param monitor
+     * @param monitor progress monitor
      * @param commandContext command context
-     * @param parent parent object
+     * @param container parent object
      * @param copyFrom template for new object (usually result of "paste" operation)
+     * @param options options
      * @return null if no additional actions should be performed
      */
     OBJECT_TYPE createNewObject(
         DBRProgressMonitor monitor,
         DBECommandContext commandContext,
-        CONTAINER_TYPE parent,
-        Object copyFrom) throws DBException;
+        Object container,
+        Object copyFrom,
+        Map<String, Object> options) throws DBException;
 
     /**
      * Deletes specified object.

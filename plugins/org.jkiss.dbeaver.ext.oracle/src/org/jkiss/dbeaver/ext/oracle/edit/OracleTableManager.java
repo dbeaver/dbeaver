@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,13 +26,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -58,21 +59,19 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleTable table = new OracleTable(parent, "");
-        try {
-            setTableName(monitor, parent, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
-        return table; //$NON-NLS-1$
+        OracleSchema schema = (OracleSchema) container;
+
+        OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
+        setNewObjectName(monitor, schema, table);
+        return table;
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(monitor, command.getObject(), command, query, true);
@@ -81,12 +80,20 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) {
-        if (command.getProperty("comment") != null) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        OracleTable table = command.getObject();
+        if (command.getProperty("comment") != null) { //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getComment())));
+                "COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(table, table.getComment())));
+        }
+
+        // Column comments
+        for (OracleTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            if (!CommonUtils.isEmpty(column.getDescription())) {
+                OracleTableColumnManager.addColumnCommentAction(actions, column);
+            }
         }
     }
 
@@ -107,7 +114,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -118,13 +125,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         OracleTable object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
+                "DROP " + (object.isView() ? "VIEW" : "TABLE") +
                     " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE CONSTRAINTS" : "")
             )

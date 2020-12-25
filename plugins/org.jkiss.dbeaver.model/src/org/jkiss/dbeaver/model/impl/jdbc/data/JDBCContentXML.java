@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -47,8 +47,8 @@ public class JDBCContentXML extends JDBCContentLOB {
 
     protected SQLXML xml;
 
-    public JDBCContentXML(DBPDataSource dataSource, SQLXML xml) {
-        super(dataSource);
+    public JDBCContentXML(DBCExecutionContext executionContext, SQLXML xml) {
+        super(executionContext);
         this.xml = xml;
     }
 
@@ -75,7 +75,7 @@ public class JDBCContentXML extends JDBCContentLOB {
             catch (IOException e) {
                 throw new DBCException("IO error while reading content", e);
             } catch (SQLException e) {
-                throw new DBCException(e, dataSource);
+                throw new DBCException(e, executionContext);
             }
             // Free blob - we don't need it anymore
             releaseXML();
@@ -152,10 +152,10 @@ public class JDBCContentXML extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (IOException e) {
-            throw new DBCException("IO error while reading content", e);
+            throw new DBCException("IO error while reading content", e, session.getExecutionContext());
         }
     }
 
@@ -173,7 +173,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     @Override
     protected JDBCContentLOB createNewContent()
     {
-        return new JDBCContentXML(dataSource, null);
+        return new JDBCContentXML(executionContext, null);
     }
 
     @Override

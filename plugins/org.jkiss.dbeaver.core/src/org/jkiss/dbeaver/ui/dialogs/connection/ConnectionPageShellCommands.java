@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,6 +47,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
     private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
+    private DataSourceDescriptor dataSource;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -60,6 +63,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     protected ConnectionPageShellCommands(DataSourceDescriptor dataSource)
     {
         super(PAGE_NAME);
+        this.dataSource = dataSource;
         setTitle(CoreMessages.dialog_connection_edit_wizard_shell_cmd);
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
@@ -157,7 +161,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 });
             }
 
-            new VariablesHintLabel(detailsGroup, DataSourceDescriptor.CONNECT_VARIABLES);
+            VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
+                detailsGroup,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+                CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+                DataSourceDescriptor.CONNECT_VARIABLES);
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
         }
 
         selectEventType(null);
@@ -273,7 +282,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSourceDescriptor) {
+    public void saveSettings(DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
         }

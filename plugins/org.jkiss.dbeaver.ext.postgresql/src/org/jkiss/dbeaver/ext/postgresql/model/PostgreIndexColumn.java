@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,17 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
         this.ascending = ascending;
         this.opClass = opClass;
         this.nullable = nullable;
+    }
+
+    public PostgreIndexColumn(DBRProgressMonitor monitor, PostgreIndex index, PostgreIndexColumn srcColumn) throws DBException {
+        this.index = index;
+        PostgreAttribute srcTableColumn = srcColumn.getTableColumn();
+        this.tableColumn = srcTableColumn == null ? null : index.getTable().getAttribute(monitor, srcTableColumn.getName());
+        this.expression = srcColumn.expression;
+        this.ordinalPosition = srcColumn.ordinalPosition;
+        this.ascending = srcColumn.ascending;
+        this.opClass = srcColumn.opClass;
+        this.nullable = srcColumn.nullable;
     }
 
     @NotNull

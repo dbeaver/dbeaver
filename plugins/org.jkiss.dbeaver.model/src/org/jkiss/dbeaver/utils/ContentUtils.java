@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -30,13 +33,17 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -310,7 +317,7 @@ public class ContentUtils {
     public static String readFileToString(File file) throws IOException
     {
         try (InputStream fileStream = new FileInputStream(file)) {
-            UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.UTF8_ENCODING);
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, StandardCharsets.UTF_8);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {
@@ -324,7 +331,7 @@ public class ContentUtils {
         }
     }
 
-    public static String readToString(InputStream is, String charset) throws IOException
+    public static String readToString(InputStream is, Charset charset) throws IOException
     {
         return IOUtils.readToString(new UnicodeReader(is, charset));
     }
@@ -361,6 +368,11 @@ public class ContentUtils {
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
+    public static boolean isTextMime(String mimeType)
+    {
+        return mimeType != null && mimeType.toLowerCase(Locale.ENGLISH).startsWith("text");
+    }
+
     public static boolean isTextValue(Object value)
     {
         if (value == null) {
@@ -389,8 +401,11 @@ public class ContentUtils {
         return MimeTypes.TEXT_JSON.equalsIgnoreCase(content.getContentType());
     }
 
-    @NotNull
+    @Nullable
     public static String getContentStringValue(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent object) throws DBCException {
+        if (object.isNull()) {
+            return null;
+        }
         DBDContentStorage data = object.getContents(monitor);
         if (data != null) {
             if (data instanceof DBDContentCached) {
@@ -463,6 +478,75 @@ public class ContentUtils {
             }
         }
         return file.delete();
+    }
+
+    public static void checkFolderExists(IFolder folder)
+            throws DBException
+    {
+        checkFolderExists(folder, new VoidProgressMonitor());
+    }
+
+    public static void checkFolderExists(IFolder folder, DBRProgressMonitor monitor)
+            throws DBException
+    {
+        if (!folder.exists()) {
+            try {
+                folder.create(true, true, monitor.getNestedMonitor());
+            } catch (CoreException e) {
+                throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
+            }
+        }
+    }
+
+    public static void makeFileBackup(IFile file) {
+        if (!file.exists()) {
+            return;
+        }
+        String backupFileName = file.getName() + ".bak";
+        if (!backupFileName.startsWith(".")) {
+            backupFileName = "." + backupFileName;
+        }
+        IFile backupFile = file.getParent().getFile(new Path(backupFileName));
+        if (backupFile.exists()) {
+            Date backupTime = new Date(backupFile.getModificationStamp());
+            if (CommonUtils.isSameDay(backupTime, new Date())) {
+                return;
+            }
+        }
+        try (InputStream fis = file.getContents()) {
+
+            if (!backupFile.exists()) {
+                backupFile.create(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
+            } else {
+                backupFile.setContents(fis, IResource.HIDDEN | IResource.TEAM_PRIVATE, new NullProgressMonitor());
+            }
+        } catch (Exception e) {
+            log.error("Error creating backup copy of " + file.getFullPath(), e);
+        }
+    }
+
+    public static void makeFileBackup(File file) {
+        if (!file.exists()) {
+            return;
+        }
+        String backupFileName = file.getName() + ".bak";
+        if (!backupFileName.startsWith(".")) {
+            backupFileName = "." + backupFileName;
+        }
+        File backupFile = new File(file.getParent(), backupFileName);
+        if (backupFile.exists()) {
+            Date backupTime = new Date(backupFile.lastModified());
+            if (CommonUtils.isSameDay(backupTime, new Date())) {
+                return;
+            }
+        }
+        try (InputStream fis = new FileInputStream(file)) {
+            try (OutputStream fos = new FileOutputStream(backupFile)) {
+                IOUtils.copyStream(fis, fos);
+            }
+        } catch (Exception e) {
+            log.error("Error creating backup copy of " + file.getAbsolutePath(), e);
+        }
     }
 
 }

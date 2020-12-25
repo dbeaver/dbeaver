@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return parent.getDataSource();
     }
 
-    @Nullable
+    @NotNull
     public DBDAttributeBinding getParentObject() {
         return parent;
     }
@@ -60,14 +61,12 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
 
     @Override
     public boolean isReadOnly() {
-        assert parent != null;
         return parent.getMetaAttribute().isReadOnly();
     }
 
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
-        assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();
     }
 
@@ -76,8 +75,12 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
      */
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
-        assert parent != null;
         return parent.getRowIdentifier();
+    }
+
+    @Override
+    public String getRowIdentifierStatus() {
+        return parent.getRowIdentifierStatus();
     }
 
     @Nullable
@@ -86,5 +89,9 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
         return null;
     }
 
-
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DBDAttributeBindingNested &&
+            CommonUtils.equalObjects(parent, ((DBDAttributeBindingNested) obj).parent);
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -40,7 +43,7 @@ import java.util.*;
 /**
  * PostgreRole
  */
-public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPPersistedObject, DBPSaveableObject, DBPRefreshableObject, DBPNamedObject2, DBAUser {
+public class PostgreRole implements PostgreObject, PostgrePrivilegeOwner, DBPPersistedObject, DBPSaveableObject, DBPRefreshableObject, DBPNamedObject2, DBARole, DBAUser {
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -70,6 +73,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
             this.members = members;
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreRole owner)
             throws SQLException
@@ -177,7 +181,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         return oid;
     }
 
-    @Property(editable = true, updatable = true, order = 10)
+    @Property(editable = true, updatable = true, order = 10, visibleIf = PostgreRoleCanBeSuperUserValidator.class)
     public boolean isSuperUser() {
         return superUser;
     }
@@ -186,7 +190,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.superUser = superUser;
     }
 
-    @Property(editable = true, updatable = true, order = 11)
+    @Property(editable = true, updatable = true, order = 11, visibleIf = PostgreRoleInheritValidator.class)
     public boolean isInherit() {
         return inherit;
     }
@@ -204,7 +208,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.createRole = createRole;
     }
 
-    @Property(editable = true, updatable = true, order = 13)
+    @Property(editable = true, updatable = true, order = 13, visibleIf = PostgreRoleCanCreateDBValidator.class)
     public boolean isCreateDatabase() {
         return createDatabase;
     }
@@ -289,14 +293,14 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     }
 
     @Override
-    public List<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) {
+    public List<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
-            List<PostgrePermission> permissions = new ArrayList<>();
+            List<PostgrePrivilege> permissions = new ArrayList<>();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
-                permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.TABLE, dbStat));
+                permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading table privileges", e);
             }
@@ -304,7 +308,81 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
                     "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
-                permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.FUNCTION, dbStat));
+                permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
+            } catch (Throwable e) {
+                log.error("Error reading routine privileges", e);
+            }
+            // Select acl for all schemas, sequences and materialized views
+            String otherObjectsSQL = "SELECT * FROM (\n" +
+                    "\tSELECT DISTINCT relnamespace,\n" +
+                    "\trelname,\n" +
+                    "\trelkind,\n" +
+                    "\trelacl,\n" +
+                    "(aclexplode(relacl)).grantee as granteeI\n" +
+                    "FROM\n" +
+                    "\tpg_class\n" +
+                    "WHERE\n" +
+                    "\trelacl IS NOT NULL\n" +
+                    "\tAND relnamespace IN (\n" +
+                    "SELECT oid\n" +
+                    "FROM pg_namespace\n" +
+                    "WHERE nspname NOT LIKE 'pg_%' AND nspname != 'information_schema')\n" +
+                    "UNION ALL\n" +
+                    "SELECT DISTINCT\n" +
+                    "\tn.oid AS relnamespace,\n" +
+                    "\tn.nspname AS relname,\n" +
+                    "\t'C' AS relkind,\n" +
+                    "\tnspacl AS relacl,\n" +
+                    "(aclexplode(nspacl)).grantee as granteeI\n" +
+                    "FROM\n" +
+                    "\tpg_catalog.pg_namespace n\n" +
+                    "WHERE\n" +
+                    "\tn.nspacl IS NOT NULL \n" +
+                    "\t) AS tr\n" +
+                    "WHERE tr.granteeI=?" +
+                    " AND tr.relkind IN('S', 'm', 'C')";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(otherObjectsSQL)) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.nextRow()) {
+                        long schemaId = JDBCUtils.safeGetLong(dbResult, 1);
+                        String objectName = JDBCUtils.safeGetString(dbResult, "relname");
+                        String objectType = JDBCUtils.safeGetString(dbResult, "relkind");
+                        Object acl = JDBCUtils.safeGetObject(dbResult, 4);
+                        PostgreSchema schema = getDatabase().getSchema(monitor, schemaId);
+                        if (schema != null && objectName != null && objectType != null) {
+                            List<PostgrePrivilege> privileges;
+                            PostgrePrivilegeGrant.Kind pKind = PostgrePrivilegeGrant.Kind.TABLE;
+                            if (objectType.equals("C")) {
+                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, schema, acl);
+                                pKind = PostgrePrivilegeGrant.Kind.SCHEMA;
+                            } else if (objectType.equals("S")) {
+                                PostgreSequence sequence = schema.getSequence(monitor, objectName);
+                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, sequence, acl);
+                                pKind = PostgrePrivilegeGrant.Kind.SEQUENCE;
+                            } else {
+                                PostgreMaterializedView materializedView = schema.getMaterializedView(monitor, objectName);
+                                privileges = PostgreUtils.extractPermissionsFromACL(monitor, materializedView, acl);
+                            }
+                            for (PostgrePrivilege p : privileges) {
+                                if (p instanceof PostgreObjectPrivilege && getName().equals(((PostgreObjectPrivilege) p).getGrantee())) {
+                                    List<PostgrePrivilegeGrant> grants = new ArrayList<>();
+                                    for (PostgrePrivilege.ObjectPermission perm : p.getPermissions()) {
+                                        grants.add(new PostgrePrivilegeGrant(perm.getGrantor(), getName(), getDatabase().getName(),
+                                                schema.getName(), objectName, perm.getPrivilegeType(), false, false));
+                                    }
+                                    permissions.add(
+                                            new PostgreRolePrivilege(
+                                                    this,
+                                                    pKind,
+                                                    schema.getName(),
+                                                    objectName,
+                                                    grants));
+                                }
+                            }
+                        }
+                    }
+                }
             } catch (Throwable e) {
                 log.error("Error reading routine privileges", e);
             }
@@ -313,26 +391,31 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         }
     }
 
-    private static Collection<PostgrePermission> getRolePermissions(PostgreRole role, PostgrePrivilege.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
+    @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return null;
+    }
+
+    private static Collection<PostgrePrivilege> getRolePermissions(PostgreRole role, PostgrePrivilegeGrant.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-            Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
+            Map<String, List<PostgrePrivilegeGrant>> privs = new LinkedHashMap<>();
             while (dbResult.next()) {
-                PostgrePrivilege privilege = new PostgrePrivilege(kind, dbResult);
+                PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(kind, dbResult);
                 String tableId = privilege.getObjectSchema() + "." + privilege.getObjectName();
-                List<PostgrePrivilege> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
+                List<PostgrePrivilegeGrant> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
                 privList.add(privilege);
             }
             // Pack to permission list
-            List<PostgrePermission> result = new ArrayList<>(privs.size());
-            for (List<PostgrePrivilege> priv : privs.values()) {
-                result.add(new PostgreRolePermission(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+            List<PostgrePrivilege> result = new ArrayList<>(privs.size());
+            for (List<PostgrePrivilegeGrant> priv : privs.values()) {
+                result.add(new PostgreRolePrivilege(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
             }
             return result;
         }
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         membersCache.clearCache();
         belongsCache.clearCache();
         return this;
@@ -342,5 +425,25 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     public String toString() {
         return getName();
     }
-}
 
+    public static class PostgreRoleCanBeSuperUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsSuperusers();
+        }
+    }
+
+    public static class PostgreRoleInheritValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsInheritance();
+        }
+    }
+
+    public static class PostgreRoleCanCreateDBValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsRolesWithCreateDBAbility();
+        }
+    }
+}

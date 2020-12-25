@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.editparts.LayerManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
+import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -83,7 +83,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
 
             UIUtils.launchProgram(filePath);
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Save ERD as SVG", null, e);
+            DBWorkbench.getPlatformUI().showError("Save ERD as SVG", null, e);
         }
     }
 

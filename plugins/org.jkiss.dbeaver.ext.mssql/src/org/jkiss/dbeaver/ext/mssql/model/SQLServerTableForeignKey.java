@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
@@ -36,12 +33,12 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, DBSEntityConstraint>
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, DBSEntityConstraint>
 {
     private List<SQLServerTableForeignKeyColumn> columns;
 
     public SQLServerTableForeignKey(
-        SQLServerTable table,
+        SQLServerTableBase table,
         String name,
         String remarks,
         DBSEntityConstraint referencedKey,
@@ -53,7 +50,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
     }
 
     // Copy constructor
-    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTable table, SQLServerTableForeignKey source) throws DBException {
+    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTableBase table, SQLServerTableForeignKey source) throws DBException {
         super(
             monitor,
             table,
@@ -68,7 +65,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
                     this.columns.add(new SQLServerTableForeignKeyColumn(
                         this,
                         table.getAttribute(monitor, fkCol.getName()),
-                        fkCol.getOrdinalPosition(),
+                        this.columns.size(),
                         table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
                 }
             }

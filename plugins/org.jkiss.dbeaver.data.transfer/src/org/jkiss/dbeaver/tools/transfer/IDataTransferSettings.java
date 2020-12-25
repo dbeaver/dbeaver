@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+
+import java.util.Map;
 
 /**
  * Transfer settings
  */
 public interface IDataTransferSettings {
 
-    void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings);
+    void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings);
 
-    void saveSettings(IDialogSettings dialogSettings);
+    void saveSettings(Map<String, Object> settings);
+
+    String getSettingsSummary();
 
 }

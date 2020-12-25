@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -44,7 +45,7 @@ import java.util.regex.Matcher;
 /**
  * MySQLUser
  */
-public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
+public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject
 {
     private static final Log log = Log.getLog(MySQLUser.class);
 
@@ -85,7 +86,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
         } else {
             this.persisted = false;
-            this.userName = "user";
+            this.userName = "";
             this.host = "%";
         }
     }

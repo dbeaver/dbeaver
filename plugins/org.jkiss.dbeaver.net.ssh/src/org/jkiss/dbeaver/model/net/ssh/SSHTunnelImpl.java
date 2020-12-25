@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * SSH tunnel
@@ -53,8 +52,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         throws DBException, IOException
     {
         this.configuration = configuration;
-        Map<String,String> properties = configuration.getProperties();
-        String implId = properties.get(SSHConstants.PROP_IMPLEMENTATION);
+        String implId = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implId)) {
             // Backward compatibility
             implId = DEF_IMPLEMENTATION;
@@ -65,9 +63,14 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (implDesc == null) {
                 implDesc = SSHImplementationRegistry.getInstance().getDescriptor(DEF_IMPLEMENTATION);
             }
-            implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
+            if (implDesc == null) {
+                throw new DBException("Can't find SSH tunnel implementation '" + implId + "'");
+            }
+            if (implementation == null || implementation.getClass() != implDesc.getImplClass().getObjectClass()) {
+                implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
+            }
         } catch (Throwable e) {
-            throw new DBException("Can't create SSH tunnel implementation", e);
+            throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
         return implementation.initTunnel(monitor, platform, configuration, connectionInfo);
     }
@@ -77,14 +80,14 @@ public class SSHTunnelImpl implements DBWTunnel {
     {
         if (implementation != null) {
             implementation.closeTunnel(monitor);
-            implementation = null;
+            // Do not nullify tunnel to keep saved tunnel port number (#7952)
         }
     }
 
     @Override
     public boolean matchesParameters(String host, int port) {
-        if (host.equals(configuration.getProperties().get(SSHConstants.PROP_HOST))) {
-            int sshPort = CommonUtils.toInt(configuration.getProperties().get(SSHConstants.PROP_PORT));
+        if (host.equals(configuration.getStringProperty(DBWHandlerConfiguration.PROP_HOST))) {
+            int sshPort = configuration.getIntProperty(DBWHandlerConfiguration.PROP_PORT);
             return sshPort == port;
         }
         return false;
@@ -99,18 +102,20 @@ public class SSHTunnelImpl implements DBWTunnel {
             return AuthCredentials.NONE;
         }
 
-        String sshAuthType = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
+        String sshAuthType = configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE);
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         if (sshAuthType != null) {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
         if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
             // Check whether this key is encrypted
-            String privKeyPath = configuration.getProperties().get(SSHConstants.PROP_KEY_PATH);
+            String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
             if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
                 return AuthCredentials.PASSWORD;
             }
-
+            return AuthCredentials.NONE;
+        }
+        if (authType == SSHConstants.AuthType.AGENT) {
             return AuthCredentials.NONE;
         }
         return AuthCredentials.CREDENTIALS;
@@ -120,10 +125,18 @@ public class SSHTunnelImpl implements DBWTunnel {
     public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
         if (implementation != null) {
             RuntimeUtils.runTask(monitor1 -> {
+                monitor1.beginTask("Invalidate SSH tiunnel", 1);
                 try {
                     implementation.invalidateTunnel(monitor1);
                 } catch (Exception e) {
-                    log.debug("Error invalidating SSH tunnel", e);
+                    log.debug("Error invalidating SSH tunnel. Closing.", e);
+                    try {
+                        closeTunnel(monitor);
+                    } catch (Exception e1) {
+                        log.error("Error closing broken tunnel", e1);
+                    }
+                } finally {
+                    monitor.done();
                 }
             },
             "Ping SSH tunnel " + dataSource.getContainer().getName(),

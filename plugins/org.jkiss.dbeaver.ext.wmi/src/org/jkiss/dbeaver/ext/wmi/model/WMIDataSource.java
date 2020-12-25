@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,21 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPExclusiveResource;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -44,12 +46,13 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
+public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, IAdaptable
 {
     private final DBPDataSourceContainer container;
     private WMINamespace rootNamespace;
     private final SQLDialect dialect;
     private final long id;
+    private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
     public WMIDataSource(DBPDataSourceContainer container)
         throws DBException
@@ -82,7 +85,7 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
 
     @NotNull
     @Override
-    public DBCExecutionContext getDefaultContext(boolean meta) {
+    public DBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
         return this;
     }
 
@@ -146,7 +149,7 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
 
     @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
+    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException
     {
         return this;
     }
@@ -156,6 +159,12 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException
     {
         throw new DBException("Connection invalidate not supported");
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContextDefaults getContextDefaults() {
+        return null;
     }
 
     @Override
@@ -191,11 +200,13 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
         QMUtils.getDefaultHandler().handleContextClose(this);
     }
 
+    @NotNull
     @Override
     public DBSInstance getDefaultInstance() {
         return this;
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSInstance> getAvailableInstances() {
         return Collections.singletonList(this);
@@ -205,6 +216,12 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     public void shutdown(DBRProgressMonitor monitor)
     {
         this.close();
+    }
+
+    @NotNull
+    @Override
+    public DBPExclusiveResource getExclusiveLock() {
+        return exclusiveLock;
     }
 
     @Association

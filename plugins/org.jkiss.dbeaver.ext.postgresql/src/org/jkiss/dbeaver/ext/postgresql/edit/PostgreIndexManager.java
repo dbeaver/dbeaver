@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,21 +23,17 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -48,54 +44,22 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreIndex> getObjectsCache(PostgreIndex object)
+    public DBSObjectCache<PostgreTableContainer, PostgreIndex> getObjectsCache(PostgreIndex object)
     {
-        return object.getTable().getContainer().indexCache;
+        return object.getTable().getContainer().getSchema().getIndexCache();
     }
 
     @Override
     protected PostgreIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
-        Object from)
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
     {
-        return new UITask<PostgreIndex>() {
-            @Override
-            protected PostgreIndex runTask() {
-                EditIndexPage editPage = new EditIndexPage(
-                    "Edit index",
-                    parent,
-                    Collections.singletonList(DBSIndexType.OTHER));
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-                final PostgreIndex index = new PostgreIndex(
-                    parent,
-                    idxName.toString(),
-                    editPage.getIndexType(),
-                    editPage.isUnique());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    if (colIndex == 1) {
-                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
-                    }
-                    index.addColumn(
-                        new PostgreIndexColumn(
-                            index,
-                            (PostgreAttribute) tableColumn,
-                            null,
-                            colIndex++,
-                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
-                                -1,
-                                false));
-                }
-                idxName.append("_IDX"); //$NON-NLS-1$
-                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-                return index;
-            }
-        }.execute();
+        PostgreTableBase tableBase = (PostgreTableBase) container;
+        return new PostgreIndex(
+            tableBase,
+            "NewIndex",
+            DBSIndexType.UNKNOWN,
+            false);
     }
 
     protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
@@ -113,13 +77,22 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
+    public void deleteObject(DBECommandContext commandContext, PostgreIndex object, Map<String, Object> options) throws DBException {
+        if (object.isPrimaryKeyIndex()) {
+            throw new DBException("You can not drop constraint-based unique index.\n" +
+                "Try to drop constraint '" + object.getName() + "'.");
+        }
+        super.deleteObject(commandContext, object, options);
+    }
+
+    @Override
     protected String getDropIndexPattern(PostgreIndex index)
     {
         return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         boolean hasDDL = false;
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
@@ -136,14 +109,14 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             }
         }
         if (!hasDDL) {
-            super.addObjectCreateActions(monitor, actions, command, options);
+            super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         }
         if (!CommonUtils.isEmpty(index.getDescription())) {
             addIndexCommentAction(actions, index);
         }
     }
 
-    static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
+    private static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
         actions.add(new SQLDatabasePersistAction(
             "Comment index",
             "COMMENT ON INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) +

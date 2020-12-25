@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 
 /**
  * DB editor utils
@@ -54,21 +55,22 @@ public class DatabaseEditorUtils {
             tabFolder.setBorderVisible(false);
         }
 
-        Color bgColor = null;
+        DBPDataSourceContainer dsContainer = null;
         if (editor instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
-            if (container != null) {
-                bgColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
-            }
+            dsContainer = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
         } else if (editor instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
             if (context != null) {
-                bgColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionConfiguration());
+                dsContainer = context.getDataSource().getContainer();
             }
         }
-        if (bgColor == null) {
+
+        if (dsContainer == null) {
             rootComposite.setBackground(null);
         } else {
+            Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
+
+            rootComposite.setData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
             rootComposite.setBackground(bgColor);
         }
     }
@@ -87,6 +89,13 @@ public class DatabaseEditorUtils {
             IWorkbenchCommandConstants.FILE_REVERT,
             null,
             UIIcon.RESET,
+            null,
+            true));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_REFRESH,
+            null,
+            UIIcon.REFRESH,
             null,
             true));
     }

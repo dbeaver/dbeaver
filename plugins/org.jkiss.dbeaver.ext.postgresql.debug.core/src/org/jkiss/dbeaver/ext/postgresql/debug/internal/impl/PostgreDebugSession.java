@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -35,8 +35,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -76,7 +74,6 @@ import java.util.Map;
  * state until next breakpoint or end of procedure will be reached <br/>
  */
 public class PostgreDebugSession extends DBGJDBCSession {
-
     private final JDBCExecutionContext controllerConnection;
 
     private int functionOid = -1;
@@ -140,14 +137,14 @@ public class PostgreDebugSession extends DBGJDBCSession {
                 PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration());
                 instance = function.getDatabase();
             }
-            this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session");
+            this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session", null);
 
             log.debug("Debug controller session created.");
             JDBCDataSource src = this.controllerConnection.getDataSource();
             if (src instanceof PostgreDataSource) {
                 PostgreDataSource pgSrc = (PostgreDataSource) src;
-                log.debug(String.format("Active user %s", instance.getActiveUser()));
-                log.debug(String.format("Active schema %s", instance.getActiveSchemaName()));
+                log.debug(String.format("Active user %s", instance.getMetaContext().getActiveUser()));
+                log.debug(String.format("Active schema %s", instance.getMetaContext().getDefaultSchema()));
                 if (pgSrc.getInfo() instanceof JDBCDataSourceInfo) {
                     JDBCDataSourceInfo JDBCinfo = (JDBCDataSourceInfo) pgSrc.getInfo();
                     log.debug("------------DATABASE DRIVER INFO---------------");
@@ -383,7 +380,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
         try {
-            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session");
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session", null);
             log.debug("Attaching locally....");
             this.sessionInfo = getSessionDescriptor(monitor, connection);
 
@@ -431,7 +428,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         log.debug("Global breakpoint added");
 
         String sessionParam = String.valueOf(getSessionId());
-        String taskName = "PostgreSQL Debug - Global session " + sessionInfo.getID();
+        String taskName = "PostgreSQL Debug - Global session " + sessionParam;
         String sql = SQL_ATTACH.replaceAll("\\?sessionid", sessionParam);
         DBGEvent begin = new DBGEvent(this, DBGEvent.RESUME, DBGEvent.MODEL_SPECIFIC);
         DBGEvent end = new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.BREAKPOINT);
@@ -534,20 +531,19 @@ public class PostgreDebugSession extends DBGJDBCSession {
     protected String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
         String sqlPattern = attachKind == PostgreDebugAttachKind.GLOBAL ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
-
-        String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+        long lineNumber = bp.isOnStart() ? -1 : bp.getLineNo();
+        log.debug(String.format("Adding breakpoint to line #%d", lineNumber));
+        return sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
             .replaceAll("\\?obj", String.valueOf(functionOid))
-            .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
+            .replaceAll("\\?line", String.valueOf(lineNumber))
             .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
-        return sqlCommand;
     }
 
     protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor breakpointDescriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) breakpointDescriptor;
-        String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+        return SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
             .replaceAll("\\?obj", String.valueOf(functionOid))
             .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
-        return sqlCommand;
     }
 
     @Override
@@ -815,7 +811,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     @Override
     public boolean canStepReturn() {
-        return true;
+        return false;
     }
 
     /**
@@ -859,5 +855,4 @@ public class PostgreDebugSession extends DBGJDBCSession {
             }
         }
     }
-
 }

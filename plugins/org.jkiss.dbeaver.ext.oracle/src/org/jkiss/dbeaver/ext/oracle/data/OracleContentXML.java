@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
@@ -35,15 +35,15 @@ import java.sql.SQLXML;
  * XML content
  */
 public class OracleContentXML extends JDBCContentXML {
-    public OracleContentXML(DBPDataSource dataSource, SQLXML xml)
+    OracleContentXML(DBCExecutionContext executionContext, SQLXML xml)
     {
-        super(dataSource, xml);
+        super(executionContext, xml);
     }
 
     @Override
     protected OracleContentXML createNewContent()
     {
-        return new OracleContentXML(dataSource, null);
+        return new OracleContentXML(executionContext, null);
     }
 
     @Override
@@ -64,11 +64,11 @@ public class OracleContentXML extends JDBCContentXML {
                         xmlObject);
                 }
             } else {
-                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML);
+                preparedStatement.setNull(paramIndex, java.sql.Types.SQLXML, columnType.getTypeName());
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
         catch (IOException e) {
             throw new DBCException("IO error while reading XML", e);
@@ -79,14 +79,14 @@ public class OracleContentXML extends JDBCContentXML {
     {
         try {
             return BeanUtils.invokeStaticMethod(
-                DBUtils.getDriverClass(dataSource, OracleConstants.XMLTYPE_CLASS_NAME),
+                DBUtils.getDriverClass(executionContext.getDataSource(), OracleConstants.XMLTYPE_CLASS_NAME),
                 "createXML",
                 new Class[] {java.sql.Connection.class, java.io.InputStream.class},
                 new Object[] {session.getOriginal(), stream});
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         } catch (Throwable e) {
-            throw new DBCException("Internal error when creating XMLType", e, session.getDataSource());
+            throw new DBCException("Internal error when creating XMLType", e, executionContext);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *               2017 Andrew Khitrin   (andrew@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,80 +17,55 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import java.sql.ResultSet;
-
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
-public class PostgreTablePartition extends PostgreTable
-{
-	
-	public static final String CAT_PARTITIONING = "Partitioning";
+import java.sql.ResultSet;
+import java.util.Map;
 
-	public PostgreTablePartition(PostgreSchema catalog) {
-		super(catalog);
-	}
+public class PostgreTablePartition extends PostgreTable implements DBSTablePartition {
 
-	public PostgreTablePartition(PostgreSchema catalog, ResultSet dbResult) {
-		super(catalog, dbResult);
-	}
-	
-	
-	
-	 public PostgreTablePartition(PostgreSchema container, DBSEntity source, boolean persisted) {
-		super(container, source, persisted);
-	}
+    public static final String CAT_PARTITIONING = "Partitioning";
 
-	@Property(category = CAT_PARTITIONING, editable = false, viewable = true, order = 50)
-     public String getPartKeys() {
-	        return "this.oid";
-	    }
+    private String partitionExpression;
+    private PostgreTable partitionOf;
 
-	
-	/*
-    private final PostgreTableBase partitionTable;
-    private int sequenceNum;
-//select * from  pg_partitioned_table where partrelid = ? 
-    public PostgreTablePartition(
-        @NotNull PostgreTableBase table,
-        @NotNull PostgreTableBase partitionTable,
-        int sequenceNum,
-        boolean persisted)
-    {
-        super(table,
-            table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "->" + partitionTable.getFullyQualifiedName(DBPEvaluationContext.DDL),
-            DBSEntityConstraintType.INHERITANCE);
-        this.setPersisted(persisted);
-        this.partitionTable = partitionTable;
-        this.sequenceNum = sequenceNum;
+    public PostgreTablePartition(PostgreTable container) {
+        super(container);
+        this.partitionExpression = "FOR VALUES ";
+        this.setPartition(true);
+        this.setName("newpartition");
+        this.partitionOf = container;
     }
 
+    public PostgreTablePartition(PostgreTableContainer container, ResultSet dbResult) {
+        super(container, dbResult);
+        this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 60)
     @Nullable
-    @Override
-    public DBSEntityConstraint getReferencedConstraint() {
-        return this;
+    public String getPartitionExpression() {
+        return partitionExpression;
     }
+
+    public void setPartitionExpression(String expr) {
+        this.partitionExpression = expr;
+    }
+
 
     @Override
-    @Property(viewable = true)
-    public PostgreTableBase getAssociatedEntity() {
-        return this.partitionTable;
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
-    @Property(viewable = true)
-    public int getSequenceNum() {
-        return sequenceNum;
+    public PostgreTable getPartitionOf() {
+        return partitionOf;
     }
 
-    @Nullable
-    @Override
-    public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
-
-    }
-    */
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -32,26 +34,30 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject
+    implements SQLServerObject, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
-    private static final String CAT_STATISTICS = "Statistics";
-
     private long objectId;
+    private String type;
     private String description;
-    private Long rowCount;
+    protected Long rowCount;
 
     protected SQLServerTableBase(SQLServerSchema schema)
     {
@@ -59,7 +65,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     // Copy constructor
-    protected SQLServerTableBase(DBRProgressMonitor monitor, SQLServerSchema catalog, DBSEntity source) throws DBException {
+    protected SQLServerTableBase(DBRProgressMonitor monitor, SQLServerSchema catalog, SQLServerTableBase source) throws DBException {
         super(catalog, source, false);
     }
 
@@ -71,6 +77,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
     }
 
     public SQLServerDatabase getDatabase() {
@@ -93,6 +100,16 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return objectId;
     }
 
+    @Property(order = 6)
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public boolean isSystem() {
+        return SQLServerObjectType.S.name().equals(type);
+    }
+
     @Override
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription() {
@@ -104,7 +121,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     @Override
-    public Collection<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -164,7 +181,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
-    public Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor) throws DBCException
     {
         if (rowCount != null || !isPersisted()) {
             return rowCount;
@@ -185,10 +202,81 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getDatabase(),
-            getSchema(),
-            this);
+        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+            // Older Azure doesn't support database name in queries
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getSchema(),
+                this);
+        }
+        if (isView() && context == DBPEvaluationContext.DDL) {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getSchema(),
+                this);
+        } else {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getDatabase(),
+                getSchema(),
+                this);
+        }
     }
 
+    ////////////////////////////////////////////////////////
+    // Data manipulation handler
+
+    @Override
+    public void beforeDataChange(@NotNull DBCSession session, @NotNull DBSManipulationType type, @NotNull DBSAttributeBase[] attributes, @NotNull DBCExecutionSource source) throws DBCException {
+        if (hasIdentInsert(type, attributes)) {
+            enableIdentityInsert(session, true);
+        }
+    }
+
+    @Override
+    public void afterDataChange(@NotNull DBCSession session, @NotNull DBSManipulationType type, @NotNull DBSAttributeBase[] attributes, @NotNull DBCExecutionSource source) throws DBCException {
+        if (hasIdentInsert(type, attributes)) {
+            enableIdentityInsert(session, false);
+        }
+    }
+
+    private void enableIdentityInsert(DBCSession session, boolean enable) throws DBCException {
+        try {
+            JDBCUtils.executeStatement(
+                (JDBCSession)session,
+                "SET IDENTITY_INSERT " + getFullyQualifiedName(DBPEvaluationContext.DML) + " " + (enable ? " ON" : "OFF"));
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+    }
+
+    private boolean hasIdentInsert(@NotNull DBSManipulationType type, @NotNull DBSAttributeBase[] attributes) {
+        if (type == DBSManipulationType.INSERT) {
+            for (DBSAttributeBase attr : attributes) {
+                if (attr.isAutoGenerated()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        rowCount = null;
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (isView()) {
+            return false;
+        }
+        Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
+        if (!CommonUtils.isEmpty(indexes)) {
+            for (SQLServerTableIndex index : indexes) {
+                if (index.getIndexType() == DBSIndexType.CLUSTERED) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

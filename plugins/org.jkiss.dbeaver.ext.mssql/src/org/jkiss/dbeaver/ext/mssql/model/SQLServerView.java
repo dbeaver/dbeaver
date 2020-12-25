@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,28 +24,20 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
  * SQLServerView
  */
-public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
+public class SQLServerView extends SQLServerTableBase implements DBSView
 {
     private static final Log log = Log.getLog(SQLServerView.class);
 
@@ -57,7 +49,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
     }
 
     // Copy constructor
-    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, DBSEntity source) throws DBException {
+    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerView source) throws DBException {
         super(monitor, schema, source);
     }
 
@@ -75,7 +67,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
     }
 
     @Override
-    public Collection<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -138,21 +130,40 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
         return null;
     }
 
+    public String getDDL() {
+        return ddl;
+    }
+
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
         if (ddl == null) {
-            ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
+            if (isPersisted()) {
+                ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+            } else {
+                ddl = "CREATE VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
+            }
         }
         return ddl;
     }
 
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-
-        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+    public void setObjectDefinitionText(String source) {
+        this.ddl = source;
     }
 
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.ddl = null;
+
+        return super.refreshObject(monitor);
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return false;
+    }
 }

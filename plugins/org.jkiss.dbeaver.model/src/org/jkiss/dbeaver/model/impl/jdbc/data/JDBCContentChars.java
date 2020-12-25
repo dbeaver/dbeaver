@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,8 +45,8 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     private String originalData;
     protected String data;
 
-    public JDBCContentChars(DBPDataSource dataSource, String data) {
-        super(dataSource);
+    public JDBCContentChars(DBCExecutionContext executionContext, String data) {
+        super(executionContext);
         this.data = this.originalData = data;
     }
 
@@ -140,7 +140,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public String getCharset()
     {
-        return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
+        return DBValueFormatting.getDefaultBinaryFileEncoding(executionContext.getDataSource());
     }
 
     @Override
@@ -162,7 +162,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -192,6 +192,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
+    public int hashCode() {
+        return data == null ? 0 : data.hashCode();
+    }
+
+    @Override
     public String getDisplayString(DBDDisplayFormat format) {
         return data;
     }
@@ -199,7 +204,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentChars(dataSource, data);
+        return new JDBCContentChars(executionContext, data);
     }
 
     @Override

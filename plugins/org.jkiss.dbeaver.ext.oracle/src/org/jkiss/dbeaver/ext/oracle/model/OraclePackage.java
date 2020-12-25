@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,18 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -50,6 +52,9 @@ import java.util.*;
 public class OraclePackage extends OracleSchemaObject
     implements OracleSourceObject, DBPScriptObjectExt, DBSObjectContainer, DBSPackage, DBPRefreshableObject, DBSProcedureContainer
 {
+
+    private static final Log log = Log.getLog(OraclePackage.class);
+
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
     private String sourceDeclaration;
@@ -111,9 +116,13 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return proceduresCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<OracleDependency> getDependents(DBRProgressMonitor monitor) throws DBException {
+        return OracleDependency.readDependencies(monitor, this, true);
     }
 
     @Override
@@ -133,8 +142,9 @@ public class OraclePackage extends OracleSchemaObject
         return proceduresCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
         return OracleProcedurePackaged.class;
     }
@@ -157,11 +167,12 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
-        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
+        this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE) &&
+        		OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE_BODY);
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         /*if (!CommonUtils.isEmpty(sourceDeclaration)) */{
@@ -172,15 +183,19 @@ public class OraclePackage extends OracleSchemaObject
                     "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
                 ));
         }
-        if (!CommonUtils.isEmpty(sourceDefinition)) {
-            actions.add(
-                new OracleObjectPersistAction(
-                    OracleObjectType.PACKAGE_BODY,
-                    "Compile package body",
-                    "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
-                ));
+        try {
+            if (!CommonUtils.isEmpty(getExtendedDefinitionText(monitor))) {
+                actions.add(
+                        new OracleObjectPersistAction(
+                            OracleObjectType.PACKAGE_BODY,
+                            "Compile package body",
+                            "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
+                            ));
+            }
+        } catch (DBException e) {
+            log.warn("Unable to retrieve package body, not compiling it", e);
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     @NotNull
@@ -192,6 +207,7 @@ public class OraclePackage extends OracleSchemaObject
 
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OraclePackage owner)
             throws SQLException

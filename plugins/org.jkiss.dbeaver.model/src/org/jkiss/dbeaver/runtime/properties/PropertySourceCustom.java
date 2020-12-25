@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,26 +33,37 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     private List<DBPPropertyDescriptor> props = new ArrayList<>();
 
-    private Map<Object, Object> originalValues = new TreeMap<>();
-    private Map<Object, Object> propValues = new TreeMap<>();
-    private Map<Object,Object> defaultValues = new TreeMap<>();
+    private Map<String, Object> originalValues = new TreeMap<>();
+    private Map<String, Object> propValues = new TreeMap<>();
+    private Map<String,Object> defaultValues = new TreeMap<>();
+    private IVariableResolver defValueResolver = null;
 
     public PropertySourceCustom()
     {
     }
 
-    public PropertySourceCustom(Collection<? extends DBPPropertyDescriptor> properties, Map<?, ?> values)
+    public PropertySourceCustom(Collection<? extends DBPPropertyDescriptor> properties, Map<String, ?> values)
     {
         addProperties(properties);
         setValues(values);
     }
 
-    public void setValues(Map<?, ?> values)
+    public PropertySourceCustom(DBPPropertyDescriptor[] properties, Map<String, ?> values)
+    {
+        addProperties(properties);
+        setValues(values);
+    }
+
+    public void setDefValueResolver(IVariableResolver defValueResolver) {
+        this.defValueResolver = defValueResolver;
+    }
+
+    public void setValues(Map<String, ?> values)
     {
         this.originalValues = new HashMap<>();
         // Set only allowed properties + transform property types
         if (values != null) {
-            for (Map.Entry<?, ?> value : values.entrySet()) {
+            for (Map.Entry<String, ?> value : values.entrySet()) {
                 Object propValue = value.getValue();
                 for (DBPPropertyDescriptor prop : props) {
                     if (prop.getId().equals(value.getKey())) {
@@ -66,31 +78,44 @@ public class PropertySourceCustom implements DBPPropertySource {
         }
     }
 
-    public void setDefaultValues(Map<Object, Object> defaultValues)
+    public void setDefaultValues(Map<String, Object> defaultValues)
     {
         this.defaultValues = defaultValues;
     }
 
-    public void addDefaultValues(Map<Object, Object> defaultValues)
+    public void addDefaultValues(Map<String, ?> defaultValues)
     {
         this.defaultValues.putAll(defaultValues);
     }
 
-    public Map<Object, Object> getProperties() {
-        Map<Object, Object> allValues = new HashMap<>(originalValues);
+    public Map<String, Object> getPropertyValues() {
+        Map<String, Object> allValues = new HashMap<>(originalValues);
         allValues.putAll(propValues);
         return allValues;
     }
 
-    public Map<Object, Object> getPropertiesWithDefaults() {
-        Map<Object, Object> allValues = new HashMap<>(defaultValues);
+    public Map<String, Object> getPropertiesWithDefaults() {
+        Map<String, Object> allValues = new HashMap<>(defaultValues);
         allValues.putAll(originalValues);
         allValues.putAll(propValues);
+        if (defValueResolver != null) {
+            for (Map.Entry<String, Object> prop : allValues.entrySet()) {
+                prop.setValue(getDefaultValue(prop.getValue()));
+            }
+        }
         return allValues;
     }
 
-    public void addProperties(Collection<? extends DBPPropertyDescriptor> properties)
+    public void addProperty(DBPPropertyDescriptor property)
     {
+        props.add(property);
+        final Object defaultValue = property.getDefaultValue();
+        if (defaultValue != null) {
+            defaultValues.put(property.getId(), defaultValue);
+        }
+    }
+
+    public void addProperties(Collection<? extends DBPPropertyDescriptor> properties) {
         props.addAll(properties);
         for (DBPPropertyDescriptor prop : properties) {
             final Object defaultValue = prop.getDefaultValue();
@@ -100,6 +125,23 @@ public class PropertySourceCustom implements DBPPropertySource {
         }
     }
 
+    public void addProperties(DBPPropertyDescriptor[] properties) {
+        Collections.addAll(props, properties);
+        for (DBPPropertyDescriptor prop : properties) {
+            final Object defaultValue = prop.getDefaultValue();
+            if (defaultValue != null) {
+                defaultValues.put(prop.getId(), defaultValue);
+            }
+        }
+    }
+
+    private Object getDefaultValue(Object defaultValue) {
+        if (defValueResolver != null && defaultValue instanceof String) {
+            return GeneralUtils.replaceVariables((String) defaultValue, defValueResolver);
+        }
+        return defaultValue;
+    }
+
     @Override
     public Object getEditableValue()
     {
@@ -107,12 +149,12 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+    public DBPPropertyDescriptor[] getProperties() {
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         if (id == null) {
             return null;
@@ -121,34 +163,37 @@ public class PropertySourceCustom implements DBPPropertySource {
         if (value == null) {
             value = originalValues.get(id);
         }
-        return value != null ? value : defaultValues.get(id);
+        if (value == null) {
+            value = defaultValues.get(id);
+        }
+        return value != null ? getDefaultValue(value) : null;
     }
 
     @Override
-    public boolean isPropertyResettable(Object id)
+    public boolean isPropertyResettable(String id)
     {
         return true;
     }
 
     @Override
-    public boolean isPropertySet(Object id)
+    public boolean isPropertySet(String id)
     {
         final Object value = getPropertyValue(null, id);
         if (value == null) {
             return false;
         }
-        final Object defaultValue = defaultValues.get(id);
-        return !CommonUtils.equalObjects(value, defaultValue);
+        final Object defaultValue = getDefaultValue(defaultValues.get(id));
+        return !CommonUtils.equalObjects(getDefaultValue(value), defaultValue);
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
     {
         propValues.remove(id);
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
     {
         if (!originalValues.containsKey(id)) {
             if (propValues.containsKey(id)) {
@@ -167,16 +212,17 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public boolean isDirty(Object id)
-    {
-        return !propValues.isEmpty();
-    }
-
-    @Override
-    public void resetPropertyValueToDefault(Object id)
+    public void resetPropertyValueToDefault(String id)
     {
         propValues.remove(id);
         originalValues.remove(id);
     }
 
+    public void removeAll() {
+        props.clear();
+
+        originalValues.clear();
+        propValues.clear();
+        defaultValues.clear();
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.AbstractResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -39,12 +39,10 @@ import java.util.Map;
 /**
  * Managable result set
  */
-public class JDBCResultSetImpl implements JDBCResultSet {
+public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatement> implements JDBCResultSet {
 
     private static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
-    private JDBCSession session;
-    private JDBCStatement statement;
     private ResultSet original;
     private final String description;
     private JDBCResultSetMetaData metaData;
@@ -61,20 +59,18 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     protected JDBCResultSetImpl(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
     {
-        this.session = session;
+        super(session, statement);
         this.original = original;
         this.disableLogging = disableLogging;
         this.description = description;
-        if (statement == null) {
-            this.fake = true;
-        } else {
-            this.statement = statement;
-            this.fake = false;
-        }
+        this.fake = statement == null;
 
         if (!disableLogging) {
             // Notify handler
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetOpen(this.original);
         }
     }
 /*
@@ -151,7 +147,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return original.getObject(index + 1);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -162,24 +158,8 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return original.getObject(name);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
-    }
-
-    @Nullable
-    @Override
-    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
-    {
-        // No meta information in standard JDBC
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBDValueMeta getRowMeta() throws DBCException
-    {
-        // No meta information in standard JDBC
-        return null;
     }
 
     private void checkNotEmpty()
@@ -200,7 +180,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return this.next();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -214,7 +194,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return this.absolute(position);
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
@@ -227,7 +207,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             try {
                 metaData = createMetaDataImpl();
             } catch (SQLException e) {
-                throw new DBCException(e, session.getDataSource());
+                throw new DBCException(e, session.getExecutionContext());
             }
         }
         return metaData;
@@ -243,8 +223,16 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return original.getCursorName();
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
+    }
+
+    @Override
+    public Object getFeature(String name) {
+        if (FEATURE_NAME_JDBC.equals(name)) {
+            return true;
+        }
+        return super.getFeature(name);
     }
 
     @Override
@@ -285,6 +273,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             if (fetched) {
                 rowsFetched++;
             }
+            if (fetched && JDBCTrace.isApiTraceEnabled()) {
+                JDBCTrace.dumpResultSetRow(this.original);
+            }
+
             return fetched;
         }
         finally {
@@ -321,6 +313,9 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         if (fake && statement != null) {
             statement.close();
         }
+        if (JDBCTrace.isApiTraceEnabled()) {
+            JDBCTrace.dumpResultSetClose();
+        }
     }
 
     @Override
@@ -337,6 +332,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     {
         checkNotEmpty();
         return original.getString(columnIndex);
+    }
+
+    private static void traceGetValue(int columnIndex, String value) {
+
     }
 
     @Override

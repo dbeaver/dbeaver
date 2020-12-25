@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+<extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- H2GIS driver -->
+        <datasource
+                class="org.jkiss.dbeaver.ext.h2gis.H2GISDataSourceProvider"
+                description="%datasource.h2gis.description"
+                id="h2gis"
+                parent="generic"
+                label="H2GIS"
+                icon="icons/h2gis_icon.png"
+                dialect="h2">
+            <drivers managable="true">
+
+                <driver
+                    id="h2gis_embedded"
+                    label="H2GIS Embedded"
+                    icon="icons/h2gis_icon.png"
+                    iconBig="icons/h2gis_icon_big.png"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:{file}"
+                    webURL="http://www.h2gis.org/"
+                    embedded="true"
+                    description="H2GIS Embedded"
+                    categories="spatial,sql,embedded">
+
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+
+		        <driver
+                    id="h2gis_server"
+                    label="H2GIS Server"
+                    icon="icons/h2gis_icon.png"
+                    iconBig="icons/h2gis_icon_big.png"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
+                    defaultPort="9092"
+                    webURL="http://www.h2gis.org/"
+                    description="H2GIS Embedded"
+                    categories="spatial,sql,server">
+
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
+                description="H2GIS data types provider"
+                id="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
+                label="H2GIS data types provider">
+
+            <datasource id="h2gis"/>
+
+            <type name="GEOMETRY"/>
+
+        </provider>
+    </extension>
+
+</plugin>

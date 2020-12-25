@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider"/>
+         <meta.schema plugin="org.jkiss.dbeaver.data.transfer" id="org.jkiss.dbeaver.dataTransferProvider" name="Data Export Provider"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]

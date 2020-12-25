@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,9 @@ public class DBConstants {
     public static final String PARAM_OBJECT_DEFINITION_TEXT = "objectDefinitionText"; //NON-NLS-1
     public static final String PARAM_EXTENDED_DEFINITION_TEXT = "extendedDefinitionText"; //NON-NLS-1
 
+    public static final String VAR_CONTEXT_NAME = "context.name";
+    public static final String VAR_CONTEXT_ID = "context.id";
+
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
@@ -109,9 +112,14 @@ public class DBConstants {
 
     public static final String DEFAULT_ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    public static final String DEFAULT_DRIVERS_FOLDER = ".dbeaver-drivers";
+    public static final String LEGACY_DRIVERS_FOLDER = ".dbeaver-drivers";
+    public static final String DEFAULT_DRIVERS_FOLDER = "drivers";
 
     public static final String MODEL_BUNDLE_ID = "org.jkiss.dbeaver.model";
 
     public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
+
+    public static final String LABEL_NA = "N/A";
+
+    public static final String DEBUG_LOG_FILE_NAME = "dbeaver-debug.log";
 }

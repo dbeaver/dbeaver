@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,16 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,7 +94,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Import error",
                 "Cannot import projects",
                 ex.getTargetException());
@@ -121,14 +124,12 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
                     if (libsElement != null) {
                         final Collection<Element> libList = XMLUtils.getChildElementList(libsElement, RegistryConstants.TAG_FILE);
-                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_load_libraries, libList.size());
                         for (Element libElement : libList) {
                             libMap.put(
                                 libElement.getAttribute(ExportConstants.ATTR_PATH),
                                 libElement.getAttribute(ExportConstants.ATTR_FILE));
                             monitor.worked(1);
                         }
-                        monitor.done();
                     }
                 }
 
@@ -157,16 +158,13 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     final Element projectsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_PROJECTS);
                     if (projectsElement != null) {
                         final Collection<Element> projectList = XMLUtils.getChildElementList(projectsElement, ExportConstants.TAG_PROJECT);
-                        monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_projects, projectList.size());
                         for (Element projectElement : projectList) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
 
                             importProject(monitor, projectElement, zipFile, driverMap);
-                            monitor.worked(1);
                         }
-                        monitor.done();
                     }
                 }
 
@@ -215,7 +213,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             // Try to find existing driver by class name
             List<DriverDescriptor> matchedDrivers = new ArrayList<>();
             for (DriverDescriptor tmpDriver : dataSourceProvider.getEnabledDrivers()) {
-                if (tmpDriver.getDriverClassName().equals(driverClass)) {
+                if (CommonUtils.equalObjects(tmpDriver.getDriverClassName(), driverClass)) {
                     matchedDrivers.add(tmpDriver);
                 }
             }
@@ -329,27 +327,31 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return null;
         }
 
-        IWorkspace eclipseWorkspace = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace();
+        IWorkspace eclipseWorkspace = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace();
         IProject project = eclipseWorkspace.getRoot().getProject(targetProjectName);
         if (project.exists()) {
             throw new DBException("Project '" + targetProjectName + "' already exists");
         }
 
-        monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_import_project + targetProjectName);
-
         final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }
-        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {
+            monitor.beginTask(CoreMessages.dialog_project_import_wizard_monitor_import_projects, zipFile.size());
+            monitor.subTask("Import project properties");
+
             // Open project
             project.open(RuntimeUtils.getNestedMonitor(monitor));
 
+            monitor.worked(1);
+
             // Set project properties
             loadResourceProperties(monitor, project, projectElement);
+            monitor.worked(1);
 
             // Load resources
             importChildResources(
@@ -362,6 +364,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             // Update driver references in datasources
             updateDriverReferences(monitor, project, driverMap);
 
+            monitor.done();
         } catch (Exception e) {
             // Cleanup project which was partially imported
             try {
@@ -370,9 +373,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 log.error(e1);
             }
             throw new DBException("Error importing project resources", e);
-        }
-        if (projectRegistry.getDataSourceRegistry(project) == null) {
-            projectRegistry.addProject(project);
         }
 
         return project;
@@ -383,18 +383,16 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         for (Element childElement : XMLUtils.getChildElementList(resourceElement, ExportConstants.TAG_RESOURCE)) {
             String childName = childElement.getAttribute(ExportConstants.ATTR_NAME);
-            boolean isDirectory = CommonUtils.getBoolean(childElement.getAttribute(ExportConstants.ATTR_DIRECTORY));
+            monitor.subTask("Import " + childName);
+            monitor.worked(1);
             String entryPath = containerPath + childName;
-            if (isDirectory) {
-                entryPath += "/"; //$NON-NLS-1$
-            }
-            final ZipEntry resourceEntry = zipFile.getEntry(entryPath);
+            ZipEntry resourceEntry = zipFile.getEntry(entryPath);
             if (resourceEntry == null) {
-                throw new DBException("Project resource '" + entryPath + "' not found in archive");
+                // Maybe it is a directory
+                log.error("Project resource '" + entryPath + "' not found in archive");
+                continue;
             }
-            if (isDirectory != resourceEntry.isDirectory()) {
-                throw new DBException("Directory '" + entryPath + "' stored as file in archive");
-            }
+            boolean isDirectory = resourceEntry.isDirectory();
             IResource childResource;
             if (isDirectory) {
                 IFolder folder;
@@ -409,7 +407,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     folder.create(true, true, RuntimeUtils.getNestedMonitor(monitor));
                 }
                 childResource = folder;
-                importChildResources(monitor, folder, childElement, entryPath, zipFile);
+                importChildResources(monitor, folder, childElement, entryPath + "/", zipFile);
             } else {
                 IFile file;
                 if (resource instanceof IFolder) {
@@ -448,12 +446,12 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
     private void updateDriverReferences(DBRProgressMonitor monitor, IProject project, Map<String, String> driverMap) throws DBException, CoreException, IOException
     {
-        IFile configFile = project.getFile(DataSourceRegistry.CONFIG_FILE_NAME);
+        IFile configFile = project.getFile(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (configFile == null || !configFile.exists()) {
             configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
-            throw new DBException("Cannot find configuration file '" + DataSourceRegistry.CONFIG_FILE_NAME + "'");
+            return;
         }
         // Read and filter datasources config
         final InputStream configContents = configFile.getContents();

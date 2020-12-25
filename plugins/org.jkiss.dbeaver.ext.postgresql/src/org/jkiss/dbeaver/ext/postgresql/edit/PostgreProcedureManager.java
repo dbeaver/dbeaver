@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,26 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +48,17 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     public DBSObjectCache<PostgreSchema, PostgreProcedure> getObjectsCache(PostgreProcedure object)
     {
-        return object.getContainer().proceduresCache;
+        return object.getContainer().getProceduresCache();
+    }
+
+    @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof PostgreSchema && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
+    }
+
+    @Override
+    public boolean canDeleteObject(PostgreProcedure object) {
+        return object.getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
@@ -63,7 +68,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
@@ -72,40 +77,27 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreSchema parent, Object copyFrom)
+    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new UITask<PostgreProcedure>() {
-            @Override
-            protected PostgreProcedure runTask() {
-                CreateFunctionPage editPage = new CreateFunctionPage(parent, monitor);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                PostgreProcedure newProcedure = new PostgreProcedure(parent);
-                newProcedure.setName(editPage.getProcedureName());
-                newProcedure.setLanguage(editPage.getLanguage());
-                newProcedure.setReturnType(editPage.getReturnType());
-                return newProcedure;
-            }
-        }.execute();
+        return new PostgreProcedure((PostgreSchema) container);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(actionList, command.getObject());
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         String objectType = command.getObject().getProcedureTypeName();
         actions.add(
@@ -120,8 +112,8 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreProcedure, PropertyHandler> command, Map<String, Object> options) {
-        if (command.getProperty("description") != null) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreProcedure, PropertyHandler> command, Map<String, Object> options) {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment function",
                 "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature() +
@@ -144,81 +136,17 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         PostgreProcedure procedure = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename function",
                 "ALTER " + command.getObject().getProcedureTypeName() + " " +
-                        DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + PostgreProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor), true) +
+                        DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + PostgreProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor), true, false) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getNewName()))
         );
     }
 
-    private static class CreateFunctionPage extends CreateProcedurePage {
-        private final PostgreSchema parent;
-        private final DBRProgressMonitor monitor;
-        private PostgreLanguage language;
-        private PostgreDataType returnType;
-
-        public CreateFunctionPage(PostgreSchema parent, DBRProgressMonitor monitor) {
-            super(parent);
-            this.parent = parent;
-            this.monitor = monitor;
-        }
-
-        @Override
-        public DBSProcedureType getPredefinedProcedureType() {
-            return DBSProcedureType.FUNCTION;
-        }
-
-        @Override
-        protected void createExtraControls(Composite group) {
-            {
-                List<PostgreLanguage> languages = new ArrayList<>();
-                try {
-                    languages.addAll(parent.getDatabase().getLanguages(monitor));
-                } catch (DBException e) {
-                    log.error(e);
-                }
-                final Combo languageCombo = UIUtils.createLabelCombo(group, "Language", SWT.DROP_DOWN | SWT.READ_ONLY);
-                for (PostgreLanguage lang : languages) {
-                    languageCombo.add(lang.getName());
-                }
-
-                languageCombo.addModifyListener(e -> {
-                    language = languages.get(languageCombo.getSelectionIndex());
-                });
-                languageCombo.setText("sql");
-            }
-            {
-                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getDataSource().getLocalDataTypes());
-                final Combo dataTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
-                for (PostgreDataType dt : dataTypes) {
-                    dataTypeCombo.add(dt.getName());
-                }
-
-                dataTypeCombo.addModifyListener(e -> {
-                    String dtName = dataTypeCombo.getText();
-                    if (!CommonUtils.isEmpty(dtName)) {
-                        returnType = parent.getDatabase().getDataSource().getLocalDataType(dtName);
-                    } else {
-                        returnType = null;
-                    }
-                });
-                dataTypeCombo.setText("int4");
-            }
-            
-        }
-
-        public PostgreLanguage getLanguage() {
-            return language;
-        }
-
-        public PostgreDataType getReturnType() {
-            return returnType;
-        }
-    }
 }
 

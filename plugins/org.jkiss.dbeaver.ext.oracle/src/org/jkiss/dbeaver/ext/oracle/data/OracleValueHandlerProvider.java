@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -33,7 +33,7 @@ import java.sql.Types;
 public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
@@ -45,12 +45,14 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIMESTAMP_WITH_TIMEZONE:
             case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
                 if (((OracleDataSource)dataSource).isDriverVersionAtLeast(12, 2)) {
-                    return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                    return new OracleTemporalAccessorValueHandler(preferences);
                 } else {
-                    return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+                    return new OracleTimestampValueHandler(preferences);
                 }
             case Types.STRUCT:
                 return OracleObjectValueHandler.INSTANCE;
+            case OracleConstants.DATA_TYPE_REFCURSOR:
+                return OracleRefCursorValueHandler.INSTANCE;
         }
 
         final String typeName = typedObject.getTypeName();
@@ -60,10 +62,12 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 return OracleXMLValueHandler.INSTANCE;
             case OracleConstants.TYPE_NAME_BFILE:
                 return OracleBFILEValueHandler.INSTANCE;
+            case OracleConstants.TYPE_NAME_REFCURSOR:
+                return OracleRefCursorValueHandler.INSTANCE;
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
-            return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+            return new OracleTimestampValueHandler(preferences);
         } else {
             return null;
         }

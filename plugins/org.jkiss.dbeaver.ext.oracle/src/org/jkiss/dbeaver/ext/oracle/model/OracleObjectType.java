@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public enum OracleObjectType implements DBSObjectType {
 	JOB_CLASS("JOB CLASS", null, DBSObject.class, null),
 	LIBRARY("LIBRARY", null, DBSObject.class, null),
 	LOB("CONTENT", null, DBSObject.class, null),
-	MATERIALIZED_VIEW("MATERIALIZED VIEW", null, DBSObject.class, null),
+	MATERIALIZED_VIEW("MATERIALIZED VIEW", DBIcon.TREE_VIEW, DBSObject.class, null),
 	OPERATOR("OPERATOR", null, DBSObject.class, null),
 	PACKAGE("PACKAGE", DBIcon.TREE_PACKAGE, OraclePackage.class, new ObjectFinder() {
         @Override

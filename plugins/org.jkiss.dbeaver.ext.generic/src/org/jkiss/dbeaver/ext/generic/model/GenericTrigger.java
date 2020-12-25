@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,12 @@ public class GenericTrigger implements DBSTrigger, GenericScriptObject
     @NotNull
     private final GenericStructContainer container;
     @Nullable
-    private final GenericTable table;
+    private final GenericTableBase table;
     private String name;
     private String description;
     protected String source;
 
-    public GenericTrigger(@NotNull GenericStructContainer container, @Nullable GenericTable table, String name, String description) {
+    public GenericTrigger(@NotNull GenericStructContainer container, @Nullable GenericTableBase table, String name, String description) {
         this.container = container;
         this.table = table;
         this.name = name;
@@ -75,7 +75,7 @@ public class GenericTrigger implements DBSTrigger, GenericScriptObject
     @Nullable
     @Override
     @Property(viewable = true, order = 4)
-    public GenericTable getTable()
+    public GenericTableBase getTable()
     {
         return table;
     }

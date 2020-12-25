@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -34,10 +32,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
@@ -47,11 +47,19 @@ import java.util.List;
 /**
 * SQL Server database
 */
-public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject{
+public class SQLServerDatabase
+    implements
+        DBSCatalog,
+        DBPSaveableObject,
+        DBPRefreshableObject,
+        DBPSystemObject,
+        DBPNamedObject2,
+        DBPObjectStatistics {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
 
     private final SQLServerDataSource dataSource;
+    private final long databaseId;
     private boolean persisted;
     private String name;
     private String description;
@@ -59,23 +67,50 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     private SchemaCache schemaCache = new SchemaCache();
     private TriggerCache triggerCache = new TriggerCache();
 
-    SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
+    private Long databaseTotalSize;
+
+    SQLServerDatabase(JDBCSession session, SQLServerDataSource dataSource, JDBCResultSet resultSet) {
         this.dataSource = dataSource;
+        this.databaseId = JDBCUtils.safeGetLong(resultSet, "database_id");
         this.name = JDBCUtils.safeGetString(resultSet, "name");
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
+
+        if (CommonUtils.equalObjects(
+            ((SQLServerExecutionContext) session.getExecutionContext()).getActiveDatabaseName(),
+            this.name))
+        {
+            try {
+                getSchemas(session.getProgressMonitor());
+            } catch (DBException e) {
+                log.debug("Error reading default database schemas", e);
+            }
+        }
     }
 
+    public SQLServerDatabase(SQLServerDataSource dataSource) {
+        this.dataSource = dataSource;
+        this.databaseId = 0;
+        this.persisted = false;
+    }
+
+    @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
         return dataSource;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void setName(String newName) {
+        name = newName;
     }
 
     @Override
@@ -86,6 +121,10 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public long getDatabaseId() {
+        return databaseId;
     }
 
     @Override
@@ -108,13 +147,23 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return name.equals("msdb");
     }
 
+    public DataTypeCache getDataTypesCache() {
+        return typesCache;
+    }
+
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
         typesCache.clearCache();
         schemaCache.clearCache();
         triggerCache.clearCache();
+        databaseTotalSize = null;
         return this;
     }
+
+    void refreshDataTypes() {
+        typesCache.clearCache();
+    }
+
 
     //////////////////////////////////////////////////
     // Data types
@@ -128,14 +177,19 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return typesCache.getObject(monitor, this, typeName);
     }
 
-    public SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, int typeID) throws DBException {
-        typesCache.getAllObjects(monitor, this);
+    SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, int typeID) throws DBException {
+        try {
+            typesCache.getAllObjects(monitor, this);
 
-        SQLServerDataType dataType = typesCache.getDataType(typeID);
-        if (dataType != null) {
-            return dataType;
+            SQLServerDataType dataType = typesCache.getDataType(typeID);
+            if (dataType != null) {
+                return dataType;
+            }
+        } catch (DBException e) {
+            log.error("Error reading database data types", e);
         }
-        dataType = dataSource.getSystemDataType(typeID);
+
+        SQLServerDataType dataType = dataSource.getSystemDataType(typeID);
         if (dataType != null) {
             return dataType;
         }
@@ -143,22 +197,54 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return null;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    @Override
+    public boolean hasStatistics() {
+        return databaseTotalSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return databaseTotalSize == null ? 0 : databaseTotalSize;
+    }
+
+    void setDatabaseTotalSize(long databaseTotalSize) {
+        this.databaseTotalSize = databaseTotalSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+    ///////////////////////////////////////////////////////
+    // Caches
+
     private class DataTypeCache extends JDBCObjectCache<SQLServerDatabase, SQLServerDataType> {
 
         private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
         
+        @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerDatabase database) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
             return session.prepareStatement(
-                "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1 order by name");
+                    "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
+                            " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
+                            "ss.name = tt.name" +
+                            " WHERE ss.is_user_defined = 1");
         }
 
         @Override
-        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
+        protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @NotNull JDBCResultSet resultSet) {
             return new SQLServerDataType(database, resultSet);
         }
 
-        public SQLServerDataType getDataType(long typeID) {
+        SQLServerDataType getDataType(long typeID) {
             return dataTypeMap.get(typeID);
         }
 
@@ -204,7 +290,9 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
                 return schema;
             }
         }
-        log.debug("Schema '" + schemaId + "' not found");
+        if (!monitor.isCanceled()) {
+            log.debug("Schema '" + schemaId + "' not found");
+        }
         return null;
     }
 
@@ -212,23 +300,40 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return schemaCache.getObject(monitor, this, name);
     }
 
+    public SQLServerSchema getSchema(String name) {
+        return schemaCache.getCachedObject(name);
+    }
+
+    public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
+        for (SQLServerSchema schema : getSchemas(monitor)) {
+            if (schema.getName().equalsIgnoreCase("sys")) {
+                return schema;
+            }
+        }
+        if (!monitor.isCanceled()) {
+            log.debug("System schema not found");
+        }
+        return null;
+    }
+
     @Override
-    public Collection<SQLServerSchema> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return schemaCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return schemaCache.getObject(monitor, this, childName);
     }
 
+    @NotNull
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return SQLServerSchema.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         schemaCache.getAllObjects(monitor, this);
     }
 
@@ -237,6 +342,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
             setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner) throws SQLException {
             SQLServerDataSource dataSource = owner.getDataSource();
@@ -244,18 +350,25 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
             String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, owner.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
-            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId()).append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            sql.append("\nWHERE ");
+            sql.append("SELECT ");
             if (!showAllSchemas) {
-                sql.append("EXISTS (SELECT 1 FROM ")
-                    .append(sysSchema).append(".sysobjects o ").append("WHERE s.schema_id=o.uid)");
-            } else {
-                sql.append("1=1");
+                sql.append("DISTINCT ");
+            }
+            sql.append("s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
+            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId())
+                .append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+            if (!showAllSchemas) {
+                sql.append("\nINNER JOIN ").append(sysSchema).append(".");
+                if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
+                    sql.append("all_objects o ").append("ON s.schema_id=o.schema_id");
+                } else {
+                    sql.append("sysobjects o ").append("ON s.schema_id=o.uid");
+                }
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", false);
+                sql.append("\n");
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
@@ -281,14 +394,15 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return triggerCache.getAllObjects(monitor, this);
     }
 
-    public TriggerCache getTriggerCache() {
+    TriggerCache getTriggerCache() {
         return triggerCache;
     }
 
     class TriggerCache extends JDBCObjectLookupCache<SQLServerDatabase, SQLServerDatabaseTrigger> {
 
+        @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT t.* FROM \n")
@@ -307,7 +421,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         }
 
         @Override
-        protected SQLServerDatabaseTrigger fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
+        protected SQLServerDatabaseTrigger fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @NotNull JDBCResultSet resultSet) {
             return new SQLServerDatabaseTrigger(database, resultSet);
         }
 

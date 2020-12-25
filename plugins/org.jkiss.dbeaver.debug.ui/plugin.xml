@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.debug.ui.configurationPanels" name="DBeaver debug configuration panels" schema="schema/org.jkiss.dbeaver.debug.configurationPanels.exsd"/>
@@ -75,23 +58,19 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
-                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor" class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
             <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
         </factory>
-        <factory adaptableType="org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput"
-                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput" class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
             <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
         </factory>
-        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
-                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject" class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
             <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
         </factory>
     </extension>
 
     <extension point="org.eclipse.debug.ui.debugModelPresentations">
-        <debugModelPresentation class="org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation"
-                                id="org.jkiss.dbeaver.debug.core.database"/>
+        <debugModelPresentation class="org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation" id="org.jkiss.dbeaver.debug.core.database"/>
     </extension>
 
     <extension point="org.eclipse.debug.ui.detailPaneFactories">
@@ -113,11 +92,7 @@
     <extension point="org.eclipse.ui.commands">
         <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
 
-        <command
-                name="%commands.command.menuDelegateToolbar.name"
-                description="%commands.command.menuDelegateToolbar.description"
-                id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu">
-        </command>
+        <command id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" name="%commands.command.menuDelegateToolbar.name" description="%commands.command.menuDelegateToolbar.description"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -126,26 +101,35 @@
 
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"/>
+        <handler commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler">
+            <enabledWhen>
+                <!-- Only when there is a breakpoint adapter for current object -->
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                        <adapt type="org.jkiss.dbeaver.debug.DBGBreakpointDescriptor"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:#SQLRulerContext?before=additions">
-            <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label" style="push"/>
+            <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label" style="push">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-            <toolbar id="dbeaver-debug" label="%toolbar.debug.label">
-                <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
-                         label="%commands.command.debugConfigurations.name"
-                         tooltip="%commands.command.debugConfigurations.description" style="pulldown">
-                    <visibleWhen>
-                        <reference definitionId="DBeaverPerspectiveActive"/>
-                    </visibleWhen>
-                </command>
-                <separator name="additions" visible="false"/>
-            </toolbar>
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="debug" visible="false"/>
+            <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
+                     label="%commands.command.debugConfigurations.name"
+                     tooltip="%commands.command.debugConfigurations.description" style="pulldown">
+                <visibleWhen>
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.debug.ui.menu.pulldown">

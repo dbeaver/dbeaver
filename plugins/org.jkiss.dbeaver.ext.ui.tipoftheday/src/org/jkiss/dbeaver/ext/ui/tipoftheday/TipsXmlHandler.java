@@ -15,8 +15,7 @@ public class TipsXmlHandler extends DefaultHandler {
     private boolean tipTagStarted;
     private StringBuilder tipTagContent = new StringBuilder();
     private List<String> tips = new ArrayList<>();
-    private static final String BR = "br";
-    private static final List<String> HTML_TAGS = Arrays.asList(BR, "b", "i", "u", "q", "a", "p", "div");
+    private static final List<String> HTML_TAGS = Arrays.asList("br", "b", "i", "u", "q", "a", "p", "div");
     private static final String TAG_BRACKET_BEGIN = "<";
     private static final String TAG_BRACKET_END = ">";
     private static final String SLASH = "/";
@@ -50,7 +49,7 @@ public class TipsXmlHandler extends DefaultHandler {
             tipTagContent = new StringBuilder();
         }
 
-        if (!qName.equals(BR) && HTML_TAGS.contains(qName) && tipTagStarted) {
+        if (HTML_TAGS.contains(qName) && tipTagStarted) {
             tipTagContent.append(TAG_BRACKET_BEGIN).append(SLASH).append(qName).append(TAG_BRACKET_END);
         }
     }

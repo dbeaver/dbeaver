@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreServerExtension
@@ -27,6 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface PostgreServerExtension
 {
     String getServerTypeName();
+
+    boolean supportsTransactions();
 
     boolean supportsOids();
 
@@ -39,6 +45,12 @@ public interface PostgreServerExtension
     boolean supportsInheritance();
 
     boolean supportsTriggers();
+
+    boolean supportsFunctionDefRead();
+
+    boolean supportsFunctionCreate();
+
+    boolean supportsRules();
 
     boolean supportsExtensions();
 
@@ -58,25 +70,75 @@ public interface PostgreServerExtension
 
     boolean supportsForeignServers();
 
-    boolean isSupportsLimits();
+    boolean supportsAggregates();
+
+    boolean supportsResultSetLimits();
 
     boolean supportsClientInfo();
 
     boolean supportsRelationSizeCalc();
 
-    boolean supportFunctionDefRead();
+    boolean supportsExplainPlan();
 
-    String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
+    boolean supportsExplainPlanXML();
+
+    boolean supportsExplainPlanVerbose();
+
+    boolean supportsDatabaseDescription();
+
+    boolean supportsTemporalAccessor();
+
+    boolean supportsTeblespaceLocation();
 
     boolean supportsTemplates();
+
+    // Stored procedures support (workarounds for Redshift mostly)
+    boolean supportsStoredProcedures();
+    String getProceduresSystemTable();
+    String getProceduresOidColumn();
+
+    // Table DDL extraction
+    String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
     // Custom schema cache.
     JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
 
     PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult);
 
+    PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException;
+
     void configureDialect(PostgreDialect dialect);
 
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
 
+    PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException;
+
+    // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
+    void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
+
+    List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
+
+    Map<String, String> getDataTypeAliases();
+
+    boolean supportsTableStatistics();
+
+    // True if driver returns source table name in ResultSetMetaData.
+    // It works for original PG driver but doesn't work for many forks (e.g. Redshift).
+    boolean supportsEntityMetadataInResults();
+
+    boolean supportsPGConstraintExpressionColumn();
+
+    boolean supportsHasOidsColumn();
+
+    boolean supportsDatabaseSize();
+
+    boolean isAlterTableAtomic();
+
+    boolean supportsSuperusers();
+
+    boolean supportsRolesWithCreateDBAbility();
+
+    boolean supportSerialTypes();
+
+    boolean supportsBackslashStringEscape();
 }

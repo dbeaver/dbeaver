@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,18 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 
 /**
  * DBNDatabaseItem
  */
-public class DBNDatabaseItem extends DBNDatabaseNode
-{
-    private DBXTreeItem meta;
+public class DBNDatabaseItem extends DBNDatabaseNode {
+    private DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect)
-    {
+    DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -37,22 +35,19 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     }
 
     @Override
-    public boolean isDisposed()
-    {
+    public boolean isDisposed() {
         return object == null || super.isDisposed();
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
         unregisterNode(reflect);
         this.object = null;
         super.dispose(reflect);
     }
 
     @Override
-    public DBXTreeItem getMeta()
-    {
+    public DBXTreeNode getMeta() {
         return meta;
     }
 
@@ -67,32 +62,31 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     }
 
     @Override
-    public DBSObject getObject()
-    {
+    public DBSObject getObject() {
+        // FIXME: we can't throw error here because too many
+//        if (object == null) {
+//            throw new IllegalStateException("Null object in navigator node. Node was disposed?");
+//        }
         return object;
     }
 
     @Override
-    public Object getValueObject()
-    {
+    public Object getValueObject() {
         return object;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return object != null && object.isPersisted();
     }
 
     @Override
-    public final boolean isManagable()
-    {
+    public final boolean isManagable() {
         return true;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return object == null ? super.toString() : object.toString();
     }
 }

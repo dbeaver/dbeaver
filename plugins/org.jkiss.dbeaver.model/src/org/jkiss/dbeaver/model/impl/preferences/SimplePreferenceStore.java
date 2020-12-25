@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-    import java.util.HashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -98,8 +98,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     @Override
     public boolean contains(String name)
     {
-        return (properties.containsKey(name) || defaultProperties
-            .containsKey(name));
+        return properties.containsKey(name);
     }
 
     @Override
@@ -386,4 +385,15 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof SimplePreferenceStore)) {
+            return false;
+        }
+        SimplePreferenceStore copy = (SimplePreferenceStore)obj;
+        return
+            CommonUtils.equalObjects(parentStore, copy.parentStore) &&
+            CommonUtils.equalObjects(properties, copy.properties) &&
+            CommonUtils.equalObjects(defaultProperties, copy.defaultProperties);
+    }
 }

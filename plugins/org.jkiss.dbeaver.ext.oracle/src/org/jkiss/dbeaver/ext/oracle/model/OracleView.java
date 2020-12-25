@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -43,7 +45,7 @@ import java.util.Map;
 /**
  * OracleView
  */
-public class OracleView extends OracleTableBase implements OracleSourceObject
+public class OracleView extends OracleTableBase implements OracleSourceObject, DBSView
 {
     private static final Log log = Log.getLog(OracleView.class);
 
@@ -77,6 +79,9 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private String viewText;
+    // Generated from ALL_VIEWS
+    private String viewSourceText;
+    private OracleDDLFormat currentDDLFormat;
 
     public OracleView(OracleSchema schema, String name)
     {
@@ -115,11 +120,32 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (viewText == null) {
+             currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
+        }
+        OracleDDLFormat newFormat = OracleDDLFormat.FULL;
+        boolean isFormatInOptions = options.containsKey(OracleConstants.PREF_KEY_DDL_FORMAT);
+        if (isFormatInOptions) {
+            newFormat = (OracleDDLFormat) options.get(OracleConstants.PREF_KEY_DDL_FORMAT);
+        }
+
+        if (viewText == null || (currentDDLFormat != newFormat && isPersisted())) {
             try {
-                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.FULL, options);
+                if (viewText == null || !isFormatInOptions) {
+                    viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, currentDDLFormat, options);
+                } else {
+                    viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, newFormat, options);
+                    currentDDLFormat = newFormat;
+                }
             } catch (DBException e) {
                 log.warn("Error getting view definition from system package", e);
             }
+        }
+        if (CommonUtils.isEmpty(viewText)) {
+            loadAdditionalInfo(monitor);
+            if (CommonUtils.isEmpty(viewSourceText)) {
+                return "-- Oracle view definition is not available";
+            }
+            return viewSourceText;
         }
         return viewText;
     }
@@ -178,7 +204,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
-                    "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "VIEWS") + " WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -199,10 +225,9 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                     }
                     additionalInfo.loaded = true;
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
         }
 
         if (viewDefinitionText != null) {
@@ -218,12 +243,20 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                 }
                 paramsList.append(")");
             }
-            viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewDefinitionText;
+            viewSourceText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewDefinitionText;
         }
     }
 
     @Override
-    public DBEPersistAction[] getCompileActions()
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.additionalInfo.loaded = false;
+        this.viewText = null;
+        this.viewSourceText = null;
+        return super.refreshObject(monitor);
+    }
+
+    @Override
+    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor)
     {
         return new DBEPersistAction[] {
             new OracleObjectPersistAction(

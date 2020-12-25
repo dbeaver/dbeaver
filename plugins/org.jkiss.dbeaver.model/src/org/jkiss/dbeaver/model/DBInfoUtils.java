@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public final class DBInfoUtils {
         PropertyCollector collector = new PropertyCollector(targetObject, false);
         collector.collectProperties();
 
-        for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+        for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
             Object propValue = collector.getPropertyValue(null, descriptor.getId());
             if (propValue == null) {
                 continue;

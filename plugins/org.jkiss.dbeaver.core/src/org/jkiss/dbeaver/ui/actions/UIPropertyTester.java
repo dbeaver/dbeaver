@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,8 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.resources.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.runtime.IPluginService;
-import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 
 /**
@@ -38,9 +35,9 @@ public class UIPropertyTester extends PropertyTester {
         switch (property) {
             case PROP_TOOLBAR_VISIBLE:
                 if (IActionConstants.TOOLBAR_DATABASE.equals(expectedValue)) {
-                    return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS);
+                    return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS);
                 } else if (IActionConstants.TOOLBAR_EDIT.equals(expectedValue)) {
-                    return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT);
+                    return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT);
                 }
         }
         return false;

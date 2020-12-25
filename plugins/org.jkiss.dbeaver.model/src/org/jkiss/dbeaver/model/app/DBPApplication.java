@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,39 @@ package org.jkiss.dbeaver.model.app;
 import org.jkiss.code.NotNull;
 
 /**
- * DBPApplication
+ * DB application.
+ * Application implementors may redefine core app behavior and/or settings.
  */
 public interface DBPApplication
 {
     boolean isStandalone();
 
+    /**
+     * Primary instance if the first instance of application which locked the workspace.
+     * Other instances can be run over the same workspace but they can't lock it.
+     */
+    boolean isPrimaryInstance();
+
+    /**
+     * Headless mode - console interface or server-side mode
+     */
+    boolean isHeadlessMode();
+
     @NotNull
     DBASecureStorage getSecureStorage();
+
+    @NotNull
+    DBASecureStorage getProjectSecureStorage(DBPProject project);
 
     /**
      * Application information details.
      * Like license info or some custom produce info
      */
     String getInfoDetails();
+
+    /**
+     * Default project name, e.g. 'General'.
+     */
+    String getDefaultProjectName();
 
 }

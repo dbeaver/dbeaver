@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ public interface JDBCObjectLookup<OWNER extends DBSObject, OBJECT extends DBSObj
     /**
      * Creates statement to read just one object.
      * Parameter @object OR @objectName may be specified to find an object
-     * @throws SQLException
      */
     @NotNull
     JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT object, @Nullable String objectName)

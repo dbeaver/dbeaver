@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -78,13 +79,21 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
             @Override
             public void subTask(String name) {
                 if (loadStartTime == 0) {
-                    loadStartTime = System.currentTimeMillis();
+                    resetStartTime();
                 }
                 progressMessage = name;
                 super.subTask(name);
             }
         };
         return progressMonitor;
+    }
+
+    public void resetStartTime() {
+        this.loadStartTime = System.currentTimeMillis();
+    }
+
+    public ILoadService<RESULT> getLoadService() {
+        return loadService;
     }
 
     @Override
@@ -166,15 +175,15 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                 String statusMessage = CommonUtils.truncateString(
                     progressMessage.replaceAll("\\s", " "), 64);
                 String status = statusMessage + " - " + elapsedString + "s";
+                e.gc.setFont(cancelButton.getFont());
                 Point statusSize = e.gc.textExtent(status);
 
                 int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                 int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                e.gc.setForeground(progressPane.getForeground());
-                e.gc.setBackground(progressPane.getBackground());
+                e.gc.setForeground(UIStyles.getDefaultTextForeground());
+                e.gc.setBackground(UIStyles.getDefaultTextBackground());
                 e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                 e.gc.drawText(status, statusX, statusY, true);
-                e.gc.setForeground(shadowColor);
                 e.gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
             };
             progressPane.addPaintListener(painListener);

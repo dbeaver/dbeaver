@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * EntityEditorsRegistry
+ * DataTransferRegistry
  */
 public class DataTransferRegistry {
 
@@ -42,8 +42,7 @@ public class DataTransferRegistry {
 
     private static final Log log = Log.getLog(DataTransferRegistry.class);
 
-    public synchronized static DataTransferRegistry getInstance()
-    {
+    public synchronized static DataTransferRegistry getInstance() {
         if (instance == null) {
             instance = new DataTransferRegistry(Platform.getExtensionRegistry());
         }
@@ -52,8 +51,7 @@ public class DataTransferRegistry {
 
     private List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
 
-    private DataTransferRegistry(IExtensionRegistry registry)
-    {
+    private DataTransferRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
@@ -83,18 +81,15 @@ public class DataTransferRegistry {
         nodes.sort(Comparator.comparing(DataTransferNodeDescriptor::getName));
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects)
-    {
+    public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects) {
         return getAvailableNodes(DataTransferNodeDescriptor.NodeType.PRODUCER, sourceObjects);
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableConsumers(Collection<DBSObject> sourceObjects)
-    {
+    public List<DataTransferNodeDescriptor> getAvailableConsumers(Collection<DBSObject> sourceObjects) {
         return getAvailableNodes(DataTransferNodeDescriptor.NodeType.CONSUMER, sourceObjects);
     }
 
-    List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<DBSObject> sourceObjects)
-    {
+    List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<DBSObject> sourceObjects) {
         List<DataTransferNodeDescriptor> result = new ArrayList<>();
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeType() == nodeType) {
@@ -109,8 +104,17 @@ public class DataTransferRegistry {
         return result;
     }
 
-    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type)
-    {
+    public List<DataTransferNodeDescriptor> getNodes(DataTransferNodeDescriptor.NodeType nodeType) {
+        List<DataTransferNodeDescriptor> result = new ArrayList<>();
+        for (DataTransferNodeDescriptor node : nodes) {
+            if (node.getNodeType() == nodeType) {
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
+    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type) {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeClass().equals(type)) {
                 return node;
@@ -119,8 +123,7 @@ public class DataTransferRegistry {
         return null;
     }
 
-    public DataTransferNodeDescriptor getNodeById(String id)
-    {
+    public DataTransferNodeDescriptor getNodeById(String id) {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getId().equals(id)) {
                 return node;
@@ -129,11 +132,24 @@ public class DataTransferRegistry {
         return null;
     }
 
-    public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
-        for (DataTransferNodeDescriptor nd : nodes) {
-            for (DataTransferPageDescriptor pd : nd.patPageDescriptors()) {
-                if (pd.getPageType().getImplName().equals(page.getClass().getName())) {
-                    return pd;
+    public DataTransferProcessorDescriptor getProcessor(String processorFullId) {
+        String[] idParts = processorFullId.split(":");
+        if (idParts.length == 2) {
+            DataTransferNodeDescriptor node = getNodeById(idParts[0]);
+            if (node != null) {
+                return node.getProcessor(idParts[1]);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Class<? extends IDataTransferNode> nodeType, Class<?> objectType) {
+        List<DataTransferProcessorDescriptor> processors = null;
+        for (DataTransferNodeDescriptor node : nodes) {
+            if (node.getNodeClass() == nodeType) {
+                if (node.appliesToType(objectType)) {
+                    return node.getAvailableProcessors(objectType);
                 }
             }
         }

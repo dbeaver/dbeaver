@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static DBeaverActivator instance;
+    private static File configDir;
     private ResourceBundle pluginResourceBundle, coreResourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
@@ -57,6 +58,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         super.start(context);
 
         instance = this;
+
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
@@ -93,9 +95,12 @@ public class DBeaverActivator extends AbstractUIPlugin {
     /**
      * Returns configuration file
      */
-    public static File getConfigurationFile(String fileName)
+    public static synchronized File getConfigurationFile(String fileName)
     {
-        return new File(getInstance().getStateLocation().toFile(), fileName);
+        if (configDir == null) {
+            configDir = getInstance().getStateLocation().toFile();
+        }
+        return new File(configDir, fileName);
     }
 
     /**
@@ -134,5 +139,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
         }
     }
 
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return imageDescriptorFromPlugin(DBeaverCore.PLUGIN_ID, path);
+    }
 
 }

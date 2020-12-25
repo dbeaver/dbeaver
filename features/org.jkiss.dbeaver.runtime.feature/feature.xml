@@ -2,9 +2,9 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="%featureName"
-        version="5.3.1.qualifier"
+        version="7.3.1.qualifier"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core.eclipse">
+        plugin="org.jkiss.dbeaver.model">
 
     <description>
         %description
@@ -18,23 +18,35 @@
         %license
     </license>
 
-    <includes
-            id="org.jkiss.dbeaver.core.feature"
-            version="0.0.0"/>
-
     <requires>
         <import plugin="org.eclipse.core.runtime"/>
         <import plugin="org.eclipse.core.resources"/>
         <import plugin="org.eclipse.core.expressions"/>
-        <import plugin="org.eclipse.ui"/>
-        <import plugin="org.eclipse.ui.workbench"/>
-        <import plugin="org.eclipse.ui.workbench.texteditor"/>
-        <import plugin="org.eclipse.swt"/>
-        <import plugin="org.eclipse.jface"/>
-        <import plugin="org.eclipse.jface.text"/>
-        <import plugin="org.eclipse.ui.views"/>
     </requires>
 
-    <plugin id="org.jkiss.dbeaver.core.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.slf4j" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.model.sql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.cmp.simple" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.tasks.native" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.erd.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- GIS -->
+    <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- 3rd party -->
+    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.sun.jna" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

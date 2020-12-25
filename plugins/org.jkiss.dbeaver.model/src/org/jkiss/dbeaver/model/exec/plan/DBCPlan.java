@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,26 @@ package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Execution plan
  */
 public interface DBCPlan {
 
+    /**
+     * Keep original plan nodes structure (produced by server).
+     * Restricts any client-side plan structure modifications.
+     */
+    String OPTION_KEEP_ORIGINAL = "keepOriginal";
+
     String getQueryString();
 
     String getPlanQueryString() throws DBException;
 
-    Collection<? extends DBCPlanNode> getPlanNodes();
+    Object getPlanFeature(String feature);
+
+    List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options);
 
 }

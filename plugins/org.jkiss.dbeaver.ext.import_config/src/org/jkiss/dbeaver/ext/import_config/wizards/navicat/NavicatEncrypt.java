@@ -11,10 +11,11 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
 
+import org.jkiss.utils.CommonUtils;
+
+import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 public class NavicatEncrypt {
     private static final String NAVICAT_CODE = "3DC5CA39";
@@ -71,7 +72,7 @@ public class NavicatEncrypt {
     private void initIV()
     {
         try {
-            byte[] initVec = DatatypeConverter.parseHexBinary("FFFFFFFFFFFFFFFF");
+            byte[] initVec = CommonUtils.parseHexString("FFFFFFFFFFFFFFFF");
             _iv = _chiperCrypt.doFinal(initVec);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -105,7 +106,7 @@ public class NavicatEncrypt {
             byte[] inData = inputString.getBytes("US-ASCII");
             byte[] outData = encrypt(inData);
 
-            return DatatypeConverter.printHexBinary(outData);
+            return CommonUtils.toHexString(outData);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -157,7 +158,7 @@ public class NavicatEncrypt {
     public String decrypt(String hexString)
     {
         try {
-            byte[] inData = DatatypeConverter.parseHexBinary(hexString);
+            byte[] inData = CommonUtils.parseHexString(hexString);
             byte[] outData = decrypt(inData);
 
             return new String(outData);

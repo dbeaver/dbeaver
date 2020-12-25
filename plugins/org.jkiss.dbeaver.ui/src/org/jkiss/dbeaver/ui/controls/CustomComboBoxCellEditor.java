@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -32,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
 
-    //private SimpleContentProposalProvider proposalProvider;
+    private StringContentProposalProvider proposalProvider;
 
     public CustomComboBoxCellEditor(Composite parent, String[] items) {
         super(parent, items);
@@ -64,9 +66,9 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
      */
     public void setItems(String[] items) {
         super.setItems(items);
-//        if (proposalProvider != null) {
-//            proposalProvider.setProposals(items);
-//        }
+        if (proposalProvider != null) {
+            proposalProvider.setProposals(items);
+        }
     }
 
     @Override
@@ -81,9 +83,8 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
         if ((getStyle() & SWT.READ_ONLY) == 0) {
             // Install proposal provider for editable combos
             // In fact it was a bad idea to use proposals in inline combo editors (#2409)
-            //proposalProvider = new SimpleContentProposalProvider(comboBox.getItems());
-            //proposalProvider.setFiltering(true);
-            //UIUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, true, true);
+            proposalProvider = new StringContentProposalProvider(comboBox.getItems());
+            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider);
         }
 
         return comboBox;
@@ -120,4 +121,23 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
     protected int getDoubleClickTimeout() {
         return 0;
     }
+
+    @Override
+    protected boolean dependsOnExternalFocusListener() {
+        return false;
+    }
+
+    @Override
+    protected void focusLost() {
+        Control newFocus = getControl().getDisplay().getFocusControl();
+        if (newFocus == null) {
+            return;
+        }
+        if (newFocus.getShell() != getControl().getShell()) {
+            // It is probably content assist popup - do no close editor
+            return;
+        }
+        super.focusLost();
+    }
+
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.sqlite.ui.data.manager.SQLiteValueManager" id="org.jkiss.dbeaver.ext.sqlite.ui.data.manager.SQLiteValueManager">
+            <supports dataSource="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
+        </manager>
+    </extension>
+
+</plugin>

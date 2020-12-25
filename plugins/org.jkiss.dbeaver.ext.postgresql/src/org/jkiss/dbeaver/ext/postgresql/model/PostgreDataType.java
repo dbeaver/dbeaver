@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -57,15 +59,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private static final String CAT_FUNCTIONS = "Functions";
     private static final String CAT_ARRAY = "Array";
 
-    private static String[] OID_TYPES = new String[] {
+    private static final String[] OID_TYPES = new String[] {
         "regproc",
         "regprocedure",
         "regoper",
         "regoperator",
+        "regnamespace",
         "regclass",
         "regtype",
         "regconfig",
         "regdictionary",
+        "regrole",
     };
 
     private final boolean alias;
@@ -94,11 +98,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private boolean isNotNull;
     private long baseTypeId;
     private int typeMod;
+    private String baseTypeName;
     private int arrayDim;
     private long collationId;
     private String defaultValue;
     private String canonicalName;
     private String constraintText;
+    private String description;
+    private boolean extraDataType;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
@@ -111,7 +118,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
         this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
-        String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype");
+        String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype"); //$NON-NLS-1$
         try {
             if (typTypeStr != null && !typTypeStr.isEmpty()) {
                 this.typeType = PostgreTypeType.valueOf(typTypeStr.toLowerCase(Locale.ENGLISH));
@@ -122,7 +129,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.typeCategory = PostgreTypeCategory.X;
         boolean supportsCategory = session.getDataSource().isServerVersionAtLeast(8, 4);
         if (supportsCategory) {
-            String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
+            String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory"); //$NON-NLS-1$
             try {
                 if (typCategoryStr != null && !typCategoryStr.isEmpty()) {
                     this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
@@ -146,23 +153,23 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             }
         }
 
-        this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner");
-        this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner"); //$NON-NLS-1$
+        this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval"); //$NON-NLS-1$
         if (getDataSource().isServerVersionAtLeast(8, 4)) {
-            this.isPreferred = JDBCUtils.safeGetBoolean(dbResult, "typispreferred");
+            this.isPreferred = JDBCUtils.safeGetBoolean(dbResult, "typispreferred"); //$NON-NLS-1$
         }
-        this.arrayDelimiter = JDBCUtils.safeGetString(dbResult, "typdelim");
-        this.classId = JDBCUtils.safeGetLong(dbResult, "typrelid");
-        this.elementTypeId = JDBCUtils.safeGetLong(dbResult, "typelem");
-        this.arrayItemTypeId = JDBCUtils.safeGetLong(dbResult, "typarray");
-        this.inputFunc = JDBCUtils.safeGetString(dbResult, "typinput");
-        this.outputFunc = JDBCUtils.safeGetString(dbResult, "typoutput");
-        this.receiveFunc = JDBCUtils.safeGetString(dbResult, "typreceive");
-        this.sendFunc = JDBCUtils.safeGetString(dbResult, "typsend");
-        this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin");
-        this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
-        this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
-        String typAlignStr = JDBCUtils.safeGetString(dbResult, "typalign");
+        this.arrayDelimiter = JDBCUtils.safeGetString(dbResult, "typdelim"); //$NON-NLS-1$
+        this.classId = JDBCUtils.safeGetLong(dbResult, "typrelid"); //$NON-NLS-1$
+        this.elementTypeId = JDBCUtils.safeGetLong(dbResult, "typelem"); //$NON-NLS-1$
+        this.arrayItemTypeId = JDBCUtils.safeGetLong(dbResult, "typarray"); //$NON-NLS-1$
+        this.inputFunc = JDBCUtils.safeGetString(dbResult, "typinput"); //$NON-NLS-1$
+        this.outputFunc = JDBCUtils.safeGetString(dbResult, "typoutput"); //$NON-NLS-1$
+        this.receiveFunc = JDBCUtils.safeGetString(dbResult, "typreceive"); //$NON-NLS-1$
+        this.sendFunc = JDBCUtils.safeGetString(dbResult, "typsend"); //$NON-NLS-1$
+        this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin"); //$NON-NLS-1$
+        this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout"); //$NON-NLS-1$
+        this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze"); //$NON-NLS-1$
+        String typAlignStr = JDBCUtils.safeGetString(dbResult, "typalign"); //$NON-NLS-1$
         if (!CommonUtils.isEmpty(typAlignStr)) {
             try {
                 this.align = PostgreTypeAlign.valueOf(typAlignStr);
@@ -170,7 +177,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
             }
         }
-        String typStorageStr = JDBCUtils.safeGetString(dbResult, "typstorage");
+        String typStorageStr = JDBCUtils.safeGetString(dbResult, "typstorage"); //$NON-NLS-1$
         if (!CommonUtils.isEmpty(typStorageStr)) {
             try {
                 this.storage = PostgreTypeStorage.valueOf(typStorageStr);
@@ -178,20 +185,22 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
             }
         }
-        this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
-        this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
-        this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
-        this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
+        this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull"); //$NON-NLS-1$
+        this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype"); //$NON-NLS-1$
+        this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod"); //$NON-NLS-1$
+        this.baseTypeName = JDBCUtils.safeGetString(dbResult, "base_type_name"); //$NON-NLS-1$
+        this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims"); //$NON-NLS-1$
         if (getDataSource().getServerType().supportsCollations()) {
-            this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
+            this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation"); //$NON-NLS-1$
         }
-        this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
+        this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault"); //$NON-NLS-1$
 
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
 
         if (typeCategory == PostgreTypeCategory.E) {
             readEnumValues(session);
         }
+        description = JDBCUtils.safeGetString(dbResult, "description"); //$NON-NLS-1$
     }
 
     PostgreDataType(PostgreDataType realType, String aliasName) {
@@ -231,6 +240,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.enumValues = null;
     }
 
+    @ForTest
+    PostgreDataType(PostgreSchema schema, int valueType, String name) {
+        super(schema, valueType, name, null, false, false, -1, -1, -1);
+        alias = false;
+        ownerId = 0;
+        attributeCache = null;
+    }
+
     void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {
         if (baseTypeId > 0) {
             PostgreDataType baseType = getBaseType(monitor);
@@ -249,11 +266,24 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return alias;
     }
 
+    public void setTypeId(long typeId) {
+        this.typeId = typeId;
+    }
+
+    public boolean isExtraDataType() {
+        return extraDataType;
+    }
+
+    public void setExtraDataType(boolean extraDataType) {
+        this.extraDataType = extraDataType;
+    }
+
     private void readEnumValues(JDBCSession session) throws DBException {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT e.enumlabel \n" +
                 "FROM pg_catalog.pg_enum e\n" +
-                "WHERE e.enumtypid=?")) {
+                "WHERE e.enumtypid=?\n" +
+                "ORDER BY e.enumsortorder")) {
             dbStat.setLong(1, getObjectId());
             try (JDBCResultSet rs = dbStat.executeQuery()) {
                 List<String> values = new ArrayList<>();
@@ -265,6 +295,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         } catch (SQLException e) {
             throw new DBException("Error reading enum values", e, getDataSource());
         }
+    }
+
+    public static String[] getOidTypes() {
+      return OID_TYPES;
     }
 
     @Override
@@ -295,8 +329,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    public DBPDataKind getDataKind()
-    {
+    public DBPDataKind getDataKind() {
         if (dataKind != null) {
             return dataKind;
         }
@@ -419,7 +452,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Property(category = CAT_MODIFIERS)
     public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
         if (collationId != 0) {
-            return getParentObject().getCollation(monitor, collationId);
+            return getDatabase().getCollation(monitor, collationId);
         }
         return null;
     }
@@ -433,11 +466,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return constraintText;
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read domain constraint value")) {
+            try {
             this.constraintText = JDBCUtils.queryString(
                 session,
                 "SELECT pg_catalog.pg_get_constraintdef((SELECT oid FROM pg_catalog.pg_constraint WHERE contypid = " + getObjectId() + "), true)");
-        } catch (SQLException e) {
-            throw new DBCException("Error reading domain constraint value", e, getDataSource());
+            } catch (SQLException e) {
+                throw new DBCException("Error reading domain constraint value", e, session.getExecutionContext());
+            }
         }
         return this.constraintText;
     }
@@ -473,7 +508,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    public Collection<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
@@ -510,6 +545,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     DBCLogicalOperator.GREATER,
                     DBCLogicalOperator.LESS,
                     DBCLogicalOperator.LIKE,
+                    DBCLogicalOperator.ILIKE,
                     DBCLogicalOperator.IN,
                 };
             } else {
@@ -565,47 +601,52 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         StringBuilder sql = new StringBuilder();
 
         if (typeType == PostgreTypeType.d) {
-            sql.append("-- DROP DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+            sql.append("-- DROP DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
         } else {
-            sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+            sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         switch (typeType) {
             case p: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";");
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";"); //$NON-NLS-1$ //$NON-NLS-2$
                 break;
             }
             case d: {
-                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ").append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS "); //$NON-NLS-1$ //$NON-NLS-2$
+                if (baseTypeName != null) {
+                    sql.append(baseTypeName);
+                } else {
+                    sql.append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                }
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
-                    sql.append("\n\tCOLLATE ").append(collation.getName());
+                    sql.append("\n\tCOLLATE ").append(collation.getName()); //$NON-NLS-1$
                 }
                 if (!CommonUtils.isEmpty(defaultValue)) {
-                    sql.append("\n\tDEFAULT ").append(defaultValue);
+                    sql.append("\n\tDEFAULT ").append(defaultValue); //$NON-NLS-1$
                 }
                 String constraint = getConstraint(monitor);
                 if (!CommonUtils.isEmpty(constraint)) {
-                    sql.append("\n\tCONSTRAINT ").append(constraint);
+                    sql.append("\n\tCONSTRAINT ").append(constraint); //$NON-NLS-1$
                 }
 
-                sql.append(";");
+                sql.append(";"); //$NON-NLS-1$
                 break;
             }
             case e: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ENUM (\n");
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ENUM (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 if (enumValues != null) {
                     for (int i = 0; i < enumValues.length; i++) {
                         Object item = enumValues[i];
                         sql.append("\t").append(SQLUtils.quoteString(this, CommonUtils.toString(item)));
-                        if (i < enumValues.length - 1) sql.append(",\n");
+                        if (i < enumValues.length - 1) sql.append(",\n"); //$NON-NLS-1$
                     }
                 }
-                sql.append(");\n");
+                sql.append(");\n"); //$NON-NLS-1$
                 break;
             }
             case r: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n");
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 PostgreCollation collation = getCollationId(monitor);
                 appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
                 appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
@@ -613,11 +654,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
 //                }
-                sql.append(");\n");
+                sql.append(");\n"); //$NON-NLS-1$
                 break;
             }
             case b: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" (");
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 if (isValidFuncRef(inputFunc)) appendCreateTypeParameter(sql, "INPUT", inputFunc);
                 if (isValidFuncRef(outputFunc)) appendCreateTypeParameter(sql, "OUTPUT", outputFunc);
@@ -641,25 +682,25 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 if (!CommonUtils.isEmpty(arrayDelimiter)) appendCreateTypeParameter(sql, "DELIMITER", SQLUtils.quoteString(getDataSource(), arrayDelimiter));
                 if (collationId != 0) appendCreateTypeParameter(sql, "COLLATABLE", true);
 
-                sql.append(");\n");
+                sql.append(");\n"); //$NON-NLS-1$
                 break;
             }
             case c: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS (");
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ("); //$NON-NLS-1$ //$NON-NLS-2$
                 Collection<PostgreDataTypeAttribute> attributes = getAttributes(monitor);
                 if (!CommonUtils.isEmpty(attributes)) {
                     boolean first = true;
                     for (PostgreDataTypeAttribute attr : attributes) {
-                        if (!first) sql.append(",");
+                        if (!first) sql.append(","); //$NON-NLS-1$
                         first = false;
 
-                        sql.append("\n\t")
-                            .append(DBUtils.getQuotedIdentifier(attr)).append(" ").append(attr.getTypeName());
+                        sql.append("\n\t") //$NON-NLS-1$
+                            .append(DBUtils.getQuotedIdentifier(attr)).append(" ").append(attr.getTypeName()); //$NON-NLS-1$
                         String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), attr, attr.getTypeName(), attr.getDataKind());
                         if (modifiers != null) sql.append(modifiers);
                     }
                 }
-                sql.append(");\n");
+                sql.append(");\n"); //$NON-NLS-1$
                 break;
             }
             default: {
@@ -670,14 +711,18 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
         String description = getDescription();
         if (!CommonUtils.isEmpty(description)) {
-            sql.append("\nCOMMENT ON TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" IS ").append(SQLUtils.quoteString(this, description));
+            sql.append("\nCOMMENT ON TYPE ") //$NON-NLS-1$
+                    .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
+                    .append(" IS ") //$NON-NLS-1$
+                    .append(SQLUtils.quoteString(this, description))
+                    .append(";"); //$NON-NLS-1$
         }
 
         return sql.toString();
     }
 
     private boolean isValidFuncRef(String func) {
-        return !CommonUtils.isEmpty(func) && !func.equals("-");
+        return !CommonUtils.isEmpty(func) && !func.equals("-"); //$NON-NLS-1$
     }
 
     private void appendCreateTypeParameter(@NotNull StringBuilder sql, @NotNull String name, @Nullable Object value) {
@@ -685,29 +730,30 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return;
         }
         if (sql.charAt(sql.length() - 1)!= '(') {
-            sql.append(",");
+            sql.append(","); //$NON-NLS-1$
         }
-        sql.append("\n\t").append(name).append(" = ").append(value);
+        sql.append("\n\t").append(name).append(" = ").append(value); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private void appendCreateTypeParameter(@NotNull StringBuilder sql, @NotNull String name) {
         if (Character.isLetterOrDigit(sql.charAt(sql.length() - 1))) {
-            sql.append(",");
+            sql.append(",");//$NON-NLS-1$
         }
-        sql.append("\n\t").append(name);
+        sql.append("\n\t").append(name); //$NON-NLS-1$
     }
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Not supported");
+        throw new DBCFeatureNotSupportedException();
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.relname,a.*,ad.oid as attr_id,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                 "\nFROM pg_catalog.pg_attribute a" +
                 "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
@@ -724,19 +770,43 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    @Property(order = 100, editable = true, viewable = true, updatable = true)
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
         //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
-        long typeId = JDBCUtils.safeGetLong(dbResult, "oid");
-        String name = JDBCUtils.safeGetString(dbResult, "typname");
+        long typeId = JDBCUtils.safeGetLong(dbResult, "oid"); //$NON-NLS-1$
+        String name = JDBCUtils.safeGetString(dbResult, "typname"); //$NON-NLS-1$
         if (CommonUtils.isEmpty(name)) {
             log.debug("Empty name for data type " + typeId);
             return null;
         }
-        int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
+        if (skipTables) {
+            String relKind = JDBCUtils.safeGetString(dbResult, "relkind"); //$NON-NLS-1$
+            if (relKind != null) {
+                try {
+                    final RelKind tableType = RelKind.valueOf(relKind);
+                    if (tableType != RelKind.c) {
+                        // No a composite data type - skip it
+                        return null;
+                    }
+                } catch (Exception e) {
+                    log.debug(e.getMessage());
+                }
+            }
+        }
+        int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen"); //$NON-NLS-1$
         PostgreTypeCategory typeCategory;
         final String catString =
-            PostgreUtils.supportsTypeCategory(session.getDataSource()) ? JDBCUtils.safeGetString(dbResult, "typcategory") : null;
+            PostgreUtils.supportsTypeCategory(session.getDataSource()) ? JDBCUtils.safeGetString(dbResult, "typcategory") : null; //$NON-NLS-1$
         if (catString == null) {
             typeCategory = null;
         } else {
@@ -800,17 +870,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     case PostgreOid.BYTEA:
                         valueType = Types.BINARY;
                         break;
-                    case PostgreOid.CHAR_ARRAY:
-                        valueType = Types.CHAR;
-                        break;
                     case PostgreOid.BPCHAR:
                         valueType = Types.CHAR;
                         break;
                     case PostgreOid.XML:
                         valueType = Types.SQLXML;
                         break;
+                    case PostgreOid.NAME:
+                        valueType = Types.VARCHAR;
+                        break;
+                    case PostgreOid.OID:
+                    case PostgreOid.BOX:
+                        valueType = Types.OTHER;
+                        break;
                     default:
-                        if (typElem > 0) {
+                        if (typElem > 0 && typeLength < 0) {
                             valueType = Types.ARRAY;
                         } else {
                             valueType = Types.OTHER;
@@ -855,9 +929,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                     case N:
                         valueType = Types.NUMERIC;
+                        // Kind of a hack (#7459). Don't know any better way to distinguish floats from integers
+                        String outputF = JDBCUtils.safeGetString(dbResult, "typoutput");
                         if (name.equals("numeric")) {
                             valueType = Types.NUMERIC;
-                        } else if (name.startsWith("float")) {
+                        } else if (outputF != null && outputF.startsWith("float")) {
                             switch (typeLength) {
                                 case 4:
                                     valueType = Types.FLOAT;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -41,12 +44,13 @@ public class SQLSyntaxManager {
     @NotNull
     private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
     @Nullable
-    private String[][] quoteStrings;
+    private String[][] identifierQuoteStrings;
+    private String[][] stringQuoteStrings;
     private char structSeparator;
     private boolean parametersEnabled;
     private boolean anonymousParametersEnabled;
     private char anonymousParameterMark;
-    private char namedParameterPrefix;
+    private String[] namedParameterPrefixes;
     private String controlCommandPrefix;
     private boolean variablesEnabled;
     @NotNull
@@ -93,9 +97,12 @@ public class SQLSyntaxManager {
     }
 
     @Nullable
-    public String[][] getQuoteStrings()
-    {
-        return quoteStrings;
+    public String[][] getIdentifierQuoteStrings() {
+        return identifierQuoteStrings;
+    }
+
+    public String[][] getStringQuoteStrings() {
+        return stringQuoteStrings;
     }
 
     public char getEscapeChar() {
@@ -114,8 +121,8 @@ public class SQLSyntaxManager {
         return anonymousParameterMark;
     }
 
-    public char getNamedParameterPrefix() {
-        return namedParameterPrefix;
+    public String[] getNamedParameterPrefixes() {
+        return namedParameterPrefixes;
     }
 
     public String getControlCommandPrefix() {
@@ -135,7 +142,8 @@ public class SQLSyntaxManager {
         this.statementDelimiters = new String[0];
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
-        this.quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        this.identifierQuoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        this.stringQuoteStrings = sqlDialect.getStringQuoteStrings();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
         this.escapeChar = dialect.getStringEscapeCharacter();
@@ -162,12 +170,13 @@ public class SQLSyntaxManager {
         } else {
             this.anonymousParameterMark = markString.charAt(0);
         }
+        Set<String> paramsPrefixes = new LinkedHashSet<>();
         String paramPrefixString = preferenceStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
-        if (CommonUtils.isEmpty(paramPrefixString)) {
-            this.namedParameterPrefix = SQLConstants.DEFAULT_PARAMETER_PREFIX;
-        } else {
-            this.namedParameterPrefix = paramPrefixString.charAt(0);
+        if (!CommonUtils.isEmpty(paramPrefixString)) {
+            paramsPrefixes.add(paramPrefixString);
         }
+        Collections.addAll(paramsPrefixes, dialect.getParametersPrefixes());
+        namedParameterPrefixes = paramsPrefixes.toArray(new String[0]);
 
         this.controlCommandPrefix = preferenceStore.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);
         if (CommonUtils.isEmpty(this.controlCommandPrefix)) {

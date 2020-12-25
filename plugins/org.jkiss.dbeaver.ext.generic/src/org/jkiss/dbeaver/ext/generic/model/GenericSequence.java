@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -105,10 +104,18 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return minValue;
     }
 
+    public void setMinValue(Number minValue) {
+        this.minValue = minValue;
+    }
+
     @Override
     @Property(viewable = true, order = 4)
     public Number getMaxValue() {
         return maxValue;
+    }
+
+    public void setMaxValue(Number maxValue) {
+        this.maxValue = maxValue;
     }
 
     @Override
@@ -117,4 +124,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return incrementBy;
     }
 
+    public void setIncrementBy(Number incrementBy) {
+        this.incrementBy = incrementBy;
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -142,7 +142,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     }
                 }
             } catch (Throwable e) {
-                log.debug("Error extracting parameters meta data", e);
+                log.debug("Error extracting parameters meta data: " + e.getMessage());
             }
         }
         procResults.addRow();
@@ -154,10 +154,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             Matcher matcher = EXEC_PATTERN.matcher(queryString);
             if (matcher.find()) {
                 String procName = matcher.group(1);
-                char divChar = 0;
-                if (dataSource instanceof SQLDataSource) {
-                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-                }
+                char divChar = dataSource.getSQLDialect().getStructSeparator();
                 if (procName.indexOf(divChar) != -1) {
                     return findProcedureByNames(session, procName.split("\\" + divChar));
                 } else {
@@ -174,12 +171,26 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             return null;
         }
         DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
-        for (int i = 0; i < names.length - 1; i++) {
-            DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
-            if (child instanceof DBSObjectContainer) {
-                container = (DBSObjectContainer) child;
-            } else {
-                return null;
+        if (names.length == 1) {
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), session.getExecutionContext());
+            if (selectedObjects.length > 0 && selectedObjects[selectedObjects.length - 1] instanceof DBSObjectContainer) {
+                container = (DBSObjectContainer) selectedObjects[selectedObjects.length - 1];
+            }
+        } else {
+            container = (DBSObjectContainer) session.getDataSource();
+            for (int i = 0; i < names.length - 1; i++) {
+                String childName = CommonUtils.trim(names[i]);
+                if (CommonUtils.isEmpty(childName)) {
+                    return null;
+                }
+                DBSObject child = container.getChild(
+                    session.getProgressMonitor(),
+                    DBObjectNameCaseTransformer.transformName(session.getDataSource(), childName));
+                if (child instanceof DBSObjectContainer) {
+                    container = (DBSObjectContainer) child;
+                } else {
+                    return null;
+                }
             }
         }
         if (container instanceof DBSProcedureContainer) {

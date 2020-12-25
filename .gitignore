@@ -1,6 +1,5 @@
 #################
-## Eclipse, IDEA and Maven
-#################
+## Misc
 
 bin/
 tmp/
@@ -8,11 +7,14 @@ tmp/
 *.bak
 *.swp
 *~.nib
+.settings
 local.properties
 .loadpath
 
 # External tool builders
 .externalToolBuilders/
+
+## Maven stuff
 
 target/
 pom.xml.tag
@@ -25,8 +27,17 @@ buildNumber.properties
 .mvn/timing.properties
 /workspace/
 
+## IDEA configs
+
 *.iml
 /idea/
+.idea/
+
+## Eclipse configs
+
+.project
+.classpath
+.settings/
 
 #############
 ## Windows detritus

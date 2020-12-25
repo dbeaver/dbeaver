@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * SinglePageDatabaseEditor
  */
-public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE>
+public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE>
 {
 
     private ProgressEditorPart progressEditorPart;
 
     @Override
     public final void createPartControl(Composite parent) {
-        final IDatabaseEditorInput editorInput = getEditorInput();
+        final IEditorInput editorInput = getEditorInput();
         if (editorInput instanceof DatabaseLazyEditorInput) {
             createLazyEditorPart(parent, (DatabaseLazyEditorInput)editorInput);
         } else {
@@ -44,6 +45,8 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
         progressEditorPart = new ProgressEditorPart(this);
         progressEditorPart.init(getEditorSite(), input);
         progressEditorPart.createPartControl(parent);
+
+        DatabaseEditorUtils.setPartBackground(this, parent);
     }
 
     @Override
@@ -73,7 +76,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return getEditorInput() == null ? null : getEditorInput().getExecutionContext();
+        return getEditorInput() instanceof DBPContextProvider ? ((DBPContextProvider) getEditorInput()).getExecutionContext() : null;
     }
 
 }

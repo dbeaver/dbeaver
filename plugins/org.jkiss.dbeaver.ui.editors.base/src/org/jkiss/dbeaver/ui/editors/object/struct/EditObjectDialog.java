@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,31 +20,46 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 class EditObjectDialog extends TrayDialog {
 
     private final IDialogPage dialogPage;
 
-    public EditObjectDialog(Shell shell, IDialogPage dialogPage)
-    {
+    public EditObjectDialog(Shell shell, IDialogPage dialogPage) {
         super(shell);
         this.dialogPage = dialogPage;
         if (this.dialogPage instanceof BaseObjectEditPage) {
             ((BaseObjectEditPage) this.dialogPage).setContainer(this);
         }
-        //setHelpAvailable(false);
+        if (dialogPage instanceof IHelpContextIdProvider && ((IHelpContextIdProvider) dialogPage).getHelpContextId() != null) {
+            setHelpAvailable(true);
+        } else {
+            setHelpAvailable(false);
+        }
     }
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
         String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
         return UIUtils.getDialogSettings(dialogId);
+    }
+
+    @Override
+    protected Point getInitialSize() {
+        Point proposedSize = super.getInitialSize();
+        Point minSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        if (proposedSize.x < minSize.x) proposedSize.x = minSize.x;
+        if (proposedSize.y < minSize.y) proposedSize.y = minSize.y;
+        return proposedSize;
     }
 
     @Override
@@ -62,6 +77,10 @@ class EditObjectDialog extends TrayDialog {
 
         dialogPage.createControl(group);
 
+        if (dialogPage instanceof IHelpContextIdProvider) {
+            UIUtils.setHelp(dialogPage.getControl(), ((IHelpContextIdProvider) dialogPage).getHelpContextId());
+        }
+
         return group;
     }
 
@@ -78,7 +97,7 @@ class EditObjectDialog extends TrayDialog {
             try {
                 ((BaseObjectEditPage) dialogPage).performFinish();
             } catch (Exception e) {
-                DBUserInterface.getInstance().showError("Error saving data", null, e);
+                DBWorkbench.getPlatformUI().showError("Error saving data", null, e);
                 return;
             }
         }

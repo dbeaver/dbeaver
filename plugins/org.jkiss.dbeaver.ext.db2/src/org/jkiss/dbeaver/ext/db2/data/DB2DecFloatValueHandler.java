@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.data;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -36,8 +36,8 @@ public class DB2DecFloatValueHandler extends JDBCNumberValueHandler {
 
     final static int DECFLOAT_SPECIALVALUE_ENCOUNTERED = -4231;
 
-    public DB2DecFloatValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        super(type, formatterProfile);
+    public DB2DecFloatValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        super(type, formatSettings);
     }
 
     @Nullable
@@ -55,7 +55,7 @@ public class DB2DecFloatValueHandler extends JDBCNumberValueHandler {
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
+    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof BigDecimal) {
             statement.setBigDecimal(paramIndex, (BigDecimal) value);
         } else if (value instanceof Double) {

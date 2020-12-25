@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,7 +209,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public Collection<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
+    public List<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
             readAttributes(monitor);
@@ -418,7 +418,7 @@ public class WMIClass extends WMIContainer
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         try {
@@ -455,7 +455,7 @@ public class WMIClass extends WMIContainer
             statistics.setRowsFetched(resultCount);
             return statistics;
         } catch (WMIException e) {
-            throw new DBCException(e, getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

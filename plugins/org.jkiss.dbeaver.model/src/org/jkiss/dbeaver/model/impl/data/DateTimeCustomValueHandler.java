@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,48 +18,51 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
 
 /**
  * Customizable date/time value handler
  */
-public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
+public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler implements DBDValueHandlerConfigurable {
 
     protected static final Log log = Log.getLog(DateTimeCustomValueHandler.class);
 
-    private final DBDDataFormatterProfile formatterProfile;
+    protected final DBDFormatSettings formatSettings;
     protected DBDDataFormatter formatter;
 
-    public DateTimeCustomValueHandler(DBDDataFormatterProfile formatterProfile)
+    public DateTimeCustomValueHandler(DBDFormatSettings formatSettings)
     {
-        this.formatterProfile = formatterProfile;
+        this.formatSettings = formatSettings;
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return null;
         } else if (object instanceof Date) {
             return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
-            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+            String strValue = (String)object;
+            if (strValue.isEmpty()) {
+                // NULL date
+                return null;
+            }
+            if (session != null && session.isUseNativeDateTimeFormat()) {
                 // Do not use formatter for native format
                 return object;
             }
 
-            String strValue = (String)object;
             try {
                 return getFormatter(type).parseValue(strValue, null);
             } catch (ParseException e) {
@@ -78,7 +81,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
             }
         } else {
             //log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
-            return super.getValueFromObject(session, type, object, copy);
+            return super.getValueFromObject(session, type, object, copy, validateValue);
         }
     }
 
@@ -86,7 +89,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value == null || value instanceof String) {
+        if (value == null || value instanceof String || value instanceof Number) {
             return super.getValueDisplayString(column, value, format);
         }
         try {
@@ -99,7 +102,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     private DBDDataFormatter getFormatter(DBSTypedObject typedObject, String typeId)
     {
         try {
-            return formatterProfile.createFormatter(typeId, typedObject);
+            return formatSettings.getDataFormatterProfile().createFormatter(typeId, typedObject);
         } catch (Exception e) {
             log.error("Can't create formatter for datetime value handler", e); //$NON-NLS-1$
             return DefaultDataFormatter.INSTANCE;
@@ -113,6 +116,11 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
             formatter = getFormatter(column, getFormatterId(column));
         }
         return formatter;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     @NotNull

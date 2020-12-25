@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -47,17 +43,22 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
     }
 
     @Override
-    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable SQLQueryResult queryResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
-        dumpWarnings(output, queryResult.getWarnings());
+    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable DBCExecutionResult executionResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        if (executionResult != null) {
+            dumpWarnings(output, executionResult.getWarnings());
+        }
     }
 
     protected void dumpWarnings(@NotNull PrintWriter output, List<Throwable> warnings) {
         if (warnings != null && warnings.size() > 0) {
             for (Throwable warning : warnings) {
                 if (warning instanceof SQLException) {
-                    String sqlState = ((SQLException) warning).getSQLState();
-                    if (!CommonUtils.isEmpty(sqlState)) {
-                        output.print(sqlState + ": ");
+                    if (false) {
+                        // Do not print SQL state. It breaks output.
+                        String sqlState = ((SQLException) warning).getSQLState();
+                        if (!CommonUtils.isEmpty(sqlState)) {
+                            output.print(sqlState + ": ");
+                        }
                     }
                 }
                 output.println(warning.getMessage());

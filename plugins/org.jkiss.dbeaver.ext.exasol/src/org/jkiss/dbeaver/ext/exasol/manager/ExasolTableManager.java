@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -53,7 +54,11 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final Class<?>[] CHILD_TYPES = {ExasolTableColumn.class, ExasolTableUniqueKey.class, ExasolTableForeignKey.class
+    private static final Class<?>[] CHILD_TYPES = {
+            ExasolTableColumn.class,
+            ExasolTableUniqueKey.class,
+            ExasolTableForeignKey.class,
+            ExasolTableIndex.class
     };
 
     // -----------------
@@ -77,14 +82,10 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
 
     @Override
-    public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolSchema exasolSchema,
-                                            Object copyFrom) {
-        ExasolTable table = new ExasolTable(exasolSchema, NEW_TABLE_NAME);
-        try {
-            setTableName(monitor, exasolSchema, table);
-        } catch (DBException e) {
-            log.error(e);
-        }
+    public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object exasolSchema,
+                                            Object copyFrom, Map<String, Object> options) {
+        ExasolTable table = new ExasolTable((ExasolSchema) exasolSchema, NEW_TABLE_NAME);
+        setNewObjectName(monitor, (ExasolSchema) exasolSchema, table);
         return table;
     }
 
@@ -95,8 +96,8 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     }
 
     @Override
-    public void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        super.addStructObjectCreateActions(monitor, actions, command, options);
+    public void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction != null) {
@@ -109,18 +110,26 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolTable exasolTable = command.getObject();
 
-        if (command.getProperties().size() > 1) {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append(SQL_ALTER);
-            sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-            sb.append(" ");
+        if (command.getProperties().size() > 0) {
+        	
+			if (command.getProperties().containsKey("hasPartitionKey") 
+					&& ((command.getProperties().get("hasPartitionKey").toString()).equals("false")) )
+			{
+				actionList.add(new SQLDatabasePersistAction("ALTER TABLE " + exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS"));
+			} else if (command.getProperties().size() > 1) {
+			
+			StringBuilder sb = new StringBuilder(128);
+			sb.append(SQL_ALTER);
+			sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+			sb.append(" ");
 
-            appendTableModifiers(monitor, command.getObject(), command, sb, true);
+			appendTableModifiers(monitor, command.getObject(), command, sb, true);
 
-            actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+			actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+			}
         }
 
         DBEPersistAction commentAction = buildCommentAction(exasolTable);
@@ -133,7 +142,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    public void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
             DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
@@ -158,4 +167,5 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
             return null;
         }
     }
+    
 }

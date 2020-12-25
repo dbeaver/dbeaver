@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.UIActivator;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -82,10 +83,12 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         updateUIJob.schedule();
         Throwable error = null;
         RESULT result = null;
+        monitor.beginTask("Run service " + getName(), 1);
         try {
             result = this.loadingService.evaluate(monitor);
         }
         catch (InvocationTargetException e) {
+            log.debug(e.getTargetException());
             error = e.getTargetException();
         }
         catch (InterruptedException e) {
@@ -94,6 +97,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         finally {
             loadFinished = true;
             UIUtils.asyncExec(new LoadFinisher(result, error));
+            monitor.done();
         }
         return Status.OK_STATUS;
     }
@@ -129,18 +133,20 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             }
 
             if (innerError != null) {
-                log.debug(innerError);
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         getName(),
                     null,
                     innerError);
+            }
+            if (visualizer instanceof ILoadVisualizerExt) {
+                ((ILoadVisualizerExt) visualizer).finalizeLoading();
             }
         }
     }
 
     class LoadingUIJob<RESULT> extends AbstractUIJob {
 
-        private static final long DELAY = 200;
+        private static final long DELAY = 100;
 
         private ILoadVisualizer<RESULT> visualizer;
 

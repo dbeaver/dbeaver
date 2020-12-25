@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.sample.database;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -48,7 +50,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
             // Create was canceled
             return;
         }
@@ -56,29 +58,37 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Seems to be experienced user - no need in sampel db
             return;
         }
-        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        if (activeProject == null) {
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null || !activeProject.isRegistryLoaded()) {
             // No active project
             return;
         }
-        if (DBUtils.findDataSource(SAMPLE_DB1_ID) != null) {
+        DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
+        if (isSampleDatabaseExists(registry)) {
             // Already exist
             return;
         }
-        if (!UIUtils.confirmAction(window.getShell(),
-            "Create Sample Database",
-            "Do you want to create sample database?\nIt can be used as an example to explore basic " + GeneralUtils.getProductName() + " features."))
-        {
-            DBeaverCore.getGlobalPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
+        if (!showCreateSampleDatabasePrompt(window.getShell())) {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
             return;
         }
-
-        createSampleDatabase(activeProject);
+        createSampleDatabase(registry);
     }
 
-    private void createSampleDatabase(IProject project) {
-        DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-        DataSourceDescriptor dataSource = dsRegistry.getDataSource(SAMPLE_DB1_ID);
+    static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
+        return registry.getDataSource(SAMPLE_DB1_ID) != null;
+    }
+
+    static boolean showCreateSampleDatabasePrompt(Shell shell) {
+        return UIUtils.confirmAction(
+                shell,
+                SampleDatabaseMessages.dialog_create_title,
+                NLS.bind(SampleDatabaseMessages.dialog_create_description, GeneralUtils.getProductName())
+        );
+    }
+
+    static void createSampleDatabase(DBPDataSourceRegistry dsRegistry) {
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)dsRegistry.getDataSource(SAMPLE_DB1_ID);
         if (dataSource != null) {
             return;
         }
@@ -101,7 +111,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             }
         }
         File dbFile = new File(dbFolder, SAMPLE_DB_FILE_NAME);
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
+        try (InputStream is = WorkbenchInitializerCreateSampleDatabase.class.getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
             try (OutputStream os = new FileOutputStream(dbFile)) {
                 IOUtils.copyStream(is, os);
             }
@@ -116,7 +126,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         connectionInfo.setUrl(genericDSProvider.getInstance(sqliteDriver).getConnectionURL(sqliteDriver, connectionInfo));
         dataSource = new DataSourceDescriptor(dsRegistry, SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
         dataSource.setSavePassword(true);
-        dataSource.setShowSystemObjects(true);
+        dataSource.getNavigatorSettings().setShowSystemObjects(true);
         dataSource.setName("DBeaver Sample Database (SQLite)");
         dsRegistry.addDataSource(dataSource);
     }

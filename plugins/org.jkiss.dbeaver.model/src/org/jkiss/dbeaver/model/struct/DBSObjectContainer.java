@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -62,16 +63,20 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @return child object or null
      */
+    @Nullable
     DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
-     * Gets type of child elements.
+     * Gets type of primary child elements.
+     * Usually it is some non-abstract table implementation.
      *
-     * @param monitor progress monitor
+     * @param monitor progress monitor. May be null. In that case implementor mustn't do any expensive operations
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
+     * @see DBSEntityContainer
      */
-    Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
+    @NotNull
+    Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.

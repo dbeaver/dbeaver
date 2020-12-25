@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -98,7 +99,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
     {
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner,
             object == null ?
@@ -111,8 +112,11 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
                 JDBCResultSet dbResult = dbStat.getResultSet();
                 if (dbResult != null) {
                     try {
-                        if (dbResult.next()) {
-                            return fetchObject(session, owner, dbResult);
+                        while (dbResult.next()) {
+                            OBJECT remoteObject = fetchObject(session, owner, dbResult);
+                            if (isValidObject(monitor, owner, remoteObject)) {
+                                return remoteObject;
+                            }
                         }
                     } finally {
                         dbResult.close();
@@ -125,6 +129,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         }
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.squirrel;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -55,7 +56,7 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
         File homeFolder = RuntimeUtils.getUserHomeDir();
         File sqlConfigHome = new File(homeFolder, SQL_HOME_FOLDER);
         if (!sqlConfigHome.exists()) {
-            throw new DBException("SQL Squirrel installation not found");
+            throw new DBException(ImportConfigMessages.config_import_wizard_page_squirrel_label_installation_not_found);
         }
         File driversFile = new File(sqlConfigHome, SQL_DRIVERS_FILE);
         if (!driversFile.exists()) {

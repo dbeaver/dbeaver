@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
@@ -35,8 +36,8 @@ import java.sql.Types;
 public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
 
 
-    public MySQLNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
-        super(type, formatterProfile);
+    public MySQLNumberValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
+        super(type, formatSettings);
     }
 
     /**
@@ -59,8 +60,7 @@ public class MySQLNumberValueHandler extends JDBCNumberValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException
-    {
+                                 int paramIndex, Object value) throws SQLException, DBCException {
         if (value instanceof String) {
             String strValue = (String) value;
             if (paramType.getTypeID() == Types.BIT) {

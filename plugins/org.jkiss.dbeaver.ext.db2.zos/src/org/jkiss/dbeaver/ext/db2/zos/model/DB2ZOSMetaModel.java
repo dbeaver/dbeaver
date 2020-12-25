@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ext.db2.zos.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -50,7 +50,7 @@ public class DB2ZOSMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
         if (!sourceObject.isView()) {
             return super.getTableDDL(monitor, sourceObject, options);
         }
@@ -67,8 +67,7 @@ public class DB2ZOSMetaModel extends GenericMetaModel
                     if (dbResult.next()) {
                         Clob ddlStmt = dbResult.getClob(1);
                         try {
-                            String ddl = ddlStmt.getSubString(1, (int) ddlStmt.length());
-                            return normalizeDDL(ddl);
+                            return ddlStmt.getSubString(1, (int) ddlStmt.length());
                         } finally {
                             try {
                                 ddlStmt.free();
@@ -86,19 +85,13 @@ public class DB2ZOSMetaModel extends GenericMetaModel
         }
     }
 
-    private String normalizeDDL(String ddl) {
-        int declStart = ddl.indexOf("(");
-        int declEnd = ddl.indexOf(") ENGINE");
-        if (declEnd == -1) {
-            declEnd = ddl.length() - 1;
-        }
-        return
-            ddl.substring(0, declStart) + "(\n" +
-            ddl.substring(declStart + 1, declEnd).replace(",", ",\n") + "\n" +
-            ddl.substring(declEnd);
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    @Override
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
 

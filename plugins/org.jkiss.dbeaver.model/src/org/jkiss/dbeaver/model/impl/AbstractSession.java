@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettingsExt;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
@@ -28,7 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Abstract execution context
  */
-public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
+public abstract class AbstractSession implements DBCSession, DBDFormatSettingsExt, DBRBlockingObject {
 
     private DBRProgressMonitor monitor;
     private DBCExecutionPurpose purpose;
@@ -36,9 +38,9 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     private DBDDataFormatterProfile dataFormatterProfile;
     private boolean holdsBlock = false;
     private boolean loggingEnabled = true;
+    private byte useNativeDateTimeFormat = -1;
 
-    public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
-    {
+    public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
         this.monitor = monitor;
         this.purpose = purpose;
         this.taskTitle = taskTitle;
@@ -54,28 +56,24 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
 
     @NotNull
     @Override
-    public String getTaskTitle()
-    {
+    public String getTaskTitle() {
         return taskTitle;
     }
 
     @Override
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         return true;
     }
 
     @NotNull
     @Override
-    public DBRProgressMonitor getProgressMonitor()
-    {
+    public DBRProgressMonitor getProgressMonitor() {
         return monitor;
     }
 
     @NotNull
     @Override
-    public DBCExecutionPurpose getPurpose()
-    {
+    public DBCExecutionPurpose getPurpose() {
         return purpose;
     }
 
@@ -90,8 +88,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     }
 
     @Override
-    public DBDDataFormatterProfile getDataFormatterProfile()
-    {
+    public DBDDataFormatterProfile getDataFormatterProfile() {
         if (dataFormatterProfile == null) {
             return getDataSource().getContainer().getDataFormatterProfile();
         }
@@ -99,21 +96,41 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     }
 
     @Override
-    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
+    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile) {
         dataFormatterProfile = formatterProfile;
+    }
+
+    @Override
+    public boolean isUseNativeDateTimeFormat() {
+        if (useNativeDateTimeFormat == -1) {
+            useNativeDateTimeFormat = (byte) (getExecutionContext().getDataSource().getContainer().isUseNativeDateTimeFormat() ? 1 : 0);
+        }
+        return useNativeDateTimeFormat == 1;
+    }
+
+    @Override
+    public void setUseNativeDateTimeFormat(boolean useNativeDateTimeFormat) {
+        this.useNativeDateTimeFormat = (byte) (useNativeDateTimeFormat ? 1 : 0);
+    }
+
+    @Override
+    public boolean isUseNativeNumericFormat() {
+        return getExecutionContext().getDataSource().getContainer().isUseNativeNumericFormat();
+    }
+
+    @Override
+    public boolean isUseScientificNumericFormat() {
+        return getExecutionContext().getDataSource().getContainer().isUseScientificNumericFormat();
     }
 
     @NotNull
     @Override
-    public DBDValueHandler getDefaultValueHandler()
-    {
+    public DBDValueHandler getDefaultValueHandler() {
         return DefaultValueHandler.INSTANCE;
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         if (holdsBlock) {
             monitor.endBlock();
             holdsBlock = false;

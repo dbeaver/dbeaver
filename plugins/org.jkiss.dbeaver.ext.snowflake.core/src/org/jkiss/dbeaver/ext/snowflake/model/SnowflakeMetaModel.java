@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -28,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -49,12 +52,46 @@ public class SnowflakeMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         boolean isView = sourceObject.isView();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT GET_DDL('" + (isView ? "VIEW" : "TABLE") + "', '" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "') "))
+            {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1));
+                    }
+                    String result = sql.toString().trim();
+                    while (result.endsWith(";")) {
+                        result = result.substring(0, result.length() - 1);
+                    }
+                    return result;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }
+
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+        return getTableDDL(monitor, sourceObject, options);
+    }
+
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT GET_DDL('"  + sourceObject.getProcedureType() + "', '" + sourceObject.getProcedureSignature(monitor, false) + "')"))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
@@ -69,8 +106,13 @@ public class SnowflakeMetaModel extends GenericMetaModel
         }
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return getTableDDL(monitor, sourceObject, options);
+    @Override
+    public boolean isTableCommentEditable() {
+        return true;
     }
 
+    @Override
+    public boolean isTableColumnCommentEditable() {
+        return true;
+    }
 }

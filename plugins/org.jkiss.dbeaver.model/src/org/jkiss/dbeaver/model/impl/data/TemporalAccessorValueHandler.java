@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
@@ -35,16 +36,20 @@ import java.util.Date;
 /**
  * Date/time value handler
  */
-public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
+public abstract class TemporalAccessorValueHandler extends BaseValueHandler implements DBDValueHandlerConfigurable {
 
     protected static final Log log = Log.getLog(TemporalAccessorValueHandler.class);
 
-    private final DBDDataFormatterProfile formatterProfile;
+    private final DBDFormatSettings formatSettings;
     protected DBDDataFormatter formatter;
 
-    public TemporalAccessorValueHandler(DBDDataFormatterProfile formatterProfile)
-    {
-        this.formatterProfile = formatterProfile;
+    public TemporalAccessorValueHandler(DBDFormatSettings formatSettings) {
+        this.formatSettings = formatSettings;
+    }
+
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.formatter = null;
     }
 
     @NotNull
@@ -55,7 +60,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return null;
@@ -83,7 +88,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value == null || value instanceof String) {
-            return super.getValueDisplayString(column, null, format);
+            return super.getValueDisplayString(column, value, format);
         }
         try {
             return getFormatter(column).formatValue(value);
@@ -97,7 +102,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     {
         if (formatter == null) {
             try {
-                formatter = formatterProfile.createFormatter(getFormatterId(column), column);
+                formatter = formatSettings.getDataFormatterProfile().createFormatter(getFormatterId(column), column);
             } catch (Exception e) {
                 log.error("Can't create formatter for zoned datetime value handler", e); //$NON-NLS-1$
                 formatter = DefaultDataFormatter.INSTANCE;

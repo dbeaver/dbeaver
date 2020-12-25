@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,8 +48,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     private Button commitButton;
     private Button rollbackButton;
 
-    public PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
-        super(parentShell, activePart);
+    private PendingTransactionsDialog(Shell parentShell, IWorkbenchPart activePart) {
+        super(parentShell, "Pending transactions", activePart);
     }
 
     @Override
@@ -70,8 +70,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Pending transactions");
-
         Composite composite = (Composite) super.createDialogArea(parent);
 
         contextTree = new Tree(composite, SWT.FULL_SELECTION | SWT.BORDER);
@@ -92,13 +90,15 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 } else {
                     selectedContext = null;
                 }
-                boolean hasTransaction = selectedContext != null && QMUtils.isTransactionActive(selectedContext);
+                boolean hasTransaction = selectedContext != null && QMUtils.isTransactionActive(selectedContext, false);
                 commitButton.setEnabled(hasTransaction);
                 rollbackButton.setEnabled(hasTransaction);
                 logViewer.setFilter(createContextFilter(selectedContext));
                 logViewer.refresh();
             }
         });
+
+        closeOnFocusLost(contextTree);
 
         {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
@@ -129,6 +129,8 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                     endTransaction(false);
                 }
             });
+
+            closeOnFocusLost(showAllCheck, commitButton, rollbackButton);
         }
 
         super.createTransactionLogPanel(composite);
@@ -166,7 +168,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 }
                 List<DBCExecutionContext> txnContexts = new ArrayList<>();
                 for (DBCExecutionContext context : allContexts) {
-                    if (showAllContexts || QMUtils.isTransactionActive(context)) {
+                    if (showAllContexts || QMUtils.isTransactionActive(context, false)) {
                         txnContexts.add(context);
                     }
                 }
@@ -201,11 +203,12 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     public static void showDialog(Shell shell) {
         IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart == null) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "No active part",
                 "No active part.");
         } else {
             final PendingTransactionsDialog dialog = new PendingTransactionsDialog(shell, activePart);
+            dialog.setModeless(true);
             dialog.open();
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,29 +18,28 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 /**
- * Stream transfer utils
+ * Stream transfer serialize
  */
 public class StreamTransferUtils {
 
     private static final Log log = Log.getLog(StreamTransferUtils.class);
 
-    private static final char DEF_DELIMITER = ',';
+    private static final String DEF_DELIMITER = ",";
 
-    public static String getDelimiterString(Map<Object, Object> properties, String propName) {
-        String delimString = String.valueOf(properties.get(propName));
-        if (delimString == null || delimString.isEmpty()) {
-            delimString = String.valueOf(DEF_DELIMITER);
+    public static String getDelimiterString(Map<String, Object> properties, String propName) {
+        String delimString = CommonUtils.toString(properties.get(propName), null);
+        if (CommonUtils.isEmpty(delimString)) {
+            return DEF_DELIMITER;
         } else {
-            delimString = delimString
+            return delimString
                     .replace("\\t", "\t")
                     .replace("\\n", "\n")
                     .replace("\\r", "\r");
         }
-        return delimString;
     }
 }

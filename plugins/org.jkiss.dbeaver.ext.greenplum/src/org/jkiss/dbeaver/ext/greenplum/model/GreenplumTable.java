@@ -1,6 +1,10 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
+ * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
+ * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
+ * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +34,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -50,16 +53,21 @@ public class GreenplumTable extends PostgreTableRegular {
 
     private int[] distributionColumns;
 
+    private boolean supportsReplicatedDistribution = false;
+
     public GreenplumTable(PostgreSchema catalog) {
         super(catalog);
     }
 
     public GreenplumTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
+
+        if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
+            supportsReplicatedDistribution = true;
+        }
     }
 
-    @Property(viewable = false, order = 90)
-    public List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
+    private List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
         if (distributionColumns == null) {
             try {
                 distributionColumns = readDistributedColumns(monitor);
@@ -86,20 +94,67 @@ public class GreenplumTable extends PostgreTableRegular {
         return columns;
     }
 
+    private List<PostgreTableColumn> getDistributionTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
+        // Get primary key
+        PostgreTableConstraint pk = null;
+        for (PostgreTableConstraint tc : getConstraints(monitor)) {
+            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                pk = tc;
+                break;
+            }
+        }
+        if (pk != null) {
+            List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
+            if (!CommonUtils.isEmpty(pkAttrs)) {
+                distributionColumns = new ArrayList<>(pkAttrs.size());
+                for (DBSEntityAttribute attr : pkAttrs) {
+                    distributionColumns.add((PostgreTableColumn) attr);
+                }
+            }
+        }
+        return distributionColumns;
+    }
+
     @Nullable
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
-                    if (dbResult.next()) {
-                        return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
-                    } else {
-                        return null;
+                if (((GreenplumDataSource) getDataSource()).isGreenplumVersionAtLeast(session.getProgressMonitor(), 6, 0)) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
+                    }
+                } else {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                        if (dbResult.next()) {
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                        } else {
+                            return null;
+                        }
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
+        }
+    }
+
+    private boolean isDistributedByReplicated(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT policytype FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                    if (dbResult.next()) {
+                        return CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, 1), "r");
+                    } else {
+                        return false;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
         }
     }
 
@@ -108,28 +163,12 @@ public class GreenplumTable extends PostgreTableRegular {
         try {
             List<PostgreTableColumn> distributionColumns = getDistributionPolicy(monitor);
             if (CommonUtils.isEmpty(distributionColumns)) {
-                // Get primary key
-                PostgreTableConstraint pk = null;
-                for (PostgreTableConstraint tc : getConstraints(monitor)) {
-                    if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        pk = tc;
-                        break;
-                    }
-                }
-                if (pk != null) {
-                    List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
-                    if (!CommonUtils.isEmpty(pkAttrs)) {
-                        distributionColumns = new ArrayList<>(pkAttrs.size());
-                        for (DBSEntityAttribute attr : pkAttrs) {
-                            distributionColumns.add((PostgreTableColumn) attr);
-                        }
-                    }
-                }
+                distributionColumns = getDistributionTableColumns(monitor, distributionColumns);
             }
 
             ddl.append("\nDISTRIBUTED ");
             if (CommonUtils.isEmpty(distributionColumns)) {
-                ddl.append("RANDOMLY");
+                ddl.append((supportsReplicatedDistribution && isPersisted() && isDistributedByReplicated(monitor)) ? "REPLICATED" : "RANDOMLY");
             } else {
                 ddl.append("BY (");
                 for (int i = 0; i < distributionColumns.size(); i++) {
@@ -138,9 +177,35 @@ public class GreenplumTable extends PostgreTableRegular {
                 }
                 ddl.append(")");
             }
+
+            String partitionData = isPersisted() ? getPartitionData(monitor) : null;
+            if (partitionData != null) {
+                ddl.append("\n");
+                ddl.append(partitionData);
+            }
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }
     }
-}
 
+    private String getPartitionData(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table partition data")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT pg_get_partition_def('" + getSchema().getName() + "." + getName() + "'::regclass, true, false);")) {
+                    if (dbResult.next()) {
+                        String result = dbResult.getString(1);
+                        if (result != null && result.startsWith("PARTITION ")) {
+                            return result;
+                        }
+                        return null;
+                    } else {
+                        return null;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
+
+}

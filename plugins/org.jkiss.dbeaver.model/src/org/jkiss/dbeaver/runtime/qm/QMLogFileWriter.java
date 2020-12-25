@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,13 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     {
         enabled = ModelPreferences.getPreferences().getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
-            String logFolder = ModelPreferences.getPreferences().getString(QMConstants.PROP_LOG_DIRECTORY);
+            String logFolderPath = ModelPreferences.getPreferences().getString(QMConstants.PROP_LOG_DIRECTORY);
+            File logFolder = new File(logFolderPath);
+            if (!logFolder.exists()) {
+                if (!logFolder.mkdirs()) {
+                    log.error("Can't create log folder '" + logFolderPath + "'");
+                }
+            }
             String logFileName = "dbeaver_sql_" + RuntimeUtils.getCurrentDate() + ".log";
             logFile = new File(logFolder, logFileName);
             try {
@@ -146,7 +152,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             if (executeInfo.hasError()) {
                 buffer.append(executeInfo.getErrorMessage());
             } else {
-                buffer.append("SUCCESS [").append(executeInfo.getRowCount()).append("]");
+                buffer.append("SUCCESS [").append(executeInfo.getUpdateRowCount()).append("]");
             }
 
         } else if (object instanceof QMMTransactionInfo) {

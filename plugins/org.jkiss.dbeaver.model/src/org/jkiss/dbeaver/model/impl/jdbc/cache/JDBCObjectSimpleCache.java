@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
         this.queryParameters = args;
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException
@@ -62,7 +63,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
 
     @Override
     protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull JDBCResultSet resultSet)
-        throws SQLException, DBException
+        throws DBException
     {
         try {
             if (objectConstructor == null) {

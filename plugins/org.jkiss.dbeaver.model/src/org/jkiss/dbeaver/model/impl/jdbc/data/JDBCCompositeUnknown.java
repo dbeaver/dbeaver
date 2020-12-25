@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.Arrays;
+
 /**
  * Unknown struct.
  */
@@ -32,21 +34,19 @@ public class JDBCCompositeUnknown extends JDBCComposite {
         super(struct, monitor);
     }
 
-    public JDBCCompositeUnknown(@NotNull DBCSession session, @Nullable Object structData)
-    {
+    public JDBCCompositeUnknown(@NotNull DBCSession session, @Nullable Object structData) {
         this.type = new StructType(session.getDataSource());
         this.attributes = new DBSEntityAttribute[0];// { new StructAttribute(type, 0, structData) };
-        this.values = new Object[] { structData };
+        this.values = new Object[]{structData};
     }
 
     @Override
-    public JDBCCompositeUnknown cloneValue(DBRProgressMonitor monitor) throws DBCException
-    {
+    public JDBCCompositeUnknown cloneValue(DBRProgressMonitor monitor) throws DBCException {
         return new JDBCCompositeUnknown(this, monitor);
     }
 
     public String getStringRepresentation() {
-        return String.valueOf(values[0]);
+        return Arrays.toString(values);
     }
 
 }

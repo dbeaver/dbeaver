@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,11 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 /**
  * XML document
@@ -47,9 +51,15 @@ public class DBDDocumentXML implements DBDDocument {
 
     @Nullable
     @Override
+    public Object getDocumentId() {
+        return document.getDocumentURI();
+    }
+
+    @Nullable
+    @Override
     public Object getDocumentProperty(String name) {
         if (PROP_ID.equals(name)) {
-            return document.getDocumentURI();
+            return getDocumentId();
         }
         return null;
     }
@@ -67,10 +77,10 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, String encoding) throws DBException {
+    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, Charset charset) throws DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            Result output = new StreamResult(new OutputStreamWriter(stream, encoding));
+            Result output = new StreamResult(new OutputStreamWriter(stream, charset));
 
             transformer.transform(
                 new DOMSource(document),
@@ -81,13 +91,13 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, String encoding) throws DBException {
+    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, Charset charset) throws DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             DOMResult output = new DOMResult();
 
             transformer.transform(
-                new StreamSource(new InputStreamReader(stream, encoding)),
+                new StreamSource(new InputStreamReader(stream, charset)),
                 output);
             document = (Document) output.getNode();
             modified = true;

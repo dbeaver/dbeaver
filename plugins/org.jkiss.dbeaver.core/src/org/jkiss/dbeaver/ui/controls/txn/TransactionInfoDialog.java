@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.txn;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
@@ -35,9 +35,10 @@ import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.CommonUtils;
 
-public abstract class TransactionInfoDialog extends Dialog {
+public abstract class TransactionInfoDialog extends AbstractPopupPanel {
 
     private static final QMEventFilter VOID_FILTER = event -> false;
 
@@ -47,9 +48,9 @@ public abstract class TransactionInfoDialog extends Dialog {
     private Button showAllCheck;
     protected Button showPreviousCheck;
 
-    public TransactionInfoDialog(Shell parentShell, IWorkbenchPart activeEditor)
+    TransactionInfoDialog(Shell parentShell, String title, IWorkbenchPart activeEditor)
     {
-        super(parentShell);
+        super(parentShell, title);
         this.activeEditor = activeEditor;
     }
 
@@ -70,7 +71,7 @@ public abstract class TransactionInfoDialog extends Dialog {
             ((GridData) gd).heightHint = logViewer.getControl().getHeaderHeight() + logViewer.getControl().getItemHeight() * 5;
         }
 
-        showAllCheck = UIUtils.createCheckbox(composite, "Show all queries", "Show all transaction queries. Otherwise shows only modifying queries.", false, 1);
+        showAllCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_all_queries, CoreMessages.transaction_info_dialog_label_show_all_transaction_queries, false, 1);
         showAllCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -78,7 +79,7 @@ public abstract class TransactionInfoDialog extends Dialog {
             }
         });
 
-        showPreviousCheck = UIUtils.createCheckbox(composite, "Show previous transactions", "Show previous transactions. Otherwise shows only active one.", false, 1);
+        showPreviousCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_previous_transactions, CoreMessages.transaction_info_dialog_label_otherwise, false, 1);
         showPreviousCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -86,6 +87,7 @@ public abstract class TransactionInfoDialog extends Dialog {
             }
         });
 
+        closeOnFocusLost(logViewer.getSearchText(), logViewer.getControl(), showAllCheck, showPreviousCheck);
     }
 
     protected void updateTransactionFilter() {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -128,5 +128,10 @@ public class MySQLPrivilege implements DBAPrivilege
     public boolean isGrantOption()
     {
         return name.equalsIgnoreCase(GRANT_PRIVILEGE);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

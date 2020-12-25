@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -29,8 +31,23 @@ import java.util.Map;
 public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, PROCESSOR extends IDataTransferProcessor>
     extends IDataTransferNode<SETTINGS>, DBDDataReceiver
 {
+    class TransferParameters {
+        public int orderNumber;
+        public int totalConsumers;
+        public boolean isBinary;
+        public boolean isHTML;
+        public Date startTimestamp;
 
-    void initTransfer(DBSObject sourceObject, SETTINGS settings, boolean isBinary, PROCESSOR processor, Map<Object, Object> processorProperties);
+        public TransferParameters() {
+        }
+
+        public TransferParameters(boolean isBinary, boolean isHTML) {
+            this.isBinary = isBinary;
+            this.isHTML = isHTML;
+        }
+    }
+
+    void initTransfer(DBSObject sourceObject, SETTINGS settings, TransferParameters parameters, PROCESSOR processor, Map<String, Object> processorProperties);
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 
@@ -41,4 +58,11 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      */
     void finishTransfer(DBRProgressMonitor monitor, boolean last);
 
+    // Target object. May be null or target database object (table)
+    @Nullable
+    Object getTargetObject();
+
+    // If not null then this consumer is a fake one which must be replaced by explicit target consumers on configuration stage
+    @Nullable
+    Object getTargetObjectContainer();
 }

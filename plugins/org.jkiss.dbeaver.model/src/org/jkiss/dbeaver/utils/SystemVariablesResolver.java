@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Locale;
@@ -30,12 +30,13 @@ import java.util.Locale;
 /**
  * SystemVariablesResolver
  */
-public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
+public class SystemVariablesResolver implements IVariableResolver {
 
     public static SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
 
     public static final String VAR_APP_NAME = "application.name";
     public static final String VAR_APP_VERSION = "application.version";
+    public static final String VAR_APP_PATH = "application.path";
     public static final String VAR_WORKSPACE = "workspace";
     public static final String VAR_HOME = "home";
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
@@ -54,6 +55,7 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
             case VAR_WORKSPACE:
                 return getWorkspacePath();
             case VAR_DBEAVER_HOME:
+            case VAR_APP_PATH:
                 return getInstallPath();
             case VAR_LOCAL_IP:
                 try {
@@ -81,7 +83,7 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
         try {
             File file = new File(url.toURI());
             return file.getAbsolutePath();
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             return url.toString();
         }
     }

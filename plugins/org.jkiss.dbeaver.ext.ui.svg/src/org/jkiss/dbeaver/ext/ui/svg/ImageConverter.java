@@ -14,14 +14,14 @@
 
 package org.jkiss.dbeaver.ext.ui.svg;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
-
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 
 /**
  * This is a helper class used to convert an SWT Image into an AWT BufferedImage.

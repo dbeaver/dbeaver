@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,32 +17,31 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL index manager
  */
-public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTable> {
+public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTable> implements DBEObjectRenamer<MySQLTableIndex> {
 
     @Nullable
     @Override
@@ -53,46 +52,16 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Override
     protected MySQLTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
-        Object from)
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
     {
-        return new UITask<MySQLTableIndex>() {
-            @Override
-            protected MySQLTableIndex runTask() {
-                MyEditIndexPage editPage = new MyEditIndexPage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final MySQLTableIndex index = new MySQLTableIndex(
-                    parent,
-                    !editPage.isUnique(),
-                    null,
-                    editPage.getIndexType(),
-                    null,
-                    false);
-                StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    if (colIndex == 1) {
-                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
-                    }
-                    Integer length = (Integer) editPage.getAttributeProperty(tableColumn, MyEditIndexPage.PROP_LENGTH);
-                    index.addColumn(
-                        new MySQLTableIndexColumn(
-                            index,
-                            (MySQLTableColumn) tableColumn,
-                            colIndex++,
-                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
-                            false,
-                            length == null ? null : String.valueOf(length)));
-                }
-                idxName.append("_IDX"); //$NON-NLS-1$
-                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-                return index;
-            }
-        }.execute();
+        return new MySQLTableIndex(
+            (MySQLTable) container,
+            false,
+            null,
+            DBSIndexType.OTHER,
+            null,
+            false);
     }
 
     @Override
@@ -126,68 +95,23 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         }
     }
 
-    private static class MyEditIndexPage extends EditIndexPage {
-
-        public static final String PROP_LENGTH = "length";
-
-        private int lengthColumnIndex;
-
-        public MyEditIndexPage(MySQLTable parent) {
-            super(MySQLMessages.edit_index_manager_title, parent,
-                    Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
-                    MySQLConstants.INDEX_TYPE_FULLTEXT,
-                    MySQLConstants.INDEX_TYPE_HASH,
-                    MySQLConstants.INDEX_TYPE_RTREE));
-
-        }
-
-        @Override
-        protected void createAttributeColumns(Table columnsTable) {
-            super.createAttributeColumns(columnsTable);
-
-            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, "Length");
-            colDesc.setToolTipText("Index length (for varchar columns)");
-        }
-
-        @Override
-        protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
-            lengthColumnIndex = super.fillAttributeColumns(attribute, attributeInfo, columnItem) + 1;
-            Integer length = (Integer) attributeInfo.getProperty(PROP_LENGTH);
-            columnItem.setText(lengthColumnIndex, length == null ? "" : length.toString());
-
-            return lengthColumnIndex;
-        }
-
-        @Override
-        protected Control createCellEditor(Table table, int index, TableItem item, AttributeInfo attributeInfo) {
-            if (index == lengthColumnIndex && attributeInfo.getAttribute().getDataKind() == DBPDataKind.STRING) {
-                Integer length = (Integer) attributeInfo.getProperty(PROP_LENGTH);
-                Spinner spinner = new Spinner(table, SWT.BORDER);
-                spinner.setMinimum(0);
-                spinner.setMaximum((int) attributeInfo.getAttribute().getMaxLength());
-                if (length != null) {
-                    spinner.setSelection(length);
-                }
-                return spinner;
-            }
-            return super.createCellEditor(table, index, item, attributeInfo);
-        }
-
-        @Override
-        protected void saveCellValue(Control control, int index, TableItem item, AttributeInfo attributeInfo) {
-            if (index == lengthColumnIndex) {
-                Spinner spinner = (Spinner) control;
-                int length = spinner.getSelection();
-                item.setText(index, length <= 0 ? "" : String.valueOf(length));
-                if (length <= 0) {
-                    attributeInfo.setProperty(PROP_LENGTH, null);
-                } else {
-                    attributeInfo.setProperty(PROP_LENGTH, length);
-                }
-            } else {
-                super.saveCellValue(control, index, item, attributeInfo);
-            }
-        }
+    @Override
+    public void renameObject(DBECommandContext commandContext, MySQLTableIndex object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
     }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        final MySQLDataSource dataSource = command.getObject().getDataSource();
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename table",
+                "ALTER TABLE " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    "\nRENAME INDEX " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
+                    " TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
+        );
+    }
+
 
 }

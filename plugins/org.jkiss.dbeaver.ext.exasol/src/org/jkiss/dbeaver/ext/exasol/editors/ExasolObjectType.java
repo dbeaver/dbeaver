@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,11 @@ public enum ExasolObjectType implements DBSObjectType {
         }
 
     }),
-    VIEW(DBIcon.TREE_VIEW, ExasolView.class, new ObjectFinder());
+    VIEW(DBIcon.TREE_VIEW, ExasolView.class, null),
+    SCRIPT(DBIcon.TREE_PROCEDURE, ExasolScript.class, null), 
+    FOREIGNKEY(DBIcon.TREE_FOREIGN_KEY, ExasolTableForeignKey.class, null),
+    PRIMARYKEY(DBIcon.TREE_UNIQUE_KEY, ExasolTableUniqueKey.class, null)
+    ;
 
 
     private final DBPImage image;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class TableColumnSortListener implements Listener {
     public void handleEvent(Event e) {
         final Collator collator = Collator.getInstance(Locale.getDefault());
         TableColumn column = (TableColumn) e.widget;
-        if (prevColumn == column) {
+        if (prevColumn == column && e.doit) {
             // Set reverse order
             sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
         }

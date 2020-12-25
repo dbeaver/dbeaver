@@ -1,0 +1,821 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.dataSourceProvider" name="Datasource provider"/>
+      </appInfo>
+      <documentation>
+         DBeaver data source provider
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="datasource"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  Extension ID
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="datasource">
+      <annotation>
+         <documentation>
+            Data source provider implementation binding
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="tree" minOccurs="0" maxOccurs="1"/>
+            <element ref="drivers" minOccurs="0" maxOccurs="1"/>
+            <element ref="tools" minOccurs="0" maxOccurs="1"/>
+            <element ref="templates" minOccurs="0" maxOccurs="1"/>
+         </sequence>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Data source ID
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Datasource provider implementation
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.DBPDataSourceProvider"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  Data source name
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Provider description
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Datasource icon
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="tree">
+      <annotation>
+         <documentation>
+            Tree structure
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="path" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Root element path
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Root element icon
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  Optiona tree label
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="items">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="property" type="string">
+            <annotation>
+               <documentation>
+                  Item collection reading property
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  Optional item label
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="itemLabel" type="string">
+            <annotation>
+               <documentation>
+                  Optional item label
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Item icon
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="path" type="string">
+            <annotation>
+               <documentation>
+                  Items path element
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="optional" type="boolean">
+            <annotation>
+               <documentation>
+                  Optional items collection flag
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="recursive" type="string">
+            <annotation>
+               <documentation>
+                  Recursive item reference.
+                   Default value is false.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="virtual" type="boolean">
+            <annotation>
+               <documentation>
+                  Virtual items are copies of other &quot;real&quot; objects. Navigator will always return real object to user.
+                   Default value is false.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="navigable" type="boolean">
+            <annotation>
+               <documentation>
+                  Non-navigable items do not present in navigator tree but still present in entity editor&apos;s tabs.
+                    Default value is true.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="inline" type="boolean">
+            <annotation>
+               <documentation>
+                  Inline items are present in item lists as child items.
+                   Default value is false.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="ref" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="visibleIf" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="folder">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  Folder type
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Folder label
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Folder icon
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Folder description
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="navigable" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="virtual" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="visibleIf" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="drivers">
+      <annotation>
+         <documentation>
+            Data source supported drivers
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="driver" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="managable" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="driver">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="library" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="query" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="file" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="os" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="replace" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Driver name
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Driver description
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Driver icon
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Driver implementation class
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="sampleURL" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="webURL" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="defaultPort" type="string">
+            <annotation>
+               <documentation>
+                  Driver default port
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Driver ID
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="category" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="anonymous" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="os" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="clientRequired" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="customDriverLoader" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="library">
+      <complexType>
+         <attribute name="path" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Library description
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="propertyGroup">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="property"/>
+         </sequence>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="property">
+      <complexType>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="icon">
+      <complexType>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="if" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="default" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="query">
+      <complexType>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameter">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="value" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="object">
+      <complexType>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="editor" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.ui.part.EditorPart:"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="file">
+      <complexType>
+         <attribute name="type" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="path" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="url" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="os" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="arch" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="os">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="replace">
+      <complexType>
+         <attribute name="provider" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="driver" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="tools">
+      <complexType>
+         <sequence>
+            <element ref="tool" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="objectType">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="templates">
+      <complexType>
+         <sequence>
+            <element ref="resolver" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="resolver">
+      <complexType>
+         <attribute name="type" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         1.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiinfo"/>
+      </appInfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+</schema>

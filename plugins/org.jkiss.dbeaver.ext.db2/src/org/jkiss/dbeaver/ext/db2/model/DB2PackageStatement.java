@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 
 /**
@@ -50,10 +49,7 @@ public class DB2PackageStatement extends DB2Object<DB2Package> {
         this.lineNumber = JDBCUtils.safeGetInteger(resultSet, "STMTNO");
         this.text = JDBCUtils.safeGetString(resultSet, "TEXT");
         this.version = JDBCUtils.safeGetString(resultSet, "VERSION");
-        try {
-            this.uniqueId = new String(JDBCUtils.safeGetBytes(resultSet, "UNIQUE_ID"), GeneralUtils.UTF8_ENCODING);
-        } catch (UnsupportedEncodingException e) {
-        }
+        this.uniqueId = new String(JDBCUtils.safeGetBytes(resultSet, "UNIQUE_ID"), StandardCharsets.UTF_8);
     }
 
     // -----------------

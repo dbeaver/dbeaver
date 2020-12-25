@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.utils.CommonUtils;
 
 public class EntityEditPage extends BaseObjectEditPage {
 
@@ -53,15 +54,25 @@ public class EntityEditPage extends BaseObjectEditPage {
             @Override
             public void modifyText(ModifyEvent e)
             {
-                name = nameText.getText();
+                name = nameText.getText().trim();
+                updatePageState();
             }
         });
 
         return propsGroup;
     }
 
+    @Override
+    public boolean isPageComplete() {
+        return CommonUtils.isNotEmpty(name);
+    }
+
     public String getEntityName()
     {
         return DBObjectNameCaseTransformer.transformName(dataSource, name);
+    }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
     }
 }

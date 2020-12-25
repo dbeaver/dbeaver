@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <!-- Deprecated extension point, must be replaced with tasks UI configurators -->
+    <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.task.ui" name="%extension-point.org.jkiss.dbeaver.task.ui.name" schema="schema/org.jkiss.dbeaver.task.ui.exsd"/>
+
+    <extension point="org.eclipse.ui.views">
+        <view
+            id="org.jkiss.dbeaver.tasks"
+            category="org.jkiss.dbeaver.core.category"
+            class="org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView"
+            allowMultiple="false"
+            icon="icons/task_list.png"
+            name="%view.tasks.title">
+            <description>%view.tasks.description</description>
+        </view>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.tasks.ui.ToolsPropertyTester"
+                id="org.jkiss.dbeaver.tasks.ui.ToolsPropertyTester"
+                namespace="org.jkiss.dbeaver.core.tools"
+                properties="hasTools"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
+                id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
+                namespace="org.jkiss.dbeaver.task"
+                properties="scheduled"
+                type="org.jkiss.dbeaver.model.task.DBTTask"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.task.run" name="%command.org.jkiss.dbeaver.task.run.name" description="%command.org.jkiss.dbeaver.task.run.description" categoryId="org.jkiss.dbeaver.core.navigator">
+            <commandParameter id="task" name="Task" optional="true"/>
+        </command>
+        <command id="org.jkiss.dbeaver.task.edit" name="%command.org.jkiss.dbeaver.task.edit.name" description="%command.org.jkiss.dbeaver.task.edit.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.create" name="%command.org.jkiss.dbeaver.task.create.name" description="%command.org.jkiss.dbeaver.task.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.copy" name="%command.org.jkiss.dbeaver.task.copy.name" description="%command.org.jkiss.dbeaver.task.copy.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.task.group" name="%command.org.jkiss.dbeaver.task.group.name" description="%command.org.jkiss.dbeaver.task.group.description" categoryId="org.jkiss.dbeaver.core.navigator">
+            <commandParameter id="group" name="Group by" optional="false"/>
+        </command>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.task.run" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
+        <image commandId="org.jkiss.dbeaver.task.create" icon="icons/task_create.png"/>
+        <image commandId="org.jkiss.dbeaver.task.edit" icon="icons/task_edit.png"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.tasks.part.active">
+            <with variable="activePartId">
+                <equals value="org.jkiss.dbeaver.tasks"/>
+            </with>
+        </definition>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <!-- Task view handlers -->
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerDelete">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.properties" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerEdit">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.run" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRun">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.edit" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerEdit">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCreate"/>
+        <handler commandId="org.jkiss.dbeaver.task.copy" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCopy">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRefresh">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.task.group" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerGroupBy">
+        </handler>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Tools context menu -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+            <command commandId="org.jkiss.dbeaver.core.procedure.execute">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <separator name="compare" visible="true"/>
+            <separator name="export_import" visible="false"/>
+            <separator name="generate" visible="false"/>
+
+            <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
+                <visibleWhen>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.tools.hasTools"/>
+                    </with>
+                </visibleWhen>
+                <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.tasks.ui.DataSourceToolsContributor"/>
+            </menu>
+        </menuContribution>
+
+        <!-- Datasource menu -->
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
+                <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.tasks.ui.DataSourceToolsContributor"/>
+            </menu>
+            <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.project.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.png"><parameter name="group" value="project"/></command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name" icon="icons/task_list.png"><parameter name="group" value="category"/></command>
+            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"><parameter name="group" value="type"/></command>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.task.run"/>
+            <command commandId="org.jkiss.dbeaver.task.create"/>
+            <command commandId="org.eclipse.ui.edit.delete"/>
+            <separator name="additions" visible="true"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
+            <separator name="tasks" visible="false"/>
+            <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+                <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
+
+                <visibleWhen checkEnabled="true">
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <menu id="org.jkiss.dbeaver.menu.tasks" label="%menu.database.tasks.label"  icon="icons/task_list.png"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
+            <command commandId="org.jkiss.dbeaver.task.create"/>
+            <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
+                <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
+            </command>
+            <separator name="tasks" visible="true"/>
+            <dynamic id="org.jkiss.dbeaver.menu.tasks.recent" class="org.jkiss.dbeaver.tasks.ui.RecentTasksMenuContributor"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:window?before=primary.views">
+            <command commandId="org.jkiss.dbeaver.core.view.toggle" style="toggle"><parameter name="viewId" value="org.jkiss.dbeaver.tasks"/></command>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.task.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="Enter"/>
+    </extension>
+
+</plugin>

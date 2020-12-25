@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.data.gis.leaflet.tiles" name="Leaflet tiles" schema="schema/org.jkiss.dbeaver.data.gis.leafletTiles.exsd"/>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.gis.internal.GISViewerPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ui.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.gis.GeometryValueManager">
+            <supports type="org.jkiss.dbeaver.model.gis.DBGeometry"/>
+            <supports typeName="GIS.Transformed"/> <!-- Fake type name for GIS transformer -->
+        </manager>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
+        <geometryViewer
+                label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.label"
+                description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                id="text"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
+                supportsInline="true"/>
+        <geometryViewer
+                label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.label"
+                description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.description"
+                icon="icons/map.png"
+                id="browser"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.data.gis.leaflet.tiles">
+        <tiles id="mapbox" label="MapBox" layersDefinition="'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 18,
+            attribution: 'Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/&quot; target=&quot;_new&quot;>OpenStreetMap&lt;/a> contributors ' +
+            '&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0/&quot; target=&quot;_new&quot;>CC-BY-SA&lt;/a>, ' +
+            'Imagery &lt;a href=&quot;https://www.mapbox.com/&quot; target=&quot;_new&quot;>Mapbox&lt;/a>',
+            id: 'mapbox.streets'}"/>
+        <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors',
+            id: 'osm.streets'}"/>
+        <tiles id="otm" label="OpenTopoMap" layersDefinition="'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            maxZoom: 17,
+            attribution: 'Map data: &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors,' +
+                ' &lt;a href=&quot;http://viewfinderpanoramas.org&quot;>SRTM&lt;/a> | Map style: &amp;copy; &lt;a href=&quot;https://opentopomap.org&quot;>OpenTopoMap&lt;/a> (&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0/&quot;>CC-BY-SA&lt;/a>)',
+            id: 'opentopomap.main'}"/>
+        <tiles id="arcgis.sat" label="ArcGis cosmo" layersDefinition="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &amp;copy; Esri &amp;mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            id: 'arcgis.sat'}"/>
+        <tiles id="MtbMap" label="Mtb TopoMap" layersDefinition="'http://tile.mtbmap.cz/mtbmap_tiles/{z}/{x}/{y}.png', {
+			attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; contributors &amp; USGS',
+            id: 'mtb.main'}"/>
+        <tiles id="Stamen_Toner" label="Stamen mono" layersDefinition="'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
+			attribution: 'Map tiles by &lt;a href=&quot;http://stamen.com&quot;&gt;Stamen Design&lt;/a&gt;, &lt;a href=&quot;http://creativecommons.org/licenses/by/3.0&quot;&gt;CC BY 3.0&lt;/a&gt; &amp;mdash; Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; contributors',
+			subdomains: 'abcd',
+			minZoom: 0,
+			maxZoom: 20,
+			ext: 'png',
+            id: 'stamen.mono'}"/>
+        <tiles id="Esri_WorldStreetMap" label="ESRI StreetMap" layersDefinition="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &amp;copy; Esri &amp;mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+            id: 'esri.streets'}"/>
+        <tiles id="Esri_WorldTopoMap" label="ESRI TopoMap" layersDefinition="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &amp;copy; Esri &amp;mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+            id: 'esri.topo'}"/>
+        <tiles id="CartoDB_Voyager" label="CartoDB TopoMap" layersDefinition="'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+			attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; contributors &amp;copy; &lt;a href=&quot;https://carto.com/attributions&quot;&gt;CARTO&lt;/a&gt;',
+			subdomains: 'abcd',
+			maxZoom: 19,
+            id: 'carto.topo'}"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.resultset.presentation">
+        <presentation
+                id="results.geometry"
+                label="%presentation.geometry.name"
+                description="%presentation.geometry.description"
+                icon="icons/map.png"
+                class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
+                type="transformer"
+                supportsRecordMode="false"
+                supportsPanels="false"
+                supportsNavigation="false"
+                supportsEdit="false"
+                order="500">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.hasAttributeOfType('org.jkiss.dbeaver.model.gis.DBGeometry')"/>
+        </presentation>
+    </extension>
+
+</plugin>

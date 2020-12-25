@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,29 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -79,19 +82,53 @@ public class SQLServerUtils {
             "use " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
     }
 
+    public static void setCurrentSchema(JDBCSession session, String currentUser, String schema) throws SQLException {
+        if (!CommonUtils.isEmpty(currentUser)) {
+            JDBCUtils.executeSQL(session,
+                "alter user " + DBUtils.getQuotedIdentifier(session.getDataSource(), currentUser) +
+                    " with default_schema = " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
+        }
+    }
+
+    public static String getCurrentUser(JDBCSession session) throws SQLException {
+        // See https://stackoverflow.com/questions/4101863/sql-server-current-user-name
+        return JDBCUtils.queryString(
+            session,
+            "select original_login()");
+    }
+
     public static String getCurrentDatabase(JDBCSession session) throws SQLException {
         return JDBCUtils.queryString(
             session,
             "select db_name()");
     }
 
+    public static String getCurrentSchema(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "select schema_name()");
+    }
+
     public static boolean isShowAllSchemas(DBPDataSource dataSource) {
         return CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
     }
 
+    public static boolean supportsCrossDatabaseQueries(JDBCDataSource dataSource) {
+        boolean isSqlServer = isDriverSqlServer(dataSource.getContainer().getDriver());
+        if (isSqlServer && !dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
+            return false;
+        }
+        boolean isDriverAzure = isSqlServer && isDriverAzure(dataSource.getContainer().getDriver());
+        if (isDriverAzure && !dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2012_VERSION_MAJOR, 0)) {
+            return false;
+        }
+        return true;
+    }
+
     public static String getSystemSchemaFQN(JDBCDataSource dataSource, String catalog, String systemSchema) {
-        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
-            DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema : systemSchema;
+        return catalog != null && supportsCrossDatabaseQueries(dataSource) ?
+                DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema :
+                systemSchema;
     }
 
     public static String getSystemTableName(SQLServerDatabase database, String tableName) {
@@ -132,14 +169,16 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @Nullable SQLServerSchema schema, @NotNull  String objectName) throws DBException {
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @NotNull  String objectName) throws DBException {
+        SQLServerDataSource dataSource = schema.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String objectFQN = schema == null ?
-                DBUtils.getQuotedIdentifier(dataSource, objectName) :
-                DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(systemSchema + ".sp_helptext '" + objectFQN + "'")) {
+            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
+            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
+            if (dataSource.isDataWarehouseServer(monitor)) {
+                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -173,4 +212,70 @@ public class SQLServerUtils {
             return false;
         }
     }
+
+    @NotNull
+    public static SQLServerAuthentication detectAuthSchema(DBPConnectionConfiguration connectionInfo) {
+        // Detect auth schema
+        // Now we use only PROP_AUTHENTICATION but here we support all legacy SQL Server configs
+        SQLServerAuthentication auth = isWindowsAuth(connectionInfo) ? SQLServerAuthentication.WINDOWS_INTEGRATED :
+            (isActiveDirectoryAuth(connectionInfo) ? SQLServerAuthentication.AD_PASSWORD : SQLServerAuthentication.SQL_SERVER_PASSWORD);
+
+        {
+            String authProp = connectionInfo.getProviderProperty(SQLServerConstants.PROP_AUTHENTICATION);
+            if (authProp != null) {
+                try {
+                    auth = SQLServerAuthentication.valueOf(authProp);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Bad auth schema: " + authProp);
+                }
+            }
+        }
+
+        return auth;
+    }
+
+    public static String changeCreateToAlterDDL(SQLDialect sqlDialect, String ddl) {
+        String firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
+        if ("CREATE".equalsIgnoreCase(firstKeyword)) {
+            return ddl.replaceFirst(firstKeyword, "ALTER");
+        }
+        return ddl;
+    }
+
+    public static boolean isTableType(SQLServerTableBase table) {
+        return table instanceof SQLServerTableType;
+    }
+
+    public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException, SQLException {
+        DBCEntityMetaData singleSource = sqlQuery.getSingleSource();
+        String catalogName = null;
+        if (singleSource != null) {
+            catalogName = singleSource.getCatalogName();
+        }
+        Connection original = null;
+        if (session instanceof JDBCConnectionImpl) {
+            original = ((JDBCConnectionImpl) session).getOriginal();
+        }
+        if (catalogName == null && original != null) {
+            catalogName = original.getCatalog();
+        }
+        if (catalogName != null) {
+            SQLServerDatabase database = dataSource.getDatabase(catalogName);
+            String schemaName = null;
+            if (singleSource != null) {
+                schemaName = singleSource.getSchemaName();
+            }
+            if (schemaName == null && original != null) {
+                schemaName = original.getSchema();
+            }
+            if (database != null && schemaName != null) {
+                SQLServerSchema schema = database.getSchema(schemaName);
+                if (schema != null && singleSource != null) {
+                    return schema.getTable(session.getProgressMonitor(), singleSource.getEntityName());
+                }
+            }
+        }
+        return null;
+    }
+
 }

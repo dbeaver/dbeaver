@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public class ImportDriverInfo {
     private String sampleURL;
     private String driverClass;
     private List<String> libraries = new ArrayList<>();
-    private Map<Object, Object> properties = new HashMap<>();
-    private String defaultPort;
+    private Map<String, Object> properties = new HashMap<>();
+    private String defaultPort, defaultDatabase, defaultServer, defaultUser;
     private String description;
 
     public ImportDriverInfo(String id, String name, String sampleURL, String driverClass)
@@ -79,6 +79,30 @@ public class ImportDriverInfo {
         this.defaultPort = defaultPort;
     }
 
+    public String getDefaultDatabase() {
+        return defaultDatabase;
+    }
+
+    public void setDefaultDatabase(String defaultDatabase) {
+        this.defaultDatabase = defaultDatabase;
+    }
+
+    public String getDefaultServer() {
+        return defaultServer;
+    }
+
+    public void setDefaultServer(String defaultServer) {
+        this.defaultServer = defaultServer;
+    }
+
+    public String getDefaultUser() {
+        return defaultUser;
+    }
+
+    public void setDefaultUser(String defaultUser) {
+        this.defaultUser = defaultUser;
+    }
+
     public List<String> getLibraries()
     {
         return libraries;
@@ -89,7 +113,7 @@ public class ImportDriverInfo {
         libraries.add(path);
     }
 
-    public Map<Object,Object> getProperties()
+    public Map<String, Object> getProperties()
     {
         return properties;
     }

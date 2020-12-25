@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,15 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
+import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKeyColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,14 +43,22 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @NotNull
     protected DBDValueHandler valueHandler;
     @Nullable
-    protected DBSAttributeBase presentationAttribute;
+    private DBSAttributeBase presentationAttribute;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
     private boolean transformed;
+    private boolean disableTransformers;
 
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
         this.valueHandler = valueHandler;
+    }
+
+    /**
+     * Custom attributes are client-side objects. They also don't have associated meta attributes.
+     */
+    public boolean isCustom() {
+        return false;
     }
 
     @Nullable
@@ -76,7 +87,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     /**
      * Meta attribute (obtained from result set)
      */
-    @NotNull
+    @Nullable
     public abstract DBCAttributeMetaData getMetaAttribute();
 
     /**
@@ -90,7 +101,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * Most valuable attribute reference.
      * @return resolved entity attribute or just meta attribute
      */
-    @NotNull
+    @Nullable
     public DBSAttributeBase getAttribute()
     {
         DBSEntityAttribute attr = getEntityAttribute();
@@ -101,7 +112,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * Presentation attribute.
      * Usually the same as {@link #getAttribute()} but may be explicitly set by attribute transformers.
      */
-    @NotNull
+    @Nullable
     public DBSAttributeBase getPresentationAttribute() {
         if (presentationAttribute != null) {
             return presentationAttribute;
@@ -117,11 +128,18 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return false;
     }
 
+    public DBSDataContainer getDataContainer() {
+        DBDAttributeBinding parentObject = getParentObject();
+        return parentObject == null ? null : parentObject.getDataContainer();
+    }
+
     /**
      * Row identifier (may be null)
      */
     @Nullable
     public abstract DBDRowIdentifier getRowIdentifier();
+
+    public abstract String getRowIdentifierStatus();
 
     @Nullable
     public abstract List<DBSEntityReferrer> getReferrers();
@@ -145,6 +163,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public boolean isTransformed() {
         return transformed;
+    }
+
+    public void disableTransformers(boolean disableTransformers) {
+        this.disableTransformers = disableTransformers;
     }
 
     @NotNull
@@ -203,14 +225,12 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         if (getParentObject() == null) {
             return DBUtils.getQuotedIdentifier(dataSource, getName());
         }
-        char structSeparator = SQLConstants.STRUCT_SEPARATOR;
-        if (dataSource instanceof SQLDataSource) {
-            structSeparator = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
-        }
+        char structSeparator = dataSource.getSQLDialect().getStructSeparator();
+
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {
-            if (attribute.isPseudoAttribute() || attribute.getDataKind() == DBPDataKind.DOCUMENT) {
+            if (attribute.isPseudoAttribute() || (attribute.getParentObject() == null && attribute.getDataKind() == DBPDataKind.DOCUMENT)) {
                 // Skip pseudo attributes and document attributes (e.g. Mongo root document)
                 continue;
             }
@@ -284,20 +304,54 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
+        if (disableTransformers) {
+            return;
+        }
         DBSAttributeBase attribute = getAttribute();
         final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
             session.getProgressMonitor().subTask("Transform attribute '" + attribute.getName() + "'");
-            final Map<String, String> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
+            final Map<String, Object> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
             for (DBDAttributeTransformer transformer : transformers) {
                 transformer.transformAttribute(session, this, rows, transformerOptions);
             }
         }
     }
 
+    protected List<DBSEntityReferrer> findVirtualReferrers() {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer instanceof DBSEntity) {
+            DBSEntity attrEntity = (DBSEntity) dataContainer;
+            DBVEntity vEntity = DBVUtils.getVirtualEntity(attrEntity, false);
+            if (vEntity != null) {
+                List<DBVEntityForeignKey> foreignKeys = vEntity.getForeignKeys();
+                if (!CommonUtils.isEmpty(foreignKeys)) {
+                    List<DBSEntityReferrer> referrers = null;
+                    for (DBVEntityForeignKey vfk : foreignKeys) {
+                        for (DBVEntityForeignKeyColumn vfkc : vfk.getAttributes()) {
+                            if (CommonUtils.equalObjects(vfkc.getAttributeName(), getFullyQualifiedName(DBPEvaluationContext.DML))) {
+                                if (referrers == null) {
+                                    referrers = new ArrayList<>();
+                                }
+                                referrers.add(vfk);
+                            }
+                        }
+                    }
+                    return referrers;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
-        return getName() + " [" + getOrdinalPosition() + "]";
+        DBDAttributeBinding parentAttr = getParentObject();
+        if (parentAttr == null) {
+            return getName();
+        } else {
+            return parentAttr.getName() + "." + getName();
+        }
     }
 
 }

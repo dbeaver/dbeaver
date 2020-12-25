@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,38 +24,49 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * PostgreTablespace
  */
-public class PostgreTablespace extends PostgreInformation {
+public class PostgreTablespace extends PostgreInformation implements PostgreScriptObject {
 
     private long oid;
     private String name;
+    private String loc;
     private long ownerId;
-    private Object[] options;
+    private String options;
 
     public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
-        throws SQLException
-    {
+        throws SQLException {
         super(database);
         this.loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
-        throws SQLException
-    {
+    public PostgreTablespace(PostgreDatabase database) {
+        super(database);
+        this.oid = 0;
+        this.name = "newtablespace";
+        this.ownerId = 0;
+        this.options = "";
+        this.loc = "";
+    }
+
+    private void loadInfo(ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "spcowner");
-        this.options = JDBCUtils.safeGetArray(dbResult, "spcoptions");
+        Object opts[] = JDBCUtils.safeGetArray(dbResult, "spcoptions");
+        this.options = opts == null ? "" : Stream.of(opts).map(Object::toString).collect(Collectors.joining(","));
+        this.loc = JDBCUtils.safeGetString(dbResult, "loc");
     }
 
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
@@ -64,14 +75,51 @@ public class PostgreTablespace extends PostgreInformation {
         return oid;
     }
 
-    @Property(order = 2)
+    @Property(viewable = true, order = 2)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getRoleById(monitor, ownerId);
     }
 
-    @Property(order = 100)
-    public Object[] getOptions() {
+    @Property(viewable = true, order = 3)
+    public String getLoc() {
+        return loc;
+    }
+
+    @Property(viewable = true, order = 4)
+    public String getOptions() {
         return options;
     }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+
+        StringBuilder sb = new StringBuilder("CREATE TABLESPACE ");
+        sb.append(getName()).append(" OWNER ").append(getOwner(monitor).getName()).append(" LOCATION '")
+            .append(getLoc()).append("'");
+        if (getOptions() != null && !getOptions().isEmpty()) {
+            sb.append(" WITH (").append(getOptions()).append(")");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLoc(String loc) {
+        this.loc = loc;
+    }
+
+    public void setOwnerId(long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+
 }
 

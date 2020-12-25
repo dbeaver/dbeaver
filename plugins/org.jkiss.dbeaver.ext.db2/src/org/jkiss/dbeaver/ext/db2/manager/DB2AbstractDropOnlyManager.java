@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,7 +45,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    public boolean canCreateObject(CONTAINER_TYPE parent)
+    public boolean canCreateObject(Object container)
     {
         return false;
     }
@@ -58,21 +59,21 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     protected abstract String buildDropStatement(OBJECT_TYPE object);
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         DBEPersistAction action = new SQLDatabasePersistAction("Drop", buildDropStatement(command.getObject()));
         actions.add(action);
     }
 
     @Override
-    protected OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, CONTAINER_TYPE owner,
-                                               Object copyFrom)
+    protected OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object owner,
+                                               Object copyFrom, Map<String, Object> options)
     {
         return null;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
     }
 

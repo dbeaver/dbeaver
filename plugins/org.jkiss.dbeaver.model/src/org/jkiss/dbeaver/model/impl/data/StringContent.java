@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.StringContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -41,8 +39,8 @@ public class StringContent extends AbstractContent {
 
     private StringContentStorage storage;
 
-    public StringContent(DBPDataSource dataSource, String data) {
-        super(dataSource);
+    public StringContent(DBCExecutionContext executionContext, String data) {
+        super(executionContext);
         this.storage = new StringContentStorage(data);
     }
 

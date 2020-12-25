@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,16 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Row identifier.
@@ -38,10 +42,10 @@ import java.util.List;
 public class DBDRowIdentifier implements DBPObject {
 
     private final DBSEntity entity;
-    private final DBSEntityReferrer entityIdentifier;
+    private final DBSEntityConstraint entityIdentifier;
     private final List<DBDAttributeBinding> attributes = new ArrayList<>();
 
-    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityReferrer entityIdentifier)
+    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityConstraint entityIdentifier)
     {
         this.entity = entity;
         this.entityIdentifier = entityIdentifier;
@@ -55,7 +59,7 @@ public class DBDRowIdentifier implements DBPObject {
 
     @NotNull
     @Property(viewable = true, order = 2)
-    public DBSEntityReferrer getUniqueKey() {
+    public DBSEntityConstraint getUniqueKey() {
         return entityIdentifier;
     }
 
@@ -70,21 +74,42 @@ public class DBDRowIdentifier implements DBPObject {
         return attributes;
     }
 
+    public boolean isValidIdentifier() {
+        if (entityIdentifier instanceof DBSEntityReferrer && CommonUtils.isEmpty(attributes)) {
+            return false;
+        }
+        return true;
+    }
+
     public void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException
     {
         this.attributes.clear();
-        Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(entityIdentifier.getAttributeReferences(monitor));
-        for (DBSEntityAttributeRef cColumn : refs) {
-            DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
-            if (binding != null) {
-                this.attributes.add(binding);
-            } else {
-                // If at least one attribute is missing - this ID won't work anyway
-                // so let's just clean it up
-                this.attributes.clear();
-                break;
+        if (entityIdentifier instanceof DBVEntityConstraint && ((DBVEntityConstraint) entityIdentifier).isUseAllColumns()) {
+            Collections.addAll(this.attributes, bindings);
+        } else if (entityIdentifier instanceof DBSEntityReferrer) {
+            DBSEntityReferrer referrer = (DBSEntityReferrer) entityIdentifier;
+            Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
+            for (DBSEntityAttributeRef cColumn : refs) {
+                DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
+                if (binding != null) {
+                    this.attributes.add(binding);
+                } else {
+                    // If at least one attribute is missing - this ID won't work anyway
+                    // so let's just clean it up
+                    this.attributes.clear();
+                    break;
+                }
             }
         }
     }
 
+    public void clearAttributes() {
+        attributes.clear();
+    }
+
+    @Override
+    public String toString() {
+        return entity.getName() + "." + entityIdentifier.getName() + "(" +
+            attributes.stream().map(DBDAttributeBinding::getName).collect(Collectors.joining(",")) + ")";
+    }
 }

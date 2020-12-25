@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.io.InputStream;
@@ -152,10 +153,10 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(connection.getDataSource(), value.toString());
         } else if (value instanceof Number) {
-            return DBValueFormatting.convertNumberToNativeString((Number) value);
+            return DBValueFormatting.convertNumberToNativeString((Number) value, false);
         } else if (value instanceof java.util.Date) {
             try {
-                DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
+                DBDDataFormatterProfile formatterProfile = getSession().getDataFormatterProfile();
                 if (value instanceof Date) {
                     return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE, null).formatValue(value));
                 } else if (value instanceof Time) {
@@ -204,7 +205,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             return execute();
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBSQLException(query, e, connection.getExecutionContext());
         }
     }
 
@@ -215,7 +216,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             addBatch();
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBCException(e, connection.getExecutionContext());
         }
     }
 

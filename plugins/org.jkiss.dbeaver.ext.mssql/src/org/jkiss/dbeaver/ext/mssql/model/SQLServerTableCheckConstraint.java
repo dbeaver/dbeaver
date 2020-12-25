@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,16 +49,28 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
         this.persisted = true;
     }
 
+    public SQLServerTableCheckConstraint(SQLServerTable table) {
+        this.table = table;
+        this.name = "";
+        this.objectId = -1;
+        this.disabled = false;
+        this.definition = null;
+        this.persisted = true;
+    }
+
+    @NotNull
     @Override
     public SQLServerTable getParentObject() {
         return table;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType() {
         return DBSEntityConstraintType.CHECK;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 1)
     @Override
     public String getName() {

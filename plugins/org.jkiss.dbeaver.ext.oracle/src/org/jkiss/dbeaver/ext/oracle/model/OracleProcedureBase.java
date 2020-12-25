@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -63,6 +63,10 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         return procedureType ;
     }
 
+    public void setProcedureType(DBSProcedureType procedureType) {
+        this.procedureType = procedureType;
+    }
+
     @Override
     public DBSObjectContainer getContainer()
     {
@@ -81,11 +85,12 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleProcedureBase procedure) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ARGUMENTS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(procedure.getDataSource()) + "ALL_ARGUMENTS " +
                 "WHERE " +
                 (procedure.getObjectId() <= 0  ? "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " : "OBJECT_ID=? ") +
                 (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +

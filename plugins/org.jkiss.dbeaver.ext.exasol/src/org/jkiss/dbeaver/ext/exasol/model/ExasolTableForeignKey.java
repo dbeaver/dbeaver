@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -51,7 +46,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     private ExasolTable refTable;
     private String constName;
     private Boolean enabled;
-    private List<ExasolTableKeyColumn> columns;
+    private List<ExasolTableForeignKeyColumn> columns;
     
     
     private ExasolTableUniqueKey referencedKey;
@@ -72,7 +67,6 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 
         enabled = JDBCUtils.safeGetBoolean(dbResult, "CONSTRAINT_ENABLED");
         referencedKey = null;
-
     }
 
     public ExasolTableForeignKey(ExasolTable exasolTable, ExasolTableUniqueKey referencedKey, Boolean enabled, String name) {
@@ -80,7 +74,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
         this.referencedKey = referencedKey;
         this.enabled = enabled;
         this.constName = name;
-        this.refTable = referencedKey.getTable();
+        setReferencedConstraint(referencedKey);
 
     }
 
@@ -129,11 +123,11 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     // Columns
     // -----------------
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
-    public void setColumns(List<ExasolTableKeyColumn> columns) {
+    public void setColumns(List<ExasolTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 
@@ -152,13 +146,20 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
     @Property(id = "reference", viewable = true)
     public ExasolTableUniqueKey getReferencedConstraint() {
     	if (referencedKey == null) {
-    		try {
-    		referencedKey = refTable.getPrimaryKey(new VoidProgressMonitor());
-    		} catch (DBException e) {
-    			LOG.error("Error reading pk", e);
-			}
+    	    if (refTable != null) {
+                try {
+                    referencedKey = refTable.getPrimaryKey(new VoidProgressMonitor());
+                } catch (DBException e) {
+                    LOG.error("Error reading pk", e);
+                }
+            }
     	}
         return referencedKey;
+    }
+
+    public void setReferencedConstraint(ExasolTableUniqueKey referencedKey) {
+        this.referencedKey = referencedKey;
+        this.refTable = referencedKey == null ? null : referencedKey.getTable();
     }
 
     @Property(viewable = true, editable = true, updatable = true)

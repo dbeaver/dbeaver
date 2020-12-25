@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -55,7 +56,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     private TypeDesc typeDesc;
 
-    private Integer exasolTypeId;
+    private long exasolTypeId;
 
 
     private Integer length;
@@ -76,7 +77,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException {
         super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
 
-        this.exasolTypeId = JDBCUtils.safeGetInt(dbResult, "TYPE_ID");
+        this.exasolTypeId = JDBCUtils.safeGetLong(dbResult, "TYPE_ID");
         this.length = JDBCUtils.safeGetInt(dbResult, "PRECISION");
         this.scale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");
 
@@ -94,7 +95,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
             case "INTEGER":
                 tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, precision, minimumScale, maximumScale, typeName);
                 break;
-            case "DECIMAL":
+            case ExasolConstants.TYPE_DECIMAL:
                 tempTypeDesc = new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, precision, minimumScale, maximumScale, typeName);
                 break;
             case "DOUBLE PRECISION":
@@ -121,10 +122,10 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
             case "BOOLEAN":
                 tempTypeDesc = new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, precision, minimumScale, maximumScale, typeName);
                 break;
-            case "CHAR":
+            case ExasolConstants.TYPE_CHAR:
                 tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.CHAR, precision, minimumScale, maximumScale, typeName);
                 break;
-            case "VARCHAR":
+            case ExasolConstants.TYPE_VARCHAR:
                 tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, precision, minimumScale, maximumScale, typeName);
                 break;
             case "LONG VARCHAR":
@@ -138,6 +139,9 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
                 break;
             case "TIMESTAMP WITH LOCAL TIME ZONE":
                 tempTypeDesc = new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP_WITH_TIMEZONE, precision, minimumScale, maximumScale, typeName);
+                break;
+            case ExasolConstants.TYPE_HASHTYPE:
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRING, Types.BINARY, precision, minimumScale, maximumScale, typeName);
                 break;
             default:
                 LOG.error("DataType '" + name + "' is unknown to DBeaver");
@@ -226,7 +230,12 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     @Override
     @Property(viewable = true, editable = false, order = 4)
     public DBPDataKind getDataKind() {
-        return typeDesc == null ? DBPDataKind.UNKNOWN : typeDesc.dataKind;
+    	if (typeDesc == null)
+    	{
+    		return DBPDataKind.UNKNOWN;
+    	} else {
+    		return typeDesc.dataKind;
+    	}
     }
 
 
@@ -234,6 +243,11 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     @Property(viewable = true, editable = false, order = 5)
     public long getMaxLength() {
         return length;
+    }
+
+    @Override
+    public long getTypeModifiers() {
+        return 0;
     }
 
     @Override
@@ -249,7 +263,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
     @Property(viewable = false, editable = false, order = 11)
-    public Integer getExasolTypeId() {
+    public long getExasolTypeId() {
         return exasolTypeId;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.jkiss.dbeaver.Log;
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.utils.WinRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -98,7 +98,7 @@ public class OCIUtils
     }
 
     private static boolean equalsFileName(String file1, String file2) {
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             return file1.equalsIgnoreCase(file2);
         }
         else {
@@ -165,17 +165,17 @@ public class OCIUtils
         }
 
         // find Oracle homes in Windows registry
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             try {
-                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
-                if (oracleKeys != null) {
-                    for (String oracleKey : oracleKeys) {
-                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
-                        if (valuesMap != null) {
+                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
+                    String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                    if (oracleKeys != null) {
+                        for (String oracleKey : oracleKeys) {
+                            Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
                             for (String key : valuesMap.keySet()) {
                                 if (WIN_REG_ORA_HOME.equals(key)) {
                                     try {
-                                        oraHome = valuesMap.get(key);
+                                        oraHome = CommonUtils.toString(valuesMap.get(key));
                                         addOraHome(oraHome);
                                     } catch (DBException ex) {
                                         log.warn("Wrong Oracle client home " + oraHome, ex);
@@ -193,16 +193,18 @@ public class OCIUtils
     }
 
     public static String readWinRegistry(String oraHome, String name) {
-        if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
+        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
             try {
-                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
-                if (oracleKeys != null) {
-                    for (String oracleKey : oracleKeys) {
-                        String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
-                        if (oraHome.equals(home)) {
-                            String value = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
-                            if (value != null) {
-                                return value;
+                if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
+                    String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                    if (oracleKeys != null) {
+                        for (String oracleKey : oracleKeys) {
+                            String keyName = WIN_REG_ORACLE + "\\" + oracleKey;
+                            if (Advapi32Util.registryValueExists(WinReg.HKEY_LOCAL_MACHINE, keyName, WIN_REG_ORA_HOME)) {
+                                String home = Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE, keyName, WIN_REG_ORA_HOME);
+                                if (oraHome.equals(home)) {
+                                    return Advapi32Util.registryGetStringValue(WinReg.HKEY_LOCAL_MACHINE, keyName, name);
+                                }
                             }
                         }
                     }
@@ -350,7 +352,7 @@ public class OCIUtils
     }
 
     private static String getPlainTnsDescription(String line) {
-        return TextUtils.compactWhiteSpaces(line.trim());
+        return CommonUtils.compactWhiteSpaces(line.trim());
     }
 
     public static boolean isInstantClient(String oraHome)

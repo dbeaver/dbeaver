@@ -1,0 +1,1497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/showplan" xmlns:shp="http://schemas.microsoft.com/sqlserver/2004/07/showplan" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.1" blockDefault="#all">
+  <xsd:annotation>
+    <xsd:documentation>
+        The following schema for Microsoft SQL Server 2008 describes 
+	output from the showplan functionality in XML format.  
+
+	Microsoft does not make any representation or warranty regarding the 
+	schema or any product or item developed based on the schema. The schema 
+	is provided to you on an AS IS basis.  Microsoft disclaims all express, 
+	implied and statutory warranties, including but not limited to the implied 
+	warranties of merchantability, fitness for a particular purpose, and freedom 
+	from infringement. Without limiting the generality of the foregoing, 
+	Microsoft does not make any warranty of any kind that any item developed 
+	based on the schema, or any portion of the schema, will not infringe any 
+	copyright, patent, trade secret, or other intellectual property right of any 
+	person or entity in any country. It is your responsibility to seek licenses 
+	for such intellectual property rights where appropriate.
+
+	MICROSOFT SHALL NOT BE LIABLE FOR ANY DAMAGES OF ANY KIND ARISING OUT OF OR 
+	IN CONNECTION WITH THE USE OF THE SCHEMA, INCLUDING WITHOUT LIMITATION, ANY 
+	DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL (INCLUDING ANY LOST PROFITS), 
+	PUNITIVE OR SPECIAL DAMAGES, WHETHER OR NOT MICROSOFT HAS BEEN ADVISED OF 
+	SUCH DAMAGES. 
+
+
+	(c) 2008 Microsoft Corporation. All rights reserved.
+  
+        </xsd:documentation>
+  </xsd:annotation>
+  <xsd:annotation>
+    <xsd:documentation>Last updated: 6/23/08</xsd:documentation>
+  </xsd:annotation>
+  <xsd:element name="ShowPlanXML">
+    <xsd:complexType>
+      <xsd:annotation>
+        <xsd:documentation>This is the root element</xsd:documentation>
+      </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element name="BatchSequence">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="Batch" minOccurs="1" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:sequence>
+                    <xsd:element name="Statements" type="shp:StmtBlockType" minOccurs="1" maxOccurs="unbounded" />
+                  </xsd:sequence>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="Version" type="xsd:string" use="required" />
+      <xsd:attribute name="Build" type="xsd:string" use="required" />
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:complexType name="StmtBlockType">
+    <xsd:annotation>
+      <xsd:documentation>The statement block that contains many statements</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="StmtSimple" type="shp:StmtSimpleType" />
+        <xsd:element name="StmtCond" type="shp:StmtCondType" />
+        <xsd:element name="StmtCursor" type="shp:StmtCursorType" />
+        <xsd:element name="StmtReceive" type="shp:StmtReceiveType" />
+        <xsd:element name="StmtUseDb" type="shp:StmtUseDbType" />
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="BaseStmtInfoType">
+    <xsd:annotation>
+      <xsd:documentation>the type that contains the basic statement information</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="StatementSetOptions" type="shp:SetOptionsType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="StatementCompId" type="xsd:int" use="optional" />
+    <xsd:attribute name="StatementEstRows" type="xsd:double" use="optional" />
+    <xsd:attribute name="StatementId" type="xsd:int" use="optional" />
+    <xsd:attribute name="StatementOptmLevel" type="xsd:string" use="optional" />
+    <xsd:attribute name="StatementOptmEarlyAbortReason" use="optional">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="TimeOut" />
+          <xsd:enumeration value="MemoryLimitExceeded" />
+          <xsd:enumeration value="GoodEnoughPlanFound" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="StatementSubTreeCost" type="xsd:double" use="optional" />
+    <xsd:attribute name="StatementText" type="xsd:string" use="optional" />
+    <xsd:attribute name="StatementType" type="xsd:string" use="optional" />
+    <xsd:attribute name="TemplatePlanGuideDB" type="xsd:string" use="optional" />
+    <xsd:attribute name="TemplatePlanGuideName" type="xsd:string" use="optional" />
+    <xsd:attribute name="PlanGuideDB" type="xsd:string" use="optional" />
+    <xsd:attribute name="PlanGuideName" type="xsd:string" use="optional" />
+    <xsd:attribute name="ParameterizedText" type="xsd:string" use="optional" />
+    <xsd:attribute name="ParameterizedPlanHandle" type="xsd:string" use="optional" />
+    <xsd:attribute name="QueryHash" type="xsd:string" use="optional" />
+    <xsd:attribute name="QueryPlanHash" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="StmtSimpleType">
+    <xsd:annotation>
+      <xsd:documentation>The simple statement that may or may not contain query plan, UDF plan or Stored Procedure plan </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:BaseStmtInfoType">
+        <xsd:sequence>
+          <xsd:element name="QueryPlan" type="shp:QueryPlanType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="UDF" type="shp:FunctionType" minOccurs="0" maxOccurs="unbounded" />
+          <xsd:element name="StoredProc" type="shp:FunctionType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="StmtUseDbType">
+    <xsd:annotation>
+      <xsd:documentation>Use database statement </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:BaseStmtInfoType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attribute name="Database" type="xsd:string" use="required" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="StmtCondType">
+    <xsd:annotation>
+      <xsd:documentation>Complex statement type that is constructed by a condition, a then clause and an optional else clause. </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:BaseStmtInfoType">
+        <xsd:sequence>
+          <xsd:element name="Condition">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="QueryPlan" type="shp:QueryPlanType" minOccurs="0" maxOccurs="1" />
+                <xsd:element name="UDF" type="shp:FunctionType" minOccurs="0" maxOccurs="unbounded" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="Then">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="Statements" type="shp:StmtBlockType" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="Else" minOccurs="0" maxOccurs="1">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="Statements" type="shp:StmtBlockType" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="StmtCursorType">
+    <xsd:annotation>
+      <xsd:documentation>The cursor type that might have one or more cursor operations, used in DECLARE CURSOR, OPEN CURSOR and FETCH CURSOR</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:BaseStmtInfoType">
+        <xsd:sequence>
+          <xsd:element name="CursorPlan" type="shp:CursorPlanType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="StmtReceiveType">
+    <xsd:annotation>
+      <xsd:documentation>The cursor type that might have one or more cursor operations, used in DECLARE CURSOR, OPEN CURSOR and FETCH CURSOR</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:BaseStmtInfoType">
+        <xsd:sequence>
+          <xsd:element name="ReceivePlan" type="shp:ReceivePlanType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FunctionType">
+    <xsd:annotation>
+      <xsd:documentation>Shows the plan for the UDF or stored procedure
+	</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="Statements" type="shp:StmtBlockType" />
+    </xsd:sequence>
+    <xsd:attribute name="ProcName" type="xsd:string" />
+  </xsd:complexType>
+  <xsd:simpleType name="CursorType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Dynamic" />
+      <xsd:enumeration value="FastForward" />
+      <xsd:enumeration value="Keyset" />
+      <xsd:enumeration value="SnapShot" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CursorPlanType">
+    <xsd:sequence>
+      <xsd:element name="Operation" minOccurs="0" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>The number of occure time depends on how we define the cursor 
+	schema. In shiloh, the OPEN CURSOR and FETCH CURSOR doesn't show any plan and won't raise
+	error if the cursor doesn't exist. So we must keep the same behaivor, so the minOccurs is 0. If we allow
+	the declare cursor to be executed in showplan mode, then the open cursor and declare cursor will have
+	plan in showplan mode, the minOccurs will be 1 </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="QueryPlan" type="shp:QueryPlanType" />
+            <xsd:element name="UDF" type="shp:FunctionType" minOccurs="0" maxOccurs="unbounded" />
+          </xsd:sequence>
+          <xsd:attribute name="OperationType" use="required">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="FetchQuery" />
+                <xsd:enumeration value="PopulateQuery" />
+                <xsd:enumeration value="RefreshQuery" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="CursorName" type="xsd:string" />
+    <xsd:attribute name="CursorActualType" type="shp:CursorType" />
+    <xsd:attribute name="CursorRequestedType" type="shp:CursorType" />
+    <xsd:attribute name="CursorConcurrency">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="Read Only" />
+          <xsd:enumeration value="Pessimistic" />
+          <xsd:enumeration value="Optimistic" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="ForwardOnly" type="xsd:boolean" />
+  </xsd:complexType>
+  <xsd:complexType name="ReceivePlanType">
+    <xsd:sequence>
+      <xsd:element name="Operation" minOccurs="2" maxOccurs="2">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="QueryPlan" type="shp:QueryPlanType" />
+          </xsd:sequence>
+          <xsd:attribute name="OperationType">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="ReceivePlanSelect" />
+                <xsd:enumeration value="ReceivePlanUpdate" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <!-- 
+   *****************************************
+   **  
+   **  ColumnReference related definitions
+   **
+   **
+   **
+   *****************************************
+   -->
+  <xsd:complexType name="ColumnReferenceType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="1" />
+      <!-- Used for cached expressions -->
+      <xsd:element name="InternalInfo" type="shp:InternalInfoType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="Server" type="xsd:string" use="optional" />
+    <xsd:attribute name="Database" type="xsd:string" use="optional" />
+    <xsd:attribute name="Schema" type="xsd:string" use="optional" />
+    <xsd:attribute name="Table" type="xsd:string" use="optional" />
+    <xsd:attribute name="Alias" type="xsd:string" use="optional" />
+    <xsd:attribute name="Column" type="xsd:string" use="required" />
+    <xsd:attribute name="ComputedColumn" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="ParameterCompiledValue" type="xsd:string" use="optional" />
+    <xsd:attribute name="ParameterRuntimeValue" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="SingleColumnReferenceType">
+    <xsd:sequence>
+      <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ColumnReferenceListType">
+    <xsd:sequence>
+      <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ScanRangeType">
+    <xsd:sequence>
+      <xsd:element name="RangeColumns" type="shp:ColumnReferenceListType" />
+      <xsd:element name="RangeExpressions" type="shp:ScalarExpressionListType" />
+    </xsd:sequence>
+    <xsd:attribute name="ScanType" type="shp:CompareOpType" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="SeekPredicateType">
+    <xsd:sequence>
+      <xsd:element name="Prefix" type="shp:ScanRangeType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="StartRange" type="shp:ScanRangeType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="EndRange" type="shp:ScanRangeType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="IsNotNull" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+      <!-- Prefix a=Expr, Start expressions, Start column, End  expressions, nullability -->
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SeekPredicateNewType">
+    <xsd:sequence>
+      <xsd:element name="SeekKeys" type="shp:SeekPredicateType" minOccurs="1" maxOccurs="2" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SeekPredicatesType">
+    <xsd:choice>
+      <xsd:element name="SeekPredicate" type="shp:SeekPredicateType" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element name="SeekPredicateNew" type="shp:SeekPredicateNewType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:simpleType name="IndexKindType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Heap" /> 
+      <xsd:enumeration value="Clustered" />
+      <xsd:enumeration value="FTSChangeTracking" />
+      <xsd:enumeration value="FTSMapping" />
+      <xsd:enumeration value="NonClustered" />
+      <xsd:enumeration value="PrimaryXML" /> 
+      <xsd:enumeration value="SecondaryXML" /> 
+      <xsd:enumeration value="Spatial" /> 
+      <xsd:enumeration value="ViewClustered" />
+      <xsd:enumeration value="ViewNonClustered" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="ObjectType">
+    <xsd:attribute name="Server" type="xsd:string" use="optional" />
+    <xsd:attribute name="Database" type="xsd:string" use="optional" />
+    <xsd:attribute name="Schema" type="xsd:string" use="optional" />
+    <xsd:attribute name="Table" type="xsd:string" use="optional" />
+    <xsd:attribute name="Index" type="xsd:string" use="optional" />
+    <xsd:attribute name="Filtered" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="Alias" type="xsd:string" use="optional" />
+    <xsd:attribute name="TableReferenceId" type="xsd:int" use="optional" />
+    <xsd:attribute name="IndexKind" type="shp:IndexKindType" use="optional" /> 
+  </xsd:complexType>
+  <xsd:complexType name="OrderByType">
+    <xsd:sequence>
+      <xsd:element name="OrderByColumn" minOccurs="1" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" />
+          </xsd:sequence>
+          <xsd:attribute name="Ascending" type="xsd:boolean" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="DefinedValuesListType">
+    <xsd:sequence>
+      <xsd:element name="DefinedValue" minOccurs="0" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:choice>
+              <xsd:element name="ValueVector">
+                <xsd:complexType>
+                  <xsd:sequence>
+                    <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" minOccurs="2" maxOccurs="unbounded" />
+                  </xsd:sequence>
+                </xsd:complexType>
+              </xsd:element>
+              <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" />
+            </xsd:choice>
+            <xsd:choice minOccurs="0" maxOccurs="1">
+              <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" minOccurs="1" maxOccurs="unbounded" />
+              <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+              <!-- unbounded for union case -->
+            </xsd:choice>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="WarningsType">
+    <xsd:annotation>
+      <xsd:documentation>List of all possible iterator specific warnings (e.g. hash spilling, no join predicate</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="ColumnsWithNoStatistics" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="NoJoinPredicate" type="xsd:boolean" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="MemoryFractionsType">
+    <xsd:annotation>
+      <xsd:documentation>For memory consuming relational operators, show fraction of memory grant iterator will use</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence />
+    <xsd:attribute name="Input" type="xsd:double" use="required" />
+    <xsd:attribute name="Output" type="xsd:double" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="RunTimeInformationType">
+    <xsd:annotation>
+      <xsd:documentation>Runtime information provided from statistics_xml for each relational iterator</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="RunTimeCountersPerThread" minOccurs="1" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence />
+          <xsd:attribute name="Thread" type="xsd:int" use="required" />
+          <xsd:attribute name="ActualRebinds" type="xsd:unsignedLong" use="optional" />
+          <xsd:attribute name="ActualRewinds" type="xsd:unsignedLong" use="optional" />
+          <xsd:attribute name="ActualRows" type="xsd:unsignedLong" use="required" />
+          <xsd:attribute name="ActualEndOfScans" type="xsd:unsignedLong" use="required" />
+          <xsd:attribute name="ActualExecutions" type="xsd:unsignedLong" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RunTimePartitionSummaryType">
+    <xsd:annotation>
+      <xsd:documentation>Runtime partition information provided in statistics xml for each relational iterator that support partitioning</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="PartitionsAccessed" minOccurs="1" maxOccurs="1">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="PartitionRange" minOccurs="0" maxOccurs="unbounded">
+              <xsd:complexType>
+                <xsd:attribute name="Start" type="xsd:unsignedLong" use="required" />
+                <xsd:attribute name="End" type="xsd:unsignedLong" use="required" />            
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>    
+          <xsd:attribute name="PartitionCount" type="xsd:unsignedLong" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="IndexedViewInfoType">
+    <xsd:annotation>
+      <xsd:documentation>Additional information about an indexed view. It includes all tables in the query that were replaced by the indexed view.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="Object" type="shp:ObjectType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RollupInfoType">
+    <xsd:annotation>
+      <xsd:documentation>Additional information about a rollup. The highest level is the number of group by columns.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="RollupLevel" type="shp:RollupLevelType" minOccurs="2" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="HighestLevel" type="xsd:int" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="RollupLevelType">
+    <xsd:annotation>
+      <xsd:documentation>A level that is output by the rollup.  Level 0 is the base aggregation, equivalent to the statement without 'WITH ROLLUP'.  The highest level is the grand total, or group by all.  Level 0 is always output, and at least one higher level.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="Level" type="xsd:int" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="StarJoinInfoType">
+    <xsd:annotation>
+      <xsd:documentation>Additional information about Star Join structure.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="Root" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="OperationType" use="required">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="Fetch" />
+          <xsd:enumeration value="Index Intersection" />
+          <xsd:enumeration value="Index Filter" />
+          <xsd:enumeration value="Index Lookup" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="InternalInfoType">
+    <xsd:annotation>
+      <xsd:documentation>Arbitrary content type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="skip" />
+    </xsd:sequence>
+    <xsd:anyAttribute namespace="##any" processContents="skip" />
+  </xsd:complexType>
+  <xsd:complexType name="MissingIndexesType">
+    <xsd:sequence>
+      <xsd:element name="MissingIndexGroup" type="shp:MissingIndexGroupType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="MissingIndexGroupType">
+    <xsd:sequence>
+      <xsd:element name="MissingIndex" type="shp:MissingIndexType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="Impact" type="xsd:double" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="MissingIndexType">
+    <xsd:sequence>
+      <xsd:element name="ColumnGroup" type="shp:ColumnGroupType" minOccurs="1" maxOccurs="3" />
+    </xsd:sequence>
+    <xsd:attribute name="Database" type="xsd:string" use="required" />
+    <xsd:attribute name="Schema" type="xsd:string" use="required" />
+    <xsd:attribute name="Table" type="xsd:string" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="ColumnGroupType">
+    <xsd:sequence>
+      <xsd:element name="Column" type="shp:ColumnType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="Usage" use="required">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="EQUALITY" />
+          <xsd:enumeration value="INEQUALITY" />
+          <xsd:enumeration value="INCLUDE" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="ColumnType">
+    <xsd:attribute name="Name" type="xsd:string" use="required" />
+    <xsd:attribute name="ColumnId" type="xsd:int" use="required" />
+  </xsd:complexType>
+  <!-- 
+   *****************************************
+   **  
+   **  Relational Operator related definitions
+   **
+   **
+   **
+   *****************************************
+   -->
+  <!-- Base class execution tree element -->
+  <xsd:complexType name="QueryPlanType">
+    <xsd:annotation>
+      <xsd:documentation>
+			New Runtime information:
+			DegreeOfParallelism
+			MemoryGrant (in kilobytes)
+			
+			New compile time information:
+			mem fractions
+			CachedPlanSize (in kilobytes)
+			CompileTime (in milliseconds)
+			CompileCPU (in milliseconds)
+			CompileMemory (in kilobytes)
+			Parameter values used during query compilation
+			</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="InternalInfo" type="shp:InternalInfoType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="MissingIndexes" type="shp:MissingIndexesType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="GuessedSelectivity" type="shp:GuessedSelectivityType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="UnmatchedIndexes" type="shp:UnmatchedIndexesType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="RelOp" type="shp:RelOpType" />
+      <xsd:element name="ParameterList" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="DegreeOfParallelism" type="xsd:int" use="optional" />
+    <xsd:attribute name="MemoryGrant" type="xsd:unsignedLong" use="optional" />
+    <xsd:attribute name="CachedPlanSize" type="xsd:unsignedLong" use="optional" />
+    <xsd:attribute name="CompileTime" type="xsd:unsignedLong" use="optional" />
+    <xsd:attribute name="CompileCPU" type="xsd:unsignedLong" use="optional" />
+    <xsd:attribute name="CompileMemory" type="xsd:unsignedLong" use="optional" />
+    <xsd:attribute name="UsePlan" type="xsd:boolean" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="GuessedSelectivityType">
+    <xsd:sequence>
+      <xsd:element name="Spatial" type="shp:ObjectType" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="UnmatchedIndexesType">
+    <xsd:sequence>
+      <xsd:element name="Parameterization" type="shp:ParameterizationType" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ParameterizationType">
+    <xsd:sequence>
+      <xsd:element name="Object" type="shp:ObjectType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RelOpType">
+    <xsd:sequence>
+      <xsd:element name="OutputList" type="shp:ColumnReferenceListType" />
+      <xsd:element name="Warnings" type="shp:WarningsType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="MemoryFractions" type="shp:MemoryFractionsType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="RunTimeInformation" type="shp:RunTimeInformationType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="RunTimePartitionSummary" type="shp:RunTimePartitionSummaryType" minOccurs="0" maxOccurs="1" />     
+      <xsd:element name="InternalInfo" type="shp:InternalInfoType" minOccurs="0" maxOccurs="1" />
+      <xsd:choice>
+        <xsd:element name="Assert" type="shp:FilterType" />
+        <xsd:element name="Bitmap" type="shp:BitmapType" />
+        <xsd:element name="Collapse" type="shp:CollapseType" />
+        <xsd:element name="ComputeScalar" type="shp:ComputeScalarType" />
+        <xsd:element name="Concat" type="shp:ConcatType" />
+        <xsd:element name="ConstantScan" type="shp:ConstantScanType" />
+        <xsd:element name="CreateIndex" type="shp:CreateIndexType" />
+        <xsd:element name="DeletedScan" type="shp:RowsetType" />
+        <xsd:element name="Extension" type="shp:UDXType" />
+        <xsd:element name="Filter" type="shp:FilterType" />
+        <xsd:element name="Generic" type="shp:GenericType" />
+        <xsd:element name="Hash" type="shp:HashType" />
+        <xsd:element name="IndexScan" type="shp:IndexScanType" />
+        <xsd:element name="InsertedScan" type="shp:RowsetType" />
+        <xsd:element name="LogRowScan" type="shp:RelOpBaseType" />
+        <xsd:element name="Merge" type="shp:MergeType" />
+        <xsd:element name="MergeInterval" type="shp:SimpleIteratorOneChildType" />
+        <xsd:element name="NestedLoops" type="shp:NestedLoopsType" />
+        <xsd:element name="OnlineIndex" type="shp:CreateIndexType" />
+        <xsd:element name="Parallelism" type="shp:ParallelismType" />
+        <xsd:element name="ParameterTableScan" type="shp:RelOpBaseType" />
+        <xsd:element name="PrintDataflow" type="shp:RelOpBaseType" />
+        <xsd:element name="RemoteFetch" type="shp:RemoteFetchType" />
+        <xsd:element name="RemoteModify" type="shp:RemoteModifyType" />
+        <xsd:element name="RemoteQuery" type="shp:RemoteQueryType" />
+        <xsd:element name="RemoteRange" type="shp:RemoteRangeType" />
+        <xsd:element name="RemoteScan" type="shp:RemoteType" />
+        <xsd:element name="RowCountSpool" type="shp:SpoolType" />
+        <xsd:element name="ScalarInsert" type="shp:ScalarInsertType" />
+        <xsd:element name="Segment" type="shp:SegmentType" />
+        <xsd:element name="Sequence" type="shp:SequenceType" />
+        <xsd:element name="SequenceProject" type="shp:ComputeScalarType" />
+        <xsd:element name="SimpleUpdate" type="shp:SimpleUpdateType" />
+        <xsd:element name="Sort" type="shp:SortType" />
+        <xsd:element name="Split" type="shp:SplitType" />
+        <xsd:element name="Spool" type="shp:SpoolType" />
+        <xsd:element name="StreamAggregate" type="shp:StreamAggregateType" />
+        <xsd:element name="Switch" type="shp:SwitchType" />
+        <xsd:element name="TableScan" type="shp:TableScanType" />
+        <xsd:element name="TableValuedFunction" type="shp:TableValuedFunctionType" />
+        <xsd:element name="Top" type="shp:TopType" />
+        <xsd:element name="TopSort" type="shp:TopSortType" />
+        <xsd:element name="Update" type="shp:UpdateType" />
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="AvgRowSize" type="xsd:double" use="required" />
+    <xsd:attribute name="EstimateCPU" type="xsd:double" use="required" />
+    <xsd:attribute name="EstimateIO" type="xsd:double" use="required" />
+    <xsd:attribute name="EstimateRebinds" type="xsd:double" use="required" />
+    <xsd:attribute name="EstimateRewinds" type="xsd:double" use="required" />
+    <xsd:attribute name="GroupExecuted" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="EstimateRows" type="xsd:double" use="required" />
+    <xsd:attribute name="LogicalOp" type="shp:LogicalOpType" use="required" />
+    <xsd:attribute name="NodeId" type="xsd:int" use="required" />
+    <xsd:attribute name="Parallel" type="xsd:boolean" use="required" />
+    <xsd:attribute name="Partitioned" type="xsd:boolean" use="optional" />
+    <xsd:attribute name="PhysicalOp" type="shp:PhysicalOpType" use="required" />
+    <xsd:attribute name="EstimatedTotalSubtreeCost" type="xsd:double" use="required" />
+    <xsd:attribute name="TableCardinality" type="xsd:double" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="RelOpBaseType">
+    <xsd:sequence>
+      <xsd:element name="DefinedValues" type="shp:DefinedValuesListType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="InternalInfo" type="shp:InternalInfoType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SimpleIteratorOneChildType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FilterType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" />
+        </xsd:sequence>
+        <xsd:attribute name="StartupExpression" type="xsd:boolean" use="required" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ConstantScanType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="Values" minOccurs="0" maxOccurs="1">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="Row" type="shp:ScalarExpressionListType" minOccurs="0" maxOccurs="unbounded" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RowsetType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="Object" type="shp:ObjectType" minOccurs="1" maxOccurs="unbounded" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="TableScanType">
+    <xsd:annotation>
+      <xsd:documentation source="TableScan reads from a table and is able to apply a filter predicate" />
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="PartitionId" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="IndexedViewInfo" type="shp:IndexedViewInfoType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="Ordered" type="xsd:boolean" use="required" />
+        <xsd:attribute name="ForcedIndex" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="NoExpandHint" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="IndexScanType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:element name="SeekPredicates" type="shp:SeekPredicatesType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="PartitionId" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="IndexedViewInfo" type="shp:IndexedViewInfoType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="Lookup" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="Ordered" type="xsd:boolean" use="required" />
+        <xsd:attribute name="ScanDirection" type="shp:OrderType" use="optional" />
+        <xsd:attribute name="ForcedIndex" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="ForceSeek" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="NoExpandHint" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="TableValuedFunctionType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="Object" type="shp:ObjectType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="ParameterList" type="shp:ScalarExpressionListType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="HashType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="HashKeysBuild" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="HashKeysProbe" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="BuildResidual" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="ProbeResidual" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="StarJoinInfo" type="shp:StarJoinInfoType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="1" maxOccurs="2" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ComputeScalarType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ParallelismType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="PartitionColumns" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="OrderBy" type="shp:OrderByType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="HashKeys" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="ProbeColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+        <xsd:attribute name="PartitioningType" type="shp:PartitionType" use="optional" />
+        <xsd:attribute name="InRow" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="StreamAggregateType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="GroupBy" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RollupInfo" type="shp:RollupInfoType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SortType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="OrderBy" type="shp:OrderByType" />
+          <xsd:element name="PartitionId" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+        <xsd:attribute name="Distinct" type="xsd:boolean" use="required" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="BitmapType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="HashKeys" type="shp:ColumnReferenceListType" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="CollapseType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="GroupBy" type="shp:ColumnReferenceListType" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ConcatType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="2" maxOccurs="unbounded" />
+          <!-- Uses DefinedValues to show union columns -->
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SwitchType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:ConcatType">
+        <xsd:sequence>
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="MergeType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="InnerSideJoinColumns" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="OuterSideJoinColumns" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="Residual" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="PassThru" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="StarJoinInfo" type="shp:StarJoinInfoType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="2" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="ManyToMany" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="NestedLoopsType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="Predicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="PassThru" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="OuterReferences" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="PartitionId" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="ProbeColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="StarJoinInfo" type="shp:StarJoinInfoType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="2" maxOccurs="2" />
+        </xsd:sequence>
+        <xsd:attribute name="Optimized" type="xsd:boolean" use="required" />
+        <xsd:attribute name="WithOrderedPrefetch" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="WithUnorderedPrefetch" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SegmentType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="GroupBy" type="shp:ColumnReferenceListType" />
+          <xsd:element name="SegmentColumn" type="shp:SingleColumnReferenceType" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SequenceType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="2" maxOccurs="unbounded" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SplitType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="ActionColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="TopType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="TieColumns" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="TopExpression" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+        <xsd:attribute name="RowCount" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="Rows" type="xsd:int" use="optional" />
+        <xsd:attribute name="IsPercent" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="WithTies" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="UDXType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="UsedUDXColumns" type="shp:ColumnReferenceListType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+        <xsd:attribute name="UDXName" type="xsd:string" use="required" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SimpleUpdateType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:choice>
+            <xsd:element name="SeekPredicate" type="shp:SeekPredicateType" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="SeekPredicateNew" type="shp:SeekPredicateNewType" minOccurs="0" maxOccurs="1" />
+          </xsd:choice>
+          <xsd:element name="SetPredicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SetPredicateElementType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:ScalarExpressionType">
+        <xsd:attribute name="SetPredicateType" type="shp:SetPredicateType" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="UpdateType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:element name="SetPredicate" type="shp:SetPredicateElementType" minOccurs="0" maxOccurs="2" />
+          <xsd:element name="ProbeColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="ActionColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="OriginalActionColumn" type="shp:SingleColumnReferenceType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+        <xsd:attribute name="WithOrderedPrefetch" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="WithUnorderedPrefetch" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="DMLRequestSort" type="xsd:boolean" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="CreateIndexType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SpoolType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:choice>
+            <xsd:element name="SeekPredicate" type="shp:SeekPredicateType" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="SeekPredicateNew" type="shp:SeekPredicateNewType" minOccurs="0" maxOccurs="1" />
+          </xsd:choice>
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute name="Stack" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="PrimaryNodeId" type="xsd:int" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ScalarInsertType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RowsetType">
+        <xsd:sequence>
+          <xsd:element name="SetPredicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="TopSortType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:SortType">
+        <xsd:attribute name="Rows" type="xsd:int" use="required" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RemoteType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:attribute name="RemoteSource" type="xsd:string" use="optional" />
+        <xsd:attribute name="RemoteObject" type="xsd:string" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RemoteRangeType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RemoteType">
+        <xsd:sequence>
+          <xsd:element name="SeekPredicates" type="shp:SeekPredicatesType" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RemoteFetchType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RemoteType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RemoteModifyType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RemoteType">
+        <xsd:sequence>
+          <xsd:element name="SetPredicate" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+          <xsd:element name="RelOp" type="shp:RelOpType" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RemoteQueryType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RemoteType">
+        <xsd:attribute name="RemoteQuery" type="xsd:string" use="optional" />
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="GenericType">
+    <xsd:complexContent>
+      <xsd:extension base="shp:RelOpBaseType">
+        <xsd:sequence>
+          <xsd:element name="RelOp" type="shp:RelOpType" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <!-- 
+   *****************************************
+   **  
+   **  Scalar Operator related definitions
+   **
+   **
+   **
+   *****************************************
+   -->
+  <xsd:complexType name="ScalarType">
+    <xsd:annotation>
+      <xsd:documentation>Scalar expression. If root of scalar tree contains semantically equivalent string representation of entire expression</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:choice>
+        <xsd:element name="Aggregate" type="shp:AggregateType" />
+        <xsd:element name="Arithmetic" type="shp:ArithmeticType" />
+        <xsd:element name="Assign" type="shp:AssignType" />
+        <xsd:element name="Compare" type="shp:CompareType" />
+        <xsd:element name="Const" type="shp:ConstType" />
+        <xsd:element name="Convert" type="shp:ConvertType" />
+        <xsd:element name="Identifier" type="shp:IdentType" />
+        <xsd:element name="IF" type="shp:ConditionalType" />
+        <xsd:element name="Intrinsic" type="shp:IntrinsicType" />
+        <xsd:element name="Logical" type="shp:LogicalType" />
+        <xsd:element name="MultipleAssign" type="shp:MultAssignType" />
+        <xsd:element name="ScalarExpressionList" type="shp:ScalarExpressionListType" />
+        <xsd:element name="Sequence" type="shp:ScalarSequenceType" />
+        <xsd:element name="Subquery" type="shp:SubqueryType" />
+        <xsd:element name="UDTMethod" type="shp:UDTMethodType" />
+        <xsd:element name="UserDefinedAggregate" type="shp:UDAggregateType" />
+        <xsd:element name="UserDefinedFunction" type="shp:UDFType" />
+      </xsd:choice>
+      <xsd:element name="InternalInfo" type="shp:InternalInfoType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="ScalarString" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="ScalarExpressionType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ScalarExpressionListType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ConstType">
+    <xsd:attribute name="ConstValue" type="xsd:string" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="IdentType">
+    <xsd:sequence>
+      <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="Table" type="xsd:string" />
+  </xsd:complexType>
+  <xsd:complexType name="CompareType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="1" maxOccurs="2" />
+    </xsd:sequence>
+    <xsd:attribute name="CompareOp" type="shp:CompareOpType" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="ConvertType">
+    <xsd:sequence>
+      <xsd:element name="Style" type="shp:ScalarExpressionType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+    </xsd:sequence>
+    <xsd:attribute name="DataType" type="xsd:string" use="required" />
+    <xsd:attribute name="Length" type="xsd:int" use="optional" />
+    <xsd:attribute name="Precision" type="xsd:int" use="optional" />
+    <xsd:attribute name="Scale" type="xsd:int" use="optional" />
+    <xsd:attribute name="Style" type="xsd:int" use="required" />
+    <xsd:attribute name="Implicit" type="xsd:boolean" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="ArithmeticType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="1" maxOccurs="2" />
+    </xsd:sequence>
+    <xsd:attribute name="Operation" type="shp:ArithmeticOperationType" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="LogicalType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="Operation" type="shp:LogicalOperationType" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="UDAggregateType">
+    <xsd:sequence>
+      <xsd:element name="UDAggObject" type="shp:ObjectType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+    </xsd:sequence>
+    <xsd:attribute name="Distinct" type="xsd:boolean" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="AggregateType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="unbounded" />
+      <!-- Can take more than one child for Statman aggregate. May have 0 children for count(*) case-->
+    </xsd:sequence>
+    <xsd:attribute name="AggType" type="xsd:string" use="required" />
+    <xsd:attribute name="Distinct" type="xsd:boolean" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="AssignType">
+    <xsd:sequence>
+      <xsd:choice>
+        <xsd:element name="ColumnReference" type="shp:ColumnReferenceType" />
+        <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+      </xsd:choice>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="MultAssignType">
+    <xsd:sequence>
+      <xsd:element name="Assign" type="shp:AssignType" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ConditionalType">
+    <xsd:sequence>
+      <xsd:element name="Condition" type="shp:ScalarExpressionType" />
+      <xsd:element name="Then" type="shp:ScalarExpressionType" />
+      <xsd:element name="Else" type="shp:ScalarExpressionType" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="IntrinsicType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="FunctionName" type="xsd:string" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="ScalarSequenceType">
+    <xsd:attribute name="FunctionName" type="xsd:string" use="required" />
+  </xsd:complexType>
+  <xsd:complexType name="UDFType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="CLRFunction" type="shp:CLRFunctionType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="FunctionName" type="xsd:string" use="required" />
+    <xsd:attribute name="IsClrFunction" type="xsd:boolean" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="UDTMethodType">
+    <xsd:sequence>
+      <xsd:element name="CLRFunction" type="shp:CLRFunctionType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CLRFunctionType">
+    <xsd:sequence>
+    </xsd:sequence>
+    <xsd:attribute name="Assembly" type="xsd:string" use="optional" />
+    <xsd:attribute name="Class" type="xsd:string" use="required" />
+    <xsd:attribute name="Method" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="SubqueryType">
+    <xsd:sequence>
+      <xsd:element name="ScalarOperator" type="shp:ScalarType" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="RelOp" type="shp:RelOpType" />
+    </xsd:sequence>
+    <xsd:attribute name="Operation" type="shp:SubqueryOperationType" use="required" />
+  </xsd:complexType>
+  <xsd:simpleType name="SubqueryOperationType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="EQ ALL" />
+      <xsd:enumeration value="EQ ANY" />
+      <xsd:enumeration value="EXISTS" />
+      <xsd:enumeration value="GE ALL" />
+      <xsd:enumeration value="GE ANY" />
+      <xsd:enumeration value="GT ALL" />
+      <xsd:enumeration value="GT ANY" />
+      <xsd:enumeration value="IN" />
+      <xsd:enumeration value="LE ALL" />
+      <xsd:enumeration value="LE ANY" />
+      <xsd:enumeration value="LT ALL" />
+      <xsd:enumeration value="LT ANY" />
+      <xsd:enumeration value="NE ALL" />
+      <xsd:enumeration value="NE ANY" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <!-- 
+   *****************************************
+   **  
+   **  Enumerated Types
+   **
+   **
+   **
+   *****************************************
+   -->
+  <xsd:simpleType name="OrderType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="BACKWARD" />
+      <xsd:enumeration value="FORWARD" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="SetPredicateType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Update" />
+      <xsd:enumeration value="Insert" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="PartitionType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Broadcast" />
+      <xsd:enumeration value="Demand" />
+      <xsd:enumeration value="Hash" />
+      <xsd:enumeration value="NoPartitioning" />
+      <xsd:enumeration value="Range" />
+      <xsd:enumeration value="RoundRobin" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="CompareOpType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="BINARY IS" />
+      <xsd:enumeration value="BOTH NULL" />
+      <xsd:enumeration value="EQ" />
+      <xsd:enumeration value="GE" />
+      <xsd:enumeration value="GT" />
+      <xsd:enumeration value="IS" />
+      <xsd:enumeration value="IS NOT" />
+      <xsd:enumeration value="IS NOT NULL" />
+      <xsd:enumeration value="IS NULL" />
+      <xsd:enumeration value="LE" />
+      <xsd:enumeration value="LT" />
+      <xsd:enumeration value="NE" />
+      <xsd:enumeration value="ONE NULL" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ArithmeticOperationType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ADD" />
+      <xsd:enumeration value="BIT_ADD" />
+      <xsd:enumeration value="BIT_AND" />
+      <xsd:enumeration value="BIT_COMBINE" />
+      <xsd:enumeration value="BIT_NOT" />
+      <xsd:enumeration value="BIT_OR" />
+      <xsd:enumeration value="BIT_XOR" />
+      <xsd:enumeration value="DIV" />
+      <xsd:enumeration value="HASH" />
+      <xsd:enumeration value="MINUS" />
+      <xsd:enumeration value="MOD" />
+      <xsd:enumeration value="MULT" />
+      <xsd:enumeration value="SUB" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="LogicalOperationType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="AND" />
+      <xsd:enumeration value="IMPLIES" />
+      <xsd:enumeration value="IS NOT NULL" />
+      <xsd:enumeration value="IS NULL" />
+      <xsd:enumeration value="IS" />
+      <xsd:enumeration value="IsFalseOrNull" />
+      <xsd:enumeration value="NOT" />
+      <xsd:enumeration value="OR" />
+      <xsd:enumeration value="XOR" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="LogicalOpType">
+    <xsd:annotation>
+      <xsd:documentation>
+			 These are the logical operators to which "query"
+                         portions of T-SQL statement are translated. Subsequent
+                         to that translation, a physical operator is chosen for
+                         evaluating each logical operator. The SQL Server query
+                         optimizer uses a cost-based approach to decide which 
+                         physical operator will implement a logical operator.
+ 			</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Aggregate" />
+      <xsd:enumeration value="Assert" />
+      <xsd:enumeration value="Async Concat" />
+      <xsd:enumeration value="Bitmap Create" />
+      <xsd:enumeration value="Clustered Index Scan" />
+      <xsd:enumeration value="Clustered Index Seek" />
+      <xsd:enumeration value="Clustered Update" />
+      <xsd:enumeration value="Collapse" />
+      <xsd:enumeration value="Compute Scalar" />
+      <xsd:enumeration value="Concatenation" />
+      <xsd:enumeration value="Constant Scan" />
+      <xsd:enumeration value="Cross Join" />
+      <xsd:enumeration value="Delete" />
+      <xsd:enumeration value="Deleted Scan" />
+      <xsd:enumeration value="Distinct Sort" />
+      <xsd:enumeration value="Distinct" />
+      <xsd:enumeration value="Distribute Streams" />
+      <xsd:enumeration value="Eager Spool" />
+      <xsd:enumeration value="Filter" />
+      <xsd:enumeration value="Flow Distinct" />
+      <xsd:enumeration value="Full Outer Join" />
+      <xsd:enumeration value="Gather Streams" />
+      <xsd:enumeration value="Generic" />
+      <xsd:enumeration value="Index Scan" />
+      <xsd:enumeration value="Index Seek" />
+      <xsd:enumeration value="Inner Join" />
+      <xsd:enumeration value="Insert" />
+      <xsd:enumeration value="Inserted Scan" />
+      <xsd:enumeration value="Lazy Spool" />
+      <xsd:enumeration value="Left Anti Semi Join" />
+      <xsd:enumeration value="Left Outer Join" />
+      <xsd:enumeration value="Left Semi Join" />
+      <xsd:enumeration value="Log Row Scan" />
+      <xsd:enumeration value="Merge Interval" />
+      <xsd:enumeration value="Parameter Table Scan" />
+      <xsd:enumeration value="Partial Aggregate" />
+      <xsd:enumeration value="Print" />
+      <xsd:enumeration value="Remote Delete" />
+      <xsd:enumeration value="Remote Index Scan" />
+      <xsd:enumeration value="Remote Index Seek" />
+      <xsd:enumeration value="Remote Insert" />
+      <xsd:enumeration value="Remote Query" />
+      <xsd:enumeration value="Remote Scan" />
+      <xsd:enumeration value="Remote Update" />
+      <xsd:enumeration value="Repartition Streams" />
+      <xsd:enumeration value="RID Lookup" />
+      <xsd:enumeration value="Right Anti Semi Join" />
+      <xsd:enumeration value="Right Outer Join" />
+      <xsd:enumeration value="Right Semi Join" />
+      <xsd:enumeration value="Segment" />
+      <xsd:enumeration value="Sequence" />
+      <xsd:enumeration value="Sort" />
+      <xsd:enumeration value="Split" />
+      <xsd:enumeration value="Switch" />
+      <xsd:enumeration value="Table-valued function" />
+      <xsd:enumeration value="Table Scan" />
+      <xsd:enumeration value="Top" />
+      <xsd:enumeration value="TopN Sort" />
+      <xsd:enumeration value="UDX" />
+      <xsd:enumeration value="Union" />
+      <xsd:enumeration value="Update" />
+      <xsd:enumeration value="Merge" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="PhysicalOpType">
+    <xsd:annotation>
+      <xsd:documentation>
+                         Each of the physical operator is an iterator. An iterator
+                         can answer three method calls: Init(), GetNext(), and Close().
+                         Upon receiving an Init() call, an iterator initializes itself,
+                         setting up any data structures if necessary. Upon receiving a
+                         GetNext() call, the iterator produces the "next" packet of 
+                         data and gives it to the iterator that made the GetNext() call.
+                         To produce the "next" packet of data, the iterator may have to
+                         make zero or more GetNext() (or even Init()) calls to its 
+                         children. Upon receiving a Close() call, an iterator performs
+                         some clean-up operations and shuts itself down. Typically, an
+                         iterator receives one Init() call, followed by many GetNext()
+                         calls, and then a single Close() call.
+
+                         The "query" portion of a T-SQL statement is typically a tree
+                         made up of iterators.  
+
+                         Usually, there is a one-to-many mapping among logical operators
+                         and physical operators. That is, usually multiple physical operators
+                         can implement a logical operator. In some cases in SQL Server,
+                         however, a physical operator can implement multiple logical operators.
+			</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Assert" />
+      <xsd:enumeration value="Bitmap" />
+      <xsd:enumeration value="Clustered Index Delete" />
+      <xsd:enumeration value="Clustered Index Insert" />
+      <xsd:enumeration value="Clustered Index Scan" />
+      <xsd:enumeration value="Clustered Index Seek" />
+      <xsd:enumeration value="Clustered Index Update" />
+      <xsd:enumeration value="Clustered Index Merge" />
+      <xsd:enumeration value="Clustered Update" />
+      <xsd:enumeration value="Collapse" />
+      <xsd:enumeration value="Compute Scalar" />
+      <xsd:enumeration value="Concatenation" />
+      <xsd:enumeration value="Constant Scan" />
+      <xsd:enumeration value="Deleted Scan" />
+      <xsd:enumeration value="Filter" />
+      <xsd:enumeration value="Generic" />
+      <xsd:enumeration value="Hash Match" />
+      <xsd:enumeration value="Index Delete" />
+      <xsd:enumeration value="Index Insert" />
+      <xsd:enumeration value="Index Scan" />
+      <xsd:enumeration value="Index Seek" />
+      <xsd:enumeration value="Index Spool" />
+      <xsd:enumeration value="Index Update" />
+      <xsd:enumeration value="Inserted Scan" />
+      <xsd:enumeration value="Log Row Scan" />
+      <xsd:enumeration value="Merge Interval" />
+      <xsd:enumeration value="Merge Join" />
+      <xsd:enumeration value="Nested Loops" />
+      <xsd:enumeration value="Online Index Insert" />
+      <xsd:enumeration value="Parallelism" />
+      <xsd:enumeration value="Parameter Table Scan" />
+      <xsd:enumeration value="Print" />
+      <xsd:enumeration value="Remote Delete" />
+      <xsd:enumeration value="Remote Index Scan" />
+      <xsd:enumeration value="Remote Index Seek" />
+      <xsd:enumeration value="Remote Insert" />
+      <xsd:enumeration value="Remote Query" />
+      <xsd:enumeration value="Remote Scan" />
+      <xsd:enumeration value="Remote Update" />
+      <xsd:enumeration value="RID Lookup" />
+      <xsd:enumeration value="Row Count Spool" />
+      <xsd:enumeration value="Segment" />
+      <xsd:enumeration value="Sequence" />
+      <xsd:enumeration value="Sequence Project" />
+      <xsd:enumeration value="Sort" />
+      <xsd:enumeration value="Split" />
+      <xsd:enumeration value="Stream Aggregate" />
+      <xsd:enumeration value="Switch" />
+      <xsd:enumeration value="Table-valued function" />
+      <xsd:enumeration value="Table Delete" />
+      <xsd:enumeration value="Table Insert" />
+      <xsd:enumeration value="Table Scan" />
+      <xsd:enumeration value="Table Spool" />
+      <xsd:enumeration value="Table Update" />
+      <xsd:enumeration value="Table Merge" />
+      <xsd:enumeration value="Top" />
+      <xsd:enumeration value="UDX" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="SetOptionsType">
+    <xsd:annotation>
+      <xsd:documentation>The set options that affects query cost</xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="ANSI_NULLS" type="xsd:boolean" />
+    <xsd:attribute name="ANSI_PADDING" type="xsd:boolean" />
+    <xsd:attribute name="ANSI_WARNINGS" type="xsd:boolean" />
+    <xsd:attribute name="ARITHABORT" type="xsd:boolean" />
+    <xsd:attribute name="CONCAT_NULL_YIELDS_NULL" type="xsd:boolean" />
+    <xsd:attribute name="NUMERIC_ROUNDABORT" type="xsd:boolean" />
+    <xsd:attribute name="QUOTED_IDENTIFIER" type="xsd:boolean" />
+  </xsd:complexType>
+</xsd:schema>

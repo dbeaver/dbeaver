@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +52,7 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         MySQLTableBase object = command.getObject();
@@ -63,32 +65,33 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_VIEW_NAME;
+    }
+
+    @Override
+    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        MySQLView newView = new MySQLView(parent);
-        try {
-            newView.setName(getNewChildName(monitor, parent, "new_view"));
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
-        }
+        MySQLCatalog catalog = (MySQLCatalog) container;
+        MySQLView newView = new MySQLView(catalog);
+        setNewObjectName(monitor, catalog, newView);
         return newView;
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, (MySQLView) command.getObject());
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
@@ -117,7 +120,7 @@ public class MySQLViewManager extends MySQLTableManager {
                 try {
                     schemaView = DBUtils.findObject(view.getParentObject().getViews(session.getProgressMonitor()), view.getName());
                 } catch (DBException e) {
-                    throw new DBCException(e, view.getDataSource());
+                    throw new DBCException(e, session.getExecutionContext());
                 }
                 if (schemaView != view) {
                     throw new DBCException("View with name '" + view.getName() + "' already exists. Choose another name");

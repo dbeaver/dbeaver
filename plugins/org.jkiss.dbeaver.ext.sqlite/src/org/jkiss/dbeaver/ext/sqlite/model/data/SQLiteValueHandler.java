@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerConfigurable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,18 +40,18 @@ import java.util.Date;
 /**
  * SQLiteValueHandler
  */
-public class SQLiteValueHandler extends JDBCAbstractValueHandler {
+public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDValueHandlerConfigurable {
 
     private static final Log log = Log.getLog(SQLiteValueHandler.class);
 
-    private final DBDDataFormatterProfile formatterProfile;
+    private final DBDFormatSettings formatSettings;
     private final DBSTypedObject type;
     private DBDDataFormatter numberFormatter;
     private DBDDataFormatter timestampFormatter;
 
-    public SQLiteValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile)
+    public SQLiteValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings)
     {
-        this.formatterProfile = formatterProfile;
+        this.formatSettings = formatSettings;
         this.type = type;
     }
 
@@ -56,7 +59,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         Object object = resultSet.getObject(index);
-        return getValueFromObject(session, type, object, false);
+        return getValueFromObject(session, type, object, false, false);
     }
 
     @Override
@@ -72,20 +75,22 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         return object;
     }
 
+    @NotNull
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof Number) {
             if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
-                return DBValueFormatting.convertNumberToNativeString((Number) value);
+                return DBValueFormatting.convertNumberToNativeString(
+                    (Number) value,
+                    formatSettings.isUseScientificNumericFormat());
             } else {
-
                 if (numberFormatter == null) {
                     try {
-                        numberFormatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
+                        numberFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
                     } catch (Exception e) {
                         log.error("Can't create numberFormatter for number value handler", e); //$NON-NLS-1$
                         numberFormatter = DefaultDataFormatter.INSTANCE;
@@ -97,7 +102,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
 
             if (timestampFormatter == null) {
                 try {
-                    timestampFormatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP, type);
+                    timestampFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP, type);
                 } catch (Exception e) {
                     log.error("Can't create timestampFormatter for timestamp value handler", e); //$NON-NLS-1$
                     timestampFormatter = DefaultDataFormatter.INSTANCE;
@@ -109,4 +114,9 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
+    @Override
+    public void refreshValueHandlerConfiguration(DBSTypedObject type) {
+        this.numberFormatter = null;
+        this.timestampFormatter = null;
+    }
 }

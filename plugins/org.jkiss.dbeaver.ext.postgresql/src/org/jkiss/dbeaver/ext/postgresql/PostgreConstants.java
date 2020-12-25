@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -38,24 +40,32 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
     public static final String DEFAULT_USER = "postgres";
 
+    public static final String PROP_CHOSEN_ROLE = DBConstants.INTERNAL_PROP_PREFIX + "chosen-role@";
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
+    public static final String PROP_SHOW_UNAVAILABLE_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-unavailable-db@";
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
+    public static final String PROP_DD_PLAIN_STRING = "postgresql.dd.plain.string";
+    public static final String PROP_DD_TAG_STRING = "postgresql.dd.tag.string";
 
     public static final String PROP_SSL = "ssl";
 
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_KEY} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CA_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
+    public static final String PROP_SSL_PROXY = "sslProxyServer";
     public static final String PROP_SERVER_TYPE = "serverType";
 
-    public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
-    public static final String OPTION_DDL_SHOW_COLUMN_COMMENTS = "pg.ddl.show.column.comments";
-
     public static final DBSObjectState STATE_UNAVAILABLE = new DBSObjectState("Unavailable", DBIcon.OVER_EXTERNAL);
-    public static final DBSEntityConstraintType CONSTRAINT_TRIGGER = new DBSEntityConstraintType("trigger", "TRIGGER", "Trigger constraint", false, false, false); //$NON-NLS-1$
-    public static final DBSEntityConstraintType CONSTRAINT_EXCLUSIVE = new DBSEntityConstraintType("exclusive", "EXCLUSIVE", "Exclusive constraint", false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType CONSTRAINT_TRIGGER = new DBSEntityConstraintType("trigger", "TRIGGER", "Trigger constraint", false, false, false, false); //$NON-NLS-1$
+    public static final DBSEntityConstraintType CONSTRAINT_EXCLUSIVE = new DBSEntityConstraintType("exclusive", "EXCLUSIVE", "Exclusive constraint", false, false, false, false); //$NON-NLS-1$
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
     public static final String SYSTEM_SCHEMA_PREFIX = "pg_";
@@ -68,10 +78,13 @@ public class PostgreConstants {
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
+    public static final String PG_GEOMETRY_CLASS = "org.postgis.PGgeometry";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
 
+    public static final String TYPE_UUID = "uuid";
+    public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_HSTORE = "hstore";
     public static final String TYPE_JSON = "json";
@@ -80,27 +93,29 @@ public class PostgreConstants {
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_INTERVAL = "interval";
+    public static final String TYPE_TIME = "time";
+    public static final String TYPE_TIMESTAMP = "timestamp";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
     /**
-     * @see https://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
+     * @see [https://www.postgresql.org/docs/9.2/static/errcodes-appendix.html]
      */
     public static final String EC_PERMISSION_DENIED = "42501"; //$NON-NLS-1$
     public static final String EC_QUERY_CANCELED = "57014"; //$NON-NLS-1$
 
     public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
     public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
-    public static final String PG_INSTALL_PROP_VERSION = "Version";
     public static final String PG_INSTALL_PROP_BRANDING = "Branding";
-    public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
-    public static final Map<String, String> SERIAL_TYPES = new HashMap<>();
+    public static final Map<String, String> SERIAL_TYPES = new LinkedHashMap<>();
     public static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
     public static final Map<String, String> DATA_TYPE_CANONICAL_NAMES = new HashMap<>();
 
+    public static final String TYPE_BOOL = "bool";
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
@@ -108,9 +123,14 @@ public class PostgreConstants {
     public static final String TYPE_FLOAT8 = "float8";
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
+    public static final String ERROR_TRANSACTION_ABORTED = "25P02";
+
     public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
+    public static final String COLLATION_DEFAULT = "default";
+    public static final String DEFAULT_ARRAY_DELIMITER = " ";
 
     static {
+        DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
         DATA_TYPE_ALIASES.put("int", TYPE_INT4);
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);

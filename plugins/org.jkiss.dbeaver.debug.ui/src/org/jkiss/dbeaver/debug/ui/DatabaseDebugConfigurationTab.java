@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -32,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationPanelDescriptor;
@@ -39,11 +39,10 @@ import org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationPanelRegistry;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
@@ -54,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTab implements DBGConfigurationPanelContainer {
+
+    static protected final Log log = Log.getLog(DatabaseDebugConfigurationTab.class);
 
     private DebugConfigurationPanelDescriptor selectedDebugType;
     private DBGConfigurationPanel selectedDebugPanel;
@@ -86,11 +87,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
         UIUtils.createControlLabel(group, DebugUIMessages.DatabaseTab_datasource_label_text);
         connectionCombo = new SelectDataSourceCombo(group) {
-            @Override
-            protected IProject getActiveProject() {
-                return null;
-            }
-
             @Override
             protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
                 String driverName = dataSource == null ? "" : dataSource.getDriver().getFullName();
@@ -178,7 +174,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             } catch (DBException e) {
                 selectedDebugType = null;
                 selectedDebugPanel = null;
-                DBUserInterface.getInstance().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
+                DBWorkbench.getPlatformUI().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
             }
         } else {
             selectedDebugType = null;
@@ -204,8 +200,12 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     public void initializeFrom(ILaunchConfiguration configuration) {
         this.currentConfiguration = configuration;
         try {
-            String dsId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
-            DBPDataSourceContainer dataSource = DBUtils.findDataSource(dsId);
+            DBPDataSourceContainer dataSource = null;
+            try {
+                dataSource = DebugUtils.getDataSourceContainer(configuration);
+            } catch (CoreException e) {
+                log.debug(e);
+            }
             connectionCombo.select(dataSource);
             if (dataSource != null) {
                 driverText.setText(dataSource.getDriver().getFullName());

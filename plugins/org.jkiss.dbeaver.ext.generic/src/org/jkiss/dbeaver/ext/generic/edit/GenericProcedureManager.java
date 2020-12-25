@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,14 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.ListCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.cache.ListCache;
 
 import java.util.List;
 import java.util.Map;
@@ -55,19 +56,19 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
 
     @Override
     protected GenericProcedure createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericStructContainer parent,
-        Object from)
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
     {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         GenericProcedure object = command.getObject();
         actions.add(
@@ -79,7 +80,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     }
 
     @Override
-    public boolean canCreateObject(GenericStructContainer parent) {
+    public boolean canCreateObject(Object container) {
         return false;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -27,15 +28,14 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -57,9 +57,15 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private static final Log log = Log.getLog(ProjectExportWizard.class);
 
-    public static final int COPY_BUFFER_SIZE = 5000;
-    public static final String PROJECT_DESC_FILE = ".project";
+    private static final int COPY_BUFFER_SIZE = 5000;
+    private static final String PROJECT_DESC_FILE = ".project";
+    private static final Set<String> IGNORED_RESOURCES = new HashSet<>();
     private ProjectExportWizardPage mainPage;
+
+    static {
+        IGNORED_RESOURCES.add(PROJECT_DESC_FILE);
+        //IGNORED_RESOURCES.add(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX);
+    }
 
     public ProjectExportWizard() {
 	}
@@ -81,14 +87,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 	public boolean performFinish() {
         final ProjectExportData exportData = mainPage.getExportData();
         try {
-            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        exportProjects(monitor, exportData);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    exportProjects(monitor, exportData);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         }
@@ -96,7 +99,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Export error",
                 "Cannot export projects",
                 ex.getTargetException());
@@ -105,7 +108,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return true;
 	}
 
-    public void exportProjects(DBRProgressMonitor monitor, final ProjectExportData exportData)
+    private void exportProjects(DBRProgressMonitor monitor, final ProjectExportData exportData)
         throws IOException, CoreException, InterruptedException
     {
         if (!exportData.getOutputFolder().exists()) {
@@ -127,51 +130,40 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             meta.startElement(ExportConstants.TAG_ARCHIVE);
             meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 
-            exportData.initExport(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
+            exportData.initExport(DBWorkbench.getPlatform().getWorkspace(), meta, archiveStream);
 
             {
                 // Export source info
                 meta.startElement(ExportConstants.TAG_SOURCE);
-                meta.addAttribute(ExportConstants.ATTR_TIME, Long.valueOf(System.currentTimeMillis()));
+                meta.addAttribute(ExportConstants.ATTR_TIME, System.currentTimeMillis());
                 meta.addAttribute(ExportConstants.ATTR_ADDRESS, InetAddress.getLocalHost().getHostAddress());
                 meta.addAttribute(ExportConstants.ATTR_HOST, InetAddress.getLocalHost().getHostName());
                 meta.endElement();
             }
 
-            Map<IProject, Integer> resCountMap = new HashMap<>();
+            Map<DBPProject, Integer> resCountMap = new HashMap<>();
             monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
-            for (IProject project : exportData.getProjectsToExport()) {
+            for (DBPProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
-                final DataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
+                final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
                 if (dataSourceRegistry != null) {
-                    for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
+                    for (DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
                         exportData.usedDrivers.add(dataSourceDescriptor.getDriver());
                     }
                 }
 
-                resCountMap.put(project, getChildCount(exportData, project));
+                resCountMap.put(project, getChildCount(exportData, project.getEclipseProject()));
                 monitor.worked(1);
             }
             monitor.done();
 
             {
-                // Export drivers meta
-                monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_driver_info, 1);
-                exportData.meta.startElement(RegistryConstants.TAG_DRIVERS);
-                for (DriverDescriptor driver : exportData.usedDrivers) {
-                    driver.serialize(exportData.meta, true);
-                }
-                exportData.meta.endElement();
-                monitor.done();
-            }
-
-            {
                 // Export projects
                 exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
-                for (IProject project : exportData.getProjectsToExport()) {
+                for (DBPProject project : exportData.getProjectsToExport()) {
                     monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project, project.getName()), resCountMap.get(project));
                     try {
-                        exportProject(monitor, exportData, project);
+                        exportProject(monitor, exportData, project.getEclipseProject());
                     } finally {
                         monitor.done();
                     }
@@ -183,7 +175,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 // Export driver libraries
                 Set<File> libFiles = new HashSet<>();
                 Map<String, File> libPathMap = new HashMap<>();
-                for (DriverDescriptor driver : exportData.usedDrivers) {
+                for (DBPDriver driver : exportData.usedDrivers) {
                     for (DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {
                         final File libraryFile = fileDescriptor.getLocalFile();
                         if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {
@@ -251,11 +243,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         } finally {
             ContentUtils.close(exportStream);
         }
-}
+    }
 
     private int getChildCount(ProjectExportData exportData, IResource resource) throws CoreException
     {
-        if (exportData.projectRegistry.getResourceHandler(resource) == null) {
+        if (exportData.workspace.getResourceHandler(resource) == null) {
             return 0;
         }
         int childCount = 1;
@@ -267,7 +259,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return childCount;
     }
 
-    private void exportProject(DBRProgressMonitor monitor, ProjectExportData exportData, IProject project) throws InterruptedException, CoreException, IOException
+    private void exportProject(DBRProgressMonitor monitor, ProjectExportData exportData, IProject project) throws CoreException, IOException
     {
         monitor.subTask(project.getName());
         // Refresh project
@@ -277,7 +269,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         exportData.meta.startElement(ExportConstants.TAG_PROJECT);
         exportData.meta.addAttribute(ExportConstants.ATTR_NAME, project.getName());
         exportData.meta.addAttribute(ExportConstants.ATTR_DESCRIPTION, project.getDescription().getComment());
-        saveResourceProperties(project, exportData.meta);
 
         // Add project folder
         final String projectPath = ExportConstants.DIR_PROJECTS + "/" + project.getName() + "/"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -296,7 +287,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private void exportResourceTree(DBRProgressMonitor monitor, ProjectExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
     {
-        if (resource.getName().equals(PROJECT_DESC_FILE)) {
+        if (IGNORED_RESOURCES.contains(resource.getName())) {
             // Skip it
             return;
         }
@@ -304,7 +295,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
         exportData.meta.startElement(ExportConstants.TAG_RESOURCE);
         exportData.meta.addAttribute(ExportConstants.ATTR_NAME, resource.getName());
-        saveResourceProperties(resource, exportData.meta);
 
         if (resource instanceof IContainer) {
             // Add folder entry
@@ -313,7 +303,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             exportData.archiveStream.closeEntry();
 
             // Export children
-            final IResource[] members = ((IContainer) resource).members();
+            final IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS);
             for (IResource child : members) {
                 if (child.isLinked()) {
                     continue;
@@ -335,28 +325,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         exportData.meta.endElement();
 
         monitor.worked(1);
-    }
-
-    private void saveResourceProperties(IResource resource, XMLBuilder xml) throws CoreException, IOException
-    {
-        if (resource instanceof IFile) {
-            final IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-            if (contentDescription != null && contentDescription.getCharset() != null) {
-                xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getCharset());
-                //xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getContentType());
-            }
-        } else if (resource instanceof IFolder) {
-            xml.addAttribute(ExportConstants.ATTR_DIRECTORY, true);
-        }
-        for (Object entry : resource.getPersistentProperties().entrySet()) {
-            Map.Entry<?, ?> propEntry = (Map.Entry<?,?>) entry;
-            xml.startElement(ExportConstants.TAG_ATTRIBUTE);
-            final QualifiedName attrName = (QualifiedName) propEntry.getKey();
-            xml.addAttribute(ExportConstants.ATTR_QUALIFIER, attrName.getQualifier());
-            xml.addAttribute(ExportConstants.ATTR_NAME, attrName.getLocalName());
-            xml.addAttribute(ExportConstants.ATTR_VALUE, (String) propEntry.getValue());
-            xml.endElement();
-        }
     }
 
 }

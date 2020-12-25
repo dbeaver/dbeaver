@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -33,7 +34,7 @@ import java.sql.SQLException;
 /**
  * JDBC string value handler
  */
-public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
+public class JDBCStringValueHandler extends JDBCAbstractValueHandler implements DBDValueDefaultGenerator {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
 
@@ -71,7 +72,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null || object instanceof String) {
             return object;
@@ -89,4 +90,13 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
+    public String getDefaultValueLabel() {
+        return "Empty string";
+    }
+
+    @Override
+    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
+        return "";
+    }
 }

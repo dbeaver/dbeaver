@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -50,8 +51,12 @@ public interface SQLDialect {
     enum MultiValueInsertMode {
         NOT_SUPPORTED,
         GROUP_ROWS,
-        PLAIN
+        PLAIN,
+        INSERT_ALL
     }
+
+    @NotNull
+    String getDialectId();
 
     /**
      * Dialect name
@@ -70,6 +75,20 @@ public interface SQLDialect {
     String[][] getIdentifierQuoteStrings();
 
     /**
+     * Retrieves strings used to quote SQL strings.
+     *
+     * @return the array of string pairs
+     */
+    @NotNull
+    String[][] getStringQuoteStrings();
+
+    /**
+     * Data query keywords. By default it is SELECT
+     */
+    @NotNull
+    String[] getQueryKeywords();
+
+    /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */
@@ -83,6 +102,9 @@ public interface SQLDialect {
     @NotNull
     String[] getDDLKeywords();
 
+    @NotNull
+    String[] getDMLKeywords();
+
     /**
      * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
@@ -93,9 +115,9 @@ public interface SQLDialect {
     @NotNull
     Set<String> getReservedWords();
     @NotNull
-    Set<String> getFunctions(@NotNull DBPDataSource dataSource);
+    Set<String> getFunctions(@Nullable DBPDataSource dataSource);
     @NotNull
-    Set<String> getDataTypes(@NotNull DBPDataSource dataSource);
+    Set<String> getDataTypes(@Nullable DBPDataSource dataSource);
     @Nullable
     DBPKeywordType getKeywordType(@NotNull String word);
     @NotNull
@@ -106,6 +128,8 @@ public interface SQLDialect {
     boolean isEntityQueryWord(@NotNull String word);
 
     boolean isAttributeQueryWord(@NotNull String word);
+
+    int getKeywordNextLineIndent(@NotNull String word);
 
     /**
      * Retrieves the string that can be used to escape wildcard characters.
@@ -157,6 +181,9 @@ public interface SQLDialect {
      */
     char getStructSeparator();
 
+    @NotNull
+    String[] getParametersPrefixes();
+
     /**
      * Script delimiter character
      * @return script delimiter mark
@@ -167,6 +194,10 @@ public interface SQLDialect {
     @Nullable
     String getScriptDelimiterRedefiner();
 
+    /**
+     * SQL block statements (BEGIN/END).
+     * Null if not supported
+     */
     @Nullable
     String[][] getBlockBoundStrings();
 
@@ -179,12 +210,12 @@ public interface SQLDialect {
     String[] getBlockHeaderStrings();
 
     /**
-     * Script block toggle string.
-     * Begins and ends SQL blocks.
-     * @return block toggle string or null (not supported)
+     * Inner block prefixes strings.
+     * Determines if the block is a child of the header block.
+     * @return inner block prefixes or null (if not supported)
      */
     @Nullable
-    String getBlockToggleString();
+    String[] getInnerBlockPrefixes();
 
     /**
      * Retrieves whether a catalog appears at the start of a fully qualified
@@ -206,9 +237,12 @@ public interface SQLDialect {
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
+     * @param quoted is identifier quoted
      * @return true or false
      */
-    boolean validIdentifierPart(char c);
+    boolean validIdentifierPart(char c, boolean quoted);
+
+    boolean useCaseInsensitiveNameLookup();
 
     boolean supportsUnquotedMixedCase();
 
@@ -238,6 +272,15 @@ public interface SQLDialect {
     DBPIdentifierCase storesQuotedCase();
 
     /**
+     * Enables to call particular cast operator or function for special data types.
+     * @param attribute   attribute data to help decide whether cast and how to cast
+     * @param expression      string representation for cast
+     * @return            casted string
+     */
+    @NotNull
+    String getTypeCastClause(DBSAttributeBase attribute, String expression);
+
+    /**
      * Escapes string to make usable inside of SQL queries.
      * Basically it has to escape only ' character which delimits strings.
      * @param string string to escape
@@ -258,10 +301,15 @@ public interface SQLDialect {
     @NotNull
     String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue);
 
+    /**
+     * Default multi-value insertion mode
+     * Used e.g. to SQL export
+     * @return MultiValueInsertMode enum value
+     */
     @NotNull
-    MultiValueInsertMode getMultiValueInsertMode();
+    MultiValueInsertMode getDefaultMultiValueInsertMode();
 
-    String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter);
+    String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
 
     /**
      * Two-item array containing begin and end of multi-line comments.
@@ -311,7 +359,17 @@ public interface SQLDialect {
     @Nullable
     String getDualTableName();
 
+    /**
+     * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
+     * You need to check query results to ensure that it is not transactional.
+     */
     boolean isTransactionModifyingQuery(String queryString);
+
+    @Nullable
+    String[] getTransactionCommitKeywords();
+
+    @Nullable
+    String[] getTransactionRollbackKeywords();
 
     @Nullable
     String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
@@ -324,5 +382,8 @@ public interface SQLDialect {
     void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
 
     boolean isDisableScriptEscapeProcessing();
+
+    boolean supportsAlterTableConstraint();
+
 
 }

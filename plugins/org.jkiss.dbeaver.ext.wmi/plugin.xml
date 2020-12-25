@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-              class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
-              description="WMI connector"
-              icon="icons/wmi_icon.png"
-              id="wmi"
-              label="WMI">
+            class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
+            description="WMI connector"
+            icon="icons/wmi_icon.png"
+            id="wmi"
+            label="WMI"
+            dialect="wmi">
             <tree
                   icon="icons/wmi_icon.png"
                   label="WMI data source"
@@ -65,9 +66,11 @@
                     id="wmi"
                     label="WMI"
                     icon="icons/wmi_icon.png"
+                    iconBig="icons/wmi_icon_big.png"
                     description="WMI Native driver"
                     class="org.jkiss.wmi.service.WMIServiceNative"
-                    customDriverLoader="true">
+                    customDriverLoader="true"
+                    categories="embedded">
                     <file type="lib" os="win32" arch="x86" path="platform:/plugin/org.jkiss.wmi/native/x86/jkiss_wmi.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="platform:/plugin/org.jkiss.wmi/native/x64/jkiss_wmi.dll"/>
                 </driver>
@@ -80,7 +83,7 @@
                 id="org.jkiss.dbeaver.ext.wmi.dataSourceWizardView"
                 dataSource="wmi"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="WMI Connection"
+                label="%dialog.connection.datasource.header"
                 class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
                 icon="icons/wmi_icon.png">
         </view>
@@ -88,7 +91,7 @@
                 id="org.jkiss.dbeaver.ext.wmi.dataSourceEditorView"
                 dataSource="wmi"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="WMI Connection"
+                label="%dialog.connection.datasource.header"
                 class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
                 icon="icons/wmi_icon.png">
         </view>
@@ -108,6 +111,11 @@
             <type name="*"/>
 
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="wmi" parent="basic" class="org.jkiss.dbeaver.ext.wmi.model.WMIDialect" label="WMI" description="WMI SQL dialect." icon="icons/wmi_icon.png">
+        </dialect>
     </extension>
 
 </plugin>

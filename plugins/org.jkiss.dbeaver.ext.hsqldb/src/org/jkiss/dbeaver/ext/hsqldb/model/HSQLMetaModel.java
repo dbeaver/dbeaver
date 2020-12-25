@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
@@ -54,7 +54,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HSQLDB view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -121,7 +121,7 @@ public class HSQLMetaModel extends GenericMetaModel
                     if (dbResult.nextRow()) {
                         String definition = dbResult.getString(1);
                         if (definition != null) {
-                            definition = SQLUtils.formatSQL(dataSource, definition);
+                            definition = SQLFormatUtils.formatSQL(dataSource, definition);
                         }
                         return definition;
                     }
@@ -181,7 +181,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             throw new DBException("Database level triggers aren't supported for HSQLDB");
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,13 +28,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
 import java.sql.Types;
 import java.util.List;
@@ -58,12 +59,19 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
-    {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
+    public boolean canEditObject(OracleTableColumn object) {
+        return true;
+    }
 
-        final OracleTableColumn column = new OracleTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
+    @Override
+    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    {
+        OracleTableBase table = (OracleTableBase) container;
+
+        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar2"); //$NON-NLS-1$
+
+        final OracleTableColumn column = new OracleTableColumn(table);
+        column.setName(getNewColumnName(monitor, context, table));
         column.setDataType((OracleDataType) columnType);
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
@@ -73,7 +81,15 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+        if (command.getProperty("comment") != null) {
+            addColumnCommentAction(actions, command.getObject());
+        }
+    }
+
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final OracleTableColumn column = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
@@ -84,11 +100,15 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
                 " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
-            actionList.add(new SQLDatabasePersistAction(
-                "Comment column",
-                "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
+            addColumnCommentAction(actionList, column);
         }
+    }
+
+    static void addColumnCommentAction(List<DBEPersistAction> actionList, OracleTableColumn column) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Comment column",
+            "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                " IS '" + column.getComment(new VoidProgressMonitor()) + "'"));
     }
 
     @Override
@@ -97,7 +117,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final OracleTableColumn column = command.getObject();
 

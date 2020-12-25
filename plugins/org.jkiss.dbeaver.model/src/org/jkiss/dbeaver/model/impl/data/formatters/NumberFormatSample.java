@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,19 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_ROUNDING_MODE ="roundingMode";
 
     @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    public Map<String, Object> getDefaultProperties(Locale locale)
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
-        Map<Object, Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>();
         props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
         props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
         props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());
         props.put(PROP_MAX_FRACT_DIGITS, Math.max(tmp.getMaximumFractionDigits(), 10));
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
-        props.put(PROP_USE_TYPE_SCALE, true);
-        props.put(PROP_ROUNDING_MODE, tmp.getRoundingMode().name());
+        props.put(PROP_USE_TYPE_SCALE, false);
+        // Use UNNECESSARY by default [#6493]
+        // FIX: Use default. The problem in rounding was caused by float->double conversions.
+        //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());
         return props;
     }
 

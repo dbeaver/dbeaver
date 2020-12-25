@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
@@ -44,20 +44,35 @@ public class EditIndexPage extends AttributesSelectorPage {
 
     public static final String PROP_DESC = "desc";
 
+    private final DBSTableIndex index;
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
     private boolean unique;
+    private boolean supportUniqueIndexes = true;
 
     private int descColumnIndex;
 
     public EditIndexPage(
         String title,
-        DBSTable table,
+        DBSTableIndex index,
         Collection<DBSIndexType> indexTypes)
     {
-        super(title, table);
+        super(title, index.getTable());
+        this.index = index;
         this.indexTypes = new ArrayList<>(indexTypes);
         Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+    }
+
+    public EditIndexPage(
+            String title,
+            DBSTableIndex index,
+            Collection<DBSIndexType> indexTypes, boolean supportUniqueIndexes)
+    {
+        super(title, index.getTable());
+        this.index = index;
+        this.indexTypes = new ArrayList<>(indexTypes);
+        Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
+        this.supportUniqueIndexes = supportUniqueIndexes;
     }
 
     @Override
@@ -83,13 +98,15 @@ public class EditIndexPage extends AttributesSelectorPage {
             }
         });
 
-        final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
-        uniqueButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                unique = uniqueButton.getSelection();
-            }
-        });
+        if (supportUniqueIndexes) {
+            final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
+            uniqueButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    unique = uniqueButton.getSelection();
+                }
+            });
+        }
     }
 
     public DBSIndexType getIndexType()

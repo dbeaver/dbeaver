@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     private String constrDDL;
     private long indexId;
     private boolean isLocal;
+    private boolean deferrable;
+    private boolean deferred;
 
     public PostgreTableConstraintBase(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, null, constraintType, true);
@@ -57,12 +59,29 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
             !getDataSource().getServerType().supportsInheritance() ||
             this instanceof PostgreTableInheritance ||
             JDBCUtils.safeGetBoolean(resultSet, "conislocal", true);
+        this.deferrable = JDBCUtils.safeGetBoolean(resultSet, "condeferrable");
+        this.deferred = JDBCUtils.safeGetBoolean(resultSet, "condeferred");
 
         this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
 
     public PostgreTableConstraintBase(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
         super(table, constraintName, null, constraintType, false);
+    }
+
+    public PostgreTableConstraintBase(DBRProgressMonitor monitor, PostgreTableReal owner, PostgreTableConstraintBase srcConstr) throws DBException {
+        super(owner, srcConstr, false);
+        // Make constraint name unique
+        int postfix = 1;
+        while (owner.getSchema().getConstraintCache().getObject(monitor, owner.getSchema(), getName()) != null) {
+            setName(srcConstr.getName() + "_" + postfix);
+            postfix++;
+        }
+        this.isLocal = srcConstr.isLocal;
+        this.deferrable = srcConstr.deferrable;
+        this.deferred = srcConstr.deferred;
+
+        this.description = srcConstr.description;
     }
 
     @NotNull
@@ -88,12 +107,31 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return getParentObject().getDatabase();
     }
 
+    @Property(viewable = false, order = 10)
     @Override
     public long getObjectId() {
         return oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = false, order = 11)
+    public boolean isDeferrable() {
+        return deferrable;
+    }
+
+    public void setDeferrable(boolean deferrable) {
+        this.deferrable = deferrable;
+    }
+
+    @Property(viewable = false, order = 12)
+    public boolean isDeferred() {
+        return deferred;
+    }
+
+    public void setDeferred(boolean deferred) {
+        this.deferred = deferred;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription()

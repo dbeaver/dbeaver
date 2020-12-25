@@ -17,16 +17,17 @@
 package org.jkiss.dbeaver.ext.ui.locks.edit;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
+import org.jkiss.dbeaver.ext.ui.locks.LocksUIMessages;
 import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
 /**
  * AbstractLockEditor for Lock View
  */
 
-public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
+public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IEditorInput> {
 
     private LockManagerViewer lockViewer;
 
@@ -46,7 +47,7 @@ public abstract class AbstractLockEditor extends SinglePageDatabaseEditor<IDatab
     public void createEditorControl(Composite parent) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
-            setPartName("Lock - " + executionContext.getDataSource().getContainer().getName());
+            setPartName(LocksUIMessages.create_editor_control_name_lock + executionContext.getDataSource().getContainer().getName());
             lockViewer = createLockViewer(executionContext, parent);
             lockViewer.refreshLocks(null);
         }

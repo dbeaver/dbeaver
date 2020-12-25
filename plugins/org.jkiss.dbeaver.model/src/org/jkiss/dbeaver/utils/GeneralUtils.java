@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -36,7 +38,10 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -49,10 +54,13 @@ import java.util.regex.Pattern;
  * General non-ui utility methods
  */
 public class GeneralUtils {
-
     private static final Log log = Log.getLog(GeneralUtils.class);
 
-    public static final String UTF8_ENCODING = "UTF-8";
+    private static final boolean IS_MACOS = Platform.getOS().contains("macos");
+    private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
+    private static final boolean IS_LINUX = Platform.getOS().contains("linux");
+
+    public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
     public static final Charset UTF8_CHARSET = Charset.forName(UTF8_ENCODING);
@@ -88,13 +96,11 @@ public class GeneralUtils {
      */
     public static String getDefaultFileEncoding() {
         return UTF8_ENCODING;
-        //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
     public static String getDefaultLocalFileEncoding() {
         return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
     }
-
 
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
@@ -131,11 +137,14 @@ public class GeneralUtils {
     }
 
     public static String convertToString(byte[] bytes, int offset, int length) {
+        if (length == 0) {
+            return "";
+        }
         char[] chars = new char[length];
         for (int i = offset; i < offset + length; i++) {
             int b = bytes[i];
-            if (b < 0) b = -b + 127;
-            if (b < 32) b = 32;
+            if (b < 0) b = 256 + b;
+            if (b < 32 || (b >= 0x7F && b <= 0xA0)) b = 32;
             chars[i - offset] = (char) b;
         }
         return new String(chars);
@@ -200,21 +209,21 @@ public class GeneralUtils {
             } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
                 return Boolean.valueOf(value);
             } else if (valueType == Long.class) {
-                return Long.valueOf(value);
+                return Long.valueOf(normalizeIntegerString(value));
             } else if (valueType == Long.TYPE) {
-                return Long.parseLong(value);
+                return Long.parseLong(normalizeIntegerString(value));
             } else if (valueType == Integer.class) {
-                return new Integer(value);
+                return Integer.valueOf(normalizeIntegerString(value));
             } else if (valueType == Integer.TYPE) {
-                return Integer.parseInt(value);
+                return Integer.parseInt(normalizeIntegerString(value));
             } else if (valueType == Short.class) {
-                return Short.valueOf(value);
+                return Short.valueOf(normalizeIntegerString(value));
             } else if (valueType == Short.TYPE) {
-                return Short.parseShort(value);
+                return Short.parseShort(normalizeIntegerString(value));
             } else if (valueType == Byte.class) {
-                return Byte.valueOf(value);
+                return Byte.valueOf(normalizeIntegerString(value));
             } else if (valueType == Byte.TYPE) {
-                return Byte.parseByte(value);
+                return Byte.parseByte(normalizeIntegerString(value));
             } else if (valueType == Double.class) {
                 return Double.valueOf(value);
             } else if (valueType == Double.TYPE) {
@@ -224,7 +233,7 @@ public class GeneralUtils {
             } else if (valueType == Float.TYPE) {
                 return Float.parseFloat(value);
             } else if (valueType == BigInteger.class) {
-                return new BigInteger(value);
+                return new BigInteger(normalizeIntegerString(value));
             } else if (valueType == BigDecimal.class) {
                 return new BigDecimal(value);
             } else {
@@ -234,6 +243,11 @@ public class GeneralUtils {
             log.error(e);
             return value;
         }
+    }
+
+    private static String normalizeIntegerString(String value) {
+        int divPos = value.lastIndexOf('.');
+        return divPos == -1 ? value : value.substring(0, divPos);
     }
 
     public static Throwable getRootCause(Throwable ex) {
@@ -303,6 +317,16 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getPlainVersion(String versionStr) {
+        try {
+            Version version = new Version(versionStr);
+            return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
+        } catch (Exception e) {
+            return versionStr;
+        }
+    }
+
+    @NotNull
     public static String getPlainVersion() {
         Version version = getProductVersion();
         return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
@@ -356,8 +380,13 @@ public class GeneralUtils {
         return calendar.getTime();
     }
 
-    public interface IVariableResolver {
-        String get(String name);
+    public static String getExpressionParseMessage(Exception e) {
+        String message = e.getMessage();
+        if (message == null) {
+            return e.getClass().getName();
+        }
+        int divPos = message.indexOf('@');
+        return divPos == -1 ? message : message.substring(divPos + 1);
     }
 
     public interface IParameterHandler {
@@ -385,6 +414,13 @@ public class GeneralUtils {
         return replaceVariables(string, System::getenv);
     }
 
+    public static String replaceSystemPropertyVariables(String string) {
+        if (string == null) {
+            return null;
+        }
+        return replaceVariables(string, System::getProperty);
+    }
+
     @NotNull
     public static String variablePattern(String name) {
         return "${" + name + "}";
@@ -396,32 +432,47 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static String stripVariablePattern(String pattern) {
-        if (isVariablePattern(pattern)) {
-            return pattern.substring(2, pattern.length() - 1);
-        }
-        return pattern;
-    }
-
-    @NotNull
     public static String generateVariablesLegend(@NotNull String[][] vars) {
+        String[] varPatterns = new String[vars.length];
+        int patternMaxLength = 0;
+        for (int i = 0; i < vars.length; i++) {
+            varPatterns[i] = GeneralUtils.variablePattern(vars[i][0]);
+            patternMaxLength = Math.max(patternMaxLength, varPatterns[i].length());
+        }
         StringBuilder text = new StringBuilder();
-        for (String[] var : vars) {
-            text.append(GeneralUtils.variablePattern(var[0])).append("\t- ").append(var[1]).append("\n");
+        for (int i = 0; i < vars.length; i++) {
+            text.append(varPatterns[i]);
+            // Indent
+            for (int k = 0; k < patternMaxLength - varPatterns[i].length(); k++) {
+                text.append(' ');
+            }
+            text.append(" - ").append(vars[i][1]).append("\n");
         }
         return text.toString();
     }
 
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+        if (CommonUtils.isEmpty(string)) {
+            return string;
+        }
+        // We save resolved vars here to avoid resolve recursive cycles
+        List<String> resolvedVars = null;
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
                 String varName = matcher.group(2);
+                if (resolvedVars != null && resolvedVars.contains(varName)) {
+                    continue;
+                }
                 String varValue = resolver.get(varName);
                 if (varValue != null) {
+                    if (resolvedVars == null) {
+                        resolvedVars = new ArrayList<>();
+                        resolvedVars.add(varName);
+                    }
                     if (matcher.start() == 0 && matcher.end() == string.length() - 1) {
                         string = varValue;
                     } else {
@@ -612,15 +663,105 @@ public class GeneralUtils {
         return new URI(path.replace(" ", "%20"));
     }
 
-    public static String encodeTopic(@NotNull String topic) {
-        return topic.replace(".", "__dot__");
-    }
-
-    public static String decodeTopic(@NotNull String topic) {
-        return topic.replace("__dot__", ".");
-    }
-
     public static boolean isWindows() {
-        return Platform.getOS().contains("win32");
+        return IS_WINDOWS;
+    }
+
+    public static boolean isMacOS() {
+        return IS_MACOS;
+    }
+
+    public static boolean isLinux() {
+        return IS_LINUX;
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    // Adapters
+    // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
+
+    public static <T> T adapt(Object sourceObject, Class<T> adapter, boolean allowActivation) {
+        if (sourceObject == null) {
+            return null;
+        }
+        if (adapter.isInstance(sourceObject)) {
+            return adapter.cast(sourceObject);
+        }
+
+        if (sourceObject instanceof IAdaptable) {
+            IAdaptable adaptable = (IAdaptable) sourceObject;
+
+            T result = adaptable.getAdapter(adapter);
+            if (result != null) {
+                // Sanity-check
+                if (!adapter.isInstance(result)) {
+                    throw new AssertionFailedException(adaptable.getClass().getName() + ".getAdapter(" + adapter.getName() + ".class) returned " //$NON-NLS-1$//$NON-NLS-2$
+                        + result.getClass().getName() + " that is not an instance the requested type"); //$NON-NLS-1$
+                }
+                return result;
+            }
+        }
+
+        // If the source object is a platform object then it's already tried calling AdapterManager.getAdapter,
+        // so there's no need to try it again.
+        if ((sourceObject instanceof PlatformObject) && !allowActivation) {
+            return null;
+        }
+
+        String adapterId = adapter.getName();
+        Object result = queryAdapterManager(sourceObject, adapterId, allowActivation);
+        if (result != null) {
+            // Sanity-check
+            if (!adapter.isInstance(result)) {
+                throw new AssertionFailedException("An adapter factory for " //$NON-NLS-1$
+                    + sourceObject.getClass().getName() + " returned " + result.getClass().getName() //$NON-NLS-1$
+                    + " that is not an instance of " + adapter.getName()); //$NON-NLS-1$
+            }
+            return adapter.cast(result);
+        }
+
+        return null;
+    }
+
+    public static <T> T adapt(Object sourceObject, Class<T> adapter) {
+        return adapt(sourceObject, adapter, true);
+    }
+
+    public static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
+        Object result;
+        if (allowActivation) {
+            result = AdapterManager.getDefault().loadAdapter(sourceObject, adapterId);
+        } else {
+            result = AdapterManager.getDefault().getAdapter(sourceObject, adapterId);
+        }
+        return result;
+    }
+
+    public static byte[] getBytesFromUUID(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        return bb.array();
+    }
+
+    public static UUID getUUIDFromBytes(byte[] bytes) throws IllegalArgumentException {
+        if (bytes.length < 16) {
+            throw new IllegalArgumentException("UUID length must be at least 16 bytes (actual length = " + bytes.length + ")");
+        }
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
+    }
+
+    public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
+        ByteBuffer source = ByteBuffer.wrap(bytes);
+        ByteBuffer target = ByteBuffer.allocate(16).
+                order(ByteOrder.LITTLE_ENDIAN).
+                putInt(source.getInt()).
+                putShort(source.getShort()).
+                putShort(source.getShort()).
+                order(ByteOrder.BIG_ENDIAN).
+                putLong(source.getLong());
+        target.rewind();
+        return new UUID(target.getLong(), target.getLong());
     }
 }

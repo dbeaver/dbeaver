@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>tests</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.jkiss.dbeaver.test.platform</module>
+        <module>org.jkiss.dbeaver.ext.greenplum.test</module>
+        <module>org.jkiss.dbeaver.ext.postgresql.test</module>
+        <module>org.jkiss.dbeaver.ext.test</module>
+
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-surefire-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <useUIHarness>false</useUIHarness>
+                    <useUIThread>false</useUIThread>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <application>org.jkiss.dbeaver.headless.application</application>
+                    <product>org.jkiss.dbeaver.headless.product</product>
+                    <testRuntime>default</testRuntime>
+                    <!-- Auto start bundles -->
+<!--
+                    <defaultStartLevel>
+                        <level>7</level>
+                        <autoStart>true</autoStart>
+                    </defaultStartLevel>
+-->
+                    <bundleStartLevel>
+                        <bundle>
+                            <id>org.eclipse.osgi</id>
+                            <level>-1</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
+                        <bundle>
+                            <id>org.apache.felix.scr</id>
+                            <level>2</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
+                        <bundle>
+                            <id>org.eclipse.core.runtime</id>
+                            <level>4</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
+                        <bundle>
+                            <id>org.eclipse.equinox.common</id>
+                            <level>2</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
+                        <bundle>
+                            <id>org.eclipse.equinox.event</id>
+                            <level>2</level>
+                            <autoStart>true</autoStart>
+                        </bundle>
+f                    </bundleStartLevel>
+<!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5006,suspend=y</argLine>-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

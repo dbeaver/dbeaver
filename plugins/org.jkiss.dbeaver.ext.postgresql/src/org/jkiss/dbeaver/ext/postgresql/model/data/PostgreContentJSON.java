@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -36,9 +36,9 @@ import java.sql.Types;
  */
 public class PostgreContentJSON extends JDBCContentChars {
 
-    public PostgreContentJSON(DBPDataSource dataSource, String json)
+    public PostgreContentJSON(DBCExecutionContext executionContext, String json)
     {
-        super(dataSource, json);
+        super(executionContext, json);
     }
 
     private PostgreContentJSON(PostgreContentJSON copyFrom) {
@@ -68,13 +68,14 @@ public class PostgreContentJSON extends JDBCContentChars {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
     @Override
     public String getDisplayString(DBDDisplayFormat format) {
-        return data == null ? null : TextUtils.compactWhiteSpaces(data);
+        return data == null ? null :
+            (format == DBDDisplayFormat.EDIT ? data : CommonUtils.compactWhiteSpaces(data));
     }
 
     @Override

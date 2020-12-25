@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -23,69 +24,67 @@ import java.util.*;
 /**
  * Execution statistics
  */
-public class DBCStatistics {
+public class DBCStatistics implements DBCExecutionResult {
 
     private final long startTime;
-    private long rowsUpdated;
-    private long rowsFetched;
+    private long rowsUpdated = -1;
+    private long rowsFetched = -1;
     private long executeTime;
     private long fetchTime;
     private int statementsCount;
     private String queryText;
     private Map<String, Object> infoMap;
     private List<String> messages;
+    private Throwable error;
+    private List<Throwable> warnings;
 
     public DBCStatistics() {
         this.startTime = System.currentTimeMillis();
     }
 
-    public long getRowsUpdated()
-    {
+    public long getRowsUpdated() {
         return rowsUpdated;
     }
 
-    public void setRowsUpdated(long rowsUpdated)
-    {
+    public void setRowsUpdated(long rowsUpdated) {
         this.rowsUpdated = rowsUpdated;
     }
 
-    public void addRowsUpdated(long rowsUpdated)
-    {
+    public void addRowsUpdated(long rowsUpdated) {
+        if (rowsUpdated < 0) {
+            return;
+        }
+        if (this.rowsUpdated == -1) {
+            this.rowsUpdated = 0;
+        }
         this.rowsUpdated += rowsUpdated;
     }
 
-    public long getRowsFetched()
-    {
+    public long getRowsFetched() {
         return rowsFetched;
     }
 
-    public void setRowsFetched(long rowsFetched)
-    {
+    public void setRowsFetched(long rowsFetched) {
         this.rowsFetched = rowsFetched;
     }
 
-    public long getExecuteTime()
-    {
+    public long getExecuteTime() {
         return executeTime;
     }
 
-    public void setExecuteTime(long executeTime)
-    {
+    public void setExecuteTime(long executeTime) {
         this.executeTime = executeTime;
     }
 
-    public void addExecuteTime(long executeTime)
-    {
+    public void addExecuteTime(long executeTime) {
         this.executeTime += executeTime;
     }
 
-    public void addExecuteTime()
-    {
+    public void addExecuteTime() {
         this.executeTime += (System.currentTimeMillis() - startTime);
     }
 
-    public long getFetchTime()
-    {
+    public long getFetchTime() {
         return fetchTime;
     }
 
@@ -97,23 +96,19 @@ public class DBCStatistics {
         this.fetchTime += fetchTime;
     }
 
-    public long getTotalTime()
-    {
+    public long getTotalTime() {
         return executeTime + fetchTime;
     }
 
-    public int getStatementsCount()
-    {
+    public int getStatementsCount() {
         return statementsCount;
     }
 
-    public void setStatementsCount(int statementsCount)
-    {
+    public void setStatementsCount(int statementsCount) {
         this.statementsCount = statementsCount;
     }
 
-    public void addStatementsCount()
-    {
+    public void addStatementsCount() {
         this.statementsCount++;
     }
 
@@ -126,13 +121,11 @@ public class DBCStatistics {
         this.queryText = queryText;
     }
 
-    public List<String> getMessages()
-    {
+    public List<String> getMessages() {
         return messages;
     }
 
-    public void addMessage(String message)
-    {
+    public void addMessage(String message) {
         if (messages == null) {
             messages = new ArrayList<>();
         }
@@ -153,15 +146,19 @@ public class DBCStatistics {
         infoMap.put(name, value);
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return executeTime <= 0 && fetchTime <= 0 && statementsCount == 0;
     }
 
-    public void accumulate(DBCStatistics stat)
-    {
-        rowsUpdated += stat.rowsUpdated;
-        rowsFetched += stat.rowsFetched;
+    public void accumulate(DBCStatistics stat) {
+        if (stat.rowsUpdated >= 0) {
+            if (rowsUpdated < 0) rowsUpdated = 0;
+            rowsUpdated += stat.rowsUpdated;
+        }
+        if (stat.rowsFetched > 0) {
+            if (rowsFetched < 0) rowsFetched = 0;
+            rowsFetched += stat.rowsFetched;
+        }
         executeTime += stat.executeTime;
         fetchTime += stat.fetchTime;
         statementsCount += stat.statementsCount;
@@ -171,16 +168,15 @@ public class DBCStatistics {
             }
         }
         if (!CommonUtils.isEmpty(stat.infoMap)) {
-            for (Map.Entry<String,Object> info : stat.infoMap.entrySet()) {
+            for (Map.Entry<String, Object> info : stat.infoMap.entrySet()) {
                 addInfo(info.getKey(), info.getValue());
             }
         }
     }
 
-    public void reset()
-    {
-        rowsUpdated = 0;
-        rowsFetched = 0;
+    public void reset() {
+        rowsUpdated = -1;
+        rowsFetched = -1;
         executeTime = 0;
         fetchTime = 0;
         statementsCount = 0;
@@ -188,4 +184,26 @@ public class DBCStatistics {
         infoMap = null;
     }
 
+    @Nullable
+    @Override
+    public Throwable getError() {
+        return error;
+    }
+
+    public void setError(Throwable error) {
+        this.error = error;
+    }
+
+    @Nullable
+    @Override
+    public List<Throwable> getWarnings() {
+        return warnings;
+    }
+
+    public void addWarning(Throwable warning) {
+        if (warnings == null) {
+            warnings = new ArrayList<>();
+        }
+        warnings.add(warning);
+    }
 }

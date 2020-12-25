@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,11 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -25,7 +30,7 @@ import java.util.regex.Pattern;
 /**
  * User privilege grant
  */
-public class MySQLGrant {
+public class MySQLGrant implements DBAPrivilegeGrant {
 
     public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+");
     public static final Pattern GLOBAL_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(.+)\\s+TO\\s+");
@@ -49,14 +54,36 @@ public class MySQLGrant {
         this.grantOption = grantOption;
     }
 
-    public MySQLUser getUser()
-    {
+    public MySQLUser getSubject(DBRProgressMonitor monitor) {
         return user;
     }
 
-    public List<MySQLPrivilege> getPrivileges()
+    @Override
+    public Object getObject(DBRProgressMonitor monitor) throws DBException {
+        if (catalogName != null) {
+            if (!isAllCatalogs()) {
+                MySQLCatalog catalog = user.getDataSource().getCatalog(catalogName);
+                if (catalog != null) {
+                    if (!isAllTables()) {
+                        MySQLTable table = catalog.getTable(monitor, tableName);
+                        if (table != null) {
+                            return table;
+                        }
+                    }
+                }
+            }
+        }
+        return catalogName + "." + tableName;
+    }
+
+    public MySQLPrivilege[] getPrivileges()
     {
-        return privileges;
+        return privileges.toArray(new MySQLPrivilege[0]);
+    }
+
+    @Override
+    public boolean isGranted() {
+        return true;
     }
 
     public boolean isAllCatalogs()
@@ -113,7 +140,7 @@ public class MySQLGrant {
 
     public boolean matches(MySQLCatalog catalog)
     {
-        return (catalog == null && isAllCatalogs()) || (catalog != null && catalog.getName().equalsIgnoreCase(catalogName));
+        return (catalog == null && isAllCatalogs()) || (catalog != null && !isAllCatalogs() && SQLUtils.matchesLike(catalog.getName(), catalogName));
     }
 
     public boolean matches(MySQLTableBase table)
@@ -131,4 +158,7 @@ public class MySQLGrant {
         return false;
     }
 
+    public boolean isStatic() {
+        return CommonUtils.isEmpty(catalogName) || "*".equals(catalogName);
+    }
 }

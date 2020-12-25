@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.XMLStreamValueManager" id="xml" label="XML" primaryMime="text/xml"
+                       description="XML" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+              class="org.jkiss.dbeaver.ui.editors.xml.XMLEditor"
+              default="true"
+              extensions="xml"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/xml.png"
+              id="org.jkiss.dbeaver.ui.editors.xml.XMLEditor"
+              name="XML">
+            <contentTypeBinding contentTypeId="org.eclipse.core.runtime.xml"/>
+        </editor>
+    </extension>
+
+</plugin>

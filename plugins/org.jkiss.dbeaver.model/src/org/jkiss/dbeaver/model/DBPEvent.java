@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Map;
 
 /**
  * DBPEvent
@@ -40,6 +42,7 @@ public class DBPEvent
     private DBSObject object;
     private Boolean enabled;
     private Object data;
+    private Map<String, Object> options;
 
     public DBPEvent(Action action, DBSObject object) {
         this.action = action;
@@ -71,8 +74,17 @@ public class DBPEvent
         return enabled;
     }
 
+    @Nullable
     public Object getData() {
         return data;
     }
 
+    @Nullable
+    public Map<String, Object> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+        this.options = options;
+    }
 }

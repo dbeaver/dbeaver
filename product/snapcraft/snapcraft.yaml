@@ -1,0 +1,86 @@
+name: dbeaver-ce
+description: |
+  Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. Supports all popular databases: MySQL PostgreSQL, MariaDB, SQLite, Oracle, DB2, SQL Server, Sybase, MS Access, Teradata, Firebird, Derby, etc.
+grade: stable
+adopt-info: dbeaver-ce
+
+base: core18
+confinement: strict
+
+architectures:
+  - build-on: [amd64, i386]
+    run-on: amd64
+
+#plugs:
+#  config-dbeaver-ce:
+#    interface: personal-files
+#    read:
+#    - $HOME/.ssh
+
+apps:
+  dbeaver-ce:
+    command: $SNAP/usr/share/dbeaver/dbeaver
+    extensions: [ gnome-3-28 ]
+    common-id: dbeaver
+    environment:
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-8-openjdk-amd64
+      PATH: $JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
+      FONTCONFIG_FILE: $SNAP/etc/fonts
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - network
+      - home
+      - removable-media
+      #- ssh-keys
+      #- config-dbeaver-ce
+
+parts:
+  dbeaver-ce:
+    source: ${SOURCE}
+    plugin: dump
+    build-packages:
+      - ca-certificates
+      - ca-certificates-java
+      - openjdk-8-jre
+    stage-packages:
+      - openjdk-8-jre
+      - libswt-gtk-3-java
+      - x11-xserver-utils
+      - libxss1
+      - libgconf2-4
+      - libcurl4
+      - xdg-utils
+      - mariadb-client
+      - mysql-client
+      - ibus-gtk3
+      - libibus-1.0-5
+    override-build: |
+      set -e
+      snapcraftctl build
+      VERSION=$(echo $SNAPCRAFT_PART_INSTALL/usr/share/dbeaver/plugins/org.jkiss.dbeaver.core_*.jar)
+      VERSION="${VERSION##*_}"
+      VERSION="${VERSION%.*}"
+      snapcraftctl set-version "$VERSION"
+    parse-info: [usr/share/metainfo/dbeaver.appdata.xml]
+
+  # This part removes all the files in this snap which already exist in
+  # connected content and base snaps. Since these files will be available
+  # at runtime from the content and base snaps, they do not need to be
+  # included in this snap itself.
+  #
+  # More info: https://snapcraft-utils-library.readthedocs.io/en/latest/lib/cleanup.html 
+  #
+  #cleanup:
+  #  after:  # Make this part run last; list all your other parts here
+  #    - dbeaver-ce
+  #  plugin: nil
+  #  build-snaps:  # List all content-snaps and base snaps you're using here
+  #    - core18
+  #    - gnome-3-28-1804
+  #  override-prime: |
+  #    set -eux
+  #    for snap in "core18" "gnome-3-28-1804"; do  # List all content-snaps and base snaps you're using here
+  #      cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+  #    done

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,67 +17,60 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+
+import java.util.Map;
 
 /**
  * Generic constraint manager
  */
-public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimaryKey, GenericTable> {
+public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUniqueKey, GenericTableBase> {
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericPrimaryKey> getObjectsCache(GenericPrimaryKey object)
+    public DBSObjectCache<? extends DBSObject, GenericUniqueKey> getObjectsCache(GenericUniqueKey object)
     {
-        return object.getParentObject().getContainer().getPrimaryKeysCache();
+        return object.getParentObject().getContainer().getConstraintKeysCache();
     }
 
     @Override
-    protected GenericPrimaryKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
-        Object from)
-    {
-        return new UITask<GenericPrimaryKey>() {
-            @Override
-            protected GenericPrimaryKey runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    "Create constraint",
-                    parent,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
-                    parent,
-                    null,
-                    null,
-                    editPage.getConstraintType(),
-                    false);
-                primaryKey.setName(editPage.getConstraintName());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    primaryKey.addColumn(
-                        new GenericTableConstraintColumn(
-                            primaryKey,
-                            (GenericTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return primaryKey;
-            }
-        }.execute();
+    public boolean canCreateObject(Object container) {
+        return container instanceof GenericTable &&
+            (!((GenericTable) container).isPersisted() ||
+            ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint());
     }
 
     @Override
-    protected boolean isLegacyConstraintsSyntax(GenericTable owner) {
+    public boolean canDeleteObject(GenericUniqueKey object) {
+        return !object.isPersisted() || object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
+    protected GenericUniqueKey createDatabaseObject(
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
+        Object from, Map<String, Object> options)
+    {
+        GenericTableBase tableBase = (GenericTableBase)container;
+        return tableBase.getDataSource().getMetaModel().createConstraintImpl(
+            tableBase,
+            GenericConstants.BASE_CONSTRAINT_NAME,
+            DBSEntityConstraintType.PRIMARY_KEY,
+            null,
+            false);
+    }
+
+    @Override
+    protected boolean isLegacyConstraintsSyntax(GenericTableBase owner) {
         return GenericUtils.isLegacySQLDialect(owner);
     }
 }

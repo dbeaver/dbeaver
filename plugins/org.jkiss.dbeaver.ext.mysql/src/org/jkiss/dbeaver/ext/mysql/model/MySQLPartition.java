@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * MySQLPartition
  */
-public class MySQLPartition extends JDBCTableObject<MySQLTable>
+public class MySQLPartition extends JDBCTableObject<MySQLTable> implements DBSTablePartition
 {
     private static final String CAT_STATS = "Statistics";
 

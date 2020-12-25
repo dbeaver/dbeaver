@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,24 @@
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.sample.database.WorkbenchInitializerCreateSampleDatabase"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.sample.database.commands.create" name="%commands.create.name" description="%commands.create.description"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ext.sample.database.commands.create" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/sqlite_icon.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.sample.database.commands.create"/>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler class="org.jkiss.dbeaver.ext.sample.database.SampleDatabaseHandler" commandId="org.jkiss.dbeaver.ext.sample.database.commands.create"/>
     </extension>
 
 </plugin>

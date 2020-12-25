@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ext.exasol.model.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -36,34 +36,42 @@ import java.sql.SQLException;
 public final class ExasolTableCache
 		extends JDBCStructCache<ExasolSchema, ExasolTable, ExasolTableColumn> {
 
-	private static final String SQL_COLS_TAB = "select " + "	c.* " + "from "
-			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = '%s' and " + "	table_name = '%s' " + "order by "
-			+ "	c.ordinal_position";
-	private static final String SQL_COLS_ALL = "select " + "	c.* " + "from "
-			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = '%s'" + "order by "
-			+ "	table_name,c.ordinal_position";
+	private static final String SQL_COLS_TAB = "/*snapshot execution*/ SELECT " + 
+			"c.* " + 
+			"FROM " + 
+			"SYS.%s_COLUMNS c " + 
+			"WHERE " + 
+			"COLUMN_SCHEMA = '%s' " + 
+			"AND COLUMN_TABLE = '%s' " + 
+			"ORDER BY " + 
+			"COLUMN_ORDINAL_POSITION ";
+	private static final String SQL_COLS_ALL = "/*snapshot execution*/ SELECT " + 
+			"c.* " + 
+			"FROM " + 
+			"SYS.%s_COLUMNS c " + 
+			"WHERE " + 
+			"COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'TABLE' " + 
+			"ORDER BY " + 
+			"COLUMN_ORDINAL_POSITION ";
 	
-	private static final String SQL_TABLES = "SELECT * FROM \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
+	private static final String SQL_TABLES = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
 
 	public ExasolTableCache()
 	{
-		super("TABLE_NAME");
+		super("COLUMN_TABLE");
 	}
 
-	@Override
+	@NotNull
+    @Override
 	protected JDBCStatement prepareObjectsStatement(
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema)
 			throws SQLException
 	{
-		JDBCDatabaseMetaData meta = session.getMetaData();
-		
 		String sql = String.format(SQL_TABLES, exasolSchema.getName());
 		
 		JDBCStatement dbstat = session.createStatement();
 		
-		((JDBCStatementImpl) dbstat).setQueryString(sql);
+		dbstat.setQueryString(sql);
 
 		return dbstat;
 
@@ -75,12 +83,14 @@ public final class ExasolTableCache
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema,
 			@Nullable ExasolTable exasolTable) throws SQLException
 	{
+		
+		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 		String sql;
 
 		if (exasolTable != null)
-			sql = String.format(SQL_COLS_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolTable.getName()));
+			sql = String.format(SQL_COLS_TAB,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolTable.getName()));
 		else
-			sql = String.format(SQL_COLS_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
+			sql = String.format(SQL_COLS_ALL,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()));
 
 		JDBCStatement dbstat = session.createStatement();
 		
@@ -91,8 +101,8 @@ public final class ExasolTableCache
 
 	@Override
 	protected ExasolTableColumn fetchChild(@NotNull JDBCSession session,
-			@NotNull ExasolSchema owner, @NotNull ExasolTable parent,
-			JDBCResultSet dbResult) throws SQLException, DBException
+                                           @NotNull ExasolSchema owner, @NotNull ExasolTable parent,
+                                           @NotNull JDBCResultSet dbResult) throws SQLException, DBException
 	{
 		return new ExasolTableColumn(session.getProgressMonitor(), parent,
 				dbResult);

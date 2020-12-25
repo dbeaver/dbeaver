@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SQLiteDataTypeCache
+ * FireBirdDataTypeCache
  */
 public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, FireBirdDataType>
 {
@@ -48,7 +48,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         FireBirdDataSource dataSource = (FireBirdDataSource) container.getDataSource();
 
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         // Load domain types
         List<FireBirdDataType> tmpObjectList = new ArrayList<>();
@@ -59,11 +59,14 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         }
 
         try {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load FireBird domain types")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load Firebird domain types")) {
+                // Use CAST to improve performance, binaries are too slow
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT F.* FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
+                    "SELECT RDB$FIELD_NAME,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_PRECISION,RDB$FIELD_TYPE,RDB$FIELD_SUB_TYPE,RDB$CHARACTER_LENGTH,RDB$CHARACTER_SET_ID,\n" +
+                        "CAST(RDB$VALIDATION_SOURCE AS VARCHAR(512)) VALIDATION_SOURCE,SUBSTRING(RDB$COMPUTED_SOURCE FROM 1 FOR 512) COMPUTED_SOURCE,CAST(RDB$DEFAULT_SOURCE AS VARCHAR(512)) DEFAULT_SOURCE\n" +
+                        "FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {
-                    monitor.subTask("Load FireBird domain types");
+                    monitor.subTask("Load Firebird domain types");
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             if (monitor.isCanceled()) {
@@ -79,12 +82,11 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                             int fieldType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_TYPE");
                             int fieldSubType = JDBCUtils.safeGetInt(dbResult, "RDB$FIELD_SUB_TYPE");
                             int charLength = JDBCUtils.safeGetInt(dbResult, "RDB$CHARACTER_LENGTH");
-                            int collationId = JDBCUtils.safeGetInt(dbResult, "RDB$COLLATION_ID");
                             int charsetId = JDBCUtils.safeGetInt(dbResult, "RDB$CHARACTER_SET_ID");
-                            String validationSource = JDBCUtils.safeGetString(dbResult, "RDB$VALIDATION_SOURCE");
-                            String computedSource = JDBCUtils.safeGetString(dbResult, "RDB$COMPUTED_SOURCE");
+                            String validationSource = JDBCUtils.safeGetString(dbResult, "VALIDATION_SOURCE"); // ?
+                            String computedSource = JDBCUtils.safeGetString(dbResult, "COMPUTED_SOURCE"); // ?
                             String typeDescription = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
-                            String defaultSource = JDBCUtils.safeGetString(dbResult, "RDB$DEFAULT_SOURCE");
+                            String defaultSource = JDBCUtils.safeGetString(dbResult, "DEFAULT_SOURCE");
 
                             FireBirdFieldType fieldDT = FireBirdFieldType.getById(fieldType);
                             if (fieldDT == null) {

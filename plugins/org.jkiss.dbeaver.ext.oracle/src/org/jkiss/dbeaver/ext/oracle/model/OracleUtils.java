@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,21 +23,30 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,13 +86,13 @@ public class OracleUtils {
 //                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
                     JDBCUtils.executeProcedure(
                         session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
-                    JDBCUtils.executeProcedure(
-                        session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
-                    JDBCUtils.executeProcedure(
-                        session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+                        "begin\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
+                            "end;");
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
                 }
@@ -99,13 +108,27 @@ public class OracleUtils {
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        ddl = dbResult.getString(1);
+                        Object ddlValue = dbResult.getObject(1);
+                        if (ddlValue instanceof Clob) {
+                            StringWriter buf = new StringWriter();
+                            try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
+                                IOUtils.copyText(clobReader, buf);
+                            } catch (IOException e) {
+                                e.printStackTrace(new PrintWriter(buf, true));
+                            }
+                            ddl = buf.toString();
+
+                        } else {
+                            ddl = CommonUtils.toString(ddlValue);
+                        }
                     } else {
                         log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
                         return "-- EMPTY DDL";
                     }
                 }
             }
+            ddl = ddl.trim();
+
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
@@ -115,7 +138,7 @@ public class OracleUtils {
                     }
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {
-                            ddl += "\n" + dbResult.getString(1);
+                            ddl += "\n\n" + dbResult.getString(1).trim();
                         }
                     }
                 } catch (Exception e) {
@@ -128,7 +151,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             if (object instanceof OracleTablePhysical) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
-                return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, options, true);
+                return DBStructUtils.generateTableDDL(monitor, object, options, true);
             } else {
                 throw new DBException(e, dataSource);
             }
@@ -178,17 +201,31 @@ public class OracleUtils {
         }
     }
 
-    public static void addSchemaChangeActions(List<DBEPersistAction> actions, OracleSourceObject object)
+    public static void addSchemaChangeActions(DBCExecutionContext executionContext, List<DBEPersistAction> actions, OracleSourceObject object)
     {
+        OracleSchema schema = object.getSchema();
+        if (schema == null) {
+            return;
+        }
         actions.add(0, new SQLDatabasePersistAction(
             "Set target schema",
-            "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
+            "ALTER SESSION SET CURRENT_SCHEMA=" + schema.getName(),
             DBEPersistAction.ActionType.INITIALIZER));
-        if (object.getSchema() != object.getDataSource().getDefaultObject()) {
+        OracleSchema defaultSchema = ((OracleExecutionContext)executionContext).getDefaultSchema();
+        if (schema != defaultSchema && defaultSchema != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
-                "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getDefaultObject().getName(),
+                "ALTER SESSION SET CURRENT_SCHEMA=" + defaultSchema.getName(),
                 DBEPersistAction.ActionType.FINALIZER));
+        }
+    }
+
+    public static String getSysSchemaPrefix(OracleDataSource dataSource) {
+        boolean useSysView = CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA));
+        if (useSysView) {
+            return OracleConstants.SCHEMA_SYS + ".";
+        } else {
+            return "";
         }
     }
 
@@ -198,7 +235,7 @@ public class OracleUtils {
             log.warn("Can't read source for custom source objects");
             return "-- ???? CUSTOM SOURCE";
         }
-        final String sourceType = sourceObject.getSourceType().name();
+        final String sourceType = sourceObject.getSourceType().name().replace("_", " ");
         final OracleSchema sourceOwner = sourceObject.getSchema();
         if (sourceOwner == null) {
             log.warn("No source owner for object '" + sourceObject.getName() + "'");
@@ -211,12 +248,18 @@ public class OracleUtils {
         }
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT FROM " + OracleConstants.SCHEMA_SYS + "." + sysViewName + " " +
+                "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE")) {
+                String sourceName;
+                if (sourceObject instanceof OracleJavaClass) {
+                    sourceName = ((OracleJavaClass) sourceObject).getSourceName();
+                } else {
+                    sourceName = sourceObject.getName();
+                }
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
                 dbStat.setString(2, sourceOwner.getName());
-                dbStat.setString(3, sourceObject.getName());
+                dbStat.setString(3, sourceName);
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder source = null;
@@ -225,11 +268,18 @@ public class OracleUtils {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        final String line = dbResult.getString(1);
+                        String line = dbResult.getString(1);
                         if (source == null) {
                             source = new StringBuilder(200);
                         }
+                        if (line == null) {
+                            line = "";
+                        }
                         source.append(line);
+                        if (!line.endsWith("\n")) {
+                            // Java source
+                            source.append("\n");
+                        }
                         lineCount++;
                         monitor.subTask("Line " + lineCount);
                     }
@@ -242,9 +292,9 @@ public class OracleUtils {
                         return source.toString();
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, sourceOwner.getDataSource());
         } finally {
             monitor.done();
         }
@@ -254,9 +304,9 @@ public class OracleUtils {
     {
         String dbaView = "DBA_" + viewName;
         if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
-            return OracleConstants.SCHEMA_SYS + "." + dbaView;
+            return OracleUtils.getSysSchemaPrefix(dataSource) + dbaView;
         } else {
-            return OracleConstants.SCHEMA_SYS + ".USER_" + viewName;
+            return OracleUtils.getSysSchemaPrefix(dataSource) + "USER_" + viewName;
         }
     }
 
@@ -266,10 +316,10 @@ public class OracleUtils {
         if (useDBAView) {
             String dbaView = "DBA_" + viewName;
             if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
-                return OracleConstants.SCHEMA_SYS + "." + dbaView;
+                return OracleUtils.getSysSchemaPrefix(dataSource) + dbaView;
             }
         }
-        return OracleConstants.SCHEMA_SYS + ".ALL_" + viewName;
+        return OracleUtils.getSysSchemaPrefix(dataSource) + "ALL_" + viewName;
     }
 
     public static String getSysCatalogHint(OracleDataSource dataSource)
@@ -315,7 +365,7 @@ public class OracleUtils {
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
+                "SELECT STATUS FROM " + OracleUtils.getAdminAllViewPrefix(monitor, object.getDataSource(), "OBJECTS") + " WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
                 dbStat.setString(1, objectType.getTypeName());
                 dbStat.setString(2, object.getSchema().getName());
                 dbStat.setString(3, DBObjectNameCaseTransformer.transformObjectName(object, object.getName()));
@@ -327,9 +377,9 @@ public class OracleUtils {
                         return false;
                     }
                 }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
             }
-        } catch (SQLException e) {
-            throw new DBCException(e, object.getDataSource());
         }
     }
 
@@ -348,4 +398,39 @@ public class OracleUtils {
         }
         return source;
     }
+
+    public static String formatWord(String word)
+	{
+		if (word == null) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder(word.length());
+		sb.append(Character.toUpperCase(word.charAt(0)));
+		for (int i = 1; i < word.length(); i++) {
+			char c = word.charAt(i);
+			if ((c == 'i' || c == 'I') && sb.charAt(i - 1) == 'I') {
+				sb.append('I');
+			} else {
+				sb.append(Character.toLowerCase(c));
+			}
+		}
+		return sb.toString();
+	}
+
+    public static String formatSentence(String sent)
+	{
+		if (sent == null) {
+			return "";
+		}
+		StringBuilder result = new StringBuilder();
+		StringTokenizer st = new StringTokenizer(sent, " \t\n\r-,.\\/", true);
+		while (st.hasMoreTokens()) {
+			String word = st.nextToken();
+			if (word.length() > 0) {
+				result.append(formatWord(word));
+			}
+		}
+
+		return result.toString();
+	}
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.data.aggregate;
 
 import org.jkiss.dbeaver.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Median
@@ -30,8 +32,8 @@ public class FunctionMedian implements IAggregateFunction {
     private List<Comparable> cache = new ArrayList<>();
 
     @Override
-    public boolean accumulate(Object value) {
-        value = FunctionNumeric.getComparable(value);
+    public boolean accumulate(Object value, boolean aggregateAsStrings) {
+        value = FunctionNumeric.getComparable(value, aggregateAsStrings);
         if (value != null) {
             cache.add((Comparable) value);
             return true;

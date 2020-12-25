@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,25 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
-public class FireBirdPlanAnalyser implements DBCPlan {
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Build firebird plan tree based on textual plan information returned by getPlan.
+ *
+ * @author tomashorak@post.cz
+ */
+public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 	
 	private FireBirdDataSource dataSource;
 	private JDBCSession session;
@@ -57,7 +62,7 @@ public class FireBirdPlanAnalyser implements DBCPlan {
 				dbStat.close();
 			}
 		} catch (SQLException e) {
-			throw new DBCException(e, session.getDataSource());
+			throw new DBCException(e, session.getExecutionContext());
 		}
 	}
 	
@@ -72,7 +77,7 @@ public class FireBirdPlanAnalyser implements DBCPlan {
 	}
 
 	@Override
-	public Collection<? extends DBCPlanNode> getPlanNodes() {
+	public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
 		return rootNodes;
 	}
 

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public class EditorsMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.internal.EditorsResources"; //$NON-NLS-1$
 
+	public static String dialog_struct_attribute_edit_page_header_edit_attribute;
+	public static String dialog_struct_attribute_edit_page_label_text_name;
+	public static String dialog_struct_attribute_edit_page_label_text_properties;
 	public static String dialog_struct_columns_select_error_load_columns_message;
 	public static String dialog_struct_columns_select_error_load_columns_title;
 	public static String dialog_struct_columns_select_group_columns;
@@ -36,6 +38,7 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_create_sequence_title;
 	public static String dialog_struct_create_sequence_name;
 	public static String dialog_struct_create_sequence_container;
+	public static String dialog_struct_edit_constrain_label_name;
 	public static String dialog_struct_edit_constrain_label_type;
 	public static String dialog_struct_edit_fk_column_col_type;
 	public static String dialog_struct_edit_fk_column_column;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Object name case transformer
  */
-public class DBPositiveNumberTransformer implements IPropertyValueTransformer<DBSObject, Number> {
+public class DBPositiveNumberTransformer implements IPropertyValueTransformer<Object, Number> {
 
 
     @Override
-    public Number transform(DBSObject object, Number value) {
+    public Number transform(Object object, Number value) {
         if (value == null) {
             return null;
         }

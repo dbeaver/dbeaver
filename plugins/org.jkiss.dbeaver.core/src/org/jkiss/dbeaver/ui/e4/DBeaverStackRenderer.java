@@ -12,17 +12,18 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.RenameHandler;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 
 import java.io.File;
 
@@ -43,6 +44,10 @@ public class DBeaverStackRenderer extends StackRenderer {
     }
 
     private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @Nullable final IFile inputFile, @NotNull final File file) {
+        IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
+        if (activePage.getActiveEditor() != workbenchPart) {
+            activePage.activate(workbenchPart);
+        }
         new MenuItem(menu, SWT.SEPARATOR);
 
         {
@@ -69,19 +74,38 @@ public class DBeaverStackRenderer extends StackRenderer {
             });
         }
 
-        if (inputFile != null) {
-            MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            String renameText = CoreMessages.editor_file_rename;
-            if (workbenchPart instanceof SQLEditor) {
-                renameText += "\t" + ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
-            }
-            menuItemOthers.setText(renameText);
-            menuItemOthers.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    RenameHandler.renameFile(workbenchPart, inputFile, "file");
+        {
+            {
+                String deleteText = ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
+                String shortcut = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite(), true);//$NON-NLS-1$
+                if (shortcut != null) {
+                    deleteText += "\t" + shortcut;
                 }
-            });
+
+                MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
+                menuItemDelete.setText(deleteText);
+                menuItemDelete.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite());
+                    }
+                });
+            }
+
+            if (inputFile != null) {
+                MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
+                String renameText = CoreMessages.editor_file_rename;
+                if (workbenchPart instanceof SQLEditor) {
+                    renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
+                }
+                menuItemOthers.setText(renameText);
+                menuItemOthers.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        SQLEditorHandlerRenameFile.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
+                    }
+                });
+            }
         }
 
     }

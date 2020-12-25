@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -55,9 +55,16 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
-    @Override
-    public boolean isEditable(Object object)
+    public PropertySourceEditable(Object sourceObject, Object object)
     {
+        super(sourceObject, object, true);
+    }
+
+    @Override
+    public boolean isEditable(Object object) {
+        if (commandContext == null) {
+            return true;
+        }
         DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
         return objectEditor != null &&
             object instanceof DBPObject && objectEditor.canEditObject((DBPObject) object);
@@ -74,7 +81,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             managerType);
     }
 
-    @Override
+    //@Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;
@@ -88,7 +95,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
-        final Object oldValue = getPropertyValue(monitor, editableValue, prop);
+        final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
         if (!updatePropertyValue(monitor, editableValue, prop, newValue, false)) {
             return;
         }
@@ -162,7 +169,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                     }
                 }
             }
-            final Object oldValue = getPropertyValue(monitor, editableValue, prop);
+            final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
             if (CommonUtils.equalObjects(oldValue, value)) {
                 return false;
             }

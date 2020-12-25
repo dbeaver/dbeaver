@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,77 +17,96 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Postgre table manager
+ * PostgrePartitionManager
  */
-public class PostgrePartitionManager extends SQLStructEditor<PostgreTablePartition, PostgreTableRegular> {
+public class PostgrePartitionManager extends PostgreTableManager {
+
+    private static final Log log = Log.getLog(PostgrePartitionManager.class);
+    
+    private static final Class<?>[] CHILD_TYPES_PART = {
+            PostgreTableConstraint.class,
+            PostgreTableForeignKey.class,
+            PostgreIndex.class
+        };
+    
+    protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+        PostgreTable owner = (PostgreTable)container;
+        final PostgreTablePartition table = new PostgreTablePartition(owner);
+        return table;
+    }
+
+    private String getParentTable(PostgreTablePartition partition)  {
+        
+        List<PostgreTableBase> superTables;
+        try {
+            superTables = partition.getSuperTables(new VoidProgressMonitor());
+        } catch (DBException e) {
+            log.error("Unable to get parent",e);
+            return "";//$NON-NLS-1$
+        }
+        
+        if (superTables == null && partition.getPartitionOf() != null) {
+            return partition.getPartitionOf().getSchema().getName() + "." + partition.getPartitionOf().getName();//$NON-NLS-1$
+        } else if (superTables == null || superTables.size() > 1) {
+            log.error("Unable to get parent");
+            return "";//$NON-NLS-1$
+        } 
+        
+        //       final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
+        //table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
+
+        
+        return superTables.get(0).getSchema().getName() + "." + superTables.get(0).getName();
+    }   
+    
+    @Override
+    protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) {
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
 
     @Override
-    public boolean canCreateObject(PostgreTableRegular parent) {
+    protected boolean hasAttrDeclarations(PostgreTableBase table) {
         return false;
     }
 
     @Override
-    public boolean canDeleteObject(PostgreTablePartition object) {
-        return false;
+    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+        return !(command.getObject() instanceof PostgreTableConstraint);
     }
 
     @Override
-    protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableRegular parent, Object copyFrom) throws DBException {
-        return null;
+    public boolean canEditObject(PostgreTableBase object) {
+        return object instanceof PostgreTablePartition;
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-
+    public boolean canCreateObject(Object container) {
+        return container instanceof PostgreTable;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-
+    public boolean canDeleteObject(PostgreTableBase object) {
+        return true;
     }
-
+    
+    @NotNull
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-
+    public Class<?>[] getChildTypes()
+    {
+        return CHILD_TYPES_PART;
     }
 
-    @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return 0;
-    }
-
-    @Override
-    public DBSObjectCache<? extends DBSObject, PostgreTablePartition> getObjectsCache(PostgreTablePartition object) {
-        return null;
-    }
-
-    @Override
-    public Class<?>[] getChildTypes() {
-        return new Class[0];
-    }
 
 }

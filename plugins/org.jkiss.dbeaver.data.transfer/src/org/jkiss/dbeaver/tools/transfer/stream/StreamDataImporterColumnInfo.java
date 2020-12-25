@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,66 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-public class StreamDataImporterColumnInfo {
-    private int columnIndex;
-    private String columnName;
 
-    public StreamDataImporterColumnInfo(int columnIndex, String columnName) {
-        this.columnIndex = columnIndex;
-        this.columnName = columnName;
-    }
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-    public int getColumnIndex() {
-        return columnIndex;
-    }
+public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
-    public String getColumnName() {
-        return columnName;
+    private StreamEntityMapping entityMapping;
+    private DBPDataKind dataKind;
+
+    // Determines whether the mapping metadata,
+    // such as the column name, is present or not.
+    private boolean mappingMetadataPresent;
+
+    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
+        super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
+        this.entityMapping = entity;
+        this.dataKind = dataKind;
     }
 
     @Override
-    public String toString() {
-        return columnName + " (" + columnIndex + ")";
+    public DBPDataKind getDataKind() {
+        return dataKind;
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public StreamEntityMapping getParentObject() {
+        return entityMapping;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return entityMapping.getDataSource();
+    }
+
+    public void setDataKind(DBPDataKind dataKind) {
+        this.dataKind = dataKind;
+    }
+
+    @Override
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public boolean isMappingMetadataPresent() {
+        return mappingMetadataPresent;
+    }
+
+    public void setMappingMetadataPresent(boolean mappingMetadataPresent) {
+        this.mappingMetadataPresent = mappingMetadataPresent;
     }
 }

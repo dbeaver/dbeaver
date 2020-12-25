@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -38,16 +40,23 @@ import java.util.Map;
 public class PostgreMViewManager extends PostgreViewManager {
 
     @Override
-    protected PostgreMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        PostgreMaterializedView newMV = new PostgreMaterializedView(parent);
+        PostgreSchema schema = (PostgreSchema)container;
+        PostgreMaterializedView newMV = new PostgreMaterializedView(schema);
         newMV.setName("new_mview"); //$NON-NLS-1$
+        setNewObjectName(monitor, schema, newMV);
         return newMV;
     }
 
     @Override
-    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
-        super.createOrReplaceViewQuery(monitor, actions, view);
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;
+    }
+
+    @Override
+    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
+        super.createOrReplaceViewQuery(monitor, actions, view, options);
         // Indexes DDL
     }
 
@@ -68,24 +77,18 @@ public class PostgreMViewManager extends PostgreViewManager {
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
-        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            try {
-                generateAlterActions(monitor, actionList, command);
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-    }
-
-    private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreMaterializedView mView = (PostgreMaterializedView) command.getObject();
-        final String alterPrefix = "ALTER " + mView.getViewType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
+            super.addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(mView, "Drop view"), options);
+            super.addObjectModifyActions(monitor, executionContext, actionList, command, options);
+        }
         if (command.hasProperty("tablespace")) {
+            final String alterPrefix = "ALTER " + mView.getViewType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + mView.getTablespace(monitor).getName()));
         }
     }
+
 
 }
 

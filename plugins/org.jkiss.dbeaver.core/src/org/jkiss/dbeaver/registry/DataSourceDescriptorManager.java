@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 import java.util.Map;
 
@@ -54,7 +54,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public boolean canCreateObject(DBPObject parent)
+    public boolean canCreateObject(Object container)
     {
         return true;
     }
@@ -66,16 +66,18 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, DBPObject parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
             DBPDataSourceRegistry registry;
             DBPDataSourceFolder folder = null;
-            if (parent instanceof DataSourceRegistry) {
-                registry = (DBPDataSourceRegistry) parent;
-            } else if (parent instanceof DBPDataSourceFolder) {
-                folder = (DBPDataSourceFolder)parent;
+            if (container instanceof DataSourceRegistry) {
+                registry = (DBPDataSourceRegistry) container;
+            } else if (container instanceof DBPProject) {
+                registry = ((DBPProject) container).getDataSourceRegistry();
+            } else if (container instanceof DBPDataSourceFolder) {
+                folder = (DBPDataSourceFolder) container;
                 registry = folder.getDataSourceRegistry();
             } else {
                 registry = dsTpl.getRegistry();
@@ -88,6 +90,9 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.copyFrom(dsTpl);
             if (folder != null) {
                 dataSource.setFolder(folder);
+            } else if (dsTpl.getRegistry() == registry) {
+                // Copy folder only if we copy in the same project
+                dataSource.setFolder(dsTpl.getFolder());
             }
             // Generate new name
             String origName = dsTpl.getName();
@@ -101,15 +106,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    CreateConnectionDialog dialog = new CreateConnectionDialog(
-                        UIUtils.getActiveWorkbenchWindow(),
-                        new NewConnectionWizard());
-                    dialog.open();
-                }
-            });
+            UIUtils.asyncExec(() -> NewConnectionDialog.openNewConnectionDialog(UIUtils.getActiveWorkbenchWindow()));
         }
         return null;
     }
@@ -117,13 +114,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     @Override
     public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options)
     {
-        Runnable remover = new Runnable() {
-            @Override
-            public void run()
-            {
-                object.getRegistry().removeDataSource(object);
-            }
-        };
+        Runnable remover = () -> object.getRegistry().removeDataSource(object);
         if (object.isConnected()) {
             DataSourceHandler.disconnectDataSource(object, remover);
         } else {

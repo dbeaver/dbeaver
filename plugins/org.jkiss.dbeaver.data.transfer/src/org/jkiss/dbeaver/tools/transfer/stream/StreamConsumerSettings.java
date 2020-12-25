@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+
+import java.util.Map;
 
 /**
  * Stream transfer settings
@@ -40,7 +43,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public enum LobEncoding {
         BASE64,
         HEX,
-        BINARY
+        BINARY,
+        NATIVE
     }
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
@@ -53,12 +57,16 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private String outputFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
     private String outputFilePattern = GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + "_" + GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP);
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
-    private boolean outputEncodingBOM = true;
+    private boolean outputEncodingBOM = false;
+    private String outputTimestampPattern = GeneralUtils.DEFAULT_TIMESTAMP_PATTERN;
 
     private DBDDataFormatterProfile formatterProfile;
 
     private boolean outputClipboard = false;
+    private boolean useSingleFile = false;
     private boolean compressResults = false;
+    private boolean splitOutFiles = false;
+    private long maxOutFileSize = 10 * 1000 * 1000;
     private boolean openFolderOnFinish = true;
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
@@ -111,6 +119,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         this.outputEncodingBOM = outputEncodingBOM;
     }
 
+    public String getOutputTimestampPattern() {
+        return outputTimestampPattern;
+    }
+
+    public void setOutputTimestampPattern(String outputTimestampPattern) {
+        this.outputTimestampPattern = outputTimestampPattern;
+    }
+
     public boolean isOutputClipboard() {
         return outputClipboard;
     }
@@ -119,12 +135,36 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         this.outputClipboard = outputClipboard;
     }
 
+    public boolean isUseSingleFile() {
+        return useSingleFile;
+    }
+
+    public void setUseSingleFile(boolean useSingleFile) {
+        this.useSingleFile = useSingleFile;
+    }
+
     public boolean isCompressResults() {
         return compressResults;
     }
 
     public void setCompressResults(boolean compressResults) {
         this.compressResults = compressResults;
+    }
+
+    public boolean isSplitOutFiles() {
+        return splitOutFiles;
+    }
+
+    public void setSplitOutFiles(boolean splitOutFiles) {
+        this.splitOutFiles = splitOutFiles;
+    }
+
+    public long getMaxOutFileSize() {
+        return maxOutFileSize;
+    }
+
+    public void setMaxOutFileSize(long maxOutFileSize) {
+        this.maxOutFileSize = maxOutFileSize;
     }
 
     public boolean isOpenFolderOnFinish() {
@@ -160,78 +200,90 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings) {
-        if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
-            try {
-                lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
-            } catch (IllegalArgumentException e) {
-                lobExtractType = LobExtractType.SKIP;
-            }
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("lobEncoding"))) {
-            try {
-                lobEncoding = LobEncoding.valueOf(dialogSettings.get("lobEncoding"));
-            } catch (IllegalArgumentException e) {
-                lobEncoding = LobEncoding.HEX;
-            }
+    public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
+        lobExtractType = CommonUtils.valueOf(LobExtractType.class, (String) settings.get("lobExtractType"), LobExtractType.SKIP);
+        lobEncoding = CommonUtils.valueOf(LobEncoding.class, (String) settings.get("lobEncoding"), LobEncoding.HEX);
+
+        outputFolder = CommonUtils.toString(settings.get("outputFolder"), outputFolder);
+        outputFilePattern = CommonUtils.toString(settings.get("outputFilePattern"), outputFilePattern);
+        outputEncoding = CommonUtils.toString(settings.get("outputEncoding"), outputEncoding);
+        outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
+        outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
+        outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
+        if (dataTransferSettings.getDataPipes().size() > 1) {
+            useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
+        } else {
+            useSingleFile = false;
         }
 
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputFolder"))) {
-            outputFolder = dialogSettings.get("outputFolder");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputFilePattern"))) {
-            outputFilePattern = dialogSettings.get("outputFilePattern");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncoding"))) {
-            outputEncoding = dialogSettings.get("outputEncoding");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncodingBOM"))) {
-            outputEncodingBOM = dialogSettings.getBoolean("outputEncodingBOM");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputClipboard"))) {
-            outputClipboard = dialogSettings.getBoolean("outputClipboard");
-        }
+        compressResults = CommonUtils.getBoolean(settings.get("compressResults"), compressResults);
+        splitOutFiles = CommonUtils.getBoolean(settings.get("splitOutFiles"), splitOutFiles);
+        maxOutFileSize = CommonUtils.toLong(settings.get("maxOutFileSize"), maxOutFileSize);
+        openFolderOnFinish = CommonUtils.getBoolean(settings.get("openFolderOnFinish"), openFolderOnFinish);
+        executeProcessOnFinish = CommonUtils.getBoolean(settings.get("executeProcessOnFinish"), executeProcessOnFinish);
+        finishProcessCommand = CommonUtils.toString(settings.get("finishProcessCommand"), finishProcessCommand);
 
-        if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
-            compressResults = dialogSettings.getBoolean("compressResults");
-        }
-        if (dialogSettings.get("openFolderOnFinish") != null) {
-            openFolderOnFinish = dialogSettings.getBoolean("openFolderOnFinish");
-        }
-        if (dialogSettings.get("executeProcessOnFinish") != null) {
-            executeProcessOnFinish = dialogSettings.getBoolean("executeProcessOnFinish");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("finishProcessCommand"))) {
-            finishProcessCommand = dialogSettings.get("finishProcessCommand");
-        }
-
-        if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
-            formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(dialogSettings.get("formatterProfile"));
+        String formatterProfile = CommonUtils.toString(settings.get("formatterProfile"));
+        if (!CommonUtils.isEmpty(formatterProfile)) {
+            this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
     }
 
     @Override
-    public void saveSettings(IDialogSettings dialogSettings) {
-        dialogSettings.put("lobExtractType", lobExtractType.name());
-        dialogSettings.put("lobEncoding", lobEncoding.name());
+    public void saveSettings(Map<String, Object> settings) {
+        settings.put("lobExtractType", lobExtractType.name());
+        settings.put("lobEncoding", lobEncoding.name());
 
-        dialogSettings.put("outputFolder", outputFolder);
-        dialogSettings.put("outputFilePattern", outputFilePattern);
-        dialogSettings.put("outputEncoding", outputEncoding);
-        dialogSettings.put("outputEncodingBOM", outputEncodingBOM);
-        dialogSettings.put("outputClipboard", outputClipboard);
+        settings.put("outputFolder", outputFolder);
+        settings.put("outputFilePattern", outputFilePattern);
+        settings.put("outputEncoding", outputEncoding);
+        settings.put("outputTimestampPattern", outputTimestampPattern);
+        settings.put("outputEncodingBOM", outputEncodingBOM);
+        settings.put("outputClipboard", outputClipboard);
+        settings.put("useSingleFile", useSingleFile);
 
-        dialogSettings.put("compressResults", compressResults);
+        settings.put("compressResults", compressResults);
+        settings.put("splitOutFiles", splitOutFiles);
+        settings.put("maxOutFileSize", maxOutFileSize);
 
-        dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
-        dialogSettings.put("executeProcessOnFinish", executeProcessOnFinish);
-        dialogSettings.put("finishProcessCommand", finishProcessCommand);
+        settings.put("openFolderOnFinish", openFolderOnFinish);
+        settings.put("executeProcessOnFinish", executeProcessOnFinish);
+        settings.put("finishProcessCommand", finishProcessCommand);
 
         if (formatterProfile != null) {
-            dialogSettings.put("formatterProfile", formatterProfile.getProfileName());
+            settings.put("formatterProfile", formatterProfile.getProfileName());
         } else {
-            dialogSettings.put("formatterProfile", "");
+            settings.put("formatterProfile", "");
         }
+    }
+
+    @Override
+    public String getSettingsSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        if (!outputClipboard) {
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_use_single_file, useSingleFile);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);
+        } else {
+            DTUtils.addSummary(summary, "Copy to clipboard", outputClipboard);
+        }
+
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_compress, compressResults);
+        if (executeProcessOnFinish) {
+            DTUtils.addSummary(summary, "Execute process on finish", finishProcessCommand);
+        }
+
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_settings_label_binaries, lobExtractType);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_settings_label_encoding, lobEncoding);
+        if (formatterProfile != null) {
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_settings_label_formatting, formatterProfile.getProfileName());
+        }
+
+        return summary.toString();
     }
 
 }

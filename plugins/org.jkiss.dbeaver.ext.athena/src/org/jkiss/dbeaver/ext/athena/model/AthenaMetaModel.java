@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ext.athena.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -32,14 +33,22 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Athena meta model
  */
 public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
+
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" line ([0-9]+)\\:([0-9]+)");
+    private static final String TABLE_DDL = "SHOW CREATE TABLE ";
+    private static final String VIEW_DDL = "SHOW CREATE VIEW ";
+
     public AthenaMetaModel() {
     }
 
@@ -53,10 +62,39 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+        return getObjectDDL(monitor, sourceObject, options, TABLE_DDL);
+    }
+
+    @Override
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
+    @Override
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+        return getObjectDDL(monitor, sourceObject, options, VIEW_DDL);
+    }
+
+    @Override
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
+            if (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
+                return pos;
+            }
+        }
+        return null;
+    }
+
+    private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Athena object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE TABLE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                ddlStatement + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -69,9 +107,4 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throw new DBException(e, sourceObject.getDataSource());
         }
     }
-
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return getTableDDL(monitor, sourceObject, options);
-    }
-
 }

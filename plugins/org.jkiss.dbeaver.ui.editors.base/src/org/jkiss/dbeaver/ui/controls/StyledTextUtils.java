@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.custom.ST;
@@ -26,11 +26,9 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.ActionUtils;
-
-import java.util.ResourceBundle;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 /**
  * StyledTextContentAdapter
@@ -63,9 +61,10 @@ public class StyledTextUtils {
             fillDefaultStyledTextContextMenu(manager, text));
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menuMgr.createContextMenu(text));
+        text.addDisposeListener(e -> menuMgr.dispose());
     }
 
-    public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {
+    public static void fillDefaultStyledTextContextMenu(IContributionManager menu, final StyledText text) {
         final Point selectionRange = text.getSelectionRange();
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_COPY, selectionRange.y > 0, text, ST.COPY));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
@@ -85,15 +84,11 @@ public class StyledTextUtils {
         });
 
         IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
-        menu.add(new FindReplaceAction(
-            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
-            "Editor.FindReplace.",
-            text.getShell(),
-            stFindReplaceTarget));
+        menu.add(TextEditorUtils.createFindReplaceAction(text.getShell(), stFindReplaceTarget));
         menu.add(new GroupMarker("styled_text_additions"));
     }
 
-    private static class StyledTextAction extends Action {
+    public static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;
         public StyledTextAction(String actionId, boolean enabled, StyledText styledText, int action) {
@@ -110,7 +105,7 @@ public class StyledTextUtils {
         }
     }
 
-    private static class StyledTextActionEx extends Action {
+    public static class StyledTextActionEx extends Action {
         public StyledTextActionEx(String actionId, int style) {
             super(ActionUtils.findCommandName(actionId), style);
             this.setActionDefinitionId(actionId);

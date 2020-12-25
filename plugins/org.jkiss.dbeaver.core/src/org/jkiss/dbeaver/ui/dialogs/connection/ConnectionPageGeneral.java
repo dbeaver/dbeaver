@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,25 +26,27 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
@@ -71,10 +73,11 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
     }
 
-    private ConnectionWizard wizard;
+    private final ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
+    private Combo navigatorSettingsCombo;
     private Combo connectionFolderCombo;
     private Text descriptionText;
 
@@ -83,9 +86,10 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private DBPDataSourceFolder dataSourceFolder;
     private List<DBPDataSourceFolder> connectionFolders = new ArrayList<>();
 
-    private Button showSystemObjects;
-    private Button showUtilityObjects;
     private Button readOnlyConnection;
+
+    private DBNBrowseSettings navigatorSettings;
+    private List<DBPDataSourcePermission> accessRestrictions;
 
     private List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
@@ -102,16 +106,16 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
         filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
-
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
+        this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, true);
         }
     }
 
@@ -125,6 +129,10 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     @Override
     public void activatePage()
     {
+        if (this.navigatorSettings == null) {
+            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
+
         if (connectionNameText != null) {
             if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
                 connectionNameText.setText(dataSourceDescriptor.getName());
@@ -145,18 +153,19 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 connectionTypeCombo.select(conConfig.getConnectionType());
+                updateNavigatorSettingsPreset();
+
                 dataSourceFolder = dataSourceDescriptor.getFolder();
                 if (dataSourceDescriptor.getFolder() == null) {
                     connectionFolderCombo.select(0);
                 } else {
                     connectionFolderCombo.select(connectionFolders.indexOf(dataSourceFolder));
                 }
+
                 if (dataSourceDescriptor.getDescription() != null) {
                     descriptionText.setText(dataSourceDescriptor.getDescription());
                 }
 
-                showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
-                showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
                 readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
 
                 activated = true;
@@ -170,8 +179,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 connectionFolderCombo.select(0);
             }
 
-            showSystemObjects.setSelection(true);
-            showUtilityObjects.setSelection(false);
             readOnlyConnection.setSelection(false);
         }
 
@@ -189,6 +196,21 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         filtersGroup.layout();
     }
 
+    private void updateNavigatorSettingsPreset() {
+        // Find first preset that matches current connection settings
+        boolean isPreset = false;
+        for (DataSourceNavigatorSettings.Preset nsEntry : DataSourceNavigatorSettings.PRESETS.values()) {
+            if (navigatorSettings.equals(nsEntry.getSettings())) {
+                navigatorSettingsCombo.setText(nsEntry.getName());
+                isPreset = true;
+                break;
+            }
+        }
+        if (!isPreset) {
+            navigatorSettingsCombo.select(navigatorSettingsCombo.getItemCount() - 1);
+        }
+    }
+
     private void enableFilter(FilterInfo filterInfo, boolean enable) {
         filterInfo.link.setEnabled(enable);
         if (enable) {
@@ -200,7 +222,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 filterInfo.link.setFont(getFont());
             }
         } else {
-            filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
+            //filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
             filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, getWizard().getSelectedDriver().getName()));
         }
     }
@@ -225,11 +247,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 while (st.hasMoreTokens()) {
                     newName = st.nextToken();
                 }
-                if (!CommonUtils.isEmpty(settings.getDriver().getCategory())) {
-                    newName = settings.getDriver().getCategory() + " - " + newName; //$NON-NLS-1$
-                } else {
-                    newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
-                }
+                //newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
                 newName = CommonUtils.truncateString(newName, 50);
             }
 
@@ -263,104 +281,139 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite group = UIUtils.createPlaceholder(parent, 1, 5);
-
-        String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
-        connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
-        connectionNameText.addModifyListener(e -> {
-            connectionNameChanged = true;
-            ConnectionPageGeneral.this.getContainer().updateButtons();
-        });
+        Composite group = UIUtils.createComposite(parent, 1);
 
         {
-            UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_type);
+            Composite miscGroup = UIUtils.createControlGroup(group, CoreMessages.pref_page_ui_general_group_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-            Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
-            connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
-            loadConnectionTypes();
-            connectionTypeCombo.select(0);
-            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    DBPConnectionType type = connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex());
-                    getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, getActiveDataSource().getConnectionConfiguration().getConnectionType(), type);
-                }
+            String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
+            connectionNameText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
+            connectionNameText.addModifyListener(e -> {
+                connectionNameChanged = true;
+                ConnectionPageGeneral.this.getContainer().updateButtons();
             });
 
-            Button pickerButton = new Button(ctGroup, SWT.PUSH);
-            pickerButton.setText(CoreMessages.dialog_connection_wizard_final_label_edit);
-            pickerButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DataSourceDescriptor dataSource = getActiveDataSource();
-                    UIUtils.showPreferencesFor(
-                        getControl().getShell(),
-                        dataSource.getConnectionConfiguration().getConnectionType(),
-                        PrefPageConnectionTypes.PAGE_ID);
-                    loadConnectionTypes();
-                    DBPConnectionType connectionType = dataSource.getConnectionConfiguration().getConnectionType();
-                    connectionTypeCombo.select(connectionType);
-                    getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, connectionType, connectionType);
+            {
+                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_type);
+
+                Composite ctGroup = UIUtils.createComposite(miscGroup, 2);
+                connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
+                loadConnectionTypes();
+                connectionTypeCombo.select(0);
+                connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBPConnectionType type = connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex());
+                        getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, getActiveDataSource().getConnectionConfiguration().getConnectionType(), type);
+                    }
+                });
+                final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(connectionTypeCombo) * 20;
+                connectionTypeCombo.setLayoutData(gd);
+
+                UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_connection_types_edit, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
+                        DataSourceDescriptor dataSource = getActiveDataSource();
+                        UIUtils.showPreferencesFor(
+                            getControl().getShell(),
+                            dataSource.getConnectionConfiguration().getConnectionType(),
+                            PrefPageConnectionTypes.PAGE_ID);
+                        loadConnectionTypes();
+                        if (!connectionTypeCombo.getItems().contains(curConType)) {
+                            curConType = connectionTypeCombo.getItems().get(0);
+                        }
+                        connectionTypeCombo.select(curConType);
+                        getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, curConType, curConType);
+                    }
+                });
+            }
+
+            {
+                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings);
+
+                Composite ctGroup = UIUtils.createComposite(miscGroup, 2);
+                navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(navigatorSettingsCombo) * 20;
+                navigatorSettingsCombo.setLayoutData(gd);
+                for (String ncPresetName : DataSourceNavigatorSettings.PRESETS.keySet()) {
+                    navigatorSettingsCombo.add(ncPresetName);
                 }
-            });
+                navigatorSettingsCombo.select(0);
+                navigatorSettingsCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
+                            // Custom - no changes
+                        } else {
+                            DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
+                            if (newSettings == null) {
+                                throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
+                            }
+                            ConnectionPageGeneral.this.navigatorSettings = newSettings.getSettings();
+                        }
+                    }
+                });
+
+                UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings_customize, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        editNavigatorSettings();
+                    }
+                });
+            }
+
+            {
+                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
+
+                connectionFolderCombo = new Combo(miscGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(connectionFolderCombo) * 20;
+                connectionFolderCombo.setLayoutData(gd);
+                loadConnectionFolders();
+                connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dataSourceFolder = connectionFolders.get(connectionFolderCombo.getSelectionIndex());
+                    }
+                });
+            }
+
+            {
+                Label descLabel = UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_description);
+                descLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                descriptionText = new Text(miscGroup, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
+                final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.heightHint = descriptionText.getLineHeight() * 3;
+                descriptionText.setLayoutData(gd);
+            }
         }
 
-        {
-            UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
-
-            connectionFolderCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = UIUtils.getFontHeight(connectionFolderCombo) * 30;
-            connectionFolderCombo.setLayoutData(gd);
-            loadConnectionFolders();
-            connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    dataSourceFolder = connectionFolders.get(connectionFolderCombo.getSelectionIndex());
-                }
-            });
-        }
-
-        {
-            Label descLabel = UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_description);
-            descriptionText = new Text(group, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
-            final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            gd.heightHint = descriptionText.getLineHeight() * 3;
-            descriptionText.setLayoutData(gd);
-        }
-
-        Composite refsGroup = UIUtils.createPlaceholder(group, 2, 5);
+        Composite refsGroup = UIUtils.createComposite(group, 3);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
         refsGroup.setLayoutData(gd);
 
         {
-            Group miscGroup = UIUtils.createControlGroup(
+            // Security
+            Group securityGroup = UIUtils.createControlGroup(
                 refsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_misc,
-                1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            miscGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            showSystemObjects = UIUtils.createCheckbox(
-                miscGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
-                dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
-            showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            showUtilityObjects = UIUtils.createCheckbox(
-                miscGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
-                dataSourceDescriptor == null || dataSourceDescriptor.isShowUtilityObjects());
-            showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                CoreMessages.dialog_connection_wizard_final_group_security,
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             readOnlyConnection = UIUtils.createCheckbox(
-                miscGroup,
+                securityGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
                 dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            readOnlyConnection.setLayoutData(gd);
+            readOnlyConnection.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            UIUtils.createDialogButton(securityGroup, "Edit permissions ...", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editPermissions();
+                }
+            });
         }
 
         {
@@ -368,7 +421,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             filtersGroup = UIUtils.createControlGroup(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_filters,
-                2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             for (final FilterInfo filterInfo : filters) {
                 filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
                     @Override
@@ -389,10 +442,12 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                         }
                     }
                 });
+                filterInfo.link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
         }
+
         {
-            Composite linkGroup = UIUtils.createPlaceholder(refsGroup, 1, 5);
+            Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             linkGroup.setLayoutData(gd);
@@ -441,6 +496,21 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
+    private void editNavigatorSettings() {
+        EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(getShell(), this.navigatorSettings);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            this.navigatorSettings = dialog.getNavigatorSettings();
+            updateNavigatorSettingsPreset();
+        }
+    }
+
+    private void editPermissions() {
+        EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), accessRestrictions);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            accessRestrictions = dialog.getAccessRestrictions();
+        }
+    }
+
     private void loadConnectionTypes()
     {
         connectionTypeCombo.removeAll();
@@ -452,11 +522,14 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private void loadConnectionFolders()
     {
         connectionFolderCombo.removeAll();
-        connectionFolderCombo.add(CoreMessages.toolbar_datasource_selector_empty);
+        connectionFolderCombo.add(UINavigatorMessages.toolbar_datasource_selector_empty);
         connectionFolders.clear();
         connectionFolders.add(null);
-        for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(getWizard().getDataSourceRegistry().getRootFolders())) {
-            loadConnectionFolder(0, folder);
+        DBPDataSourceRegistry registry = getWizard().getDataSourceRegistry();
+        if (registry != null) {
+            for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(registry.getRootFolders())) {
+                loadConnectionFolder(0, folder);
+            }
         }
     }
 
@@ -480,7 +553,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource) {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
@@ -495,16 +568,21 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
         }
 
+        DataSourceDescriptor dsDescriptor = (DataSourceDescriptor) dataSource;
         final String description = descriptionText.getText();
         if (description.isEmpty()) {
-            dataSource.setDescription(null);
+            dsDescriptor.setDescription(null);
         } else {
-            dataSource.setDescription(description);
+            dsDescriptor.setDescription(description);
         }
 
-        dataSource.setShowSystemObjects(showSystemObjects.getSelection());
-        dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
-        dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
+        if (this.navigatorSettings == null) {
+            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+        }
+        dsDescriptor.setNavigatorSettings(this.navigatorSettings);
+
+        dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
+        dsDescriptor.setModifyPermissions(this.accessRestrictions);
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {

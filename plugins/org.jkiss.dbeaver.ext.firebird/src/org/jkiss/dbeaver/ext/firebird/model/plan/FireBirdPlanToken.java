@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,12 @@ package org.jkiss.dbeaver.ext.firebird.model.plan;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Describes each item of firebird plan as regular expression. Items are used
+ * for construction of FireBirdPlanTokenMatcher.
+ *
+ * @author tomashorak@post.cz
+ */
 enum FireBirdPlanToken {
 	PLAN("\\GPLAN\\b"), 
 	JOIN("\\GJOIN\\b"), 
@@ -26,6 +32,7 @@ enum FireBirdPlanToken {
 	SORT_MERGE("\\GSORT\\w+MERGE\\b"),
 	SORT("\\GSORT\\b"), 
 	MERGE("\\GMERGE\\b"), 
+	HASH("\\GHASH\\b"),
 	ORDER("\\GORDER\\b"), 
 	INDEX("\\GINDEX\\b"), 
 	LEFTPARENTHESE("\\G\\("), 

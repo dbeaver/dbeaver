@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
+class MySQLDialect extends JDBCSQLDialect {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -49,10 +41,12 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
             "EXPLAIN", "DESCRIBE", "DESC" }
     );
 
-    public static final String[] ADVANCED_KEYWORDS = {
+    private static final String[] ADVANCED_KEYWORDS = {
         "AUTO_INCREMENT",
         "DATABASES",
         "COLUMNS",
+        "ALGORITHM",
+        "REPAIR"
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
@@ -60,14 +54,68 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
             {"\"", "\""},
     };
 
+    private static final String[] MYSQL_EXTRA_FUNCTIONS = {
+            "ADDDATE",
+            "ADDTIME",
+            "ANY_VALUE",
+            "CAST",
+            "COALESCE",
+            "COLLATION",
+            "COMPRESS",
+            "DATE_ADD",
+            "DATE_SUB",
+            "DATEDIFF",
+            "EXTRACT",
+            "FIRST_VALUE",
+            "FORMAT",
+            "FOUND_ROWS",
+            "FROM_BASE64",
+            "GET_FORMAT",
+            "GROUP_CONCAT",
+            "HOUR",
+            "DAY",
+            "IFNULL",
+            "ISNULL",
+            "LAG",
+            "LAST_VALUE",
+            "LEAD",
+            "LEAST",
+            "LENGTH",
+            "MAKEDATE",
+            "MAKETIME",
+            "MINUTE",
+            "MONTH",
+            "NULLIF",
+            "RANDOM_BYTES",
+            "REGEXP_LIKE",
+            "REGEXP_INSTR",
+            "REGEXP_REPLACE",
+            "REGEXP_SUBSTR",
+            "SESSION_USER",
+            "SPACE",
+            "SUBSTR",
+            "SUBTIME",
+            "TIMEDIFF",
+            "TO_BASE64",
+            "TO_SECONDS",
+            "UUID",
+            "UUID_TO_BIN",
+            "WEEKOFYEAR",
+            "YEAR"
+    };
+
     private static String[] EXEC_KEYWORDS =  { "CALL" };
+    private int lowerCaseTableNames;
 
     public MySQLDialect() {
-        super("MySQL");
+        super("MySQL", "mysql");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        this.lowerCaseTableNames = ((MySQLDataSource)dataSource).getLowerCaseTableNames();
+        this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+
         //addSQLKeyword("STATISTICS");
         Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
         addFunctions(Arrays.asList("SLEEP"));
@@ -76,6 +124,9 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
             addSQLKeyword(kw);
         }
         removeSQLKeyword("SOURCE");
+
+        addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
+        addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
     }
 
     @Nullable
@@ -84,9 +135,15 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
         return MYSQL_QUOTE_STRINGS;
     }
 
+    @NotNull
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public int getSchemaUsage() {
+        return SQLDialect.USAGE_ALL;
     }
 
     @Override
@@ -100,10 +157,21 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
         return "DELIMITER";
     }
 
+    @Override
+    public String[][] getBlockBoundStrings() {
+        // No anonymous blocks in MySQL
+        return null;
+    }
+
+    @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return lowerCaseTableNames != 0;
+    }
+
     @NotNull
     @Override
     public String escapeString(String string) {
-        return string.replace("'", "''").replace("\\", "\\\\");
+        return string.replace("'", "''").replace("\\^[_%?]", "\\\\");
     }
 
     @NotNull
@@ -114,7 +182,7 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 
@@ -144,8 +212,13 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     }
 
     @NotNull
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return MYSQL_NON_TRANSACTIONAL_KEYWORDS;
+    }
+
+    @Override
+    public boolean isAmbiguousCountBroken() {
+        return true;
     }
 
     @Override
@@ -153,15 +226,4 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
         return true;
     }
 
-    @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.CONTROL) {
-            final SQLControlToken sourceToken = new SQLControlToken(
-                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
-                    "mysql.source");
-
-            SQLFullLineRule sourceRule2 = new SQLFullLineRule("SOURCE", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule2);
-        }
-    }
 }

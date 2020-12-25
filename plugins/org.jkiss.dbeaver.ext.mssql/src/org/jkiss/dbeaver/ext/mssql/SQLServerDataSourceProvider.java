@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -31,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBAUserCredentialsProvider {
 
     private static Map<String,String> connectionsProps;
 
@@ -85,7 +85,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
                 }
 
                 if (isDriverAzure) {
-                    url.append(";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;");
+                    url.append(";encrypt=true"); // ;hostNameInCertificate=*.database.windows.net
                 }
             }
 /*
@@ -127,6 +127,27 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
             throws DBException
     {
         return new SQLServerDataSource(monitor, container);
+    }
+
+    //////////////////////////////////////////////////////////
+    // Windows authentication
+
+    @Override
+    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
+            return "";
+        } else {
+            return connectionInfo.getUserName();
+        }
+    }
+
+    @Override
+    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
+            return "";
+        } else {
+            return connectionInfo.getUserPassword();
+        }
     }
 
 }

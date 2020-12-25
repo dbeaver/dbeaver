@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
@@ -32,14 +32,14 @@ public class SQLiteValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject)
     {
         final DBPDataKind dataKind = typedObject.getDataKind();
         if (dataKind == DBPDataKind.BINARY) {
             return JDBCContentValueHandler.INSTANCE;
         }
         // All types must be handled by unified SQLite handler
-        return new SQLiteValueHandler(typedObject, preferences.getDataFormatterProfile());
+        return new SQLiteValueHandler(typedObject, preferences);
     }
 
 }

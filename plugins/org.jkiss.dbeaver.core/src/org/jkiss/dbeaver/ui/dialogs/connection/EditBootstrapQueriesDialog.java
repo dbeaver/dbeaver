@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -29,6 +34,7 @@ import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,14 +46,17 @@ import java.util.List;
 public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
+    private static final String DIALOG_ID = "DBeaver.EditBootstrapQueriesDialog";
 
+    private DataSourceDescriptor dataSourceDescriptor;
     private List<String> queries;
     private boolean ignoreErrors;
     private Table queriesTable;
     private Button ignoreErrorButton;
 
-    public EditBootstrapQueriesDialog(Shell shell, Collection<String> queries, boolean ignoreErrors) {
+    public EditBootstrapQueriesDialog(Shell shell, DataSourceDescriptor dataSourceDescriptor, Collection<String> queries, boolean ignoreErrors) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
+        this.dataSourceDescriptor = dataSourceDescriptor;
         this.queries = new ArrayList<>(queries);
         this.ignoreErrors = ignoreErrors;
     }
@@ -89,7 +98,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
         Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         final Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText(CoreMessages.dialog_filter_button_add);
+        addButton.setText(UIMessages.button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         addButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -106,7 +115,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
         });
 
         final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText(CoreMessages.dialog_filter_button_remove);
+        removeButton.setText(UIMessages.button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -128,11 +137,28 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
                 removeButton.setEnabled(selectionIndex >= 0);
             }
         });
+        queriesTable.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                int sbWidth = 0;
+                if (queriesTable.getVerticalBar() != null) {
+                    sbWidth = queriesTable.getVerticalBar().getSize().x;
+                }
+                queriesTable.getColumn(0).setWidth(queriesTable.getSize().x - queriesTable.getBorderWidth() * 2 - sbWidth);
+            }
+        });
 
         ignoreErrorButton = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_edit_wizard_general_bootstrap_query_ignore_error_lable, ignoreErrors);
-        new VariablesHintLabel(composite, DataSourceDescriptor.CONNECT_VARIABLES);
+        VariablesHintLabel variablesHintLabel = new VariablesHintLabel(
+            composite,
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
+            CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
+            DataSourceDescriptor.CONNECT_VARIABLES);
+        if (dataSourceDescriptor != null) {
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor, dataSourceDescriptor.getConnectionConfiguration()));
+        }
 
-        UIUtils.packColumns(queriesTable, true);
+        UIUtils.asyncExec(() -> UIUtils.packColumns(queriesTable, true));
 
         return composite;
     }
@@ -147,6 +173,11 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             values.add(value);
         }
         return values;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getSettingsSection(DBeaverActivator.getInstance().getDialogSettings(), DIALOG_ID);
     }
 
     @Override

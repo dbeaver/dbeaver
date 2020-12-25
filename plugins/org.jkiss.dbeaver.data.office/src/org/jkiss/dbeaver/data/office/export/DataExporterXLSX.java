@@ -2,6 +2,7 @@
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +24,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,18 +33,18 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,6 +72,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_SPLIT_BYROWCOUNT = "splitByRowCount";
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
 
+    private static final String PROP_DATE_FORMAT = "dateFormat";
+
     private static final int EXCEL2007MAXROWS = 1048575;
     private boolean showDescription;
 
@@ -81,7 +83,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private String nullString;
 
-    private List<DBDAttributeBinding> columns;
+    private DBDAttributeBinding[] columns;
 
     private SXSSFWorkbook wb;
 
@@ -92,18 +94,20 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean booleRedefined;
     private boolean exportSql = false;
     private boolean splitSqlText = false;
+    private String dateFormat = "";
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
     private int rowCount = 0;
 
     private XSSFCellStyle style;
+    private XSSFCellStyle styleDate;
     private XSSFCellStyle styleHeader;
 
     private HashMap<Object, Worksheet> worksheets;
 
-    public static Map<Object, Object> getDefaultProperties() {
-        Map<Object, Object> properties = new HashMap<>();
+    public static Map<String, Object> getDefaultProperties() {
+        Map<String, Object> properties = new HashMap<>();
         properties.put(DataExporterXLSX.PROP_ROWNUMBER, false);
         properties.put(DataExporterXLSX.PROP_BORDER, "THIN");
         properties.put(DataExporterXLSX.PROP_HEADER, true);
@@ -115,33 +119,35 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
+        properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         return properties;
     }
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
-        Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
+        Map<String, Object> properties = site.getProperties();
+        Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
 
         try {
-            printHeader = (Boolean) site.getProperties().get(PROP_HEADER);
+            printHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), true);
         } catch (Exception e) {
             printHeader = false;
         }
 
         try {
-            rowNumber = (Boolean) site.getProperties().get(PROP_ROWNUMBER);
+            rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
         } catch (Exception e) {
             rowNumber = false;
         }
 
         try {
-            boolTrue = (String) site.getProperties().get(PROP_TRUESTRING);
+            boolTrue = CommonUtils.toString(properties.get(PROP_TRUESTRING), "true");
         } catch (Exception e) {
             boolTrue = "true";
         }
         try {
-            boolFalse = (String) site.getProperties().get(PROP_FALSESTRING);
+            boolFalse = CommonUtils.toString(properties.get(PROP_FALSESTRING), "false");
         } catch (Exception e) {
             boolFalse = "false";
         }
@@ -150,29 +156,34 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         try {
-            exportSql = (Boolean) site.getProperties().get(PROP_EXPORT_SQL);
+            exportSql = CommonUtils.getBoolean(properties.get(PROP_EXPORT_SQL), false);
         } catch (Exception e) {
             exportSql = false;
         }
 
         try {
-            splitSqlText = (Boolean) site.getProperties().get(PROP_SPLIT_SQLTEXT);
+            splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
         } catch (Exception e) {
             splitSqlText = false;
         }
 
         try {
-            splitByRowCount = (Integer) site.getProperties().get(PROP_SPLIT_BYROWCOUNT);
+            splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         } catch (Exception e) {
             splitByRowCount = EXCEL2007MAXROWS;
         }
 
         try {
-            splitByCol = (Integer) site.getProperties().get(PROP_SPLIT_BYCOL);
+            splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
         } catch (Exception e) {
             splitByCol = -1;
         }
 
+        try {
+            dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
+        } catch (Exception e) {
+            dateFormat = "";
+        }
 
         wb = new SXSSFWorkbook(ROW_WINDOW);
 
@@ -180,12 +191,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         styleHeader = (XSSFCellStyle) wb.createCellStyle();
 
-
         BorderStyle border;
 
         try {
 
-            border = BorderStyle.valueOf((String) site.getProperties().get(PROP_BORDER));
+            border = BorderStyle.valueOf(CommonUtils.toString(properties.get(PROP_BORDER), BorderStyle.THIN.name()));
 
         } catch (Exception e) {
 
@@ -197,14 +207,13 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         try {
 
-            fontStyle = FontStyleProp.valueOf((String) site.getProperties().get(PROP_HEADER_FONT));
+            fontStyle = FontStyleProp.valueOf(CommonUtils.toString(properties.get(PROP_HEADER_FONT), FontStyleProp.BOLD.name()));
 
         } catch (Exception e) {
 
             fontStyle = FontStyleProp.NONE;
 
         }
-
 
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
@@ -215,24 +224,24 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         switch (fontStyle) {
 
-            case BOLD:
-                fontBold.setBold(true);
-                break;
+        case BOLD:
+            fontBold.setBold(true);
+            break;
 
-            case ITALIC:
-                fontBold.setItalic(true);
-                break;
+        case ITALIC:
+            fontBold.setItalic(true);
+            break;
 
-            case STRIKEOUT:
-                fontBold.setStrikeout(true);
-                break;
+        case STRIKEOUT:
+            fontBold.setStrikeout(true);
+            break;
 
-            case UNDERLINE:
-                fontBold.setUnderline((byte) 3);
-                break;
+        case UNDERLINE:
+            fontBold.setUnderline((byte) 3);
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         styleHeader.setFont(fontBold);
@@ -242,6 +251,20 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         style.setBorderBottom(border);
         style.setBorderLeft(border);
         style.setBorderRight(border);
+
+        styleDate = (XSSFCellStyle) wb.createCellStyle();
+        styleDate.setBorderTop(border);
+        styleDate.setBorderBottom(border);
+        styleDate.setBorderLeft(border);
+        styleDate.setBorderRight(border);
+
+        if (dateFormat == null || dateFormat.length() == 0) {
+            styleDate.setDataFormat((short) 14);
+        } else {
+           styleDate.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
+        }
+
         this.rowCount = 0;
 
         super.init(site);
@@ -249,14 +272,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     @Override
     public void dispose() {
-
         try {
-            if (exportSql) {
+            if (exportSql && wb != null) {
                 try {
 
                     Sheet sh = wb.createSheet();
                     if (splitSqlText) {
-                        String[] sqlText = getSite().getSource().getName().split("\n", wb.getSpreadsheetVersion().getMaxRows());
+                        String[] sqlText = getSite().getSource().getName().split("\n",
+                                wb.getSpreadsheetVersion().getMaxRows());
 
                         int sqlRownum = 0;
 
@@ -277,24 +300,32 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                     log.error("Dispose error", e);
                 }
             }
-            wb.write(getSite().getOutputStream());
-            wb.dispose();
+            if (wb != null) {
+                wb.write(getSite().getOutputStream());
+                wb.dispose();
+            }
 
         } catch (IOException e) {
             log.error("Dispose error", e);
         }
         wb = null;
-        for (Worksheet w : worksheets.values()) {
-            w.dispose();
+        if (worksheets != null) {
+            for (Worksheet w : worksheets.values()) {
+                w.dispose();
+            }
         }
+        worksheets.clear();
+
         super.dispose();
     }
 
     @Override
-    public void exportHeader(DBCSession session) throws DBException, IOException {
+    public void exportHeader(DBCSession session) {
 
         columns = getSite().getAttributes();
-        showDescription = session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        // FIXME: we want to avoid UI component dependency. But still want to use its preferences
+        showDescription = session.getDataSource().getContainer().getPreferenceStore()
+                .getBoolean("resultset.show.columnDescription");
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
@@ -302,10 +333,10 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (showDescription) {
             // Read bindings to extract column descriptions
             boolean bindingsOk = true;
-            DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.size()];
-            for (int i = 0; i < columns.size(); i++) {
-                if (columns.get(i) instanceof DBDAttributeBindingMeta) {
-                    bindings[i] = (DBDAttributeBindingMeta) columns.get(i);
+            DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.length];
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i] instanceof DBDAttributeBindingMeta) {
+                    bindings[i] = (DBDAttributeBindingMeta) columns[i];
                 } else {
                     bindingsOk = false;
                     break;
@@ -316,7 +347,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 if (getSite().getSource() instanceof DBSEntity) {
                     sourceEntity = (DBSEntity) getSite().getSource();
                 }
-                ResultSetUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
+                DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
             }
 
             for (DBDAttributeBinding column : columns) {
@@ -327,14 +358,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             }
         }
 
-        SXSSFSheet  sh = (SXSSFSheet)wsh.getSh();
+        SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
         Row row = sh.createRow(wsh.getCurrentRow());
 
         int startCol = rowNumber ? 1 : 0;
 
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            sh.trackColumnForAutoSizing(i);
-            DBDAttributeBinding column = columns.get(i);
+        sh.trackAllColumnsForAutoSizing();
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+            DBDAttributeBinding column = columns[i];
 
             String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
@@ -348,9 +379,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (hasDescription) {
             wsh.incRow();
             Row descRow = sh.createRow(wsh.getCurrentRow());
-            for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
                 Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
-                String description = columns.get(i).getDescription();
+                String description = columns[i].getDescription();
                 if (CommonUtils.isEmpty(description)) {
                     description = "";
                 }
@@ -359,19 +390,26 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             }
         }
 
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
             sh.autoSizeColumn(i);
         }
 
         wsh.incRow();
-    }
 
+        try {
+            sh.flushRows();
+        } catch (IOException e) {
+            throw new DBException("Error processing header", e);
+        }
+
+        sh.untrackAllColumnsForAutoSizing();
+    }
 
     private void writeCellValue(Cell cell, Reader reader) throws IOException {
         try {
             StringBuilder sb = new StringBuilder();
             char buffer[] = new char[2000];
-            for (; ; ) {
+            for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
@@ -386,7 +424,6 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
     }
 
-
     private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
         Worksheet w = new Worksheet(wb.createSheet(), colValue, 0);
         if (printHeader) {
@@ -396,7 +433,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     private Worksheet getWsh(DBCResultSet resultSet, Object[] row) throws DBException {
-        Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
+        Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.length)) ? "" : row[splitByCol];
         Worksheet w = worksheets.get(colValue);
         if (w == null) {
             w = createSheet(resultSet, colValue);
@@ -429,7 +466,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns[i];
             Cell cell = rowX.createCell(i + startCol, getCellType(column));
             cell.setCellStyle(style);
 
@@ -465,6 +502,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
                 cell.setCellValue(((Number) row[i]).doubleValue());
 
+            } else if (row[i] instanceof Date) {
+
+                cell.setCellValue((Date) row[i]);
+                cell.setCellStyle(styleDate);
+
             } else {
 
                 String stringValue = super.getValueDisplayString(column, row[i]);
@@ -478,25 +520,22 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private CellType getCellType(DBDAttributeBinding column) {
         switch (column.getDataKind()) {
-            case NUMERIC:
-                return CellType.NUMERIC;
-            case BOOLEAN:
-                return CellType.BOOLEAN;
-            case STRING:
-                return CellType.STRING;
-            default:
-                return CellType.BLANK;
+        case NUMERIC:
+            return CellType.NUMERIC;
+        case BOOLEAN:
+            return CellType.BOOLEAN;
+        case STRING:
+            return CellType.STRING;
+        default:
+            return CellType.BLANK;
         }
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor)
-        throws DBException, IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
         if (rowCount == 0) {
-            exportRow(null, null, new Object[columns.size()]);
+            exportRow(null, null, new Object[columns.length]);
         }
     }
-
 
 }

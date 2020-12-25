@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,25 +18,25 @@
 
 package org.jkiss.dbeaver.debug.sourcelookup;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
     private final DBPDataSourceContainer datasource;
-    private final IProject project;
+    private final DBPProject project;
 
     public DatabaseNavigatorSourceContainer(DBPDataSourceContainer descriptor) {
         this.datasource = descriptor;
@@ -53,7 +53,7 @@ public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
         DBNNode node;
         try {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
-            node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, project, name);
+            node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, project, name);
         } catch (DBException e) {
             String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
             throw new CoreException(DebugUtils.newErrorStatus(message, e));

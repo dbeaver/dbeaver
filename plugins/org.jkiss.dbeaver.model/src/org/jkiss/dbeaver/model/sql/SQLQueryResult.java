@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * SQLQueryResult
  */
-public class SQLQueryResult
+public class SQLQueryResult implements DBCExecutionResult
 {
     public static class ExecuteResult {
         private boolean resultSet;

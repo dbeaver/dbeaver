@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,32 +35,14 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Generic tables cache implementation
  */
-public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTable, GenericTableColumn> {
+public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTableBase, GenericTableColumn> {
 
     private static final Log log = Log.getLog(TableCache.class);
-
-    // Tables types which are not actually a table
-    // This is needed for some strange JDBC drivers which returns not a table objects
-    // in DatabaseMetaData.getTables method (PostgreSQL especially)
-    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<>();
-
-    static {
-        // [JDBC: PostgreSQL]
-        INVALID_TABLE_TYPES.add("INDEX");
-        INVALID_TABLE_TYPES.add("SEQUENCE");
-        INVALID_TABLE_TYPES.add("TYPE");
-        INVALID_TABLE_TYPES.add("SYSTEM INDEX");
-        INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
-        // [JDBC: SQLite]
-        INVALID_TABLE_TYPES.add("TRIGGER");
-    }
 
     final GenericDataSource dataSource;
     final GenericMetaObject tableObject;
@@ -72,7 +54,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         this.dataSource = dataSource;
         this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
         this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
-        setListOrderComparator(DBUtils.<GenericTable>nameComparator());
+        setListOrderComparator(DBUtils.<GenericTableBase>nameComparator());
     }
 
     public GenericDataSource getDataSource()
@@ -82,59 +64,27 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName) throws SQLException {
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
         return dataSource.getMetaModel().prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Nullable
     @Override
-    protected GenericTable fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
+    protected GenericTableBase fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
-        String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
-
-        if (CommonUtils.isEmpty(tableName)) {
-            log.debug("Empty table name" + (owner == null ? "" : " in container " + owner.getName()));
-            return null;
-        }
-
-        if (CommonUtils.isEmpty(tableName)) {
-            return null;
-        }
-        if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
-            // Bad table type. Just skip it
-            return null;
-        }
-        GenericTable table = getDataSource().getMetaModel().createTableImpl(
-            owner,
-            tableName,
-            tableType,
-            dbResult);
-
-        boolean isSystemTable = table.isSystem();
-        if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
-            return null;
-        }
-        return table;
+        return getDataSource().getMetaModel().createTableImpl(session, owner, tableObject, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable forTable)
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable)
         throws SQLException
     {
-        return session.getMetaData().getColumns(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
-            forTable == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                JDBCUtils.escapeWildCards(session, forTable.getName()),
-            owner.getDataSource().getAllObjectsPattern())
-            .getSourceStatement();
+        return dataSource.getMetaModel().prepareTableColumnLoadStatement(session, owner, forTable);
     }
 
     @Override
-    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull JDBCResultSet dbResult)
+    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTableBase table, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);
@@ -165,14 +115,18 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         int ordinalPos = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.ORDINAL_POSITION);
         boolean autoIncrement = "YES".equals(GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.IS_AUTOINCREMENT));
         boolean autoGenerated = "YES".equals(GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.IS_GENERATEDCOLUMN));
-        // Check for identity modifier [DBSPEC: MS SQL]
-        if (typeName.toUpperCase(Locale.ENGLISH).endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
-            autoIncrement = true;
-            typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
-        }
-        // Check for empty modifiers [MS SQL]
-        if (typeName.endsWith("()")) {
-            typeName = typeName.substring(0, typeName.length() - 2);
+        if (!CommonUtils.isEmpty(typeName)) {
+            // Check for identity modifier [DBSPEC: MS SQL]
+            if (typeName.toUpperCase(Locale.ENGLISH).endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
+                autoIncrement = true;
+                typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
+            }
+            // Check for empty modifiers [MS SQL]
+            if (typeName.endsWith("()")) {
+                typeName = typeName.substring(0, typeName.length() - 2);
+            }
+        } else {
+            typeName = "N/A";
         }
 
         {
@@ -185,6 +139,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
         return getDataSource().getMetaModel().createTableColumnImpl(
             session.getProgressMonitor(),
+            dbResult,
             table,
             columnName,
             typeName, valueType, sourceType, ordinalPos,

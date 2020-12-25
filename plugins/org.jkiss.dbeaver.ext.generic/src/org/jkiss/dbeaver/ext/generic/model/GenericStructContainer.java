@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Generic struct container
@@ -47,16 +46,16 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
 
     IndexCache getIndexCache();
 
-    PrimaryKeysCache getPrimaryKeysCache();
+    ConstraintKeysCache getConstraintKeysCache();
 
     ForeignKeysCache getForeignKeysCache();
 
-    Collection<? extends GenericTable> getViews(DBRProgressMonitor monitor) throws DBException;
-    Collection<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
+    List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException;
+    List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<? extends GenericTable> getTables(DBRProgressMonitor monitor) throws DBException;
+    List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor) throws DBException;
 
-    GenericTable getTable(DBRProgressMonitor monitor, String name) throws DBException;
+    GenericTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException;
 
     Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 

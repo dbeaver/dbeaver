@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateRoleDialog;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -58,21 +56,12 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDatabase parent, Object copyFrom) throws DBException {
-        return new UITask<PostgreRole>() {
-            @Override
-            protected PostgreRole runTask() {
-                PostgreCreateRoleDialog dialog = new PostgreCreateRoleDialog(UIUtils.getActiveWorkbenchShell(), parent);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                return new PostgreRole(parent, dialog.getName(), dialog.getPassword(), dialog.isUser());
-            }
-        }.execute();
+    protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        return new PostgreRole((PostgreDatabase) container, "NewRole", "", true);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE ROLE " + DBUtils.getQuotedIdentifier(role));
         addRoleOptions(script, role, true);
@@ -83,7 +72,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER ROLE " + DBUtils.getQuotedIdentifier(role));
         addRoleOptions(script, role, false);
@@ -94,29 +83,39 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop role", "DROP ROLE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
         );
     }
 
     private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
-        if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
-        if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
-        if (role.isCreateRole()) script.append(" CREATEROLE"); else script.append(" NOCREATEROLE");
-        if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
-        if (role.isCanLogin()) script.append(" LOGIN"); else script.append(" NOLOGIN");
+        final PostgreServerExtension extension = role.getDataSource().getServerType();
+        final StringBuilder options = new StringBuilder();
+        if (extension.supportsSuperusers()) {
+            if (role.isSuperUser()) options.append(" SUPERUSER"); else options.append(" NOSUPERUSER");
+        }
+        if (extension.supportsRolesWithCreateDBAbility()) {
+            if (role.isCreateDatabase()) options.append(" CREATEDB"); else options.append(" NOCREATEDB");
+        }
+        if (role.isCreateRole()) options.append(" CREATEROLE"); else options.append(" NOCREATEROLE");
+        if (extension.supportsInheritance()) {
+            if (role.isInherit()) options.append(" INHERIT"); else options.append(" NOINHERIT");
+        }
+        if (role.isCanLogin()) options.append(" LOGIN"); else options.append(" NOLOGIN");
 
         if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
-            script.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
+            options.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
         }
+        if (options.length() != 0 && extension instanceof PostgreServerCockroachDB) {
+            // FIXME: use some generic approach
+            script.append(" WITH");
+        }
+        script.append(options);
         //if (role.isCreateDatabase()) script.append(" CONNECTION LIMIT connlimit");
 /*
 PASSWORD password
 VALID UNTIL 'timestamp'
 */
     }
-
-
 }
-

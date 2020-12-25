@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public class DBSEntityType
     public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
     public static final DBSEntityType SEQUENCE = new DBSEntityType("sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
+    public static final DBSEntityType EVENT = new DBSEntityType("event", "Event", DBIcon.TREE_EVENT, true);
 
     private final String id;
     private final String name;

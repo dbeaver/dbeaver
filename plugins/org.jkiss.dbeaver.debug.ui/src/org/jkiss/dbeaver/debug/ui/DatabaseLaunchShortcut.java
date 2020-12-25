@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.*;
@@ -42,8 +41,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -150,7 +150,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             try {
                 launch(launchable, mode);
             } catch (CoreException e) {
-                DBUserInterface.getInstance().showError(DebugUIMessages.DatabaseLaunchShortcut_e_launch, "Cannot launch debug", e.getStatus());
+                DBWorkbench.getPlatformUI().showError(DebugUIMessages.DatabaseLaunchShortcut_e_launch, "Cannot launch debug", e.getStatus());
             }
         }
     }
@@ -290,7 +290,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected IResource getLaunchableResource(IAdaptable adaptable) {
-        return Adapters.adapt(adaptable, IResource.class);
+        return GeneralUtils.adapt(adaptable, IResource.class);
     }
 
 }

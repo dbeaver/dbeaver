@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         comments = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
-    @Property(viewable = false, order = 10)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 10)
     public String getOwner() {
         return owner;
     }
@@ -204,22 +204,22 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return jobStyle;
     }
 
-    @Property(viewable = false, order = 12)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 12)
     public String getJobCreator() {
         return jobCreator;
     }
 
-    @Property(viewable = false, order = 13)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 13)
     public String getClientId() {
         return clientId;
     }
 
-    @Property(viewable = false, order = 14)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 14)
     public String getGlobalUid() {
         return globalUid;
     }
 
-    @Property(viewable = false, order = 15)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 15)
     public String getProgramOwner() {
         return programOwner;
     }
@@ -244,7 +244,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return numberOfArguments;
     }
 
-    @Property(viewable = false, order = 20)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 20)
     public String getScheduleOwner() {
         return scheduleOwner;
     }
@@ -459,7 +459,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return instanceId;
     }
 
-    @Property(viewable = false, order = 63)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 63)
     public String getDeferredDrop() {
         return deferredDrop;
     }
@@ -484,11 +484,12 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     static class ArgumentsCache extends JDBCObjectCache<OracleSchedulerJob, OracleSchedulerJobArgument> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_JOB_ARGS " +
+                    "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(job.getDataSource()) + "ALL_SCHEDULER_JOB_ARGS " +
                             "WHERE OWNER=? AND JOB_NAME=? " +
                             "ORDER BY ARGUMENT_POSITION");
             dbStat.setString(1, job.getSchema().getName());
@@ -531,7 +532,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT STATE FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                        "SELECT STATE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {
                     dbStat.setString(1, getOwner() );
                     dbStat.setString(2, getName());
@@ -585,7 +586,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT JOB_ACTION FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                        "SELECT JOB_ACTION FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {
                     dbStat.setString(1, getOwner() );
                     dbStat.setString(2, getName());
@@ -609,9 +610,9 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                         	jobAction = action.toString();
                         }
                     }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
         		}
-            } catch (SQLException e) {
-                throw new DBCException(e, this.getDataSource());
             } finally {
                 monitor.done();
             }

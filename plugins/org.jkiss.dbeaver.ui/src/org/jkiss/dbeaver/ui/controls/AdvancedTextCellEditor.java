@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -63,7 +64,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         } else {
             value = textEditor.getText();
         }
-        if (wasNull && "".equals(value)) {
+        if (wasNull && "".equals(value)) { //$NON-NLS-1$
             return null;
         } else {
             return value;
@@ -127,7 +128,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
         textEditor.removeFocusListener(textFocusListener);
-        String value = EditTextDialog.editText(cellEditorWindow.getShell(), "Edit value", (String) getValue());
+        String value = EditTextDialog.editText(cellEditorWindow.getShell(), UIMessages.edit_text_dialog_title_edit_value, (String) getValue());
         textEditor.addFocusListener(textFocusListener);
 
         return value;

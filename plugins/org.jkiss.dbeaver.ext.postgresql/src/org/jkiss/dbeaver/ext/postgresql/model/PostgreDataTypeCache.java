@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -29,19 +29,22 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreDataTypeCache
  */
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
-    private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
+    private static final Log log = Log.getLog(PostgreDataTypeCache.class);
+
+    private final LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     PostgreDataTypeCache() {
         setListOrderComparator(DBUtils.nameComparator());
@@ -53,22 +56,75 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     }
 
     @Override
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema postgreSchema) throws DBException {
-        super.loadObjects(monitor, postgreSchema);
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema schema) throws DBException {
+        super.loadObjects(monitor, schema);
+        mapAliases(schema);
 
+    }
+
+    void loadDefaultTypes(PostgreSchema schema) {
+
+        List<PostgreDataType> types = new ArrayList<>();
+        for (Field oidField : PostgreOid.class.getDeclaredFields()) {
+            if (!Modifier.isPublic(oidField.getModifiers()) || !Modifier.isStatic(oidField.getModifiers())) {
+                continue;
+            }
+            try {
+                Object typeId = oidField.get(null);
+                String fieldName = oidField.getName().toLowerCase(Locale.ENGLISH);
+                if (fieldName.endsWith("_array")) {
+                    fieldName = fieldName.substring(0, fieldName.length() - 6) + "_";
+                    //PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
+                    //types.add(type);
+                    // Ignore array types
+                    continue;
+                } else {
+                    PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
+                    types.add(type);
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        setCache(types);
         // Cache aliases
-        if (postgreSchema.isCatalogSchema()) {
-            mapDataTypeAliases(PostgreConstants.DATA_TYPE_ALIASES);
-            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES);
+        mapAliases(schema);
+    }
+
+    private void mapAliases(PostgreSchema schema) {
+        // Cache aliases
+        if (schema.isCatalogSchema()) {
+            PostgreServerExtension serverType = schema.getDataSource().getServerType();
+            mapDataTypeAliases(serverType.getDataTypeAliases(), false);
+            if (serverType.supportSerialTypes()) {
+                mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
+            }
         }
     }
 
-    private void mapDataTypeAliases(Map<String, String> aliases) {
+    private void mapDataTypeAliases(Map<String, String> aliases, boolean isSerialType) {
         // Add serial data types
         for (Map.Entry<String,String> aliasMapping : aliases.entrySet()) {
-            PostgreDataType realType = getCachedObject(aliasMapping.getValue());
+            String value = aliasMapping.getValue();
+            PostgreDataType realType = getCachedObject(value);
             if (realType != null) {
                 PostgreDataType serialType = new PostgreDataType(realType, aliasMapping.getKey());
+                int typeId = -1;
+                if (isSerialType) {
+                    switch (value) {
+                        case PostgreConstants.TYPE_INT4:
+                            typeId = PostgreOid.SERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT2:
+                            typeId = PostgreOid.SMALLSERIAL;
+                            break;
+                        case PostgreConstants.TYPE_INT8:
+                            typeId = PostgreOid.BIGSERIAL;
+                            break;
+                    }
+                    serialType.setTypeId(typeId);
+                    serialType.setExtraDataType(true);
+                }
                 cacheObject(serialType);
             }
         }
@@ -93,7 +149,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
         } else {
             super.cacheObject(object);
-            if (!object.isAlias()) {
+            if (!object.isAlias() || object.isExtraDataType()) {
                 dataTypeMap.put(object.getObjectId(), object);
             }
         }
@@ -109,19 +165,26 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         }
     }
 
-    @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException
-    {
-        // Initially cache only base types (everything but composite and arrays)
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT t.oid,t.* \n" +
-            "FROM pg_catalog.pg_type t WHERE typnamespace=? ");
-        if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
-            sql.append("AND typcategory <> 'A'");
+    private static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
+        if (dataSource.isServerVersionAtLeast(7, 3)) {
+            return "format_type(nullif(t.typbasetype, 0), t.typtypmod) as base_type_name";
+        } else {
+            return "NULL as base_type_name";
         }
-        sql.append(" AND typrelid=0");
-        sql.append("\nORDER by t.oid");
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+    }
+
+    @NotNull
+    @Override
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
+        // Initially cache only base types (everything but composite and arrays)
+        String sql =
+            "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
+            "\nFROM pg_catalog.pg_type t" +
+            "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+            "\nWHERE typnamespace=? " +
+            "\nORDER by t.oid";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
@@ -129,7 +192,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(session, owner, dbResult);
+        return PostgreDataType.readDataType(session, owner, dbResult, true);
     }
 
     @Override
@@ -148,8 +211,11 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @NotNull
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, long oid) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
-        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
-            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE oid=? ")) {
+        try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nWHERE t.oid=? ")) {
                 dbStat.setLong(1, oid);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -158,21 +224,25 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + oid);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult);
-                    } else {
-                        throw new DBException("Data type " + oid + " not found in database " + database.getName());
+                        PostgreDataType dataType = PostgreDataType.readDataType(session, schema, dbResult, false);
+                        if (dataType != null) {
+                            return dataType;
+                        }
                     }
+                    throw new DBException("Data type " + oid + " not found in database " + database.getName());
                 }
             }
-            //dbStat;
         }
     }
 
     @NotNull
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, String name) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
-        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
-            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE typname=? ")) {
+        try (JDBCSession session = database.getDefaultContext(monitor, true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.oid,t.*," + getBaseTypeNameClause(database.getDataSource()) + " FROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nWHERE t.typname=? ")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -181,7 +251,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + name);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult);
+                        return PostgreDataType.readDataType(session, schema, dbResult, false);
                     } else {
                         throw new DBException("Data type " + name + " not found in database " + database.getName());
                     }

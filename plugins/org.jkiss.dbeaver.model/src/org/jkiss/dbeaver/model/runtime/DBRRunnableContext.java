@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public interface DBRRunnableContext
      * If any exception will occure when running this process then it'll written in log
      * @param runnable runnable implementation
      */
-    public void run(
+    void run(
         boolean fork,
         boolean cancelable,
         DBRRunnableWithProgress runnable)

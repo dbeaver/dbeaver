@@ -1,12 +1,12 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class QueryTransformerFetchAll implements DBCQueryTransformer {
 
@@ -24,7 +24,7 @@ public class QueryTransformerFetchAll implements DBCQueryTransformer {
 		try {
             ((Statement)statement).setFetchSize(2000);
 		} catch (SQLException e) {
-			throw new DBCException(e, statement.getSession().getDataSource());
+			throw new DBCException(e, statement.getSession().getExecutionContext());
 		}
 	}
 

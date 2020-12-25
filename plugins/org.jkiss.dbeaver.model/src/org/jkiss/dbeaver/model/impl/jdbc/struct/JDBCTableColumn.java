@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -26,23 +27,26 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.impl.DBDummyNumberTransformer;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * JDBC abstract table column
  */
 public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBCAttribute implements DBSTableColumn, DBSEntityAttribute, DBSAttributeEnumerable, DBPSaveableObject {
+
+    private static final Log log = Log.getLog(JDBCTableColumn.class);
 
     private final TABLE_TYPE table;
     private boolean persisted;
@@ -119,20 +123,21 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (dataSource instanceof DBPDataTypeProvider) {
             DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
             if (dataType != null) {
-                updateColumnDataType(dataType);
+                this.valueType = dataType.getTypeID();
+                if (this instanceof DBSTypedObjectExt4) {
+                    try {
+                        ((DBSTypedObjectExt4) this).setDataType(dataType);
+                    } catch (Throwable e) {
+                        log.debug(e);
+                    }
+                }
             } else {
-                updateColumnDataType(null);
+                this.valueType = -1;
             }
         }
     }
 
-    protected void updateColumnDataType(@Nullable DBSDataType dataType) {
-        if (dataType != null) {
-            this.valueType = dataType.getTypeID();
-        }
-    }
-
-    @Property(viewable = true, editable = true, order = 40)
+    @Property(viewable = true, editable = true, order = 40, valueRenderer = DBDummyNumberTransformer.class)
     @Override
     public long getMaxLength()
     {
@@ -172,7 +177,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults) throws DBException {
+    public List<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults, boolean formatValues) throws DBException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(this)).append(", count(*)");
@@ -183,18 +188,27 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
         if (valuePattern instanceof String) {
-            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
+            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this));
+            if (getDataKind() == DBPDataKind.STRING) {
+                query.append(" LIKE ?");
+            } else {
+                query.append(" = ?");
+            }
         }
         query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             if (valuePattern instanceof String) {
-                valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
+                if (getDataKind() == DBPDataKind.STRING) {
+                    valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
+                } else {
+                    valueHandler.bindValueObject(session, dbStat, this, 0, valuePattern);
+                }
             }
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult);
+                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues);
                 }
             } else {
                 return Collections.emptyList();

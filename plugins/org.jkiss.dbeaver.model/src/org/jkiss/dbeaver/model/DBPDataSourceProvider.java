@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Data source provider
  */
-public interface DBPDataSourceProvider extends DBPObject
+public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObject
 {
     long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
@@ -58,14 +58,6 @@ public interface DBPDataSourceProvider extends DBPObject
         DBPDriver driver,
         DBPConnectionConfiguration connectionInfo)
         throws DBException;
-
-    /**
-     * Constructs connection URL
-     * @param driver driver descriptor
-     * @param connectionInfo connection info
-     * @return valid connection URL or null (if URLs not supported by driver)
-     */
-    String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo);
 
     /**
      * Opens new data source

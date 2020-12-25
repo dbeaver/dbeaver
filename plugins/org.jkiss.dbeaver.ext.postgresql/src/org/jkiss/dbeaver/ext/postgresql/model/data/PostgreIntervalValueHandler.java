@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -70,8 +71,9 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value != null && value.getClass().getName().equals(PostgreConstants.PG_INTERVAL_CLASS)) {
             try {
                 Number years = (Number) BeanUtils.readObjectProperty(value, "years");

@@ -6,9 +6,14 @@
         <formatter
                 id="sqlworkbenchj"
                 class="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJFormatter"
-                configurerClass="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJFormatterSettingsPage"
                 label="SQL Workbench/J formatter"
                 description="Formatter from SQL Workbench/J"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJFormatter" class="org.jkiss.dbeaver.ext.format.sqlworkbenchj.SQLWorkbenchJAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigurator"/>
+        </factory>
     </extension>
 
 </plugin>

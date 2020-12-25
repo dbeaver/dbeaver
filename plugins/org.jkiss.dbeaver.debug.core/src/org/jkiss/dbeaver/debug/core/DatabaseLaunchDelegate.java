@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Map;
@@ -41,12 +39,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException {
-        String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
-        DBPDataSourceContainer datasourceDescriptor = DBUtils.findDataSource(datasourceId);
-        if (datasourceDescriptor == null) {
-            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
-            throw new CoreException(DebugUtils.newErrorStatus(message));
-        }
+        DBPDataSourceContainer datasourceDescriptor = DebugUtils.getDataSourceContainer(configuration);
         DBGController controller = createController(datasourceDescriptor, configuration.getAttributes());
         if (controller == null) {
             String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
@@ -60,7 +53,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     protected DBGController createController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> attributes) throws CoreException {
         try {
-            DBGControllerFactory controllerFactory = Adapters.adapt(dataSourceContainer, DBGControllerFactory.class);
+            DBGControllerFactory controllerFactory = GeneralUtils.adapt(dataSourceContainer, DBGControllerFactory.class);
             if (controllerFactory != null) {
                 return controllerFactory.createController(dataSourceContainer, attributes);
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,14 +25,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -51,35 +49,32 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom)
-    {
-        return new UITask<OracleDataType>() {
-            @Override
-            protected OracleDataType runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TYPE);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                OracleDataType dataType = new OracleDataType(
-                    parent,
-                    editPage.getEntityName(),
-                    false);
-                dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                    "(\n" + //$NON-NLS-1$
-                    ")"); //$NON-NLS-1$
-                return dataType;
-            }
-        }.execute();
+    public boolean canCreateObject(Object container) {
+        return container instanceof OracleSchema;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
+    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
+        OracleSchema schema = (OracleSchema) container;
+        OracleDataType dataType = new OracleDataType(
+            schema,
+            "DataType",
+            false);
+        dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+            "(\n" + //$NON-NLS-1$
+            ")"); //$NON-NLS-1$
+        return dataType;
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand, Map<String, Object> options)
+    {
+        createOrReplaceProcedureQuery(executionContext, actions, objectCreateCommand.getObject());
+    }
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand, Map<String, Object> options)
     {
         final OracleDataType object = objectDeleteCommand.getObject();
         actions.add(
@@ -89,9 +84,9 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand, Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(executionContext, actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -100,7 +95,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OracleDataType dataType)
+    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OracleDataType dataType)
     {
         String header = OracleUtils.normalizeSourceName(dataType, false);
         if (!CommonUtils.isEmpty(header)) {
@@ -116,7 +111,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
                     "Create type body",
                     "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         }
-        OracleUtils.addSchemaChangeActions(actionList, dataType);
+        OracleUtils.addSchemaChangeActions(executionContext, actionList, dataType);
     }
 
 }

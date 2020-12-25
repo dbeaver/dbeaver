@@ -10,11 +10,16 @@
                 description="%dataTransfer.processor.xlsx.description"
                 icon="icons/excel.png"
                 label="%dataTransfer.processor.xlsx.name"
-                binary="true">
+                binary="true"
+                contentType="application/vnd.ms-excel"
+                appFileExtension="xlsx"
+                appName="Excel"
+                order="10">
                     <propertyGroup label="%dataTransfer.processor.xlsx.propertyGroup.general.label">
+                        <property id="extension" label="%dataTransfer.processor.xlsx.property.extension.label" defaultValue="xlsx"/>
+
                         <property id="rownumber" label="%dataTransfer.processor.xlsx.property.rowNumber.name" type="boolean" description="%dataTransfer.processor.xlsx.property.rowNumber.description" defaultValue="yes" required="false"/>
                         <property id="border" label="%dataTransfer.processor.xlsx.property.border.name" type="string" description="%dataTransfer.processor.xlsx.property.border.description" defaultValue="THIN" required="false" validValues="NONE,THIN,THICK"/>
-                        <property id="extension" label="%dataTransfer.processor.xlsx.property.extension.label" defaultValue="xlsx"/>
                         <property id="nullString" label="%dataTransfer.processor.xlsx.property.nullString.name" type="string" description="%dataTransfer.processor.xlsx.property.nullString.description" defaultValue="" required="false"/>
                         <property id="header" label="%dataTransfer.processor.xlsx.property.header.name" type="boolean" description="%dataTransfer.processor.xlsx.property.header.description" defaultValue="true" required="true"/>
                         <property id="headerfont" label="%dataTransfer.processor.xlsx.property.headerFont.name" type="string" description="%dataTransfer.processor.xlsx.property.headerFont.description" defaultValue="BOLD" required="false" validValues="NONE,BOLD,ITALIC,STRIKEOUT,UNDERLINE"/>
@@ -24,41 +29,10 @@
                         <property id="splitSqlText" label="%dataTransfer.processor.xlsx.property.splitSqlText.name" type="boolean" description="%dataTransfer.processor.xlsx.property.splitSqlText.description" defaultValue="false" required="false"/>
                         <property id="splitByRowCount" label="%dataTransfer.processor.xlsx.property.splitByRowCount.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByRowCount.description" defaultValue="1048575" required="false"/>
                         <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="0" required="false"/>
+                        <property id="dateFormat" label="%dataTransfer.processor.xlsx.property.dateFormat.name" type="string" description="%dataTransfer.processor.xlsx.property.dateFormat.description" defaultValue="m/d/yy" required="false" validValues="m/d/yy,d-mmm-yy,d-mmm,mmm-yy,h:mm AM/PM,h:mm:ss AM/PM,h:mm,h:mm:ss,m/d/yy h:mm"/>
                     </propertyGroup>
             </processor>
          </node>
-    </extension>
-
-    <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.data.office" name="%category.org.jkiss.dbeaver.ext.data.office.name" description="%category.org.jkiss.dbeaver.ext.data.office.description"/>
-        <command id="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" name="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.name" description="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.description" categoryId="org.jkiss.dbeaver.ext.data.office"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" icon="icons/excel.png"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" class="org.jkiss.dbeaver.data.office.handlers.OpenSpreadsheetHandler">
-            <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
-                </with>
-            </enabledWhen>
-        </handler>
-    </extension>
-
-    <extension point="org.eclipse.ui.menus">
-
-        <!-- Results viewer status bar additions -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
-            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label"/>
-        </menuContribution>
-
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
-            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet"/>
-        </menuContribution>
-
     </extension>
 
 </plugin>

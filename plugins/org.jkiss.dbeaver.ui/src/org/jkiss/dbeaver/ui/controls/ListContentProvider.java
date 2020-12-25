@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ public class ListContentProvider implements IStructuredContentProvider {
     @Override
     public Object[] getElements(Object inputElement)
     {
+        if (inputElement == null) {
+            return new Object[0];
+        }
         if (inputElement instanceof Collection) {
             return ((Collection<?>)inputElement).toArray();
         } else if (inputElement.getClass().isArray()) {

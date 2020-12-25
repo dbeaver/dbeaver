@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,22 +37,22 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
     @Override
     protected DBDContent fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws SQLException {
         String json = resultSet.getString(index);
-        return new PostgreContentJSON(session.getDataSource(), json);
+        return new PostgreContentJSON(session.getExecutionContext(), json);
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (PostgreUtils.isPGObject(object)) {
             object = PostgreUtils.extractPGObjectValue(object);
         }
         if (object == null) {
-            return new PostgreContentJSON(session.getDataSource(), null);
+            return new PostgreContentJSON(session.getExecutionContext(), null);
         } else if (object instanceof PostgreContentJSON) {
             return copy ? ((PostgreContentJSON) object).cloneValue(session.getProgressMonitor()) : (PostgreContentJSON) object;
         } else if (object instanceof String) {
-            return new PostgreContentJSON(session.getDataSource(), (String) object);
+            return new PostgreContentJSON(session.getExecutionContext(), (String) object);
         }
-        return super.getValueFromObject(session, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.bigquery.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="bigquery"
+                label="%bigquery.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.bigquery.ui.views.BigQueryConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.bigquery/icons/bigquery_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.bigquery.ui.views.BigQueryConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.bigquery/icons/bigquery_icon.png"
+                id="org.jkiss.dbeaver.ext.bigquery.dataSourceEditorView"
+                dataSource="bigquery"
+                label="%bigquery.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>

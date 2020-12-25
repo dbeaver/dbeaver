@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
@@ -47,4 +48,10 @@ public interface IDataSourceConnectionEditorSite
 
     void testConnection();
 
+    DBPProject getProject();
+
+    /**
+     * Fires property change event in all connection pages
+     */
+    void firePropertyChange(Object source, String property, Object oldValue, Object newValue);
 }

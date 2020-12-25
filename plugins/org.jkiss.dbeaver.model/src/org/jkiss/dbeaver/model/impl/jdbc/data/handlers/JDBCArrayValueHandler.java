@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,15 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 
 /**
  * JDBC Array value handler.
@@ -49,7 +52,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
@@ -61,8 +64,32 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
         } else if (object.getClass().isArray()) {
             return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, type, object);
+        } else if (object instanceof Collection) {
+            return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection) object);
         } else {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
+        }
+    }
+
+    @Override
+    public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
+        DBSDataType dataType;
+        if (type instanceof DBSDataType) {
+            dataType = (DBSDataType) type;
+        } else if (type instanceof DBSTypedObjectEx) {
+            dataType = ((DBSTypedObjectEx) type).getDataType();
+        } else {
+            throw new DBCException("Can't determine array element data type: " + type.getFullTypeName());
+        }
+        try {
+            DBSDataType componentType = dataType.getComponentType(session.getProgressMonitor());
+            if (componentType == null) {
+                throw new DBCException("Can't determine component data type from " + dataType.getFullTypeName());
+            }
+            Array array = ((JDBCSession) session).createArrayOf(componentType.getFullTypeName(), new Object[0]);
+            return getValueFromObject(session, type, array, false, false);
+        } catch (Exception e) {
+            throw new DBCException("Error creating JDBC array " + type.getFullTypeName());
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -34,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanAnalyser implements DBCPlan {
+public class DB2PlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log LOG = Log.getLog(DB2PlanAnalyser.class);
 
@@ -48,7 +50,7 @@ public class DB2PlanAnalyser implements DBCPlan {
     private String query;
     private String planTableSchema;
 
-    private Collection<DB2PlanNode> listNodes;
+    private List<DB2PlanNode> listNodes;
     private DB2PlanStatement db2PlanStatement;
 
     // ------------
@@ -59,6 +61,20 @@ public class DB2PlanAnalyser implements DBCPlan {
     {
         this.query = query;
         this.planTableSchema = planTableSchema;
+    }
+
+    @Override
+    public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
+        {
+            return true;
+        } else if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
+            return "ms";
+        }
+
+        return super.getPlanFeature(feature);
     }
 
     // ----------------
@@ -77,7 +93,7 @@ public class DB2PlanAnalyser implements DBCPlan {
     }
 
     @Override
-    public Collection<? extends DBCPlanNode> getPlanNodes()
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
     {
         return listNodes;
     }
@@ -118,7 +134,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             cleanExplainTables(session, stmtNo, planTableSchema);
 
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 

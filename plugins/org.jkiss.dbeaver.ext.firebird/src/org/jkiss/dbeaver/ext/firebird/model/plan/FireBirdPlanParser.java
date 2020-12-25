@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
-import java.sql.SQLException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+import java.sql.SQLException;
+
+/**
+ * Firebird plan parser. It interpretes tokens returned by FireBirdPlanTokenMatcher
+ * tokenizer and creates plan node tree. When index is found it's selectivity
+ * is added to index plan node.
+ *
+ * @author tomashorak@post.cz
+ */
 class FireBirdPlanParser {
 
 		private String plan;
@@ -76,7 +84,6 @@ class FireBirdPlanParser {
 						tokenMatch.jump();
 						planItem(parent);
 					} while (tokenMatch.token == FireBirdPlanToken.COMMA);
-					tokenMatch.jump();
 					tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 					break;
 				case SORT:
@@ -84,6 +91,9 @@ class FireBirdPlanParser {
 					break;
 				case JOIN:
 					joinedItem(parent);
+					break;
+				case HASH:
+					hashedItem(parent);
 					break;
 				case SORT_MERGE:
 					mergedItem(parent, true);
@@ -115,7 +125,18 @@ class FireBirdPlanParser {
 			do {
 				tokenMatch.jump();
 				planItem(node);
+			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
+		}
+			
+		private void hashedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
+			tokenMatch.checkToken(FireBirdPlanToken.HASH);
+			FireBirdPlanNode node = addPlanNode(parent, "HASH");
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
+			do {
 				tokenMatch.jump();
+				planItem(node);
 			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
 			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 		}
@@ -159,6 +180,7 @@ class FireBirdPlanParser {
 			switch (tokenMatch.token) {
 				case NATURAL:
 					addPlanNode(parent, aliases + " NATURAL");
+					tokenMatch.jump();
 					break;
 				case INDEX:
 					String indexes = collectIndexes();
@@ -169,7 +191,7 @@ class FireBirdPlanParser {
 					tokenMatch.checkToken(FireBirdPlanToken.IDENTIFICATOR);
 					String orderIndex = tokenMatch.getValue();
 					tokenMatch.jump();
-					String text = aliases + " ORDER " + orderIndex;
+					String text = aliases + " ORDER " + orderIndex + indexInfo(orderIndex);
 					if (tokenMatch.getToken() == FireBirdPlanToken.INDEX) {
 						String orderIndexes = collectIndexes();
 						text = text + " INDEX(" + orderIndexes + ")";

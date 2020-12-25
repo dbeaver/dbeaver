@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,25 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,9 +57,23 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
+public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics {
 
-    private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS", "DB2QP", "SQLJ", "NULLID");
+    private static final List<String> SYSTEM_SCHEMA = Arrays.asList(
+        "SYS",
+        "SYSCAT",
+        "SYSFUN",
+        "SYSIBM",
+        "SYSIBMADM",
+        "SYSIBMINTERNAL",
+        "SYSIBMTS",
+        "SYSPROC",
+        "SYSPUBLIC",
+        "SYSSTAT",
+        "SYSTOOLS",
+        "DB2QP",
+        "SQLJ",
+        "NULLID");
 
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
@@ -96,6 +115,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private String auditPolicyName;
     private Boolean dataCapture;
     private String remarks;
+    private volatile Long schemaTotalSize;
+    private volatile boolean hasTableStatistics;
 
     // ------------
     // Constructors
@@ -229,6 +250,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         referenceCache.clearCache();
         checkCache.clearCache();
 
+        schemaTotalSize = null;
+        hasTableStatistics = false;
+
         return this;
     }
 
@@ -236,10 +260,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // Schema "Children" = Tables
     // --------------------------
 
+    @NotNull
     @Override
-    public Class<DB2TableBase> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Class<DB2Table> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
     {
-        return DB2TableBase.class;
+        return DB2Table.class;
     }
 
     @Override
@@ -278,7 +303,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // -----------------
 
     @Association
-    public Collection<DB2Table> getTables(DBRProgressMonitor monitor) throws DBException
+    public List<DB2Table> getTables(DBRProgressMonitor monitor) throws DBException
     {
         return tableCache.getTypedObjects(monitor, this, DB2Table.class);
     }
@@ -398,12 +423,14 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return packageCache.getObject(monitor, this, name);
     }
 
+    @Override
     @Association
     public Collection<DB2Routine> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
         return procedureCache.getAllObjects(monitor, this);
     }
 
+    @Override
     public DB2Routine getProcedure(DBRProgressMonitor monitor, String name) throws DBException
     {
         return procedureCache.getObject(monitor, this, name);
@@ -605,6 +632,66 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DBSObjectCache<DB2Schema, DB2Routine> getMethodCache()
     {
         return methodCache;
+    }
+
+    // -------------------------
+    // Stats
+    // -------------------------
+
+    @Override
+    public boolean hasStatistics() {
+        return schemaTotalSize != null;
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        return schemaTotalSize == null ? 0 : schemaTotalSize;
+    }
+
+    void setSchemaTotalSize(long schemaTotalSize) {
+        this.schemaTotalSize = schemaTotalSize;
+    }
+
+    @Nullable
+    @Override
+    public DBPPropertySource getStatProperties() {
+        return null;
+    }
+
+    @Override
+    public boolean isStatisticsCollected() {
+        return hasTableStatistics;
+    }
+
+    @Override
+    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (hasTableStatistics && !forceRefresh) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
+                "    TABNAME,\n" +
+                "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
+                "FROM SYSIBMADM.ADMINTABINFO\n" +
+                "WHERE TABSCHEMA=?\n" +
+                "GROUP BY TABNAME")) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                        long bytes = dbResult.getLong(2) * 1024;
+                        DB2TableBase table = getTable(monitor, tableName);
+                        if (table != null) {
+                            table.setTableTotalSize(bytes);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading table statistics", e);
+        } finally {
+            hasTableStatistics = true;
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,27 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * TextEditorUtils
@@ -45,22 +46,6 @@ public class TextEditorUtils {
     private static final Log log = Log.getLog(TextEditorUtils.class);
 
     private static Map<String, Integer> ACTION_TRANSLATE_MAP;
-
-    public static IPreferenceStore getEditorsPreferenceStore() {
-        return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
-    }
-
-    public static Color getDefaultTextBackground() {
-        IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-        return CommonUtils.isEmpty(bgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-    }
-
-    public static Color getDefaultTextForeground() {
-        IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-        return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
-    }
 
     public static Map<String, Integer> getTextEditorActionMap()
     {
@@ -128,10 +113,32 @@ public class TextEditorUtils {
         });
         control.addDisposeListener(e -> {
             if (activated[0]) {
-                enableHostEditorKeyBindings(partSite, true);
+                if (!DBWorkbench.getPlatform().isShuttingDown()) {
+                    enableHostEditorKeyBindings(partSite, true);
+                }
                 activated[0] = false;
             }
         });
+    }
+
+    public static IAction createFindReplaceAction(Shell shell, IFindReplaceTarget target) {
+        return new FindReplaceAction(
+            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
+            "Editor.FindReplace.",
+            shell,
+            target);
+    }
+
+    public static boolean isDarkThemeEnabled() {
+        boolean isDark = false;
+        IThemeEngine engine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+        if (engine != null) {
+            ITheme activeTheme = engine.getActiveTheme();
+            if (activeTheme != null) {
+                isDark = activeTheme.getId().contains("dark");
+            }
+        }
+        return isDark;
     }
 
     private static class FakeTextEditor extends AbstractTextEditor {
@@ -141,5 +148,7 @@ public class TextEditorUtils {
             }
         }
     }
+
+
 
 }

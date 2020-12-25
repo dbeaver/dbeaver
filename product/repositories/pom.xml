@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <version>1.0.0-SNAPSHOT</version>
-    <artifactId>dbeaver-p2-repos</artifactId>
+    <artifactId>repositories</artifactId>
     <packaging>pom</packaging>
     <name>DBeaver P2 Repositories</name>
 
@@ -20,6 +20,7 @@
         <module>org.jkiss.dbeaver.office.repository</module>
         <module>org.jkiss.dbeaver.svg.repository</module>
         <module>org.jkiss.dbeaver.net.sshj.repository</module>
+        <module>org.jkiss.dbeaver.git.repository</module>
     </modules>
 
 </project>

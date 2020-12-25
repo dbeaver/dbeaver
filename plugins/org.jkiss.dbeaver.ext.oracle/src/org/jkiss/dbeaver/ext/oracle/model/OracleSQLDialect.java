@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.data.OracleBinaryFormatter;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -26,15 +30,17 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
 /**
  * Oracle SQL dialect
  */
-class OracleSQLDialect extends JDBCSQLDialect {
+public class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] EXEC_KEYWORDS = new String[]{ "call" };
 
@@ -55,13 +61,31 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
         "DECLARE",
-        //"IS",
+        "PACKAGE"
+    };
+
+    public static final String[] ORACLE_INNER_BLOCK_PREFIXES = new String[]{
+        "AS",
+        "IS",
+    };
+
+    public static final String[] OTHER_TYPES_FUNCTIONS = {
+        //functions without parentheses #8710
+        "CURRENT_DATE",
+        "CURRENT_TIMESTAMP",
+        "DBTIMEZONE",
+        "SESSIONTIMEZONE",
+        "SYSDATE",
+        "SYSTIMESTAMP"
     };
 
     public static final String[] ADVANCED_KEYWORDS = {
+        "REPLACE",
         "PACKAGE",
         "FUNCTION",
         "TYPE",
+        "BODY",
+        "RECORD",
         "TRIGGER",
         "MATERIALIZED",
         "IF",
@@ -86,7 +110,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     private DBPPreferenceStore preferenceStore;
 
     public OracleSQLDialect() {
-        super("Oracle");
+        super("Oracle", "oracle");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -135,10 +159,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "INSTR2",
                 "INSTR4",
                 "LENGTHB",
+                "LENGTH",
 
                 //Datetime Functions:
                 "ADD_MONTHS",
-                "DBTIMEZONE",
                 "FROM_TZ",
                 "LAST_DAY",
                 "MONTHS_BETWEEN",
@@ -146,10 +170,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "NEXT_DAY",
                 "NUMTODSINTERVAL",
                 "NUMTOYMINTERVAL",
-                "SESSIONTIMEZONE",
                 "SYS_EXTRACT_UTC",
-                "SYSDATE",
-                "SYSTIMESTAMP",
                 "TO_CHAR",
                 "TO_TIMESTAMP",
                 "TO_TIMESTAMP_TZ",
@@ -301,6 +322,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "RATIO_TO_REPORT",
                 "STDDEV",
                 "VARIANCE",
+                "COALESCE",
 
                 //Object Reference Functions:
                 "MAKE_REF",
@@ -316,13 +338,17 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 // Other #4134
                 "EXTRACT",
                 "LISTAGG",
-                "OVER"
+                "OVER",
+                "RANK"
             ));
         removeSQLKeyword("SYSTEM");
 
         for (String kw : ADVANCED_KEYWORDS) {
             addSQLKeyword(kw);
         }
+
+        addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
+        turnFunctionIntoKeyword("TRUNCATE");
     }
 
     @Override
@@ -335,6 +361,12 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return ORACLE_BLOCK_HEADERS;
     }
 
+    @Nullable
+    @Override
+    public String[] getInnerBlockPrefixes() {
+        return ORACLE_INNER_BLOCK_PREFIXES;
+    }
+
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
@@ -343,8 +375,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
-        return MultiValueInsertMode.GROUP_ROWS;
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.INSERT_ALL;
     }
 
     @Override
@@ -381,7 +413,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    protected String[] getNonTransactionKeywords() {
+    public String[] getNonTransactionKeywords() {
         return ORACLE_NON_TRANSACTIONAL_KEYWORDS;
     }
 
@@ -393,9 +425,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean isDisableScriptEscapeProcessing() {
-        return preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
+        return preferenceStore == null || preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter() {
         return super.getScriptDelimiter();
@@ -404,5 +437,26 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isCRLFBroken() {
         return crlfBroken;
+    }
+
+    @Override
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.NUMERIC) {
+            if (OracleConstants.TYPE_NUMBER.equals(typeName)) {
+                OracleDataType dataType = (OracleDataType) DBUtils.getDataType(column);
+                Integer scale = column.getScale();
+                int precision = CommonUtils.toInt(column.getPrecision());
+                if (precision == 0 && dataType != null && scale != null && scale == dataType.getMinScale()) {
+                    return "";
+                }
+                if (precision == 0) {
+                    precision = OracleConstants.NUMERIC_MAX_PRECISION;
+                }
+                if (scale != null && scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                    return "(" + precision + ',' + scale + ')';
+                }
+            }
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }

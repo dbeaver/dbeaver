@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.impl.local;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.ArrayList;
@@ -30,26 +30,14 @@ import java.util.List;
 /**
  * LocalResultSet
  */
-public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResultSet {
-    protected final DBCSession session;
-    protected final SOURCE_STMT statement;
+public class LocalResultSet<SOURCE_STMT extends DBCStatement> extends AbstractResultSet<DBCSession, SOURCE_STMT> {
+
     private final List<DBCAttributeMetaData> metaColumns = new ArrayList<>();
     protected final List<Object[]> rows = new ArrayList<>();
     protected int curPosition = -1;
 
     public LocalResultSet(DBCSession session, SOURCE_STMT statement) {
-        this.session = session;
-        this.statement = statement;
-    }
-
-    @Override
-    public DBCSession getSession() {
-        return session;
-    }
-
-    @Override
-    public SOURCE_STMT getSourceStatement() {
-        return statement;
+        super(session, statement);
     }
 
     @Override
@@ -70,16 +58,6 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
             }
         }
         throw new DBCException("Bad attribute name: " + name);
-    }
-
-    @Override
-    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException {
-        return null;
-    }
-
-    @Override
-    public DBDValueMeta getRowMeta() throws DBCException {
-        return null;
     }
 
     @Override
@@ -107,8 +85,11 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     }
 
     @Override
-    public String getResultSetName() throws DBCException {
-        return null;
+    public Object getFeature(String name) {
+        if (name.equals(FEATURE_NAME_LOCAL)) {
+            return true;
+        }
+        return super.getFeature(name);
     }
 
     @Override

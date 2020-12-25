@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -27,6 +28,7 @@ public class MySQLConstants {
 
     public static final int DEFAULT_PORT = 3306;
     public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_USER = "root";
 
     public static final String DRIVER_ID_MYSQL = "mysql5";
     public static final String DRIVER_ID_MYSQL8 = "mysql8";
@@ -42,14 +44,21 @@ public class MySQLConstants {
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
     public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";
     public static final String PROP_SSL_PUBLIC_KEY_RETRIEVE = "ssl.public.key.retrieve";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_KEY} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CA_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String PROP_SSL_DEBUG = "ssl.debug";
 
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
+    public static final String PERFORMANCE_SCHEMA_NAME = "performance_schema";
     public static final String MYSQL_SCHEMA_NAME = "mysql";
 
     public static final String META_TABLE_ENGINES = INFO_SCHEMA_NAME + ".ENGINES";
@@ -103,6 +112,7 @@ public class MySQLConstants {
     public static final String COL_SEQ_IN_INDEX = "SEQ_IN_INDEX";
     public static final String COL_NON_UNIQUE = "NON_UNIQUE";
     public static final String COL_COMMENT = "COMMENT";
+    public static final String COL_CHECK_CLAUSE = "CHECK_CLAUSE";
     
     public static final String COL_COLUMN_NAME = "COLUMN_NAME";
     public static final String COL_COLUMN_KEY = "COLUMN_KEY";
@@ -154,8 +164,9 @@ public class MySQLConstants {
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
 
     public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
-    public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
-    public static final String CONSTRAINT_UNIQUE = "UNIQUE";
+    public static final String CONSTRAINT_PRIMARY_KEY_NAME = "PRIMARY";
+    public static final String CONSTRAINT_UNIQUE = "UNIQUE KEY";
+    public static final String CONSTRAINT_CHECK = "CHECK";
 
     public static final String INDEX_PRIMARY = "PRIMARY";
 
@@ -202,5 +213,7 @@ public class MySQLConstants {
     public static final String TYPE_YEAR = "year";
 
     public static final String BIN_FOLDER = "bin";
-    public static final String ENV_VARIABLE_MYSQL_PWD = "MYSQL_PWD";
+    public static final String ENV_VAR_MYSQL_PWD = "MYSQL_PWD";
+
+    public static final String EXTRA_INFO_VIRTUAL_GENERATED = "VIRTUAL GENERATED";
 }

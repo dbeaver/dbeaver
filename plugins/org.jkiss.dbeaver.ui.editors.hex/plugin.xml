@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <streamManager class="org.jkiss.dbeaver.ui.data.BinaryStreamValueManager" id="binary" label="Binary" primaryMime="octet/binary" supportedMime="text,binary,app,application"
+                       description="Hex editor" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.ui.data.IHexEditorService" class="org.jkiss.dbeaver.ui.editors.binary.HexEditorService"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+
+        <!-- Colors for Hex editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.hex.label" id="org.jkiss.dbeaver.ui.presentation.hex">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.hex.description</description>
+        </themeElementCategory>
+
+        <fontDefinition
+            id="org.jkiss.dbeaver.hex.editor.font.output"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            label="%fontDefinition.org.jkiss.dbeaver.hex.editor.font.label"
+            value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.hex.editor.font.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            id="org.jkiss.dbeaver.hex.editor.color.caret"
+            value="232,242,254">
+            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.caret.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.hex"
+            id="org.jkiss.dbeaver.hex.editor.color.text"
+            value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.hex.editor.color.text.description</description>
+        </colorDefinition>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.editors.binary.HexCommandHandler">
+            <activeWhen><with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.ui.hexEditor"/></with></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.editors.binary.HexCommandHandler">
+            <activeWhen><with variable="activeFocusControlId"><equals value="org.jkiss.dbeaver.ui.hexEditor"/></with></activeWhen>
+        </handler>
+    </extension>
+
+</plugin>

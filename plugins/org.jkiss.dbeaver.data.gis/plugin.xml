@@ -2,10 +2,27 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager">
-            <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
-        </manager>
+    <extension point="org.jkiss.dbeaver.expressions">
+        <namespace id="geo" class="org.jkiss.dbeaver.model.gis.GisExpressionFunctions" description="%extension-point.org.jkiss.dbeaver.model.gis.GisExpressionFunctions.description"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <!-- Spatial transformer -->
+        <transformer
+            class="org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer"
+            id="GeometryAttributeTransformer"
+            name="%transformer.org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer.name"
+            description="%transformer.org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer.description"
+            applyByDefault="false"
+            custom="true">
+            <type kind="STRING"/>
+            <type kind="BINARY"/>
+            <propertyGroup label="%property-group.org.jkiss.dbeaver.dataTypeProvider.label">
+                <property id="srid" label="SRID" type="string" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.srid.description" defaultValue="4326" required="false" validValues=""/>
+                <property id="invertCoordinates" label="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.label" type="boolean" description="%property-group.org.jkiss.dbeaver.dataTypeProvider.invertCoordinates.description" defaultValue="false" required="false"/>
+            </propertyGroup>
+        </transformer>
+
     </extension>
 
 </plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.HTMLTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -32,33 +37,41 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.TrayIconHandler;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
+import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,7 +126,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     private void initialize() {
         this.trayItem = new TrayIconHandler();
-        DBUserInterface.setInstance(this);
 
         if (DBeaverCore.isStandalone()) {
             //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());
@@ -149,7 +161,31 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
+    public boolean acceptLicense(String message, String licenseText) {
+        return new UITask<Boolean>() {
+            @Override
+            protected Boolean runTask() {
+                return AcceptLicenseDialog.acceptLicense(
+                    UIUtils.getActiveWorkbenchShell(),
+                    message,
+                    licenseText);
+            }
+        }.execute();
+    }
+
+    @Override
+    public boolean downloadDriverFiles(DBPDriver driver, DBPDriverDependencies dependencies) {
+        return new UITask<Boolean>() {
+            @Override
+            protected Boolean runTask() {
+                return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
+            }
+        }.execute();
+    }
+
+    @Override
     public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
+        IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
                 UserResponse dbErrorResp = showDatabaseError(message, (DBException) s.getException());
@@ -160,11 +196,13 @@ public class DBeaverUI implements DBPPlatformUI {
                 break;
             }
             if (s.getChildren() != null && s.getChildren().length > 0) {
-                s = s.getChildren()[0];
+                s = rootStatus = s.getChildren()[0];
             } else {
                 break;
             }
         }
+        log.error(rootStatus.getMessage(), rootStatus.getException());
+
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
@@ -178,8 +216,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
-        log.error(error);
-
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
@@ -189,23 +225,46 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void showMessageBox(String title, String message, boolean error) {
-        UIUtils.showMessageBox(
-            UIUtils.getActiveWorkbenchShell(),
-            title,
-            message,
-            error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+    public void showMessageBox(@NotNull String title, String message, boolean error) {
+        UIUtils.syncExec(() -> {
+            UIUtils.showMessageBox(
+                UIUtils.getActiveWorkbenchShell(),
+                title,
+                message,
+                error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+            });
+    }
+
+    @Override
+    public void showWarningMessageBox(@NotNull String title, String message) {
+        UIUtils.syncExec(() -> {
+            UIUtils.showMessageBox(
+                    UIUtils.getActiveWorkbenchShell(),
+                    title,
+                    message,
+                    SWT.ICON_WARNING);
+        });
+    }
+
+    @Override
+    public boolean confirmAction(String title, String message) {
+        return UIUtils.confirmAction(title, message);
+    }
+
+    @Override
+    public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
+        return ExecutionQueueErrorJob.showError(task, error, queue);
     }
 
     @Override
     public long getLongOperationTimeout() {
-        return DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT);
+        return DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT);
     }
 
     private static UserResponse showDatabaseError(String message, DBException error)
     {
         DBPDataSource dataSource = error.getDataSource();
-        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBUtils.discoverErrorType(dataSource, error);
+        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
                 if (dataSource.getContainer().getDataSource() == null) {
@@ -223,12 +282,12 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBAAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly, boolean showSavePassword) {
 
         // Ask user
-        return new UITask<DBAAuthInfo>() {
+        return new UITask<DBPAuthInfo>() {
             @Override
-            public DBAAuthInfo runTask() {
+            public DBPAuthInfo runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 if (!passwordOnly) {
@@ -262,31 +321,31 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
+    public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
-        return BrowseObjectDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
+        return ObjectBrowserDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
     }
 
     @Override
-    public void openEntityEditor(DBSObject object) {
-        NavigatorHandlerObjectOpen.openEntityEditor(object);
+    public void openEntityEditor(@NotNull DBSObject object) {
+        UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(object));
     }
 
     @Override
-    public void openEntityEditor(DBNNode selectedNode, String defaultPageId) {
-        NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow());
+    public void openEntityEditor(@NotNull DBNNode selectedNode, String defaultPageId) {
+        UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow()));
     }
 
     @Override
-    public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
+    public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
             NavigatorHandlerObjectOpen.openConnectionEditor(
                 UIUtils.getActiveWorkbenchWindow(),
-                (DataSourceDescriptor) dataSourceContainer));
+                dataSourceContainer));
     }
 
     @Override
-    public void executeProcess(final DBRProcessDescriptor processDescriptor) {
+    public void executeProcess(@NotNull final DBRProcessDescriptor processDescriptor) {
         processDescriptor.setProcessListener(new DBRProcessListener() {
             @Override
             public void onProcessStarted() {
@@ -322,10 +381,19 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void executeInUI(Runnable runnable) {
-        UIUtils.syncExec(runnable);
+    public void executeWithProgress(@NotNull Runnable runnable) {
+        UIExecutionQueue.queueExec(runnable);
     }
 
+    @Override
+    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+        // FIXME: we need to run with progress service bu we can't change active control focus
+        // Otherwise it breaks soem functions (e.g. data editor value save as it handles focus events).
+        // so we can use runInProgressServie function
+        runnable.run(new VoidProgressMonitor());
+    }
+
+    @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
@@ -335,6 +403,46 @@ public class DBeaverUI implements DBPPlatformUI {
     public void refreshPartState(Object part) {
         if (part instanceof IWorkbenchPart) {
             UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
+        }
+    }
+
+    @Override
+    public void copyTextToClipboard(String text, boolean htmlFormat) {
+        if (CommonUtils.isEmpty(text)) {
+            return;
+        }
+        UIUtils.syncExec(() -> {
+
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            Clipboard clipboard = new Clipboard(UIUtils.getDisplay());
+            if (htmlFormat) {
+                HTMLTransfer htmlTransfer = HTMLTransfer.getInstance();
+                clipboard.setContents(
+                    new Object[]{text, text},
+                    new Transfer[]{textTransfer, htmlTransfer});
+            } else {
+                clipboard.setContents(
+                    new Object[]{text},
+                    new Transfer[]{textTransfer});
+            }
+        });
+    }
+
+    @Override
+    public void executeShellProgram(String shellCommand) {
+        UIUtils.asyncExec(() -> UIUtils.launchProgram(shellCommand));
+    }
+
+    @Override
+    public boolean readAndDispatchEvents() {
+        Display currentDisplay = Display.getCurrent();
+        if (currentDisplay != null) {
+            if (!currentDisplay.readAndDispatch()) {
+                currentDisplay.sleep();
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 

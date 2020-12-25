@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         }
         if (!(value instanceof Number)) {
             String strValue = value.toString();
+            if (strValue == null) {
+                return null;
+            }
             try {
                 value = Double.parseDouble(strValue);
             } catch (NumberFormatException e) {
@@ -39,10 +42,12 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static Comparable getComparable(Object value) {
-        Number num = FunctionNumeric.getNumeric(value);
-        if (num != null) {
-            value = num;
+    protected static Comparable getComparable(Object value, boolean aggregateAsStrings) {
+        if (!aggregateAsStrings) {
+            Number num = FunctionNumeric.getNumeric(value);
+            if (num != null) {
+                value = num;
+            }
         }
         if (value instanceof Comparable) {
             return (Comparable)value;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -68,7 +68,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSObject> children = new ArrayList<>(getTables(monitor));
         //children.addAll(getProjections(monitor));
         return children;
@@ -111,13 +111,13 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
 
 * */
     @Association
-    public Collection<GenericTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTable> tables = getTables(monitor);
+    public List<VerticaTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
+        List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
-            List<GenericTable> filtered = new ArrayList<>();
-            for (GenericTable table : tables) {
+            List<VerticaTable> filtered = new ArrayList<>();
+            for (GenericTableBase table : tables) {
                 if (table instanceof VerticaTable && flexTablNames.contains(table.getName())) {
-                    filtered.add(table);
+                    filtered.add((VerticaTable) table);
                 }
             }
             return filtered;

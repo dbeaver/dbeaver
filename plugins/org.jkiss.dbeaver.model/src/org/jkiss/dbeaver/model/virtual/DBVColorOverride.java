@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,12 @@ import java.util.Arrays;
  */
 public class DBVColorOverride {
     private String attributeName;
+    private boolean isRange;
+    private boolean singleColumn;
     private DBCLogicalOperator operator;
     private Object[] attributeValues;
-    private String colorForeground;
-    private String colorBackground;
+    private String colorForeground, colorForeground2;
+    private String colorBackground, colorBackground2;
 
     public DBVColorOverride(String attributeName, DBCLogicalOperator operator, Object[] attributeValues, String colorForeground, String colorBackground) {
         this.attributeName = attributeName;
@@ -40,12 +42,40 @@ public class DBVColorOverride {
         this.colorBackground = colorBackground;
     }
 
+    public DBVColorOverride(DBVColorOverride source) {
+        this.attributeName = source.attributeName;
+        this.isRange = source.isRange;
+        this.singleColumn = source.singleColumn;
+        this.operator = source.operator;
+        this.attributeValues = source.attributeValues == null ? null : Arrays.copyOf(source.attributeValues, source.attributeValues.length);
+        this.colorForeground = source.colorForeground;
+        this.colorBackground = source.colorBackground;
+        this.colorForeground2 = source.colorForeground2;
+        this.colorBackground2 = source.colorBackground2;
+    }
+
     public String getAttributeName() {
         return attributeName;
     }
 
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+    }
+
+    public boolean isRange() {
+        return isRange;
+    }
+
+    public void setRange(boolean range) {
+        isRange = range;
+    }
+
+    public boolean isSingleColumn() {
+        return singleColumn;
+    }
+
+    public void setSingleColumn(boolean singleColumn) {
+        this.singleColumn = singleColumn;
     }
 
     public DBCLogicalOperator getOperator() {
@@ -58,6 +88,10 @@ public class DBVColorOverride {
 
     public Object[] getAttributeValues() {
         return attributeValues;
+    }
+
+    public void setAttributeValues(Object[] attributeValues) {
+        this.attributeValues = attributeValues;
     }
 
     public void addAttributeValue(Object value) {
@@ -79,12 +113,28 @@ public class DBVColorOverride {
         this.colorForeground = colorForeground;
     }
 
+    public String getColorForeground2() {
+        return colorForeground2;
+    }
+
+    public void setColorForeground2(String colorForeground2) {
+        this.colorForeground2 = colorForeground2;
+    }
+
     public String getColorBackground() {
         return colorBackground;
     }
 
     public void setColorBackground(String colorBackground) {
         this.colorBackground = colorBackground;
+    }
+
+    public String getColorBackground2() {
+        return colorBackground2;
+    }
+
+    public void setColorBackground2(String colorBackground2) {
+        this.colorBackground2 = colorBackground2;
     }
 
     public boolean matches(@NotNull String attrName, @NotNull DBCLogicalOperator operator, @Nullable Object[] values) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ public class AggregateUtils {
 
     public static int compareValues(Comparable val1, Comparable val2) {
         if (val1 instanceof Number && val2 instanceof Number) {
-            return (int)(((Number) val1).doubleValue() - ((Number) val2).doubleValue());
+            double cmpr = ((Number) val1).doubleValue() - ((Number) val2).doubleValue();
+            return cmpr < 0 ? -1 : (cmpr > 0 ? 1 : 0);
         } else if (val1.getClass() == val2.getClass()) {
             return val1.compareTo(val2);
         } else {

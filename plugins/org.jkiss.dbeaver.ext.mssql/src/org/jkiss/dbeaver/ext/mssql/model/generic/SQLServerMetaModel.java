@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -44,6 +46,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +58,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     private static final Log log = Log.getLog(SQLServerMetaModel.class);
 
     private final boolean sqlServer;
+    private final Map<String, Boolean> sysViewsCache = new HashMap<>();
 
     public SQLServerMetaModel() {
         this(true);
@@ -67,6 +71,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     public boolean isSqlServer() {
         return sqlServer;
+    }
+
+    private boolean isSapIQ(GenericDataSource dataSource) {
+        return dataSource.getInfo().getDatabaseProductName().contains("IQ SAP");
     }
 
     @Override
@@ -84,8 +92,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return new SQLServerGenericSchema(dataSource, catalog, schemaName, 0);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
@@ -93,12 +101,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         if (!isSqlServer()) {
             // #4378
             GenericDataSource dataSource = container.getDataSource();
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Synase procedure list")) {
+            String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Sybase procedure list")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "select distinct so.name as proc_name,su.name as schema_name,so.loginame as login_name,sc.text as definition\n" +
-                        "from syscomments sc, sysobjects so, sysusers su\n" +
-                        "where so.id = sc.id \n" +
-                        "and so.type = 'P'\n" +
+                    "select distinct so.name as proc_name,su.name as schema_name\n" +
+                        "from " + dbName + ".dbo.sysobjects so, "+ dbName + ".dbo.sysusers su\n" +
+                        "where so.type = 'P'\n" +
                         "and su.uid = so.uid\n" +
                         "and su.name=?"))
                 {
@@ -149,7 +157,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 throw new DBException(e, sourceObject.getDataSource());
             }
         }
-        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject, sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
@@ -158,7 +166,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String schema = SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
@@ -210,9 +218,14 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        GenericTable table = trigger.getTable();
+        GenericTableBase table = trigger.getTable();
         assert table != null;
-        return extractSource(monitor, table.getDataSource(), table.getCatalog(), table.getSchema().getName(), trigger.getName());
+        return extractSource(monitor, table.getDataSource(), table, table.getCatalog(), table.getSchema().getName(), trigger.getName());
+    }
+
+    @Override
+    public boolean isColumnNotNullByDefault() {
+        return true;
     }
 
     @Nullable
@@ -224,17 +237,28 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return null;
     }
 
-    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, GenericCatalog catalog, String schema, String name) throws DBException {
+    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, DBSObject object, GenericCatalog catalog, String schema, String name) throws DBException {
         ServerType serverType = getServerType();
         String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String mdQuery = serverType == ServerType.SQL_SERVER ?
-                systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
-                :
-                "SELECT sc.text\n" +
-                "FROM " + systemSchema + ".sysobjects so\n" +
-                "INNER JOIN " + systemSchema + ".syscomments sc on sc.id = so.id\n" +
-                "WHERE user_name(so.uid)=? AND so.name=?";
+            String mdQuery;
+            if (serverType == ServerType.SQL_SERVER) {
+                mdQuery = systemSchema + ".sp_helptext '" +
+                    DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'";
+            } else {
+                if (isSapIQ(dataSource)) {
+                    mdQuery = "SELECT s.source\n" +
+                        "FROM " + systemSchema + ".sysobjects AS so\n" +
+                        "JOIN sys.sysuser AS u ON u.user_id = so.uid\n" +
+                        "JOIN sys.syssource AS s ON s.object_id = so.id\n" +
+                        "WHERE user_name(so.uid)=? AND so.name=?";
+                } else {
+                    mdQuery = "SELECT sc.text\n" +
+                        "FROM " + systemSchema + ".sysobjects so, " + systemSchema + ".syscomments sc\n" +
+                        "WHERE user_name(so.uid)=? AND so.name=? and sc.id = so.id\n" +
+                        "ORDER BY sc.colid";
+                }
+            }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
                 if (serverType == ServerType.SYBASE) {
                     dbStat.setString(1, schema);
@@ -245,7 +269,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     while (dbResult.nextRow()) {
                         sql.append(dbResult.getString(1));
                     }
-                    return sql.toString();
+                    String ddl = sql.toString();
+                    if (object instanceof SQLServerView) {
+                        ddl = ddl.replaceAll("(?i)CREATE VIEW", "CREATE OR REPLACE VIEW");
+                    }
+                    return ddl;
                 }
             }
         } catch (SQLException e) {
@@ -253,12 +281,26 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
     }
 
+    private boolean hasSybaseSystemView(JDBCSession session, String systemSchema, String viewName) throws SQLException {
+        Boolean check;
+        synchronized (sysViewsCache) {
+            check = sysViewsCache.get(viewName);
+        }
+        if (check == null) {
+            check = JDBCUtils.queryString(session, "SELECT name from " + systemSchema + ".sysobjects where name=?", viewName) != null;
+            synchronized (sysViewsCache) {
+                sysViewsCache.put(viewName, check);
+            }
+        }
+        return check;
+    }
+
     public ServerType getServerType() {
         return sqlServer ? ServerType.SQL_SERVER : ServerType.SYBASE;
     }
 
     @Override
-    public SQLServerGenericIndex createIndexImpl(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
+    public SQLServerGenericIndex createIndexImpl(GenericTableBase table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         return new SQLServerGenericIndex(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
 
@@ -269,6 +311,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean useCatalogInObjectNames() {
+        return false;
+    }
+
+    @Override
+    public boolean isSchemasOptional() {
         return false;
     }
 
@@ -383,7 +430,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean supportsSynonyms(GenericDataSource dataSource) {
-        return true;
+        return isSqlServer();
     }
 
     @Override
@@ -418,12 +465,27 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public SQLServerGenericTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-        return new SQLServerGenericTable(container, tableName, tableType, dbResult);
+    public GenericTableBase createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+        if (tableType != null && isView(tableType)) {
+            return new SQLServerGenericView(container, tableName, tableType, dbResult);
+        } else {
+            return new SQLServerGenericTable(container, tableName, tableType, dbResult);
+        }
     }
 
     @Override
-    public boolean isSystemTable(GenericTable table) {
+    public GenericTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, @Nullable JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
+        return new SQLServerGenericTableColumn(table,
+            columnName,
+            typeName, valueType, sourceType, ordinalPos,
+            columnSize,
+            charLength, scale, precision, radix, notNull,
+            remarks, defaultValue, autoIncrement, autoGenerated
+        );
+    }
+
+    @Override
+    public boolean isSystemTable(GenericTableBase table) {
         return table.getSchema() != null && getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
     }
 

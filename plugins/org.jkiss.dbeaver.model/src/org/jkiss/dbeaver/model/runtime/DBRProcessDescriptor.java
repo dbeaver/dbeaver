@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -43,12 +44,13 @@ public class DBRProcessDescriptor
         this(command, null);
     }
 
-    public DBRProcessDescriptor(final DBRShellCommand command, final GeneralUtils.IVariableResolver variablesResolver)
+    public DBRProcessDescriptor(final DBRShellCommand command, final IVariableResolver variablesResolver)
     {
         this.command = command;
         String commandLine = variablesResolver == null ?
             command.getCommand() :
             GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
+        commandLine = CommonUtils.notEmpty(commandLine);
 
         processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
         // Set working directory

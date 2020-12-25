@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,11 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
+    public boolean isDisposed() {
+        return resource == null || super.isDisposed();
+    }
+
+    @Override
     protected void dispose(boolean reflect)
     {
         if (this.handler != null) {
@@ -87,7 +92,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName()
     {
         if (resource == null || handler == null) {
@@ -167,7 +172,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             return EMPTY_NODES;
         } else {
             filterChildren(result);
-            final DBNNode[] childNodes = result.toArray(new DBNNode[result.size()]);
+            final DBNNode[] childNodes = result.toArray(new DBNNode[0]);
             sortChildren(childNodes);
             return childNodes;
         }
@@ -204,7 +209,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;
@@ -247,7 +252,12 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, ((DBNResource) node).getResource().getName());
+            IResource resource = ((DBNResource) node).getResource();
+            if (resource != null) {
+                pathName.insert(0, resource.getName());
+            } else{
+                pathName.insert(0, "?");
+            }
         }
         return NodePathType.resource.getPrefix() + pathName.toString();
     }
@@ -363,8 +373,14 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     public void createNewFolder(String folderName)
         throws DBException
     {
-        if (resource instanceof IFolder) {
-            try {
+        try {
+            if (resource instanceof IProject) {
+                IFolder newFolder = ((IProject)resource).getFolder(folderName);
+                if (newFolder.exists()) {
+                    throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
+                }
+                newFolder.create(true, true, new NullProgressMonitor());
+            } else if (resource instanceof IFolder) {
                 IFolder parentFolder = (IFolder) resource;
                 if (!parentFolder.exists()) {
                     parentFolder.create(true, true, new NullProgressMonitor());
@@ -374,23 +390,27 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                     throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
                 }
                 newFolder.create(true, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't create new folder", e);
             }
+        } catch (CoreException e) {
+            throw new DBException("Can't create new folder", e);
         }
     }
 
     public Collection<DBPDataSourceContainer> getAssociatedDataSources()
     {
-        return handler == null ? null : handler.getAssociatedDataSources(resource);
+        return handler == null ? null : handler.getAssociatedDataSources(this);
     }
 
     public void refreshResourceState(Object source) {
-        DBPResourceHandler newHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
+        DBPResourceHandler newHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
         if (newHandler != handler) {
             handler = newHandler;
         }
-        handler.updateNavigatorNode(this, resource);
+        if (handler != null) {
+            handler.updateNavigatorNode(this, resource);
+        } else {
+            log.error("Can't find handler for resource " + resource.getFullPath());
+        }
         getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 
@@ -466,6 +486,10 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
     }
 
+    protected boolean isResourceExists() {
+        return resource != null && resource.exists();
+    }
+
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (resource != null && adapter.isAssignableFrom(resource.getClass())) {
@@ -488,4 +512,5 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     public String toString() {
         return resource == null ? super.toString() : resource.toString();
     }
+
 }

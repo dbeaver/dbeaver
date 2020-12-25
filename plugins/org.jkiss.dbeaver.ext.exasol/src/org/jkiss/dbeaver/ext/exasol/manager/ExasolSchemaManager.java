@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,165 +17,157 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateSchemaDialog;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 
 public class ExasolSchemaManager
-        extends SQLObjectEditor<ExasolSchema, ExasolDataSource> implements DBEObjectRenamer<ExasolSchema> 
-{
-    
-    
+    extends SQLObjectEditor<ExasolSchema, ExasolDataSource> implements DBEObjectRenamer<ExasolSchema> {
+
+
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
-    
+
     @Override
     public DBSObjectCache<? extends DBSObject, ExasolSchema> getObjectsCache(
-            ExasolSchema object)
-    {
-        ExasolDataSource source = (ExasolDataSource) object.getDataSource();
+        ExasolSchema object) {
+        ExasolDataSource source = object.getDataSource();
         return source.getSchemaCache();
     }
-    
-    
+
     @Override
-    protected ExasolSchema createDatabaseObject(DBRProgressMonitor monitor,
-            DBECommandContext context, ExasolDataSource parent, Object copyFrom)
-            throws DBException
-    {
-        return new UITask<ExasolSchema>(){
-            @Override
-            protected ExasolSchema runTask()
-            {
-                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), parent);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                return new ExasolSchema(parent, dialog.getName(), dialog.getOwner().getName());
-            }
-        }.execute();
+    public boolean canCreateObject(Object container) {
+        return super.canCreateObject(container);
     }
-    
-    private void changeOwner(List<DBEPersistAction> actions, ExasolSchema schema , String owner)
-    {
-        String script = "ALTER SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " CHANGE OWNER  " + owner;
-        actions.add(
-                new SQLDatabasePersistAction("Set schema Owner", script)
-                );
-        
-    }
-    
-    
+
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
-        final ExasolSchema schema = command.getObject();
-        
-        String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
-        
-        actions.add(
-                new SQLDatabasePersistAction("Create schema", script)
-                );
-        String owner = schema.getOwner();
-        if (owner != null)
-        {
-            changeOwner(actions, schema, owner);
+    protected ExasolSchema createDatabaseObject(
+        DBRProgressMonitor monitor,
+        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBCException {
+        Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
+        boolean virtSchema = navContainer instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) navContainer).getChildrenClass() == ExasolVirtualSchema.class;
+        if (virtSchema) {
+            throw new DBCFeatureNotSupportedException();
         }
+        return new ExasolSchema((ExasolDataSource) container, "NEW_SCHEMA", "");
     }
-    
-    @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        int result = new UITask<Integer>() {
-            protected Integer runTask() {
-                ConfirmationDialog dialog = new ConfirmationDialog(
-                        UIUtils.getActiveWorkbenchShell(),
-                        ExasolMessages.dialog_schema_drop_title,
-                        null,
-                        ExasolMessages.dialog_schema_drop_message,
-                        MessageDialog.CONFIRM,
-                        new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
-                        0,
-                        ExasolMessages.dialog_general_continue,
-                        false);
-                return dialog.open();
-            }
-        }.execute();
-        if (result != IDialogConstants.YES_ID) 
-        {
-            throw new IllegalStateException("User abort");
-        }
-        
+
+    private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit) {
+        String script = String.format("ALTER SCHEMA %s SET RAW_SIZE_LIMIT = %d", DBUtils.getQuotedIdentifier(schema), limit.longValue());
         actions.add(
-            new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_raw_limit, script)
         );
     }
-    
+
+    private void changeOwner(List<DBEPersistAction> actions, ExasolSchema schema, String owner) {
+        String script = "ALTER SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " CHANGE OWNER  " + owner;
+        actions.add(
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_owner, script)
+        );
+
+    }
+
+
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        final ExasolSchema schema = command.getObject();
+
+        String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
+
+        actions.add(
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_create, script)
+        );
+        String owner = schema.getOwner();
+        if (owner != null) {
+            changeOwner(actions, schema, owner);
+        }
+
+        if (schema.getRawObjectSizeLimit() != null) {
+            changeLimit(actions, schema, schema.getRawObjectSizeLimit());
+        }
+    }
+
+    @Override
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    	if (command.getObject() instanceof ExasolVirtualSchema)
+    	{
+            actions.add(
+                    new SQLDatabasePersistAction("Drop schema", "DROP VIRTUAL SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
+                );
+    	} else {
+            actions.add(
+                    new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
+                );
+    		
+    	}
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
+                                          ObjectRenameCommand command, Map<String, Object> options) {
         ExasolSchema obj = command.getObject();
         actions.add(
-                new SQLDatabasePersistAction(
-                    "Rename Schema",
-                    "RENAME SCHEMA " +  DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
-                        DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
-            );
+            new SQLDatabasePersistAction(
+                "Rename Schema",
+                "RENAME SCHEMA " + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
+                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+        );
     }
-    
+
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolSchema schema = command.getObject();
-        
-        if (command.getProperties().size() >= 1 ) 
-        {
-            if (command.getProperties().containsKey("description"))
-            {
-                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" +  ExasolUtils.quoteString(schema.getDescription()) + "'";
+
+        if (command.getProperties().size() >= 1) {
+            if (command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
+                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" + ExasolUtils.quoteString(CommonUtils.notNull(schema.getDescription(), "")) + "'";
                 actionList.add(
-                        new SQLDatabasePersistAction("Change comment on Schema", script)
-                        );
+                    new SQLDatabasePersistAction("Change comment on Schema", script)
+                );
             }
-            if (command.getProperties().containsKey("owner"))
-            {
+            if (command.getProperties().containsKey("owner")) {
                 changeOwner(actionList, schema, schema.getOwner());
             }
-            
+
+            if (command.getProperties().containsKey("rawObjectSizeLimit")) {
+                changeLimit(actionList, schema, schema.getRawObjectSizeLimit());
+            }
+
         }
     }
 
     @Override
     public void renameObject(DBECommandContext commandContext,
-            ExasolSchema object, String newName) throws DBException
-    {
+                             ExasolSchema object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
     }
-    
+
+
 }

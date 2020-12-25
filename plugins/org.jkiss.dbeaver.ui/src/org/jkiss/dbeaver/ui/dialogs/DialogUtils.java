@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2020 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.UIMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * DialogUtils
@@ -75,7 +78,7 @@ public class DialogUtils {
         final File saveFile = new File(fileName);
         File saveDir = saveFile.getParentFile();
         if (!saveDir.exists()) {
-            DBUserInterface.getInstance().showError("Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+            DBWorkbench.getPlatformUI().showError("Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
             return null;
         }
         return saveFile;
@@ -107,6 +110,24 @@ public class DialogUtils {
         return loadFile;
     }
 
+    public static File[] openFileList(Shell parentShell, String title, String[] filterExt)
+    {
+        FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN | SWT.MULTI);
+        if (title != null) {
+            fileDialog.setText(title);
+        }
+        if (filterExt != null) {
+            fileDialog.setFilterExtensions(filterExt);
+        }
+        String fileName = openFileDialog(fileDialog);
+        if (CommonUtils.isEmpty(fileName)) {
+            return null;
+        }
+        File filterPath = new File(fileDialog.getFilterPath());
+        String[] fileNames = fileDialog.getFileNames();
+        return Arrays.stream(fileNames).map(fn -> new File(filterPath, fn)).toArray(File[]::new);
+    }
+
     public static String openFileDialog(FileDialog fileDialog)
     {
         if (curDialogFolder != null) {
@@ -131,8 +152,12 @@ public class DialogUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
-        @Nullable ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener) {
+        return createOutputFolderChooser(parent, label, null, changeListener);
+    }
+
+    @NotNull
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable String value, @Nullable ModifyListener changeListener)
     {
         final String message = label != null ? label : UIMessages.output_label_directory;
         UIUtils.createControlLabel(parent, message);
@@ -157,10 +182,29 @@ public class DialogUtils {
             }
         };
         directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (value != null) {
+            directoryText.getTextControl().setText(value);
+        }
         if (changeListener != null) {
             directoryText.getTextControl().addModifyListener(changeListener);
         }
 
         return directoryText.getTextControl();
     }
+
+    public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {
+        FilteredTree filteredTree;
+        try {
+            filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
+        } catch (Throwable e) {
+            // Fast hash lookup is not supported on old Eclipse versions. Use old constructor
+            filteredTree = new FilteredTree(parent, treeStyle, filter, true);
+        }
+        if (initialText != null) {
+            filteredTree.setInitialText(initialText);
+        }
+        return filteredTree.getViewer();
+    }
+
+
 }
