@@ -116,11 +116,12 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
 
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) {
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        GenericTableBase tableBase = command.getObject();
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",
-                    "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+                    "COMMENT ON TABLE " + tableBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                            " IS " + SQLUtils.quoteString(tableBase, CommonUtils.notEmpty(tableBase.getDescription()))));
         }
     }
 
