@@ -2009,7 +2009,12 @@ public class UIUtils {
     }
 
     public static Font getMonospaceFont() {
-        return JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        Font jFaceTextFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        if (GeneralUtils.isMacOS()) { //[#10382]
+            //Menlo is a system monospaced font on macOS
+            return new Font(getDisplay(), "Menlo", getFontHeight(jFaceTextFont), SWT.NONE);
+        }
+        return jFaceTextFont;
     }
 
     public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
