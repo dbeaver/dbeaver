@@ -349,7 +349,6 @@ public class Spreadsheet extends LightGrid implements Listener {
                 break;
             case LightGrid.Event_FilterColumn:
                 if (event.data instanceof DBDAttributeBinding) {
-                    deselectAll();
                     presentation.showFiltering((DBDAttributeBinding) event.data);
                 }
             	break;
