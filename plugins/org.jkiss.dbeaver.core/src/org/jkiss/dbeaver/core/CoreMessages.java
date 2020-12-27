@@ -393,6 +393,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_show_full_name_in_editor;
 	public static String pref_page_ui_general_show_table_grid;
 	public static String pref_page_ui_general_show_preview_on_save;
+	public static String pref_page_ui_general_boolean_style;
+	public static String pref_page_ui_general_boolean_style_tip;
 	// DatabaseGeneral
 	public static String pref_page_ui_general_group_task_bar;
 	public static String pref_page_ui_general_label_enable_long_operations;

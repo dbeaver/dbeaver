@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
+import org.jkiss.dbeaver.ui.BooleanRenderer;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -879,7 +880,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+    static class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {
@@ -975,7 +976,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         return str.toString();
                     }
                     if (propertyValue instanceof Boolean) {
-                        return UIUtils.getBooleanString((Boolean) propertyValue);
+                        return BooleanRenderer.getBooleanString((Boolean) propertyValue);
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {

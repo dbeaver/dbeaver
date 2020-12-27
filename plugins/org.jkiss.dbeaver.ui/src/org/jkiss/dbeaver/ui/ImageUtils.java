@@ -33,74 +33,6 @@ import org.eclipse.swt.widgets.Control;
  */
 public class ImageUtils {
 
-    private static Image imageCheckboxEnabledOn, imageCheckboxEnabledOff, imageCheckboxDisabledOn, imageCheckboxDisabledOff;
-
-    public static Image getImageCheckboxEnabledOn()
-    {
-        if (imageCheckboxEnabledOn == null) {
-            initImages();
-        }
-        return imageCheckboxEnabledOn;
-    }
-
-    public static Image getImageCheckboxEnabledOff()
-    {
-        if (imageCheckboxEnabledOff == null) {
-            initImages();
-        }
-        return imageCheckboxEnabledOff;
-    }
-
-    public static Image getImageCheckboxDisabledOn()
-    {
-        if (imageCheckboxDisabledOn == null) {
-            initImages();
-        }
-        return imageCheckboxDisabledOn;
-    }
-
-    public static Image getImageCheckboxDisabledOff()
-    {
-        if (imageCheckboxDisabledOff == null) {
-            initImages();
-        }
-        return imageCheckboxDisabledOff;
-    }
-
-    private static synchronized void initImages()
-    {
-        // Capture checkbox image - only for windows
-        // There could be hard-to-understand problems in Linux
-        /*if (!DBeaverCore.getInstance().getLocalSystem().isWindows())*/ {
-            imageCheckboxEnabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
-            imageCheckboxEnabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
-            imageCheckboxDisabledOn = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_ON));
-            imageCheckboxDisabledOff = makeDisableImage(DBeaverIcons.getImage(UIIcon.CHECK_OFF));
-            return;
-        }
-/*
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        Button checkBox = new Button(shell, SWT.CHECK);
-        checkBox.setVisible(true);
-        final Color borderColor = shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        checkBox.setBackground(borderColor);
-        Point checkboxSize = checkBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
-        try {
-            checkBox.setSelection(false);
-            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_OFF));
-            checkBox.setSelection(true);
-            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_ON));
-            checkBox.setEnabled(false);
-            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_ON));
-            checkBox.setSelection(false);
-            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_OFF));
-        } finally {
-            UIUtils.dispose(checkBox);
-        }
-*/
-    }
-
     public static Image captureWidget(Control widget, Color borderColor, Image defaultImage)
     {
         Point size = widget.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -126,10 +58,6 @@ public class ImageUtils {
         image.dispose();
         return fixedImage;
 */
-    }
-
-    private static Image makeDisableImage(Image image) {
-        return new Image(image.getDevice(), image, SWT.IMAGE_GRAY);
     }
 
     public static Image removeImageBorder(Image srcImage, Color borderColor)

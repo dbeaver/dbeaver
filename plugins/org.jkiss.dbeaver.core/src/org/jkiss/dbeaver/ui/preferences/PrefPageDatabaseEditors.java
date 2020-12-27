@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -32,9 +29,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BooleanRenderer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageDatabaseEditors
@@ -53,6 +52,8 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     private Button editorFullName;
     private Button showTableGrid;
     private Button showPreviewOnSave;
+
+    private Combo booleanStyleSelector;
 
     public PrefPageDatabaseEditors()
     {
@@ -80,6 +81,8 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             showEditToolbar = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_edit_toolbar, CoreMessages.pref_page_database_general_label_show_edit_toolbar_tip, false, 2);
             //toolbarDatabaseSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_database_selector_width, CoreMessages.pref_page_database_general_label_database_selector_width_tip, 20, 10, 200);
             //toolbarSchemaSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_schema_selector_width, CoreMessages.pref_page_database_general_label_schema_selector_width_tip, 20, 10, 200);
+        }
+        {
             Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_editors, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             keepEditorsOnRestart = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_keep_database_editors, false);
@@ -93,7 +96,15 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
             showPreviewOnSave = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_preview_on_save, false);
         }
 
-            performDefaults();
+        {
+            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.dialog_connection_wizard_final_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            booleanStyleSelector = UIUtils.createLabelCombo(groupEditors, CoreMessages.pref_page_ui_general_boolean_style, CoreMessages.pref_page_ui_general_boolean_style_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (BooleanRenderer.Style style : BooleanRenderer.Style.values()) {
+                booleanStyleSelector.add(style.getDisplayName());
+            }
+        }
+
+        performDefaults();
 
         return composite;
     }
@@ -114,6 +125,8 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
         showTableGrid.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
         showPreviewOnSave.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
+
+        booleanStyleSelector.select(BooleanRenderer.getDefaultStyle().ordinal());
     }
 
     @Override
@@ -131,6 +144,8 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
+        BooleanRenderer.setDefaultStyle(
+            CommonUtils.fromOrdinal(BooleanRenderer.Style.class, booleanStyleSelector.getSelectionIndex()));
 
         PrefUtils.savePreferenceStore(store);
 

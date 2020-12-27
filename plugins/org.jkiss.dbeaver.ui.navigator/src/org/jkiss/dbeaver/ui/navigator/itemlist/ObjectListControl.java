@@ -111,7 +111,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         super(parent, style);
 
-
         this.isFitWidth = false;
 
         int viewerStyle = getDefaultListStyle();
@@ -145,11 +144,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
             // We need measure item listener to prevent collapse/expand on double click
             // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
-            treeViewer.getControl().addListener(SWT.MeasureItem, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    // Just do nothing
-                }
+            treeViewer.getControl().addListener(SWT.MeasureItem, event -> {
+                // Just do nothing
             });
             tree.addTraverseListener(traverseListener);
         } else {
@@ -1065,10 +1061,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
             if (prop != null) {
                 if (forUI && cellValue instanceof Boolean) {
-                    if (forTip) {
-                        return EMPTY_STRING;
-                    }
-                    return UIUtils.getBooleanString((Boolean) cellValue);
+                    return EMPTY_STRING;
+//                    BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+//                    if (forTip || !booleanStyle.isText()) {
+//                        return EMPTY_STRING;
+//                    }
+//                    return booleanStyle.getText((Boolean) cellValue);
                 }
                 if (prop.isPassword() && cellValue instanceof String) {
                     return  CommonUtils.isEmpty((String) cellValue) ? EMPTY_STRING : "************";

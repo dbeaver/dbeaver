@@ -92,16 +92,8 @@ public class UIUtils {
     private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
     private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
 
-    public static final char CHAR_BOOL_FALSE = 0x2610;
-    public static final char CHAR_BOOL_TRUE = 0x2611;
-    public static final char CHAR_BOOL_NULL = 0x2612;
-
     private static SharedTextColors sharedTextColors = new SharedTextColors();
     private static SharedFonts sharedFonts = new SharedFonts();
-
-    public static String getBooleanString(Boolean value) {
-        return String.valueOf(value == null ? CHAR_BOOL_NULL : (value ? UIUtils.CHAR_BOOL_TRUE : UIUtils.CHAR_BOOL_FALSE));
-    }
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
     {

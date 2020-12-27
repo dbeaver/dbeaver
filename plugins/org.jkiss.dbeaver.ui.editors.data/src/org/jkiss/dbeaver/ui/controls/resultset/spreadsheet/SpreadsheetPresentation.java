@@ -1860,13 +1860,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (isShowAsCheckbox(attr)) {
                 if (value == null) {
-                    return String.valueOf(UIUtils.CHAR_BOOL_NULL);
+                    return String.valueOf(BooleanRenderer.CHAR_BOOL_NULL);
                 }
                 if (value instanceof Number) {
                     value = ((Number) value).byteValue() != 0;
                 }
                 if (value instanceof Boolean) {
-                    return UIUtils.getBooleanString((Boolean) value);
+                    return BooleanRenderer.getBooleanString((Boolean) value);
                 }
             }
 
