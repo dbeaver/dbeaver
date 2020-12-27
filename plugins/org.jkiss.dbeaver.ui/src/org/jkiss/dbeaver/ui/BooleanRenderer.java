@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -33,7 +32,7 @@ public class BooleanRenderer {
         CHECKBOX(true, "Checkboxes", "Unicode checkbox symbols", String.valueOf(CHAR_BOOL_NULL), String.valueOf(CHAR_BOOL_TRUE), String.valueOf(CHAR_BOOL_FALSE)),
         ICON("Icons", "Checkbox icons"),
         TRUE_FALSE(true, "True/False", "Textual representation", DBConstants.NULL_VALUE_LABEL, String.valueOf(true), String.valueOf(false)),
-        YES_NO(true, "Yes/No", "Localized textual represetnation", DBConstants.NULL_VALUE_LABEL, "yes", "no");
+        YES_NO(true, "Yes/No", "Localized textual representation", DBConstants.NULL_VALUE_LABEL, "yes", "no");
 
         public boolean isText() {
             return text;
@@ -84,8 +83,6 @@ public class BooleanRenderer {
     public static final char CHAR_BOOL_TRUE = 0x2611;
     public static final char CHAR_BOOL_NULL = 0x2612;
 
-    private static final Log log = Log.getLog(BooleanRenderer.class);
-
     private static final String PREF_NAME_BOOLEAN_STYLE = "ui.render.boolean.style"; //$NON-NLS-1$
 
     private static Image imageCheckboxEnabledOn;
@@ -102,22 +99,6 @@ public class BooleanRenderer {
 
     public static void setDefaultStyle(Style style) {
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_NAME_BOOLEAN_STYLE, style.name());
-    }
-
-    public static String getBooleanString(Boolean value) {
-        return String.valueOf(value == null ? CHAR_BOOL_NULL : (value ? CHAR_BOOL_TRUE : CHAR_BOOL_FALSE));
-    }
-
-    public static Image getBooleanImage(Boolean value) {
-        DBPImage image;
-        if (value == null) {
-            image = UIIcon.CHECK_QUEST;
-        } else if (value) {
-            image = UIIcon.CHECK_ON;
-        } else {
-            image = UIIcon.CHECK_OFF;
-        }
-        return DBeaverIcons.getImage(image);
     }
 
     public static Image getImageCheckboxEnabledOn()
