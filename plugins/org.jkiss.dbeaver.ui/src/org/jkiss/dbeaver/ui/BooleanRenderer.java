@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -31,8 +32,8 @@ public class BooleanRenderer {
     public enum Style {
         CHECKBOX(true, "Checkboxes", "Unicode checkbox symbols", String.valueOf(CHAR_BOOL_NULL), String.valueOf(CHAR_BOOL_TRUE), String.valueOf(CHAR_BOOL_FALSE)),
         ICON("Icons", "Checkbox icons"),
-        TRUE_FALSE(true, "True/False", "Textual representation", "null", String.valueOf(true), String.valueOf(false)),
-        YES_NO(true, "Yes/No", "Localized textual represetnation", "null", "yes", "no");
+        TRUE_FALSE(true, "True/False", "Textual representation", DBConstants.NULL_VALUE_LABEL, String.valueOf(true), String.valueOf(false)),
+        YES_NO(true, "Yes/No", "Localized textual represetnation", DBConstants.NULL_VALUE_LABEL, "yes", "no");
 
         public boolean isText() {
             return text;
@@ -46,20 +47,18 @@ public class BooleanRenderer {
             return description;
         }
 
-        public Image getImage(Boolean value) {
-            DBPImage image;
+        public DBPImage getImage(Boolean value) {
             if (value == null) {
-                image = UIIcon.CHECK_QUEST;
+                return UIIcon.CHECK_QUEST;
             } else if (value) {
-                image = UIIcon.CHECK_ON;
+                return UIIcon.CHECK_ON;
             } else {
-                image = UIIcon.CHECK_OFF;
+                return UIIcon.CHECK_OFF;
             }
-            return DBeaverIcons.getImage(image);
         }
 
         public String getText(Boolean value) {
-            return String.valueOf(value == null ? textNull : (value ? textTrue : textFalse));
+            return text ? String.valueOf(value == null ? textNull : (value ? textTrue : textFalse)) : "";
         }
 
         private final boolean text;

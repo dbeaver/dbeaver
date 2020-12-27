@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.ui.BooleanRenderer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -189,7 +190,7 @@ public abstract class ObjectViewerRenderer {
 //                    Image image = editable ?
 //                        (boolValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
 //                        (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                    Image image = booleanStyle.getImage((Boolean)cellValue);
+                    Image image = DBeaverIcons.getImage(booleanStyle.getImage((Boolean)cellValue));
                     final Rectangle imageBounds = image.getBounds();
 
                     Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
