@@ -29,7 +29,7 @@ import org.jkiss.utils.CommonUtils;
 public class BooleanRenderer {
 
     public enum Style {
-        CHECKBOX(true, "Checkboxes", "Unicode checkbox symbols", String.valueOf(CHAR_BOOL_NULL), String.valueOf(CHAR_BOOL_TRUE), String.valueOf(CHAR_BOOL_FALSE)),
+        CHECKBOX(true, "Checkboxes", "Unicode checkbox symbols", DBConstants.NULL_VALUE_LABEL, "[X]", "[ ]"),
         ICON("Icons", "Checkbox icons"),
         TRUE_FALSE(true, "True/False", "Textual representation", DBConstants.NULL_VALUE_LABEL, String.valueOf(true), String.valueOf(false)),
         YES_NO(true, "Yes/No", "Localized textual representation", DBConstants.NULL_VALUE_LABEL, "yes", "no");
