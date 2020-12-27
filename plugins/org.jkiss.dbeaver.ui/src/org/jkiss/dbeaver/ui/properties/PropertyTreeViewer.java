@@ -976,7 +976,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         return str.toString();
                     }
                     if (propertyValue instanceof Boolean) {
-                        return BooleanRenderer.getBooleanString((Boolean) propertyValue);
+                        return BooleanRenderer.getDefaultStyle().getText((Boolean) propertyValue);
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {

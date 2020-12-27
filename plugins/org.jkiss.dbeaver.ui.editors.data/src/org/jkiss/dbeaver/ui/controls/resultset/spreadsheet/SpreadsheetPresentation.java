@@ -120,8 +120,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
-    private static final boolean SHOW_CHECKBOX_AS_IMAGE = false;
-
     private Spreadsheet spreadsheet;
 
     @Nullable
@@ -157,6 +155,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
     private boolean showBooleanAsCheckbox;
+    private BooleanRenderer.Style booleanViewStyle;
     private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
@@ -834,6 +833,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         autoFetchSegments = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         calcColumnWidthByValue = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         showBooleanAsCheckbox = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX);
+        booleanViewStyle = BooleanRenderer.getDefaultStyle();
         useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
@@ -1793,7 +1793,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
                 Object value = controller.getModel().getCellValue(attr, row);
                 if (isShowAsCheckbox(attr)) {
-                    state |= STATE_TOGGLE;
+                    state |= booleanViewStyle.isText() ? STATE_TOGGLE : STATE_LINK;
                 } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                     state |= STATE_LINK;
                 } else {
@@ -1859,15 +1859,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             if (isShowAsCheckbox(attr)) {
-                if (value == null) {
-                    return String.valueOf(BooleanRenderer.CHAR_BOOL_NULL);
+                if (formatString) {
+                    if (!booleanViewStyle.isText()) {
+                        return "";
+                    }
+                    if (value instanceof Number) {
+                        value = ((Number) value).byteValue() != 0;
+                    }
+                    if (booleanViewStyle.isText() && (DBUtils.isNullValue(value) || value instanceof Boolean)) {
+                        return booleanViewStyle.getText((Boolean) value);
+                    }
                 }
-                if (value instanceof Number) {
-                    value = ((Number) value).byteValue() != 0;
-                }
-                if (value instanceof Boolean) {
-                    return BooleanRenderer.getBooleanString((Boolean) value);
-                }
+                return value;
             }
 
             if (formatString) {
@@ -1895,7 +1898,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public DBPImage getCellImage(Object colElement, Object rowElement)
         {
-            if (SHOW_CHECKBOX_AS_IMAGE) {
+            if (!booleanViewStyle.isText()) {
                 DBDAttributeBinding attr = (DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
                 if (isShowAsCheckbox(attr)) {
                     ResultSetRow row = (ResultSetRow) (colElement instanceof ResultSetRow ? colElement : rowElement);
@@ -1903,16 +1906,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (cellValue instanceof Number) {
                         cellValue = ((Number) cellValue).byteValue() != 0;
                     }
-                    if (cellValue instanceof Boolean) {
-                        if ((Boolean) cellValue) {
-                            return UIIcon.CHECK_ON;
-                        } else {
-                            return UIIcon.CHECK_OFF;
-                        }
+                    if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                        return booleanViewStyle.getImage((Boolean) cellValue);
                     }
-                    if (DBUtils.isNullValue(cellValue)) {
-                        return UIIcon.CHECK_QUEST;
-                    }
+                    return null;
                 }
             }
             return null;

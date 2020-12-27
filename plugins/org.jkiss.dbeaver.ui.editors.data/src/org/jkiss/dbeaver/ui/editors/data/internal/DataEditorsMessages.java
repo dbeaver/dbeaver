@@ -56,6 +56,7 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
+    public static String pref_page_database_resultsets_label_show_boolean_config_link;
     public static String pref_page_database_resultsets_label_double_click_behavior;
 
     public static String pref_page_result_selector_editor;
