@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -272,6 +271,8 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
                 break;
             case CLOUD:
                 portText.setText("443");
+                break;
+            default:
                 break;
             }
             
