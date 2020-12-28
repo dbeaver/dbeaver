@@ -63,7 +63,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         });
         addMouseListener();
 
-        return checkBox;
+        return ph;
     }
 
     private void setCheckIcon() {
