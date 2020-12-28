@@ -1322,7 +1322,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     
     void showFiltering(Object columnElement) {
         if (!(columnElement instanceof DBDAttributeBinding)) {
-            log.warn(String.format(
+            log.debug(String.format(
                 "Unable to show distinct filter for columnElement %s",
                 columnElement == null ? "null" : columnElement.toString()
             ));
