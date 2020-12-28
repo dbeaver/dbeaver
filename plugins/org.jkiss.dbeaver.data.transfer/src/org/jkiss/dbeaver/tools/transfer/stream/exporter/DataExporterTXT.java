@@ -87,7 +87,11 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
         for (int i = 0; i < columns.length; i++) {
             DBDAttributeBinding attr = columns[i];
-            int maxLength = (int) attr.getMaxLength();
+            int maxLength = 0;
+            if (maxColumnSize > 0) {
+                // This method may return abnormal values, so use it only if max column's length is set
+                maxLength = (int) attr.getMaxLength();
+            }
             if (attr.getDataKind() == DBPDataKind.DATETIME) {
                 // DATETIME attributes are converted to strings so their actual length may differ
                 maxLength = getCellString(attr, new Date(), DBDDisplayFormat.EDIT).length();
