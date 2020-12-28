@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.BooleanRenderer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ObjectListControl
@@ -176,8 +177,16 @@ public abstract class ObjectViewerRenderer {
             GC gc = event.gc;
             if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
                 BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+                Boolean value;
+                if (cellValue == null) {
+                    value = null;
+                } else if (cellValue instanceof Boolean) {
+                    value = (Boolean)cellValue;
+                } else {
+                    value = CommonUtils.toBoolean(cellValue);
+                }
                 if (booleanStyle.isText()) {
-                    String strValue = booleanStyle.getText(((Boolean)cellValue));
+                    String strValue = booleanStyle.getText(value);
                     Point textExtent = gc.textExtent(strValue);
                     Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
                     //gc.setBackground(getControl().getBackground());
@@ -190,7 +199,7 @@ public abstract class ObjectViewerRenderer {
 //                    Image image = editable ?
 //                        (boolValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
 //                        (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
-                    Image image = DBeaverIcons.getImage(booleanStyle.getImage((Boolean)cellValue));
+                    Image image = DBeaverIcons.getImage(booleanStyle.getImage(value));
                     final Rectangle imageBounds = image.getBounds();
 
                     Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
