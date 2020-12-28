@@ -1320,15 +1320,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 	///////////////////////////////////////////////
 	// Filtering
     
-    public void showFiltering(Object columnElement) {
-
-    	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement) || curAttribute == null) {
+    void showFiltering(Object columnElement) {
+        if (!(columnElement instanceof DBDAttributeBinding)) {
+            log.debug("Unable to show distinct filter for columnElement" + columnElement);
+            return;
+        }
+        DBDAttributeBinding attributeBinding = (DBDAttributeBinding) columnElement;
+        if (!getSelection().getSelectedAttributes().contains(attributeBinding)) {
     		spreadsheet.deselectAll();
-    		controller.showDistinctFilter((DBDAttributeBinding) columnElement);
-    	}   
-    	else
-    		controller.showDistinctFilter(curAttribute);
-    	
+    	}
+        controller.showDistinctFilter(attributeBinding);
     }
 
     ///////////////////////////////////////////////
