@@ -21,14 +21,6 @@ import org.eclipse.osgi.util.NLS;
 public class HANAMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages"; //$NON-NLS-1$
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, HANAMessages.class);
-	}
-
-	private HANAMessages() {
-	}
-
     public static String label_connection;
     public static String label_edition;
     public static String label_host;
@@ -44,5 +36,13 @@ public class HANAMessages extends NLS {
     public static String edition_platform_tenant_db;
     public static String edition_express;
     public static String edition_cloud;
-	
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, HANAMessages.class);
+    }
+
+    private HANAMessages() {
+    }
+    
 }
