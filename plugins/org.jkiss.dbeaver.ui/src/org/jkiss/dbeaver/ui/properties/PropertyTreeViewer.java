@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
+import org.jkiss.dbeaver.ui.BooleanRenderer;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -948,8 +949,16 @@ public class PropertyTreeViewer extends TreeViewer {
                 }
             } else {
                 if (node.property != null) {
-                    final Object propertyValue = getPropertyValue(node);
-                    if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
+                    Object propertyValue = getPropertyValue(node);
+
+                    Class<?> propDataType = node.property.getDataType();
+                    if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
+                        BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+                        if (propertyValue != null && !(propertyValue instanceof Boolean)) {
+                            propertyValue = CommonUtils.toBoolean(propertyValue);
+                        }
+                        return booleanStyle.getText((Boolean) propertyValue);
+                    } else if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (isHidePropertyValue(node.property)) {
                         // Mask value
@@ -973,11 +982,6 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         str.append("]");
                         return str.toString();
-                    }
-                    if (propertyValue instanceof Boolean) {
-                        //BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
-                        //return booleanStyle.getText((Boolean) propertyValue);
-                        return "";
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {
