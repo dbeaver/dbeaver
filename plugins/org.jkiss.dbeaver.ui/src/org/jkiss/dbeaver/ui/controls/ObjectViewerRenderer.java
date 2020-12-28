@@ -186,14 +186,18 @@ public abstract class ObjectViewerRenderer {
                     value = CommonUtils.toBoolean(cellValue);
                 }
                 if (booleanStyle.isText()) {
-                    String strValue = booleanStyle.getText(value);
-                    Point textExtent = gc.textExtent(strValue);
-                    Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
-                    //gc.setBackground(getControl().getBackground());
-                    if (booleanStyle == BooleanRenderer.Style.CHECKBOX && getBooleanEditStyle() == ES_CENTERED) {
-                        gc.drawString(strValue, event.x + (columnBounds.width - textExtent.x) / 2, event.y, true);
-                    } else {
-                        gc.drawString(strValue, event.x + 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                    String cellText = item instanceof TreeItem ? ((TreeItem) item).getText(columnIndex) : "";
+                    if (cellText.isEmpty()) {
+                        // Paint only if item text is empty
+                        String strValue = booleanStyle.getText(value);
+                        Point textExtent = gc.textExtent(strValue);
+                        Rectangle columnBounds = isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
+                        //gc.setBackground(getControl().getBackground());
+                        if (booleanStyle == BooleanRenderer.Style.CHECKBOX && getBooleanEditStyle() == ES_CENTERED) {
+                            gc.drawString(strValue, event.x + (columnBounds.width - textExtent.x) / 2, event.y, true);
+                        } else {
+                            gc.drawString(strValue, event.x + 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
+                        }
                     }
                 } else {
 //                    Image image = editable ?
