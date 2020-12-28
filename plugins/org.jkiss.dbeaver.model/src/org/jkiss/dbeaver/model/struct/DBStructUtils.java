@@ -234,7 +234,7 @@ public final class DBStructUtils {
             if (dataType == null) {
                 // Type not supported by target database
                 // Let's try to find something similar
-                Map<String, DBSDataType> possibleTypes = new HashMap<>();
+                Map<String, DBSDataType> possibleTypes = new LinkedHashMap<>();
                 for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
                     if (DBPDataKind.canConsume(type.getDataKind(), dataKind)) {
                         possibleTypes.put(type.getTypeName().toLowerCase(Locale.ENGLISH), type);
@@ -255,14 +255,16 @@ public final class DBStructUtils {
                             }
                         }
                         if (targetType == null) {
-                            if (typeNameLower.contains("float")) {
+                            if (typeNameLower.contains("float")
+                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6)) {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("float")) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
                                 }
-                            } else if (typeNameLower.contains("double")) {
+                            } else if (typeNameLower.contains("double")
+                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15)) {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("double")) {
                                         targetType = possibleTypes.get(psn);
