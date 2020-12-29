@@ -247,53 +247,50 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
         databaseLabel.setVisible(edition != HANAEdition.GENERIC);
         databaseText.setVisible(edition != HANAEdition.GENERIC);
         
-        portText.setEditable(edition == HANAEdition.GENERIC);
+        portText.setEditable(edition == HANAEdition.GENERIC || edition == HANAEdition.EXPRESS);
         UIUtils.fixReadonlyTextBackground(portText);
-        
-        if (edition == HANAEdition.GENERIC) {
+        switch (edition) {
+        case GENERIC:
             portText.setText(portValue);
-
-        } else {
-            switch (edition) {
-            case GENERIC:
-                break;
-            case PLATFORM_SINGLE_DB:
-                instanceUpdated();
-                break;
-            case PLATFORM_SYSTEM_DB:
-                instanceUpdated();
-                break;
-            case PLATFORM_TENANT_DB:
-                instanceUpdated();
-                break;
-            case EXPRESS:
+            break;
+        case PLATFORM_SINGLE_DB:
+        case PLATFORM_SYSTEM_DB:
+        case PLATFORM_TENANT_DB:
+            instanceUpdated();
+            break;
+        case EXPRESS:
+            if(portValue.isEmpty())
                 portText.setText("39015");
-                break;
-            case CLOUD:
-                portText.setText("443");
-                break;
-            default:
-                break;
-            }
-            
-            if (edition == HANAEdition.PLATFORM_SINGLE_DB || edition == HANAEdition.PLATFORM_SYSTEM_DB || edition == HANAEdition.PLATFORM_TENANT_DB) {
-                instanceText.setText(instanceValue);
-                instanceText.setEditable(true);
-            } else {
-                instanceText.setText("");
-                instanceText.setEditable(false);
-            }
-            UIUtils.fixReadonlyTextBackground(instanceText);
-
-            if (edition == HANAEdition.PLATFORM_TENANT_DB) {
-                databaseText.setText(databaseValue);
-                databaseText.setEditable(true);
-            } else {
-                databaseText.setText("");
-                databaseText.setEditable(false);
-            }
-            UIUtils.fixReadonlyTextBackground(databaseText);
+            else
+                portText.setText(portValue);
+            break;
+        case CLOUD:
+            portText.setText("443");
+            break;
+        default:
+            break;
         }
+        
+        if (edition == HANAEdition.PLATFORM_SINGLE_DB || edition == HANAEdition.PLATFORM_SYSTEM_DB || edition == HANAEdition.PLATFORM_TENANT_DB) {
+            instanceText.setText(instanceValue);
+            instanceText.setEditable(true);
+        } else if (edition == HANAEdition.EXPRESS) {
+            instanceText.setText("90");
+            instanceText.setEditable(false);
+        } else {
+            instanceText.setText("");
+            instanceText.setEditable(false);
+        }
+        UIUtils.fixReadonlyTextBackground(instanceText);
+
+        if (edition == HANAEdition.PLATFORM_TENANT_DB) {
+            databaseText.setText(databaseValue);
+            databaseText.setEditable(true);
+        } else {
+            databaseText.setText("");
+            databaseText.setEditable(false);
+        }
+        UIUtils.fixReadonlyTextBackground(databaseText);
     }
 
     private void instanceUpdated() {
