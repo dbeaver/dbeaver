@@ -2609,10 +2609,12 @@ public class ResultSetViewer extends Viewer
             possibleActions.add(new VirtualAttributeDeleteAction(this, attr));
         }
 
-        possibleActions.add(new VirtualForeignKeyEditAction(this));
+        if (dataSource.getInfo().supportsReferentialIntegrity()) {
+            possibleActions.add(new VirtualForeignKeyEditAction(this));
 
-        possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
-        possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
+            possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
+            possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
+        }
 
         for (IAction action : possibleActions) {
             if (action.isEnabled()) {
