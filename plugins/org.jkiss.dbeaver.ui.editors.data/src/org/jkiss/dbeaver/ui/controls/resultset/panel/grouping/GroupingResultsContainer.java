@@ -16,10 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -31,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -41,6 +51,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class GroupingResultsContainer implements IResultSetContainer {
+
+    private static final Log log = Log.getLog(GroupingResultsContainer.class);
 
     public static final String FUNCTION_COUNT = "COUNT";
 
@@ -217,17 +229,44 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT ");
-        for (int i = 0; i < groupAttributes.size(); i++) {
-            if (i > 0) sql.append(", ");
-            sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
+        if (dialect.supportsSubqueries()) {
+            sql.append("SELECT ");
+            for (int i = 0; i < groupAttributes.size(); i++) {
+                if (i > 0) sql.append(", ");
+                sql.append(DBUtils.getQuotedIdentifier(dataSource, groupAttributes.get(i)));
+            }
+            for (String func : groupFunctions) {
+                sql.append(", ").append(func);
+            }
+            sql.append(" FROM (\n");
+            sql.append(queryText);
+            sql.append(") src");
+        } else {
+            try {
+                Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
+                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+                    select.setOrderByElements(null);
+
+                    List<SelectItem> selectItems = new ArrayList<>();
+                    select.setSelectItems(selectItems);
+                    for (String groupAttribute : groupAttributes) {
+                        selectItems.add(
+                            new SelectExpressionItem(
+                                new Column(
+                                    DBUtils.getQuotedIdentifier(dataSource, groupAttribute))));
+                    }
+                    for (String func : groupFunctions) {
+                        Expression expression = CCJSqlParserUtil.parseExpression(func);
+                        selectItems.add(new SelectExpressionItem(expression));
+                    }
+                }
+                queryText = statement.toString();
+            } catch (Throwable e) {
+                log.debug("SQL parse error", e);
+            }
+            sql.append(queryText);
         }
-        for (String func : groupFunctions) {
-            sql.append(", ").append(func);
-        }
-        sql.append(" FROM (\n");
-        sql.append(queryText);
-        sql.append(") src");
 
         sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
