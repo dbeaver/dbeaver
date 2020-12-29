@@ -50,9 +50,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
-        Composite ph = UIUtils.createPlaceholder(parent, 1);
-        checkBox = new Label(ph, SWT.NONE);
-        setCheckIcon();
+        //Composite ph = UIUtils.createPlaceholder(parent, 1);
+        checkBox = new Label(parent, SWT.NONE);
+        //setCheckIcon();
         checkBox.setFont(parent.getFont());
 
         checkBox.addFocusListener(new FocusAdapter() {
@@ -63,7 +63,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         });
         addMouseListener();
 
-        return ph;
+        return checkBox;
     }
 
     private void setCheckIcon() {
@@ -89,7 +89,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     protected void doSetValue(Object value) {
         Assert.isTrue(checkBox != null && (value instanceof Boolean));
         checked = CommonUtils.toBoolean(value);
-        setCheckIcon();
+        //setCheckIcon();
     }
 
     @Override
@@ -126,7 +126,10 @@ public class CustomCheckboxCellEditor extends CellEditor {
         setCheckIcon();
         applyEditorValue();
         // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
-        UIUtils.asyncExec(this::fireApplyEditorValue);
+        UIUtils.asyncExec(() -> {
+            fireApplyEditorValue();
+            dispose();
+        });
     }
 
     private void addMouseListener() {
