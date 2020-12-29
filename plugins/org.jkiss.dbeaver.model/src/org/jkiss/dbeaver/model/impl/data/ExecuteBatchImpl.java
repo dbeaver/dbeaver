@@ -108,8 +108,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             }
         }
 
-        Object disableBatchesOption = options.get(DBSDataManipulator.OPTION_DISABLE_BATCHES);
-        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && (Boolean.FALSE.equals(disableBatchesOption) || disableBatchesOption == null);
+        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && !CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_DISABLE_BATCHES));
         if (values.size() <= 1) {
             useBatch = false;
         }
