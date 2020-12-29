@@ -472,6 +472,19 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
+                description="sql server data types provider"
+                id="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
+                label="SQL Server data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource"/>
+            <type name="MONEY"/>
+            <type name="SMALLMONEY"/>
+        </provider>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png">
         </dialect>
