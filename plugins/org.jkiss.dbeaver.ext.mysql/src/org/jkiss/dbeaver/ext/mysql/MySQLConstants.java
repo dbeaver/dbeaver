@@ -211,6 +211,8 @@ public class MySQLConstants {
     public static final String TYPE_JSON = "json";
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_YEAR = "year";
+    public static final String TYPE_ENUM = "enum";
+    public static final String TYPE_SET = "set";
 
     public static final String BIN_FOLDER = "bin";
     public static final String ENV_VAR_MYSQL_PWD = "MYSQL_PWD";
