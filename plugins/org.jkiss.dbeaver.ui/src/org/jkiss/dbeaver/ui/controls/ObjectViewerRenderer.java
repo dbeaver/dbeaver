@@ -193,7 +193,7 @@ public abstract class ObjectViewerRenderer {
                         Point textExtent = gc.textExtent(strValue);
                         Rectangle columnBounds = isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
                         //gc.setBackground(getControl().getBackground());
-                        if (booleanStyle == BooleanRenderer.Style.CHECKBOX && getBooleanEditStyle() == ES_CENTERED) {
+                        if ((booleanStyle == BooleanRenderer.Style.CHECKBOX || booleanStyle == BooleanRenderer.Style.TEXTBOX) && getBooleanEditStyle() == ES_CENTERED) {
                             gc.drawString(strValue, event.x + (columnBounds.width - textExtent.x) / 2, event.y, true);
                         } else {
                             gc.drawString(strValue, event.x + 4, event.y + (columnBounds.height - textExtent.y) / 2, true);
