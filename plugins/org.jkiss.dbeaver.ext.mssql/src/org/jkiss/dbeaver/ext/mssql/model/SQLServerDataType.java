@@ -337,6 +337,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case SQLServerConstants.TYPE_SMALLINT:
             case SQLServerConstants.TYPE_DECIMAL:
             case SQLServerConstants.TYPE_FLOAT:
+            case SQLServerConstants.TYPE_MONEY:
+            case SQLServerConstants.TYPE_SMALLMONEY:
                 return DBPDataKind.NUMERIC;
 
             case SQLServerConstants.TYPE_DATETIME:
@@ -365,8 +367,6 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case SQLServerConstants.TYPE_HIERARCHYID:
                 return DBPDataKind.BINARY;
 
-            case SQLServerConstants.TYPE_MONEY:
-            case SQLServerConstants.TYPE_SMALLMONEY:
             case SQLServerConstants.TYPE_SQL_VARIANT:
                 return DBPDataKind.OBJECT;
 
