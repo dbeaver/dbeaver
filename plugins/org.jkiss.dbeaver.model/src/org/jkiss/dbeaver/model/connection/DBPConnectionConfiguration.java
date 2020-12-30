@@ -195,6 +195,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         properties.put(name, value);
     }
 
+    public void removeProperty(String name) {
+        properties.remove(name);
+    }
+    
     @NotNull
     public Map<String, String> getProperties() {
         return properties;
