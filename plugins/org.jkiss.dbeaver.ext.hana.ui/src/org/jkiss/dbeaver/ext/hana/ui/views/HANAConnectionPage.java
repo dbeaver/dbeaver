@@ -16,21 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.hana.ui.views;
 
-import java.util.Locale;
-import java.util.Map.Entry;
-
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.hana.ui.HANAActivator;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAEdition;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -40,6 +33,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
+import java.util.Map.Entry;
 
 /*
  *  when edition==GENERIC, don't show/touch any driver properties for
@@ -73,23 +69,25 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
     private String instanceValue;
     private String databaseValue;
 
-    private static ImageDescriptor logoImage = HANAActivator.getImageDescriptor("icons/sap_hana_logo.png"); //$NON-NLS-1$
-    private DriverPropertiesDialogPage driverPropsPage;
+    private final Image logoImage;
 
-    
     public HANAConnectionPage() {
-        driverPropsPage = new DriverPropertiesDialogPage(this);
+        logoImage = createImage("icons/sap_hana_logo.png"); //$NON-NLS-1$
     }
 
     @Override
     public void dispose() {
         super.dispose();
+        UIUtils.dispose(logoImage);
+    }
+
+    @Override
+    public Image getImage() {
+        return logoImage;
     }
 
     @Override
     public void createControl(Composite composite) {
-        setImageDescriptor(logoImage);
-
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         settingsGroup.setLayout(new GridLayout(1, false));
         settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -105,14 +103,13 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
 
         hostText = UIUtils.createLabelText(addrGroup, HANAMessages.label_host, "");
         portText = UIUtils.createLabelText(addrGroup, HANAMessages.label_port, "");
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(portText) * 5;
-        portText.setLayoutData(gd);
+        portText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        ((GridData)portText.getLayoutData()).widthHint = UIUtils.getFontHeight(portText) * 5;
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
         instanceLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_instance);
         instanceText = new Text(addrGroup, SWT.BORDER);
-        instanceText.setLayoutData(gd);
+        instanceText.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         instanceText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         instanceText.setToolTipText(HANAMessages.tooltip_instance);
         databaseLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_database);
@@ -224,7 +221,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
 
     @Override
     public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
-        return new IDialogPage[] { driverPropsPage };
+        return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
     }
 
     private void editionUpdated() {
@@ -240,12 +237,6 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
         }
         
         edition = HANAEdition.fromTitle(editionCombo.getText());
-        
-        // restore / set calculated new values
-        instanceLabel.setVisible(edition != HANAEdition.GENERIC);
-        instanceText.setVisible(edition != HANAEdition.GENERIC);
-        databaseLabel.setVisible(edition != HANAEdition.GENERIC);
-        databaseText.setVisible(edition != HANAEdition.GENERIC);
         
         portText.setEditable(edition == HANAEdition.GENERIC || edition == HANAEdition.EXPRESS);
         UIUtils.fixReadonlyTextBackground(portText);
@@ -291,6 +282,20 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
             databaseText.setEditable(false);
         }
         UIUtils.fixReadonlyTextBackground(databaseText);
+
+        toggleControlVisibility(instanceLabel);
+        toggleControlVisibility(instanceText);
+        toggleControlVisibility(databaseLabel);
+        toggleControlVisibility(databaseText);
+        ((Composite)getControl()).layout(true, true);
+    }
+
+    private void toggleControlVisibility(Control control) {
+        control.setVisible(edition != HANAEdition.GENERIC);
+        Object layoutData = control.getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).exclude = (edition == HANAEdition.GENERIC);
+        }
     }
 
     private void instanceUpdated() {
