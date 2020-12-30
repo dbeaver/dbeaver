@@ -149,6 +149,15 @@ public class AdvancedList extends Canvas {
                 }
             }
         });
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                if (getSelectedItem() == null && !items.isEmpty()) {
+                    setSelection(items.get(0));
+                }
+            }
+        });
         toolTipHandler = new CustomToolTipHandler(this);
     }
 
