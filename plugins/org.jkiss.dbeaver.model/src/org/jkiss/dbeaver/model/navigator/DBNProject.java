@@ -233,6 +233,17 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return extraNodes;
     }
 
+    public <T> T getExtraNode(Class<T> nodeType) {
+        if (extraNodes != null) {
+            for (DBNNode node : extraNodes) {
+                if (nodeType.isAssignableFrom(node.getClass())) {
+                    return nodeType.cast(node);
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void addExtraNode(@NotNull DBNNode node) {
         extraNodes.add(node);
