@@ -1584,6 +1584,11 @@ public final class DBUtils {
     {
         DBSObject structObject = getFromObject(typedObject);
         DBPDataSource dataSource = structObject == null ? null : structObject.getDataSource();
+        return getFullTypeName(dataSource, typedObject);
+    }
+
+    @NotNull
+    public static String getFullTypeName(DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
         String typeName = typedObject.getTypeName();
         String typeModifiers = SQLUtils.getColumnTypeModifiers(dataSource, typedObject, typeName, typedObject.getDataKind());
         return typeModifiers == null ? typeName : (typeName + typeModifiers);
