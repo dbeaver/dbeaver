@@ -255,6 +255,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_ui_general_label_proxy_password;
     public static String pref_page_drivers_group_location;
 
+    public static String dialog_connection_driver_project;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIConnectionMessages.class);
