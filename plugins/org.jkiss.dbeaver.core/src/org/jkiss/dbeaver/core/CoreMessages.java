@@ -370,7 +370,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_socksproxy_port;
 	public static String dialog_connection_wizard_socksproxy_username;
 	public static String dialog_connection_wizard_socksproxy_password;
-	public static String dialog_connection_driver_project;
 
 
 	// Connections
