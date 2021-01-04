@@ -101,7 +101,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * Most valuable attribute reference.
      * @return resolved entity attribute or just meta attribute
      */
-    @Nullable
+    @NotNull
     public DBSAttributeBase getAttribute()
     {
         DBSEntityAttribute attr = getEntityAttribute();

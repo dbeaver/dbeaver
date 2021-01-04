@@ -233,8 +233,8 @@ public class DatabaseTransferUtils {
                         boolean typeModifiersSet = false;
                         if (typedAttr instanceof DBSTypedObjectExt3) {
                             String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
-                            ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
                             typeModifiersSet = fullTargetTypeName.contains("(");
+                            ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
                         } else {
                             String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
                             typedAttr.setTypeName(targetAttrType);

@@ -116,7 +116,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     @Override
     public String getFullTypeName() {
-        return getAttribute().getFullTypeName();
+        if (entityAttribute != null) {
+            return entityAttribute.getFullTypeName();
+        } else {
+            // Resolve full type name using explicit datasource
+            return DBUtils.getFullTypeName(getDataSource(), metaAttribute);
+        }
     }
 
     @Override
@@ -193,6 +198,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return rowIdentifier;
     }
 
+    @Nullable
     @Override
     public String getRowIdentifierStatus() {
         return rowIdentifierStatus;
