@@ -152,7 +152,7 @@ public class DriverSelectViewer extends Viewer {
         this.forceClassic = forceClassic;
         this.dataSources = DataSourceRegistry.getAllDataSources();
 
-        OrderBy defOrderBy = CommonUtils.valueOf(OrderBy.class, DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_ORDER_BY), OrderBy.score);
+        OrderBy defOrderBy = getDefaultOrderBy();
         this.setOrderBy(defOrderBy);
 
         composite = new Composite(parent, SWT.NONE);
@@ -174,6 +174,10 @@ public class DriverSelectViewer extends Viewer {
         createSelectorControl();
 
         refreshJob = createRefreshJob();
+    }
+
+    public static OrderBy getDefaultOrderBy() {
+        return CommonUtils.valueOf(OrderBy.class, DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_ORDER_BY), OrderBy.score);
     }
 
     public OrderBy getOrderBy() {

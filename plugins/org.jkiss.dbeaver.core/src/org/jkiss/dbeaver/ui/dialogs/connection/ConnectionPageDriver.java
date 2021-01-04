@@ -85,13 +85,6 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     {
         Composite placeholder = UIUtils.createComposite(parent, 1);
 
-        {
-            driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 200;
-            driverSelectViewer.getControl().setLayoutData(gd);
-        }
-
         setControl(placeholder);
 
         Composite controlsGroup = UIUtils.createComposite(placeholder, 5);
@@ -136,13 +129,14 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             orderGroup.setLayout(new RowLayout());
             new Label(orderGroup, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SORT));
             new Label(orderGroup, SWT.NONE).setText("Sort by: ");
+            DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
 
             for (DriverSelectViewer.OrderBy ob : DriverSelectViewer.OrderBy.values()) {
                 Button obScoreButton = new Button(orderGroup, SWT.RADIO);
                 obScoreButton.setText(ob.getLabel());
                 obScoreButton.setToolTipText(ob.getDescription());
                 obScoreButton.setData(ob);
-                if (ob == driverSelectViewer.getOrderBy()) {
+                if (ob == defaultOrderBy) {
                     obScoreButton.setSelection(true);
                 }
                 obScoreButton.addSelectionListener(new SelectionAdapter() {
@@ -164,6 +158,14 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         if (projectSelector.getSelectedProject() == null) {
             setErrorMessage("You need to create a project first");
         }
+
+        {
+            driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            driverSelectViewer.getControl().setLayoutData(gd);
+        }
+
 
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
     }
