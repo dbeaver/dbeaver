@@ -579,6 +579,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 itemBackground = ((IColorProvider) labelProvider).getBackground(item);
                 itemForeground = ((IColorProvider) labelProvider).getForeground(item);
             }
+            if (itemBackground != null && itemForeground == null) {
+                itemForeground = UIUtils.getContrastColor(itemBackground);
+            }
             TreeItem newItem = new TreeItem(table, SWT.NONE);
             newItem.setData(item);
             newItem.setText(itemText);
