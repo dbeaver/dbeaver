@@ -168,6 +168,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
 
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
+        UIUtils.asyncExec(() -> driverSelectViewer.getControl().setFocus());
     }
 
     public DBPDriver getSelectedDriver()
