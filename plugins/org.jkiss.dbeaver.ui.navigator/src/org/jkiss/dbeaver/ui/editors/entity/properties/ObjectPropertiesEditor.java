@@ -652,7 +652,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
-                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
+                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new TabbedFolderInfo(
                                     folder.getNodeName(),
@@ -677,7 +677,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(
