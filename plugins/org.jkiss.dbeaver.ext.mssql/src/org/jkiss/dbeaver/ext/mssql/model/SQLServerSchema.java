@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * SQL Server schema
@@ -484,7 +481,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             } else {
                 sql.append(" AND t.schema_id = ?");
             }
-            sql.append("\nORDER BY i.object_id,i.index_id,ic.index_column_id");
+            sql.append("\nORDER BY i.object_id,i.index_id,ic.key_ordinal");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
