@@ -41,12 +41,11 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
 /**
@@ -114,12 +113,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         try {
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
 
-            final IFile file = getEditorFile();
-            file.setContents(
-                    new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
-                    true,
-                    true,
-                    monitor);
+            final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+            IOUtils.writeFileFromString(localFile, diagramState);
 
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
@@ -227,6 +222,9 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             return;
         }
         final IFile file = getEditorFile();
+        if (file == null) {
+            return;
+        }
         delta = delta.findMember(file.getFullPath());
         if (delta == null) {
             return;
