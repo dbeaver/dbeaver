@@ -110,6 +110,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
         instanceLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_instance);
         instanceText = new Text(addrGroup, SWT.BORDER);
         instanceText.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        ((GridData)instanceText.getLayoutData()).widthHint = UIUtils.getFontHeight(instanceText) * 2;
         instanceText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         instanceText.setToolTipText(HANAMessages.tooltip_instance);
         databaseLabel = UIUtils.createControlLabel(addrGroup, HANAMessages.label_database);
@@ -263,7 +264,13 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
         }
         
         if (edition == HANAEdition.PLATFORM_SINGLE_DB || edition == HANAEdition.PLATFORM_SYSTEM_DB || edition == HANAEdition.PLATFORM_TENANT_DB) {
-            instanceText.setText(instanceValue);
+            if(instanceValue.isEmpty()) {
+                int port = CommonUtils.toInt(portValue);
+                if(port >= 30000 && port <= 39999)
+                    instanceText.setText(String.valueOf((port-30000)/100));
+            } else {
+                instanceText.setText(instanceValue);
+            }
             instanceText.setEditable(true);
         } else if (edition == HANAEdition.EXPRESS) {
             instanceText.setText("90");
