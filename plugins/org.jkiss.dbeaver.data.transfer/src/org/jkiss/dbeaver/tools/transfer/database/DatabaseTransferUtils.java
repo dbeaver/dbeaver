@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -35,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
 
@@ -46,6 +44,12 @@ public class DatabaseTransferUtils {
     private static final Log log = Log.getLog(DatabaseTransferUtils.class);
 
     private static final boolean USE_STRUCT_DDL = true;
+
+    private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
+    private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         DBSObjectContainer container = consumerSettings.getContainer();
@@ -334,6 +338,26 @@ public class DatabaseTransferUtils {
             throw new DBException("Can not set name for target entity '" + targetEntity.getClass().getName() + "'");
         }
         commandContext.saveChanges(monitor, options);
+    }
+
+    public static Pair<DBPDataKind, String> getDataType(String value) {
+        if (CommonUtils.isEmpty(value)) {
+            return DATA_TYPE_UNKNOWN;
+        }
+        try {
+            Integer.parseInt(value);
+            return DATA_TYPE_INTEGER;
+        } catch (NumberFormatException ignored) {
+        }
+        try {
+            Double.parseDouble(value);
+            return DATA_TYPE_REAL;
+        } catch (NumberFormatException ignored) {
+        }
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            return DATA_TYPE_BOOLEAN;
+        }
+        return DATA_TYPE_STRING;
     }
 
     static class TargetCommandContext extends AbstractCommandContext {
