@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -55,11 +56,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final int MAX_COLUMN_LENGTH = 1024;
 
     private static final int MAX_DATA_TYPE_SAMPLES = 1000;
-    private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
-    private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
-    private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
-    private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
-    private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     public enum HeaderPosition {
         none,
@@ -110,7 +106,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     }
 
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
-                        Pair<DBPDataKind, String> dataType = getDataType(line[i]);
+                        Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i]);
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
 
                         switch (dataType.getFirst()) {
@@ -177,30 +173,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
             }
             return line;
         }
-    }
-
-    private Pair<DBPDataKind, String> getDataType(String value) {
-        if (CommonUtils.isEmpty(value)) {
-            return DATA_TYPE_UNKNOWN;
-        }
-
-        try {
-            Integer.parseInt(value);
-            return DATA_TYPE_INTEGER;
-        } catch (NumberFormatException ignored) {
-        }
-
-        try {
-            Double.parseDouble(value);
-            return DATA_TYPE_REAL;
-        } catch (NumberFormatException ignored) {
-        }
-
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            return DATA_TYPE_BOOLEAN;
-        }
-
-        return DATA_TYPE_STRING;
     }
 
     @Override
