@@ -137,7 +137,11 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+            value = value.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&apos;");
             getWriter().write(value);
         }
     }
