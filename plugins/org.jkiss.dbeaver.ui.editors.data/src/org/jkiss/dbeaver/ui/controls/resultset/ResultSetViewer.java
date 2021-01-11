@@ -4035,6 +4035,8 @@ public class ResultSetViewer extends Viewer
             updateEditControls();
         }
 
+        activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
+
         return curRow;
     }
 
