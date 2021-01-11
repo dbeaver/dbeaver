@@ -334,7 +334,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (curDriver != null) {
                         final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
                         final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                        if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                        if (!CommonUtils.isEmpty(paramName)) {
                             curDriver.setConnectionProperty(paramName, paramValue);
                         }
                     }
@@ -369,5 +369,4 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
         }
     }
-
 }
