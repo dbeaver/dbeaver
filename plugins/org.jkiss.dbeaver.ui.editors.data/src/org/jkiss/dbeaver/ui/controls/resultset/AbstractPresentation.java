@@ -130,7 +130,9 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 }
                 break;
             case CURRENT:
-                // do nothing
+                if (currentRow != null) {
+                    controller.setCurrentRow(model.getRow(currentRow.getVisualNumber()));
+                }
                 break;
         }
         if (controller.isRecordMode()) {
