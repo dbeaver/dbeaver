@@ -925,6 +925,25 @@
                     <parameter name="krb5.show-ssl-jks" value="true"/>
                 </driver>
 
+                <!-- Trino, formerly PrestoSQL -->
+                <driver
+                    id="trino_jdbc"
+                    label="Trino"
+                    icon="icons/trino_icon.png"
+                    iconBig="icons/trino_icon_big.png"
+                    class="io.trino.jdbc.Trino"
+                    sampleURL="jdbc:trino://{host}:{port}[/{database}]"
+                    defaultPort="8080"
+                    description="Trino JDBC driver"
+                    webURL="https://trino.io/"
+                    categories="sql,analytic,bigdata,hadoop">
+                    <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                    <parameter name="krb5.show-service" value="true"/>
+                    <parameter name="krb5.show-ssl-jks" value="true"/>
+                </driver>
+
                 <!-- CUBRID -->
                 <driver
                         id="cubrid_jdbc"
