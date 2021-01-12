@@ -168,7 +168,11 @@ public class DBeaverCommandLine
         if (!uiActivated) {
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
-                controller.quit();
+                try {
+                    controller.quit();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 return true;
             }
             if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
