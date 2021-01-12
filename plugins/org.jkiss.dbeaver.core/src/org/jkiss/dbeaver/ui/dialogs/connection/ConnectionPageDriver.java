@@ -119,7 +119,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         {
             // Spacer
-            new Label(controlsGroup, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createPanelDivider(controlsGroup);
         }
 
         {
@@ -150,8 +150,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
 
         {
-            // Spacer
-            new Label(controlsGroup, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createPanelDivider(controlsGroup);
         }
 
         projectSelector = new ProjectSelectorPanel(controlsGroup, NavigatorUtils.getSelectedProject());
@@ -169,6 +168,14 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
         UIUtils.asyncExec(() -> driverSelectViewer.getControl().setFocus());
+    }
+
+    public void createPanelDivider(Composite controlsGroup) {
+        Composite filler = UIUtils.createComposite(controlsGroup, 3);
+        filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(filler, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(filler, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+        new Label(filler, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
 
     public DBPDriver getSelectedDriver()
