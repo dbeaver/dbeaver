@@ -34,6 +34,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
@@ -170,7 +171,7 @@ public class SQLEditor extends SQLEditorBase implements
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
     @Nullable
-    private CustomSashForm presentationSash;
+    private Composite presentationStack;
     private CTabFolder resultTabs;
     private TabFolderReorder resultTabsReorder;
     private CTabItem activeResultsTab;
@@ -789,16 +790,15 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Create editor presentations sash
         Composite pPlaceholder = null;
+        StackLayout presentationStackLayout = null;
         if (extraPresentationDescriptor != null) {
-            presentationSash = UIUtils.createPartDivider(
-                    this,
-                sqlEditorPanel,
-                    ((resultSetOrientation.getSashOrientation() == SWT.VERTICAL) ? SWT.HORIZONTAL : SWT.VERTICAL) | SWT.SMOOTH);
-            presentationSash.setSashWidth(5);
-            presentationSash.setLayoutData(new GridData(GridData.FILL_BOTH));
-            editorContainer = presentationSash;
+            presentationStack = new Composite(sqlEditorPanel, SWT.NONE);
+            presentationStack.setLayoutData(new GridData(GridData.FILL_BOTH));
+            presentationStackLayout = new StackLayout();
+            presentationStack.setLayout(presentationStackLayout);
+            editorContainer = presentationStack;
 
-            pPlaceholder = new Composite(presentationSash, SWT.NONE);
+            pPlaceholder = new Composite(presentationStack, SWT.NONE);
             pPlaceholder.setLayout(new FillLayout());
         } else {
             editorContainer = sqlEditorPanel;
@@ -813,14 +813,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (pPlaceholder != null) {
             switch (extraPresentationDescriptor.getActivationType()) {
                 case HIDDEN:
-                    presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
+                    presentationStackLayout.topControl = presentationStack.getChildren()[SQL_EDITOR_CONTROL_INDEX];
                     break;
                 case MAXIMIZED:
                 case VISIBLE:
                     extraPresentation.createPresentation(pPlaceholder, this);
                     if (extraPresentationDescriptor.getActivationType() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
-                        if (presentationSash.getChildren()[EXTRA_CONTROL_INDEX] != null) {
-                            presentationSash.setMaximizedControl(pPlaceholder);
+                        if (presentationStack.getChildren()[EXTRA_CONTROL_INDEX] != null) {
+                            presentationStackLayout.topControl = pPlaceholder;
                         }
                     }
                     break;
@@ -1338,10 +1338,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public SQLEditorPresentation.ActivationType getExtraPresentationState() {
-        if (extraPresentation == null) {
+        if (extraPresentation == null || presentationStack == null) {
             return SQLEditorPresentation.ActivationType.HIDDEN;
         }
-        Control maximizedControl = presentationSash.getMaximizedControl();
+        Control maximizedControl = ((StackLayout)presentationStack.getLayout()).topControl;
         if (maximizedControl == getExtraPresentationControl()) {
             return SQLEditorPresentation.ActivationType.MAXIMIZED;
         } else if (maximizedControl == getEditorControlWrapper()) {
@@ -1352,14 +1352,15 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void showExtraPresentation(boolean show, boolean maximize) {
-        if (extraPresentationDescriptor == null) {
+        if (extraPresentationDescriptor == null || presentationStack == null) {
             return;
         }
         resultsSash.setRedraw(false);
         try {
+            StackLayout stackLayout = (StackLayout) presentationStack.getLayout();
             if (!show) {
                 //boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
-                presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
+                stackLayout.topControl = presentationStack.getChildren()[SQL_EDITOR_CONTROL_INDEX];
                 //if (epHasFocus) {
                     getEditorControlWrapper().setFocus();
                 //}
@@ -1374,10 +1375,10 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 if (maximize) {
-                    presentationSash.setMaximizedControl(getExtraPresentationControl());
+                    stackLayout.topControl = getExtraPresentationControl();
                     getExtraPresentationControl().setFocus();
                 } else {
-                    presentationSash.setMaximizedControl(null);
+                    stackLayout.topControl = null;
                 }
             }
 
@@ -1427,6 +1428,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (sideBarChanged) {
                 sideToolBar.getParent().layout(true, true);
             }
+
+            presentationStack.layout(true, true);
         } finally {
             resultsSash.setRedraw(true);
         }
@@ -1445,7 +1448,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private Control getExtraPresentationControl() {
-        return presentationSash.getChildren()[EXTRA_CONTROL_INDEX];
+        return presentationStack.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
     public void toggleResultPanel() {
