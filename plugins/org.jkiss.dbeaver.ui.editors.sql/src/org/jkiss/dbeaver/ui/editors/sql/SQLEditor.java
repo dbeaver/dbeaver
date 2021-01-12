@@ -32,10 +32,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -172,6 +169,9 @@ public class SQLEditor extends SQLEditorBase implements
     private Composite sqlEditorPanel;
     @Nullable
     private Composite presentationStack;
+    private SashForm sqlExtraPanelSash;
+    private CTabFolder sqlExtraPanelFolder;
+
     private CTabFolder resultTabs;
     private TabFolderReorder resultTabsReorder;
     private CTabItem activeResultsTab;
@@ -788,11 +788,16 @@ public class SQLEditor extends SQLEditorBase implements
         // Create left vertical toolbar
         createControlsBar(sqlEditorPanel);
 
+        sqlExtraPanelSash = new SashForm(sqlEditorPanel, SWT.HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 5;
+        sqlExtraPanelSash.setLayoutData(gd);
+
         // Create editor presentations sash
         Composite pPlaceholder = null;
         StackLayout presentationStackLayout = null;
         if (extraPresentationDescriptor != null) {
-            presentationStack = new Composite(sqlEditorPanel, SWT.NONE);
+            presentationStack = new Composite(sqlExtraPanelSash, SWT.NONE);
             presentationStack.setLayoutData(new GridData(GridData.FILL_BOTH));
             presentationStackLayout = new StackLayout();
             presentationStack.setLayout(presentationStackLayout);
@@ -801,11 +806,23 @@ public class SQLEditor extends SQLEditorBase implements
             pPlaceholder = new Composite(presentationStack, SWT.NONE);
             pPlaceholder.setLayout(new FillLayout());
         } else {
-            editorContainer = sqlEditorPanel;
+            editorContainer = sqlExtraPanelSash;
         }
 
         super.createPartControl(editorContainer);
         getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        sqlExtraPanelFolder = new CTabFolder(sqlExtraPanelSash, SWT.TOP | SWT.CLOSE | SWT.FLAT);
+//        CTabItem testItem = new CTabItem(sqlExtraPanelPlaceholder, SWT.LEFT);
+//        testItem.setText("Test output");
+//        testItem.setImage(IMG_OUTPUT);
+//        testItem.setShowClose(true);
+//        testItem.setControl(new StyledText(sqlExtraPanelPlaceholder, SWT.NONE));
+        sqlExtraPanelFolder.setSelection(0);
+
+        restoreSashRatio(sqlExtraPanelSash, SQLPreferenceConstants.EXTRA_PANEL_RATIO);
+        sqlExtraPanelSash.setMaximizedControl(editorContainer);
+        this.addSashRatioSaveListener(sqlExtraPanelSash, SQLPreferenceConstants.EXTRA_PANEL_RATIO);
 
         // Create right vertical toolbar
         createPresentationSwitchBar(sqlEditorPanel);
@@ -884,14 +901,24 @@ public class SQLEditor extends SQLEditorBase implements
 
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, new ShowPreferencesAction(), false);
 
-        Label label = new Label(sideToolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_H));
+        new Label(sideToolBar, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_H));
 
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, false);
+        VerticalButton.create(
+            sideToolBar,
+            SWT.LEFT | SWT.CHECK,
+            getSite(),
+            SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
+            true)
+            .setText("Output");
+        VerticalButton.create(
+            sideToolBar,
+            SWT.LEFT | SWT.CHECK,
+            getSite(),
+            SQLEditorCommands.CMD_SQL_SHOW_LOG,
+            true)
+            .setText("Log");
 
 /*
         sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_PANELS));
@@ -999,32 +1026,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         });
-        this.resultTabs.addListener(SWT.Resize, event -> {
-            if (!resultsSash.isDisposed()) {
-                int[] weights = resultsSash.getWeights();
-                IPreferenceStore prefs = getPreferenceStore();
-                if (prefs != null && weights.length == 2) {
-                    prefs.setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
-                }
-            }
-        });
+        this.addSashRatioSaveListener(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
         this.resultTabs.addListener(TabFolderReorder.ITEM_MOVE_EVENT, event -> {
             CTabItem item = (CTabItem) event.item;
             if (item.getData() instanceof QueryResultsContainer) {
                 ((QueryResultsContainer) item.getData()).resultsTab = item;
             }
         });
-        String resultsPanelRatio = getPreferenceStore().getString(SQLPreferenceConstants.RESULTS_PANEL_RATIO);
-        if (!CommonUtils.isEmpty(resultsPanelRatio)) {
-            String[] weights = resultsPanelRatio.split("-");
-            if (weights.length > 1) {
-                resultsSash.setWeights(new int[] {
-                    Integer.parseInt(weights[0]),
-                    Integer.parseInt(weights[1]),
-                });
-            }
-        }
-
+        restoreSashRatio(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
 
         getTextViewer().getTextWidget().addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
@@ -1061,8 +1070,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Extra views
         //planView = new ExplainPlanViewer(this, resultTabs);
-        logViewer = new SQLLogPanel(resultTabs, this);
-        outputViewer = new SQLEditorOutputConsoleViewer(getSite(), resultTabs, SWT.NONE);
+        logViewer = new SQLLogPanel(sqlExtraPanelFolder, this);
+        outputViewer = new SQLEditorOutputConsoleViewer(getSite(), sqlExtraPanelFolder, SWT.NONE);
 
         // Create results tab
         createQueryProcessor(true, true);
@@ -1206,6 +1215,33 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private void addSashRatioSaveListener(SashForm sash, String prefId) {
+        Control control = sash.getChildren()[0];
+        control.addListener(SWT.Resize, event -> {
+            if (!control.isDisposed()) {
+                int[] weights = sash.getWeights();
+                IPreferenceStore prefs = getPreferenceStore();
+                if (prefs != null && weights.length == 2) {
+                    prefs.setValue(prefId, weights[0] + "-" + weights[1]);
+                }
+            }
+        });
+    }
+
+    private void restoreSashRatio(SashForm sash, String prefId) {
+        String resultsPanelRatio = getPreferenceStore().getString(prefId);
+        if (!CommonUtils.isEmpty(resultsPanelRatio)) {
+            String[] weightsStr = resultsPanelRatio.split("-");
+            if (weightsStr.length > 1) {
+                int[] weights = {
+                    CommonUtils.toInt(weightsStr[0]),
+                    CommonUtils.toInt(weightsStr[1]),
+                };
+                sash.setWeights(weights);
+            }
+        }
+    }
+
     private void setActiveResultsContainer(QueryResultsContainer data) {
         curResultsContainer = data;
         curQueryProcessor = curResultsContainer.queryProcessor;
@@ -1224,14 +1260,18 @@ public class SQLEditor extends SQLEditorBase implements
             log.warn("Tool item for command " + commandId + " not found");
             return;
         }
-        for (CTabItem item : resultTabs.getItems()) {
+        for (CTabItem item : sqlExtraPanelFolder.getItems()) {
             if (item.getData() == view) {
                 // Close tab if it is already open
                 viewItem.setChecked(false);
                 viewItem.redraw();
                 item.dispose();
-                break;
+                return;
             }
+        }
+
+        if (sqlExtraPanelSash.getMaximizedControl() != null) {
+            sqlExtraPanelSash.setMaximizedControl(null);
         }
 
         if (view == outputViewer.getControl()) {
@@ -1241,7 +1281,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Create new tab
         viewItem.setChecked(true);
 
-        CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+        CTabItem item = new CTabItem(sqlExtraPanelFolder, SWT.CLOSE);
         item.setControl(view);
         item.setText(name);
         item.setToolTipText(toolTip);
@@ -1253,9 +1293,11 @@ public class SQLEditor extends SQLEditorBase implements
                 viewItem.setChecked(false);
                 viewItem.redraw();
             }
-            resultTabDisposeListener.widgetDisposed(e);
+            if (sqlExtraPanelFolder.getItemCount() == 0) {
+                sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
+            }
         });
-        resultTabs.setSelection(item);
+        sqlExtraPanelFolder.setSelection(item);
         viewItem.redraw();
     }
 
