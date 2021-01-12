@@ -162,8 +162,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Association
-    public Collection<OracleDependency> getDependents(DBRProgressMonitor monitor) throws DBException {
-        return OracleDependency.readDependencies(monitor, this, true);
+    public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
+        return OracleDependencyGroup.of(this);
     }
 
     protected String queryTableComment(JDBCSession session) throws SQLException {
