@@ -180,13 +180,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
         try {
-            portNumber = IOUtils.findFreePort(20000, 65000);
-
-            log.debug("Starting RMI server at " + portNumber);
-
-            RMIClientSocketFactory csf = RMISocketFactory.getDefaultSocketFactory();
-            RMIServerSocketFactory ssf = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
-            registry = LocateRegistry.createRegistry(portNumber, csf, ssf);
+            openRmiRegistry();
 
             {
                 IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
@@ -206,6 +200,20 @@ public class DBeaverInstanceServer implements IInstanceController {
         } catch (Exception e) {
             log.error("Can't start RMI server", e);
             return null;
+        }
+    }
+
+    private static void openRmiRegistry() throws RemoteException {
+        portNumber = IOUtils.findFreePort(20000, 65000);
+
+        log.debug("Starting RMI server at " + portNumber);
+
+        if (System.getProperty("java.rmi.server.hostname") == null) {
+            RMIClientSocketFactory csf = RMISocketFactory.getDefaultSocketFactory();
+            RMIServerSocketFactory ssf = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+            registry = LocateRegistry.createRegistry(portNumber, csf, ssf);
+        } else {
+            registry = LocateRegistry.createRegistry(portNumber);
         }
     }
 
