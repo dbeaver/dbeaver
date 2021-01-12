@@ -80,6 +80,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (this.passwordText != null) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             this.savePasswordCheck.setSelection(dataSource.isSavePassword());
+            this.passwordText.setEnabled(dataSource.isSavePassword());
         }
     }
 
@@ -137,7 +138,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
             dataSource == null || dataSource.isSavePassword());
         savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
-        //savePasswordCheck.setLayoutData(gd);
+        savePasswordCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                passwordText.setEnabled(savePasswordCheck.getSelection());
+            }
+        });
 
         if (supportsPasswordView) {
             userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
