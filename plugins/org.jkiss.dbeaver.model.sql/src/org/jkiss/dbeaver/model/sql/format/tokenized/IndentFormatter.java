@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
@@ -74,7 +75,8 @@ class IndentFormatter {
                 if (!isCompact) {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
                     boolean isInsideAFunction = functionBracket.size() != 0 && functionBracket.get(functionBracket.size() - 1).equals(Boolean.TRUE);
-                    if (!isInsideAFunction)
+                    boolean isAfterInKeyword = bracketsDepth > 0 && SQLConstants.KEYWORD_IN.equals(getPrevKeyword(argList, index));
+                    if (!isInsideAFunction && !isAfterInKeyword)
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
                         result += insertReturnAndIndent(

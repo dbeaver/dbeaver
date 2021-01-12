@@ -361,7 +361,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         if (firstTime && !dataPipes.isEmpty()) {
             DataTransferPipe pipe = dataPipes.get(0);
             if (pipe.getProducer() instanceof StreamTransferProducer && ((StreamTransferProducer) pipe.getProducer()).getInputFile() == null) {
-                chooseSourceFile(pipe);
+                UIUtils.asyncExec(() -> chooseSourceFile(pipe));
             }
         }
     }

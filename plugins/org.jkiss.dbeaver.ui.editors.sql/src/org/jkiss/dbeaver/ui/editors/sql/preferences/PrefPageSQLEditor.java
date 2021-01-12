@@ -55,6 +55,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private Button closeTabOnErrorCheck;
     private Combo resultsOrientationCombo;
+    private Button autoOpenOutputView;
 
     public PrefPageSQLEditor()
     {
@@ -119,6 +120,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
                     resultsOrientationCombo.add(orientation.getLabel());
                 }
             }
+
+            autoOpenOutputView = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view_tip, false, 2);
         }
 
         {
@@ -148,6 +151,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(
                 DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
+            autoOpenOutputView.setSelection(store.getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -173,6 +177,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                     break;
                 }
             }
+            store.setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, autoOpenOutputView.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -192,6 +197,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
+        store.setToDefault(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW);
     }
 
     @Override
