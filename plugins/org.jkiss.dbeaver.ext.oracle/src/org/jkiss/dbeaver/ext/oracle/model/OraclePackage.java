@@ -121,8 +121,8 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Association
-    public Collection<OracleDependency> getDependents(DBRProgressMonitor monitor) throws DBException {
-        return OracleDependency.readDependencies(monitor, this, true);
+    public Collection<OracleDependencyGroup> getDependencies(DBRProgressMonitor monitor) {
+        return OracleDependencyGroup.of(this);
     }
 
     @Override
