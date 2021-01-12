@@ -186,6 +186,8 @@
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.txt.property.extension.label" type="string" defaultValue="txt"/>
+                    <property id="batchSize" label="%dataTransfer.processor.txt.property.batchSize.label" defaultValue="200"/>
+                    <property id="minColumnLength" label="%dataTransfer.processor.txt.property.minColumnLength.label" defaultValue="3"/>
                     <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="0"/>
                     <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" type="boolean" defaultValue="false"/>
                     <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
