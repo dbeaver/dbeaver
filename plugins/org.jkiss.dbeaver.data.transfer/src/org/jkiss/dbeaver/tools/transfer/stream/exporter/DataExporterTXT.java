@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -27,51 +26,169 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Date;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.Map;
 
 /**
- * XML Exporter
+ * TXT Exporter
  */
 public class DataExporterTXT extends StreamExporterAbstract {
 
+    private static final String PROP_BATCH_SIZE = "batchSize";
+    private static final String PROP_MIN_COLUMN_LENGTH = "minColumnLength";
     private static final String PROP_MAX_COLUMN_LENGTH = "maxColumnLength";
     private static final String PROP_SHOW_NULLS = "showNulls";
     private static final String PROP_DELIM_LEADING = "delimLeading";
     private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
 
-    private DBDAttributeBinding[] columns;
-    private String tableName;
+    private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 3;
     private boolean showNulls;
     private boolean delimLeading, delimHeader, delimTrailing;
+    private Deque<String[]> batchQueue;
 
+    private DBDAttributeBinding[] columns;
     private int[] colWidths;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
         Map<String, Object> properties = site.getProperties();
-        this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 0);
+        this.batchSize = Math.max(CommonUtils.toInt(properties.get(PROP_BATCH_SIZE), 200), 200);
+        this.minColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MIN_COLUMN_LENGTH), 3), 3);
+        this.maxColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 0), 0);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
+        this.batchQueue = new ArrayDeque<>(this.batchSize);
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
-    }
-
-    @Override
-    public void exportHeader(DBCSession session) {
+    public void exportHeader(DBCSession session) throws DBException, IOException {
         columns = getSite().getAttributes();
-        printHeader();
+        colWidths = new int[columns.length];
+
+        if (maxColumnSize > 0) {
+            maxColumnSize = Math.max(maxColumnSize, minColumnSize);
+            Arrays.fill(colWidths, maxColumnSize);
+        } else {
+            Arrays.fill(colWidths, minColumnSize);
+        }
+
+        final String[] header = new String[columns.length];
+
+        for (int index = 0; index < columns.length; index++) {
+            header[index] = getAttributeName(columns[index]);
+        }
+
+        appendRow(header);
+    }
+
+    @Override
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
+        appendRow(row);
+    }
+
+    @Override
+    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
+        writeQueue();
+    }
+
+    private void appendRow(Object[] row) {
+        if (batchQueue.size() == batchSize) {
+            writeQueue();
+        }
+
+        final String[] values = new String[columns.length];
+
+        for (int index = 0; index < columns.length; index++) {
+            String cell = getCellString(columns[index], row[index]);
+
+            if (maxColumnSize > 0 && cell.length() > maxColumnSize) {
+                cell = CommonUtils.truncateString(cell, maxColumnSize);
+            }
+
+            values[index] = cell;
+        }
+
+        batchQueue.add(values);
+    }
+
+    private void writeQueue() {
+        if (batchQueue.isEmpty()) {
+            return;
+        }
+
+        if (maxColumnSize == 0) {
+            for (String[] row : batchQueue) {
+                for (int index = 0; index < columns.length; index++) {
+                    final String cell = row[index];
+
+                    if (cell.length() > colWidths[index]) {
+                        colWidths[index] = cell.length();
+                    }
+                }
+            }
+        }
+
+        while (!batchQueue.isEmpty()) {
+            if (delimHeader) {
+                delimHeader = false;
+                writeRow(batchQueue.poll(), ' ', false);
+                writeRow(null, '-', true);
+            } else {
+                writeRow(batchQueue.poll(), ' ', true);
+            }
+        }
+
+        getWriter().flush();
+    }
+
+    private void writeRow(String[] values, char fill, boolean separator) {
+        final StringBuilder sb = new StringBuilder();
+
+        if (separator) {
+            sb.append(CommonUtils.getLineSeparator());
+        }
+
+        for (int index = 0; index < columns.length; index++) {
+            final String cell = ArrayUtils.isEmpty(values) ? "" : values[index];
+
+            if (delimLeading && index == 0) {
+                sb.append('|');
+            }
+
+            sb.append(cell);
+
+            for (int width = cell.length(); width < colWidths[index]; width++) {
+                sb.append(fill);
+            }
+
+            if (delimTrailing) {
+                sb.append('|');
+            }
+        }
+
+        getWriter().write(sb.toString());
+    }
+
+    private String getCellString(DBDAttributeBinding attr, Object value) {
+        final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.EDIT);
+
+        if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
+
+        return CommonUtils.getSingleLineString(displayString);
     }
 
     private static String getAttributeName(DBDAttributeBinding attr) {
@@ -81,94 +198,4 @@ public class DataExporterTXT extends StreamExporterAbstract {
             return attr.getLabel();
         }
     }
-
-    private void printHeader() {
-        colWidths = new int[columns.length];
-
-        for (int i = 0; i < columns.length; i++) {
-            DBDAttributeBinding attr = columns[i];
-            int maxLength = 0;
-            if (maxColumnSize > 0) {
-                // This method may return abnormal values, so use it only if max column's length is set
-                maxLength = (int) attr.getMaxLength();
-            }
-            if (attr.getDataKind() == DBPDataKind.DATETIME) {
-                // DATETIME attributes are converted to strings so their actual length may differ
-                maxLength = getCellString(attr, new Date(), DBDDisplayFormat.EDIT).length();
-            }
-            colWidths[i] = Math.max(getAttributeName(attr).length(), maxLength);
-        }
-        for (int i = 0; i < colWidths.length; i++) {
-            if (colWidths[i] > maxColumnSize && maxColumnSize > 0) {
-                colWidths[i] = maxColumnSize;
-            } else if (colWidths[i] < minColumnSize) {
-                colWidths[i] = minColumnSize;
-            }
-
-        }
-
-        StringBuilder txt = new StringBuilder();
-        if (delimLeading) txt.append("|");
-        for (int i = 0; i < columns.length; i++) {
-            if (i > 0) txt.append("|");
-            DBDAttributeBinding attr = columns[i];
-            String attrName = getAttributeName(attr);
-            txt.append(attrName);
-            for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
-                txt.append(" ");
-            }
-        }
-        if (delimTrailing) txt.append("|");
-        txt.append("\n");
-
-        if (delimHeader) {
-            // Print divider
-            // Print header
-            if (delimLeading) txt.append("|");
-            for (int i = 0; i < columns.length; i++) {
-                if (i > 0) txt.append("|");
-                for (int k = colWidths[i]; k > 0; k--) {
-                    txt.append("-");
-                }
-            }
-            if (delimTrailing) txt.append("|");
-            txt.append("\n");
-        }
-        getWriter().print(txt);
-    }
-
-    @Override
-    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) {
-        StringBuilder txt = new StringBuilder();
-        if (delimLeading) txt.append("|");
-        for (int k = 0; k < columns.length; k++) {
-            if (k > 0) txt.append("|");
-            DBDAttributeBinding attr = columns[k];
-            String displayString = getCellString(attr, row[k], DBDDisplayFormat.EDIT);
-            if (displayString.length() > maxColumnSize && maxColumnSize > 0) {
-                displayString = CommonUtils.truncateString(displayString, maxColumnSize);
-            }
-            txt.append(displayString);
-            for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
-                txt.append(" ");
-            }
-        }
-        if (delimTrailing) txt.append("|");
-        txt.append("\n");
-        getWriter().print(txt);
-    }
-
-    @Override
-    public void exportFooter(DBRProgressMonitor monitor) {
-    }
-
-    private String getCellString(DBDAttributeBinding attr, Object value, DBDDisplayFormat displayFormat) {
-        String displayString = attr.getValueHandler().getValueDisplayString(attr, value, displayFormat);
-
-        if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
-            return DBConstants.NULL_VALUE_LABEL;
-        }
-        return CommonUtils.getSingleLineString(displayString);
-    }
-
 }

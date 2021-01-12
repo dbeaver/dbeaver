@@ -109,6 +109,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(
             store,
             SQLPreferenceConstants.RESULT_SET_ORIENTATION, SQLEditor.ResultSetOrientation.HORIZONTAL.name());
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, true);
 
         // Text editor default preferences
         PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
