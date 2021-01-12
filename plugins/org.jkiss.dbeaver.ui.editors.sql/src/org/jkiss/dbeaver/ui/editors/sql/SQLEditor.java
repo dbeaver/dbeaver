@@ -1326,16 +1326,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void showOutputPanel() {
-        if (resultsSash.getMaximizedControl() != null) {
-            resultsSash.setMaximizedControl(null);
-        }
         showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, SQLEditorMessages.editors_sql_output_tip, IMG_OUTPUT, outputViewer.getControl());
     }
 
     public void showExecutionLogPanel() {
-        if (resultsSash.getMaximizedControl() != null) {
-            resultsSash.setMaximizedControl(null);
-        }
         showExtraView(SQLEditorCommands.CMD_SQL_SHOW_LOG, SQLEditorMessages.editors_sql_execution_log, SQLEditorMessages.editors_sql_execution_log_tip, IMG_LOG, logViewer);
     }
 
@@ -3894,6 +3888,8 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
 
+            int curOutputTextLength = outputViewer.getDocument().getLength();
+
             List<ServerOutputInfo> outputs;
             synchronized (serverOutputs) {
                 outputs = new ArrayList<>(serverOutputs);
@@ -3943,7 +3939,14 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
             outputViewer.resetNewOutput();
+            // Show output log view if needed
             UIUtils.asyncExec(() -> {
+                if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
+                    if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).isChecked()) {
+                        showOutputPanel();
+                    }
+                }
+/*
                 if (outputViewer!=null) {
                     if (outputViewer.getControl()!=null) {
                         if (!outputViewer.isDisposed()) {
@@ -3952,6 +3955,7 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     }
                 }
+*/
             });
         }
     }
