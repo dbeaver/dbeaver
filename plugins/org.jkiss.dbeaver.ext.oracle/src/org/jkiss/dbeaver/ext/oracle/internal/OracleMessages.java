@@ -33,5 +33,8 @@ public class OracleMessages extends NLS {
 
 	public static String dialog_connection_sid;
 	public static String dialog_connection_service;
-
+	public static String edit_oracle_dependencies_dependency_name;
+	public static String edit_oracle_dependencies_dependency_description;
+	public static String edit_oracle_dependencies_dependent_name;
+	public static String edit_oracle_dependencies_dependent_description;
 }
