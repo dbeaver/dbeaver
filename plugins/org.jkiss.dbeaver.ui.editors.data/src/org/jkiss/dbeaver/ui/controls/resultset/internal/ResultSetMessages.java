@@ -192,6 +192,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_group_format;
     public static String pref_page_data_format_label_profile;
     public static String pref_page_data_format_label_sample;
+    public static String pref_page_data_format_link_patterns;
     public static String pref_page_data_format_label_settingt;
     public static String pref_page_data_format_label_type;
 

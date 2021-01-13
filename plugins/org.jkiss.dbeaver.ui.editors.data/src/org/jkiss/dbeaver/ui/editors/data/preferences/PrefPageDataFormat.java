@@ -57,6 +57,8 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat"; //$NON-NLS-1$
 
+    final private String DATA_FORMAT_LINK = "https://dbeaver.com/docs/wiki/Managing-Data-Formats/";
+
     private DBDDataFormatterProfile formatterProfile;
 
     private Font boldFont;
@@ -189,6 +191,15 @@ public class PrefPageDataFormat extends TargetPrefPage
             UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
             sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            Link urlLabel = UIUtils.createLink(formatGroup, "<a href=\"" + DATA_FORMAT_LINK + "\">"
+                    + ResultSetMessages.pref_page_data_format_link_patterns + "</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(DATA_FORMAT_LINK);
+                }
+            });
+            urlLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
         return composite;
