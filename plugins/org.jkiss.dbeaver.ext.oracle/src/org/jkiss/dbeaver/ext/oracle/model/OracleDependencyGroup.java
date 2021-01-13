@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -55,13 +56,17 @@ public class OracleDependencyGroup implements DBSObject {
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
-        return dependents ? "Dependents" : "Dependencies";
+        return dependents
+            ? OracleMessages.edit_oracle_dependencies_dependent_name
+            : OracleMessages.edit_oracle_dependencies_dependency_name;
     }
 
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        return dependents
+            ? OracleMessages.edit_oracle_dependencies_dependent_description
+            : OracleMessages.edit_oracle_dependencies_dependency_description;
     }
 
     @Override
