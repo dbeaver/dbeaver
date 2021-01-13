@@ -30,8 +30,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.*;
 
 /**
@@ -41,28 +43,33 @@ public class JSONUtils {
 
     private static final Log log = Log.getLog(JSONUtils.class);
 
-    private static SimpleDateFormat dateFormat;
-
-    static {
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        dateFormat.setTimeZone(tz);
-    }
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+        .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
+        .withZone(ZoneId.of("UTC"));
 
     public static String formatDate(Date date) {
-        return dateFormat.format(date);
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
     }
 
-    public static Date parseDate(String str) {
-        if (CommonUtils.isEmpty(str)) {
+    @Nullable
+    public static Date parseDate(@Nullable Object value) {
+        if (value == null) {
             return null;
         }
-        try {
-            return dateFormat.parse(str);
-        } catch (ParseException e) {
-            log.error("Error parsing date");
-            return new Date(0L);
+        if (value instanceof Integer || value instanceof Long) {
+            return new Date(((Number) value).longValue());
         }
+        if (value instanceof String) {
+            final TemporalAccessor accessor = DATE_TIME_FORMATTER.parse((String) value);
+            final LocalDate localDate = accessor.query(TemporalQueries.localDate());
+            final LocalTime localTime = accessor.query(TemporalQueries.localTime());
+            if (localTime != null) {
+                return Date.from(LocalDateTime.of(localDate, localTime).toInstant(ZoneOffset.UTC));
+            } else {
+                return Date.from(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+            }
+        }
+        throw new IllegalArgumentException("Cannot parse date from value '" + value + "'");
     }
 
     public static String formatISODate(Date date) {
