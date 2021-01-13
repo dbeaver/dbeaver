@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.Locale;
+
 /**
  * MySQL data types provider
  */
@@ -44,12 +46,12 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
             return new MySQLNumberValueHandler(typedObject, preferences);
         }
 
-        String typeName = typedObject.getTypeName();
+        String typeName = typedObject.getTypeName().toLowerCase(Locale.ENGLISH);
         switch (typeName) {
             case MySQLConstants.TYPE_JSON:
                 return JDBCContentValueHandler.INSTANCE;
             case MySQLConstants.TYPE_GEOMETRY:
-                new GISGeometryValueHandler(true);
+                return new GISGeometryValueHandler(true);
             case MySQLConstants.TYPE_ENUM:
             case MySQLConstants.TYPE_SET:
                 return JDBCObjectValueHandler.INSTANCE;
