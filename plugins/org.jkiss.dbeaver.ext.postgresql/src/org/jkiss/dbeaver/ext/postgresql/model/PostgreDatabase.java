@@ -829,7 +829,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class RoleCache extends PostgreDatabaseJDBCObjectCache<PostgreRole> {
+    static class RoleCache extends PostgreDatabaseJDBCObjectCache<PostgreRole> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -854,7 +854,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class AccessMethodCache extends PostgreDatabaseJDBCObjectCache<PostgreAccessMethod> {
+    static class AccessMethodCache extends PostgreDatabaseJDBCObjectCache<PostgreAccessMethod> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -872,7 +872,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class EncodingCache extends PostgreDatabaseJDBCObjectCache<PostgreCharset> {
+    static class EncodingCache extends PostgreDatabaseJDBCObjectCache<PostgreCharset> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -892,7 +892,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class CollationCache extends PostgreDatabaseJDBCObjectCache<PostgreCollation> {
+    static class CollationCache extends PostgreDatabaseJDBCObjectCache<PostgreCollation> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -911,7 +911,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class LanguageCache extends PostgreDatabaseJDBCObjectCache<PostgreLanguage> {
+    static class LanguageCache extends PostgreDatabaseJDBCObjectCache<PostgreLanguage> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -929,7 +929,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class ForeignDataWrapperCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignDataWrapper> {
+    static class ForeignDataWrapperCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignDataWrapper> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -949,7 +949,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class ForeignServerCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignServer> {
+    static class ForeignServerCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignServer> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -967,15 +967,15 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class TablespaceCache extends PostgreDatabaseJDBCObjectCache<PostgreTablespace> {
+    static class TablespaceCache extends PostgreDatabaseJDBCObjectCache<PostgreTablespace> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
             return session.prepareStatement(
                 "SELECT t.oid,t.*" +
-                    (owner.getDataSource().getServerType().supportsTeblespaceLocation() ? ",pg_dbeaver_location(t.oid) loc" : "") +
-                    "\nFROM pg_catalog.pg_dbeaver t " +
+                    (owner.getDataSource().getServerType().supportsTeblespaceLocation() ? ",pg_tablespace_location(t.oid) loc" : "") +
+                    "\nFROM pg_catalog.pg_tablespace t " +
                     "\nORDER BY t.oid"
             );
         }
@@ -992,7 +992,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    private static class AvailableExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreAvailableExtension> {
+    static class AvailableExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreAvailableExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1009,7 +1009,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
     
-    private static class ExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreExtension> {
+    static class ExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
