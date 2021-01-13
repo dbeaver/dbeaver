@@ -45,6 +45,7 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     public PostgreTablePartition(PostgreTableContainer container, ResultSet dbResult) {
         super(container, dbResult);
+        this.setPartition(true);
         this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
     }
 

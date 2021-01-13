@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -80,7 +82,7 @@ public class GreenplumSchema extends PostgreSchema {
                 getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
             String execLocationColumn =
                 getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "execlocation" : "location";
-            StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description, c.*,\n" +
+            StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description,p.partitiontablename,c.*,\n" +
                     "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn + ", ',') ELSE '' END AS urilocation,\n" +
                     "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
                     "x.fmttype, x.fmtopts,\n" +
@@ -100,7 +102,7 @@ public class GreenplumSchema extends PostgreSchema {
                                     "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
                                     "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" +
                                     "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
-                                    "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') AND p.partitiontablename is null ")
+                                    "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') ")
                     .append((object == null && objectName == null ? "" : " AND relname=?"));
 
             final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery.toString());
@@ -108,6 +110,11 @@ public class GreenplumSchema extends PostgreSchema {
             if (object != null || objectName != null)
                 dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
+        }
+
+        @Override
+        protected boolean isPartitionTableRow(@NotNull JDBCResultSet dbResult) {
+            return !CommonUtils.isEmpty(JDBCUtils.safeGetString(dbResult, "partitiontablename"));
         }
     }
 

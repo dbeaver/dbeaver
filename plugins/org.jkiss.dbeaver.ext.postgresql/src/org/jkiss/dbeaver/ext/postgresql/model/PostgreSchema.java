@@ -729,13 +729,17 @@ public class PostgreSchema implements
         protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final String kindString = getDataSource().isServerVersionAtLeast(10, 0) 
-                                      && JDBCUtils.safeGetString(dbResult, "relkind").equals(PostgreClass.RelKind.r.getCode()) 
-                                      && JDBCUtils.safeGetBoolean(dbResult, "relispartition") 
+            final String kindString = getDataSource().getServerType().supportsPartitions()
+                                      && CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, "relkind"), PostgreClass.RelKind.r.getCode())
+                                      && isPartitionTableRow(dbResult)
                                       ? PostgreClass.RelKind.R.getCode() : JDBCUtils.safeGetString(dbResult, "relkind");
             
             PostgreClass.RelKind kind = PostgreClass.RelKind.valueOf(kindString);
             return container.getDataSource().getServerType().createRelationOfClass(PostgreSchema.this, kind, dbResult);
+        }
+
+        protected boolean isPartitionTableRow(@NotNull JDBCResultSet dbResult) {
+            return JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         }
 
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container)
