@@ -134,12 +134,12 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 }
             }
             catch (Throwable ex) {
-                DBWorkbench.getPlatformUI().showError(
-                        "Navigator error",
-                    ex.getMessage(),
-                    ex);
                 // Collapse this item
                 UIUtils.asyncExec(() -> {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Navigator error",
+                        ex.getMessage(),
+                        ex);
                     navigatorTree.getViewer().collapseToLevel(parent, 1);
                     navigatorTree.getViewer().refresh(parent);
                 });
