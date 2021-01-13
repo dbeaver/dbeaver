@@ -821,7 +821,7 @@ public class SQLEditor extends SQLEditorBase implements
         sqlExtraPanelFolder.setSelection(0);
 
         restoreSashRatio(sqlExtraPanelSash, SQLPreferenceConstants.EXTRA_PANEL_RATIO);
-        sqlExtraPanelSash.setMaximizedControl(editorContainer);
+        sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
         this.addSashRatioSaveListener(sqlExtraPanelSash, SQLPreferenceConstants.EXTRA_PANEL_RATIO);
 
         // Create right vertical toolbar
