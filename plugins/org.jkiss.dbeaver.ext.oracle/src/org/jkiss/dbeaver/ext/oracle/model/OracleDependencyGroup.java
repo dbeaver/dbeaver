@@ -66,7 +66,7 @@ public class OracleDependencyGroup implements DBSObject {
 
     @Override
     public boolean isPersisted() {
-        return true;
+        return owner.isPersisted();
     }
 
     @Nullable
