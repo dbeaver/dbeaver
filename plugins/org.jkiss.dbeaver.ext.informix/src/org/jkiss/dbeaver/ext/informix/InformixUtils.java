@@ -48,8 +48,14 @@ public class InformixUtils {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlStatement)) {
                 List<String> result = new ArrayList<>();
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    boolean firstPart = true;
                     while (dbResult.nextRow()) {
-                        result.add(dbResult.getString(1) + "\n");
+                        String procBodyPart = dbResult.getString(1);
+                        if (procBodyPart.startsWith("create") && !firstPart) {
+                            procBodyPart = "\n" + procBodyPart;
+                        }
+                        firstPart = false;
+                        result.add(procBodyPart);
                     }
                 }
                 return result;
