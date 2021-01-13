@@ -424,7 +424,10 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         if (CommonUtils.isEmpty(si)) {
             return null;
         }
-        return si.stream().map(AbstractTableConstraint::getParentObject).collect(Collectors.toList());
+        return si.stream()
+            .map(AbstractTableConstraint::getParentObject)
+            .filter(PostgreTableBase::isPartition)
+            .collect(Collectors.toList());
     }
 
     @Override
