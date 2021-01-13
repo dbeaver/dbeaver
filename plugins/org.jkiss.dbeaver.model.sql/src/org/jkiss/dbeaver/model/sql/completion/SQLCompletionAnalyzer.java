@@ -56,6 +56,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private static final String ALL_COLUMNS_PATTERN = "*";
     private static final String MATCH_ANY_PATTERN = "%";
     public static final int MAX_ATTRIBUTE_VALUE_PROPOSALS = 20;
+    public static final int MAX_STRUCT_PROPOSALS = 100;
 
     private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
@@ -977,7 +978,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
             makeObjectNameMask(objectName, rootSC),
             request.getWordDetector().isQuoted(objectName),
-            request.getContext().isSearchGlobally(), 100);
+            request.getContext().isSearchGlobally(),
+            MAX_STRUCT_PROPOSALS);
         for (DBSObjectReference reference : references) {
             proposals.add(
                 makeProposalsFromObject(
