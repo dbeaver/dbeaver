@@ -3888,8 +3888,6 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
 
-            int curOutputTextLength = outputViewer.getDocument().getLength();
-
             List<ServerOutputInfo> outputs;
             synchronized (serverOutputs) {
                 outputs = new ArrayList<>(serverOutputs);
