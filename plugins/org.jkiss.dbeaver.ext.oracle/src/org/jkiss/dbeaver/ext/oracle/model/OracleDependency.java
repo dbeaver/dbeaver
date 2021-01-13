@@ -57,8 +57,8 @@ public class OracleDependency extends OracleObject<DBSObject> implements DBPUniq
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " *" +
                 "\nFROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "DEPENDENCIES") +
-                "\nWHERE " + (dependents ? "OWNER=? AND NAME=? AND REFERENCED_TYPE <> 'NON-EXISTENT'" : "REFERENCED_OWNER=? AND REFERENCED_NAME=?") +
-                "\nORDER BY " + (dependents ? "REFERENCED_NAME" : "NAME")
+                "\nWHERE " + (dependents ? "REFERENCED_OWNER=? AND REFERENCED_NAME=?" : "OWNER=? AND NAME=? AND REFERENCED_TYPE <> 'NON-EXISTENT'") +
+                "\nORDER BY " + (dependents ? "NAME" : "REFERENCED_NAME")
             )) {
                 dbStat.setString(1, object.getParentObject().getName());
                 dbStat.setString(2, object.getName());
@@ -67,9 +67,9 @@ public class OracleDependency extends OracleObject<DBSObject> implements DBPUniq
                     while (dbResult.next()) {
                         dependencies.add(new OracleDependency(
                             object,
-                            JDBCUtils.safeGetString(dbResult, dependents ? "REFERENCED_OWNER" : "OWNER"),
-                            JDBCUtils.safeGetString(dbResult, dependents ? "REFERENCED_NAME" : "NAME"),
-                            JDBCUtils.safeGetString(dbResult, dependents ? "REFERENCED_TYPE" : "TYPE"),
+                            JDBCUtils.safeGetString(dbResult, dependents ? "OWNER" : "REFERENCED_OWNER"),
+                            JDBCUtils.safeGetString(dbResult, dependents ? "NAME" : "REFERENCED_NAME"),
+                            JDBCUtils.safeGetString(dbResult, dependents ? "TYPE" : "REFERENCED_TYPE"),
                             JDBCUtils.safeGetString(dbResult, "DEPENDENCY_TYPE")
                         ));
                     }
