@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
@@ -183,6 +184,8 @@ public class SQLQuery implements SQLScriptElement {
                 statement instanceof Drop ||
                 statement instanceof CreateIndex) {
                 type = SQLQueryType.DDL;
+            } else if (statement instanceof Merge) {
+                type = SQLQueryType.MERGE;
             } else {
                 type = SQLQueryType.UNKNOWN;
             }

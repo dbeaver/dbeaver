@@ -26,5 +26,6 @@ public enum SQLQueryType {
     INSERT,
     DELETE,
     UPDATE,
+    MERGE,
     DDL
 }
