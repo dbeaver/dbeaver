@@ -53,6 +53,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 //    private Button windowsAuthenticationButton;
 //    private Button adpAuthenticationButton;
     private Button showAllSchemas;
+    private Button closeExistingConnections;
 
     private boolean activated;
 
@@ -203,6 +204,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
             createPasswordControls(secureGroup);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
+            closeExistingConnections = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_close_existing_connections, SQLServerUIMessages.dialog_setting_close_existing_connections_tip, true, 2);
         }
 
         createDriverPanel(settingsGroup);
@@ -291,6 +293,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
 */
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
+        closeExistingConnections.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CLOSE_EXISTING_CONNECTIONS)));
 
         activated = true;
     }
@@ -357,6 +360,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));
+        }
+        if (closeExistingConnections != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_CLOSE_EXISTING_CONNECTIONS, String.valueOf(closeExistingConnections.getSelection()));
         }
 
         super.saveSettings(dataSource);
