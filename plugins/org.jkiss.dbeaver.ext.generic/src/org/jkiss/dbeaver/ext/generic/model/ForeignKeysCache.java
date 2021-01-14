@@ -72,13 +72,20 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
-        return session.getMetaData().getImportedKeys(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-            forParent == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                forParent.getName())
-            .getSourceStatement();
+        try {
+            return owner.getDataSource().getMetaModel().prepareForeignKeysLoadStatement(
+                    session,
+                    owner,
+                    forParent);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            if (forParent == null) {
+                throw new SQLException("Global primary keys read not supported", e);
+            } else {
+                throw new SQLException(e);
+            }
+        }
     }
 
     @Nullable
@@ -93,20 +100,40 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
-        int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
-        int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
-        String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
-        int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
-
-        DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-        DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+        DBSForeignKeyModifyRule deleteRule;
+        DBSForeignKeyModifyRule updateRule;
         DBSForeignKeyDeferability deferability;
-        switch (deferabilityNum) {
-            case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
-            case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
-            case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
-            default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+
+        if (!owner.getDataSource().getMetaModel().readRuleAndDeferrableFKColumnsAsString()) {
+            int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
+            int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
+            int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
+
+            deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+            updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+
+            switch (deferabilityNum) {
+                case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
+                case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
+                case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
+                default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+            }
+        } else {
+            String updateRuleName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
+            String deleteRuleName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
+            String deferabilityName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
+
+            updateRule = JDBCUtils.getCascadeFromName(updateRuleName);
+            deleteRule = JDBCUtils.getCascadeFromName(deleteRuleName);
+
+            switch (deferabilityName) {
+                case "INITIALLY DEFERRED": deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
+                case "INITIALLY IMMEDIATE": deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
+                case "NOT DEFERRABLE": deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
+                default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+            }
         }
+        String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
 
         if (pkTableName == null) {
             log.debug("Null PK table name");

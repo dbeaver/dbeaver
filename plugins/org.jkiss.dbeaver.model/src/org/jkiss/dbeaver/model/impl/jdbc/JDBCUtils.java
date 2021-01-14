@@ -546,6 +546,24 @@ public class JDBCUtils {
         }
     }
 
+    public static DBSForeignKeyModifyRule getCascadeFromName(String name)
+    {
+        switch (name) {
+            case "NO ACTION":
+                return DBSForeignKeyModifyRule.NO_ACTION;
+            case "CASCADE":
+                return DBSForeignKeyModifyRule.CASCADE;
+            case "SET NULL":
+                return DBSForeignKeyModifyRule.SET_NULL;
+            case "SET DEFAULT":
+                return DBSForeignKeyModifyRule.SET_DEFAULT;
+            case "RESTRICT":
+                return DBSForeignKeyModifyRule.RESTRICT;
+            default:
+                return DBSForeignKeyModifyRule.UNKNOWN;
+        }
+    }
+
     public static void executeSQL(Connection session, String sql, Object ... params) throws SQLException
     {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
