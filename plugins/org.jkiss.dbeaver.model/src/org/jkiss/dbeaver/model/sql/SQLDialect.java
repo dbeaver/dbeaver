@@ -335,6 +335,11 @@ public interface SQLDialect {
     boolean isDelimiterAfterBlock();
 
     /**
+     * True if dialect requires delimiter for a query which starts with @firstKeyword and ends with @lastKeyword
+     */
+    boolean needsDelimiterFor(String firstKeyword, String lastKeyword);
+
+    /**
      * Should we quote column/table/etc names if they conflicts with reserved words?
      */
     boolean isQuoteReservedWords();

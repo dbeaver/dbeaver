@@ -253,7 +253,8 @@ public class SQLScriptParser
                         String queryText = document.get(statementStart, tokenOffset - statementStart);
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
-                        if (isDelimiter && (keepDelimiters ||
+                        if (isDelimiter &&
+                            (keepDelimiters ||
                             (hasBlocks && dialect.isDelimiterAfterQuery()) ||
                             (needsDelimiterAfterBlock(firstKeyword, lastKeyword, dialect))))
                         {
@@ -304,8 +305,12 @@ public class SQLScriptParser
         }
     }
 
-    // FIXME: special workaround for Oracle
     private static boolean needsDelimiterAfterBlock(String firstKeyword, String lastKeyword, SQLDialect dialect) {
+        if (dialect.needsDelimiterFor(firstKeyword, lastKeyword)) {
+            // SQL Server needs delimiters after MERGE
+            return true;
+        }
+        // FIXME: special workaround for Oracle
         if (!dialect.isDelimiterAfterBlock()) {
             return false;
         }
