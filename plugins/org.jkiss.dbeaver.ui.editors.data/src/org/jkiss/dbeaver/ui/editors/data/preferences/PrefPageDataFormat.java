@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -56,6 +57,8 @@ public class PrefPageDataFormat extends TargetPrefPage
     private static final Log log = Log.getLog(PrefPageDataFormat.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat"; //$NON-NLS-1$
+
+    final private String HELP_DATA_FORMAT_LINK = "Managing-Data-Formats";
 
     private DBDDataFormatterProfile formatterProfile;
 
@@ -189,6 +192,15 @@ public class PrefPageDataFormat extends TargetPrefPage
             UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
             sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            Link urlHelpLabel = UIUtils.createLink(formatGroup, "<a href=\"" + HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK) + "\">"
+                    + ResultSetMessages.pref_page_data_format_link_patterns + "</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
+                }
+            });
+            urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
         return composite;
