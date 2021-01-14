@@ -31,10 +31,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.time.ExtendedDateFormat;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,78 +42,147 @@ import java.util.Map;
  * Transforms numeric attribute value into epoch time
  */
 public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
-
     private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
+
     private static final String PROP_UNIT = "unit";
+    private static final String ZONE_ID = "zoneId";
 
-    private static final SimpleDateFormat FORMAT_MILLIS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-    private static final SimpleDateFormat FORMAT_SECONDS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-    private static final SimpleDateFormat FORMAT_NANOS = new ExtendedDateFormat("yyyy-MM-dd HH:mm:ss.ffffff",Locale.ENGLISH);
+    private enum EpochUnit {
+        seconds {
+            @Override
+            Instant toInstant(long rawValue) {
+                return Instant.ofEpochSecond(rawValue);
+            }
 
-    enum EpochUnit {
-        seconds,
-        milliseconds,
-        nanoseconds
+            @Override
+            DateTimeFormatter getFormatter() {
+                return SECONDS_FORMATTER;
+            }
+
+            @Override
+            long toRawValue(Instant instant) {
+                return instant.getEpochSecond();
+            }
+        },
+
+        milliseconds {
+            @Override
+            Instant toInstant(long rawValue) {
+                return Instant.ofEpochMilli(rawValue);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return MILLIS_FORMATTER;
+            }
+
+            @Override
+            long toRawValue(Instant instant) {
+                return instant.toEpochMilli();
+            }
+        },
+
+        nanoseconds {
+            @Override
+            Instant toInstant(long rawValue) {
+                return Instant.ofEpochSecond(rawValue / 1_000_000, rawValue % 1_000_000);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return NANOS_FORMATTER;
+            }
+
+            @Override
+            long toRawValue(Instant instant) {
+                return instant.getEpochSecond() * 1_000_000 + instant.getNano();
+            }
+        };
+
+        private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+        private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnn",Locale.ENGLISH);
+
+        abstract Instant toInstant(long rawValue);
+
+        abstract DateTimeFormatter getFormatter();
+
+        abstract long toRawValue(Instant instant);
     }
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
-        attribute.setPresentationAttribute(
-            new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
-
-        EpochUnit unit = EpochUnit.milliseconds;
-        if (options.containsKey(PROP_UNIT)) {
-            try {
-                unit = EpochUnit.valueOf(CommonUtils.toString(options.get(PROP_UNIT)));
-            } catch (IllegalArgumentException e) {
-                log.error("Bad unit option", e);
-            }
-        }
-        attribute.setTransformHandler(new EpochValueHandler(attribute.getValueHandler(), unit));
+        attribute.setPresentationAttribute(new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
+        attribute.setTransformHandler(EpochValueHandler.of(attribute.getValueHandler(), CommonUtils.toString(options.get(PROP_UNIT)), CommonUtils.toString(options.get(ZONE_ID))));
     }
 
-    private class EpochValueHandler extends ProxyValueHandler {
+    private static class EpochValueHandler extends ProxyValueHandler {
         private final EpochUnit unit;
-        public EpochValueHandler(DBDValueHandler target, EpochUnit unit) {
+        private final ZoneId zoneId;
+
+        //FIXME
+        //We need to somehow notify the user about improperly entered settings.
+        //Stacktrace will be printed in the cell. The best solution found so far.
+        @Nullable
+        private final IllegalArgumentException illegalArgumentException;
+
+        @Nullable
+        private final DBCException illegalFormatDBCException;
+
+        private EpochValueHandler(DBDValueHandler target, EpochUnit unit, ZoneId zoneId, @Nullable IllegalArgumentException illegalArgumentException, @Nullable DBCException illegalArgumentDBCException) {
             super(target);
             this.unit = unit;
+            this.zoneId = zoneId;
+            this.illegalFormatDBCException = illegalArgumentDBCException;
+            this.illegalArgumentException = illegalArgumentException;
+        }
+
+        static EpochValueHandler of(DBDValueHandler target, String unitProperty, String zoneIdProperty) {
+            EpochUnit unit = EpochUnit.milliseconds;
+            ZoneId zoneId = ZoneOffset.UTC;
+            IllegalArgumentException illegalArgumentException = null;
+            try {
+                unit = EpochUnit.valueOf(CommonUtils.toString(unitProperty));
+                if (!zoneIdProperty.isEmpty()) {
+                    zoneId = ZoneId.of(zoneIdProperty);
+                }
+            } catch (IllegalArgumentException e) {
+                log.error("Bad unit option", e);
+                illegalArgumentException = new IllegalArgumentException(e);
+            } catch (DateTimeException e ) {
+                log.debug("Bad zoneId");
+                illegalArgumentException = new IllegalArgumentException(e);
+            }
+            DBCException dbcException = illegalArgumentException == null ? null : new DBCException("Bad settings");
+            return new EpochValueHandler(target, unit, zoneId, illegalArgumentException, dbcException);
         }
 
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
-            if (value instanceof Number) {
-                long dateValue = ((Number) value).longValue();
-                switch (unit) {
-                    case seconds:
-                        return FORMAT_SECONDS.format(new Date(dateValue * 1000));
-                    case nanoseconds:
-                        return FORMAT_NANOS.format(new Date(dateValue / 1000));
-                    default:
-                        return FORMAT_MILLIS.format(new Date(dateValue));
-                }
+            if (!(value instanceof Number)) {
+                return DBValueFormatting.getDefaultValueDisplayString(value, format);
             }
-            return DBValueFormatting.getDefaultValueDisplayString(value, format);
+            if (illegalArgumentException != null) {
+                throw illegalArgumentException;
+            }
+            long rawValue = ((Number) value).longValue();
+            Instant instant = unit.toInstant(rawValue);
+            ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, zoneId);
+            return unit.getFormatter().format(dateTime);
         }
 
         @Nullable
         @Override
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
-            if (object instanceof String) {
-                try {
-                    switch (unit) {
-                        case seconds:
-                            return FORMAT_SECONDS.parse((String) object).getTime() / 1000;
-                        case milliseconds:
-                            return FORMAT_MILLIS.parse((String) object).getTime();
-                        case nanoseconds:
-                            return FORMAT_NANOS.parse((String) object).getTime() * 1000;
-                    }
-                } catch (Exception e) {
-                    log.debug("Error parsing time value", e);
-                }
+            if (!(object instanceof String)) {
+                return super.getValueFromObject(session, type, object, copy, validateValue);
             }
-            return super.getValueFromObject(session, type, object, copy, validateValue);
+            if (illegalFormatDBCException != null) {
+                throw illegalFormatDBCException;
+            }
+            ZonedDateTime dateTime = ZonedDateTime.of(LocalDateTime.parse((String) object, unit.getFormatter()), zoneId);
+            return unit.toRawValue(Instant.from(dateTime));
         }
     }
 }
