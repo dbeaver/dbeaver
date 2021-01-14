@@ -148,7 +148,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public synchronized List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -208,7 +208,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public synchronized Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -237,7 +237,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getConstraintKeysCache().clearObjectCache(this);
@@ -248,7 +248,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
     @Property(viewable = false, expensive = true, order = 5, category = CAT_STATISTICS)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
@@ -324,7 +324,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         int deferabilityNum;
     }
 
-    private synchronized List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
+    private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
