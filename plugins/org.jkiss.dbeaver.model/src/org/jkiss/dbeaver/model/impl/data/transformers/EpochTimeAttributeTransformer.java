@@ -44,8 +44,8 @@ import java.util.Map;
 public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
 
-    private static final String PROP_UNIT = "unit";
-    private static final String ZONE_ID = "zoneId";
+    static final String PROP_UNIT = "unit";
+    static final String ZONE_ID = "zoneId";
 
     private enum EpochUnit {
         seconds {
@@ -85,7 +85,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         nanoseconds {
             @Override
             Instant toInstant(long rawValue) {
-                return Instant.ofEpochSecond(rawValue / 1_000_000, rawValue % 1_000_000);
+                return Instant.ofEpochSecond(rawValue / 1_000_000_000, rawValue % 1_000_000_000);
             }
 
             @Override
@@ -95,13 +95,13 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
             @Override
             long toRawValue(Instant instant) {
-                return instant.getEpochSecond() * 1_000_000 + instant.getNano();
+                return instant.getEpochSecond() * 1_000_000_000 + instant.getNano();
             }
         };
 
         private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-        private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnn",Locale.ENGLISH);
+        private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
 
         abstract Instant toInstant(long rawValue);
 
