@@ -113,48 +113,26 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
-        attribute.setTransformHandler(EpochValueHandler.of(attribute.getValueHandler(), CommonUtils.toString(options.get(PROP_UNIT)), CommonUtils.toString(options.get(ZONE_ID))));
+        EpochUnit unit = EpochUnit.milliseconds;
+        try {
+            unit = EpochUnit.valueOf(CommonUtils.toString(options.get(PROP_UNIT)));
+        } catch (IllegalArgumentException e) {
+            log.error("Bad unit type");
+        }
+        attribute.setTransformHandler(new EpochValueHandler(attribute.getValueHandler(), unit, CommonUtils.toString(options.get(ZONE_ID))));
     }
 
     private static class EpochValueHandler extends ProxyValueHandler {
         private final EpochUnit unit;
-        private final ZoneId zoneId;
-
-        //FIXME
-        //We need to somehow notify the user about improperly entered settings.
-        //Stacktrace will be printed in the cell. The best solution found so far.
-        @Nullable
-        private final IllegalArgumentException illegalArgumentException;
+        private final String zoneName;
 
         @Nullable
-        private final DBCException illegalFormatDBCException;
+        private ZoneId zoneId;
 
-        private EpochValueHandler(DBDValueHandler target, EpochUnit unit, ZoneId zoneId, @Nullable IllegalArgumentException illegalArgumentException, @Nullable DBCException illegalArgumentDBCException) {
+        EpochValueHandler(DBDValueHandler target, EpochUnit unit, String zoneName) {
             super(target);
             this.unit = unit;
-            this.zoneId = zoneId;
-            this.illegalFormatDBCException = illegalArgumentDBCException;
-            this.illegalArgumentException = illegalArgumentException;
-        }
-
-        static EpochValueHandler of(DBDValueHandler target, String unitProperty, String zoneIdProperty) {
-            EpochUnit unit = EpochUnit.milliseconds;
-            ZoneId zoneId = ZoneOffset.UTC;
-            IllegalArgumentException illegalArgumentException = null;
-            try {
-                unit = EpochUnit.valueOf(CommonUtils.toString(unitProperty));
-                if (!zoneIdProperty.isEmpty()) {
-                    zoneId = ZoneId.of(zoneIdProperty);
-                }
-            } catch (IllegalArgumentException e) {
-                log.error("Bad unit option", e);
-                illegalArgumentException = new IllegalArgumentException(e);
-            } catch (DateTimeException e ) {
-                log.debug("Bad zoneId");
-                illegalArgumentException = new IllegalArgumentException(e);
-            }
-            DBCException dbcException = illegalArgumentException == null ? null : new DBCException("Bad settings");
-            return new EpochValueHandler(target, unit, zoneId, illegalArgumentException, dbcException);
+            this.zoneName = zoneName;
         }
 
         @NotNull
@@ -163,11 +141,11 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (!(value instanceof Number)) {
                 return DBValueFormatting.getDefaultValueDisplayString(value, format);
             }
-            if (illegalArgumentException != null) {
-                throw illegalArgumentException;
-            }
             long rawValue = ((Number) value).longValue();
             Instant instant = unit.toInstant(rawValue);
+            if (zoneId == null) {
+                zoneId = ZoneId.of(zoneName);
+            }
             ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, zoneId);
             return unit.getFormatter().format(dateTime);
         }
@@ -178,8 +156,12 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (!(object instanceof String)) {
                 return super.getValueFromObject(session, type, object, copy, validateValue);
             }
-            if (illegalFormatDBCException != null) {
-                throw illegalFormatDBCException;
+            if (zoneId == null && zoneName != null) {
+                try {
+                    zoneId = ZoneId.of(zoneName);
+                } catch (DateTimeException e) {
+                    throw new DBCException("Illegal zoneId");
+                }
             }
             ZonedDateTime dateTime = ZonedDateTime.of(LocalDateTime.parse((String) object, unit.getFormatter()), zoneId);
             return unit.toRawValue(Instant.from(dateTime));
