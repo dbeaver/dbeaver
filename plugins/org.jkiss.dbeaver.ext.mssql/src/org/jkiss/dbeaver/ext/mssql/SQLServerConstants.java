@@ -89,6 +89,7 @@ public class SQLServerConstants {
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
 
+    public static final String PROP_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
     public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
     public static final String PROP_CONNECTION_AUTHENTICATION_SCHEME = "authenticationScheme";
