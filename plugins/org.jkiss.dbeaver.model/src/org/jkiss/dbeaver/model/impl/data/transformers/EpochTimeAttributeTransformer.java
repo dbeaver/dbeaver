@@ -140,7 +140,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
                 return zoneId;
             }
             if (zoneName.isEmpty()) {
-                return ZoneOffset.UTC;
+                return ZoneId.systemDefault();
             }
             zoneId = ZoneId.of(zoneName);
             return zoneId;
