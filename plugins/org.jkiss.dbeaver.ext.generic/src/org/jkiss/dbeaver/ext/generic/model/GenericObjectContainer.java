@@ -262,7 +262,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public synchronized Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
         throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
@@ -280,7 +280,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public synchronized List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
