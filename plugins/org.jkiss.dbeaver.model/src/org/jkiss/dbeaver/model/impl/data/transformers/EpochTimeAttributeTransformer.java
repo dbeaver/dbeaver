@@ -135,6 +135,17 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             this.zoneName = zoneName;
         }
 
+        private ZoneId getZoneId() {
+            if (zoneId != null) {
+                return zoneId;
+            }
+            if (zoneName.isEmpty()) {
+                return ZoneOffset.UTC;
+            }
+            zoneId = ZoneId.of(zoneName);
+            return zoneId;
+        }
+
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
@@ -143,10 +154,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
             long rawValue = ((Number) value).longValue();
             Instant instant = unit.toInstant(rawValue);
-            if (zoneId == null) {
-                zoneId = ZoneId.of(zoneName);
-            }
-            ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, zoneId);
+            ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, getZoneId());
             return unit.getFormatter().format(dateTime);
         }
 
@@ -156,14 +164,12 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (!(object instanceof String)) {
                 return super.getValueFromObject(session, type, object, copy, validateValue);
             }
-            if (zoneId == null && zoneName != null) {
-                try {
-                    zoneId = ZoneId.of(zoneName);
-                } catch (DateTimeException e) {
-                    throw new DBCException("Illegal zoneId");
-                }
+            ZonedDateTime dateTime;
+            try {
+                dateTime = ZonedDateTime.of(LocalDateTime.parse((String) object, unit.getFormatter()), getZoneId());
+            } catch (DateTimeException e) {
+                return new DBCException("Incorrect zoneId");
             }
-            ZonedDateTime dateTime = ZonedDateTime.of(LocalDateTime.parse((String) object, unit.getFormatter()), zoneId);
             return unit.toRawValue(Instant.from(dateTime));
         }
     }
