@@ -194,6 +194,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_label_sample;
     public static String pref_page_data_format_label_settingt;
     public static String pref_page_data_format_label_type;
+    public static String pref_page_data_format_link_patterns;
 
     public static String dialog_data_format_profiles_button_delete_profile;
     public static String dialog_data_format_profiles_button_new_profile;
