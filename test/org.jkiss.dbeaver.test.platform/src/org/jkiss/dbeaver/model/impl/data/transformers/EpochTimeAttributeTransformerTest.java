@@ -77,8 +77,8 @@ public class EpochTimeAttributeTransformerTest {
     }
 
     @Test
-    public void testMillisAndEmptyTimezone() {
-        setOptions(MILLIS, "");
+    public void testMillisAndUTC() {
+        setOptions(MILLIS, "UTC");
 
         assertEquals("1970-01-01 00:00:00.000", getDisplayString(0));
         assertEquals(0L, getValue("1970-01-01 00:00:00.000"));
