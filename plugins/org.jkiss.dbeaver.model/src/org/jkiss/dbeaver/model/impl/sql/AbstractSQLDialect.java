@@ -428,6 +428,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return false;
     }
 
+    @Override
+    public boolean needsDelimiterFor(String firstKeyword, String lastKeyword) {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
