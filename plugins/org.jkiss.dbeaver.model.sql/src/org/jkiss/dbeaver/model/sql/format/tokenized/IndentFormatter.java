@@ -75,7 +75,7 @@ class IndentFormatter {
                 if (!isCompact) {
                     /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/
                     boolean isInsideAFunction = functionBracket.size() != 0 && functionBracket.get(functionBracket.size() - 1).equals(Boolean.TRUE);
-                    boolean isAfterInKeyword = bracketsDepth > 0 && SQLConstants.KEYWORD_IN.equals(getPrevKeyword(argList, index));
+                    boolean isAfterInKeyword = bracketsDepth > 0 && SQLConstants.KEYWORD_IN.equalsIgnoreCase(getPrevKeyword(argList, index));
                     if (!isInsideAFunction && !isAfterInKeyword)
                     {
                         boolean lfBeforeComma = formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
