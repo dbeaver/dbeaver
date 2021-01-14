@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -133,6 +134,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
     @Override
     public boolean isDelimiterAfterQuery() {
         return isSqlServer;
+    }
+
+    @Override
+    public boolean needsDelimiterFor(String firstKeyword, String lastKeyword) {
+        return SQLConstants.KEYWORD_MERGE.equalsIgnoreCase(firstKeyword) && lastKeyword != null;
     }
 
     @Override
