@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelForeignKeyFetcher;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,13 +74,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
-        return session.getMetaData().getImportedKeys(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-            forParent == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                forParent.getName())
-            .getSourceStatement();
+        return owner.getDataSource().getMetaModel().prepareForeignKeysLoadStatement(session, owner, forParent);
     }
 
     @Nullable
@@ -93,19 +89,32 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
-        int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
-        int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
         String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
-        int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
 
-        DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-        DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+        DBSForeignKeyModifyRule deleteRule;
+        DBSForeignKeyModifyRule updateRule;
         DBSForeignKeyDeferability deferability;
-        switch (deferabilityNum) {
-            case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
-            case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
-            case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
-            default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+
+        GenericMetaModel metaModel = owner.getDataSource().getMetaModel();
+
+        if (metaModel instanceof GenericMetaModelForeignKeyFetcher) {
+            GenericMetaModelForeignKeyFetcher foreignKeyFetcher = (GenericMetaModelForeignKeyFetcher) metaModel;
+            deleteRule = foreignKeyFetcher.fetchDeleteRule(foreignKeyObject, dbResult);
+            updateRule = foreignKeyFetcher.fetchUpdateRule(foreignKeyObject, dbResult);
+            deferability = foreignKeyFetcher.fetchDeferability(foreignKeyObject, dbResult);
+        } else {
+            int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
+            int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
+            int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
+
+            deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+            updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+            switch (deferabilityNum) {
+                case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
+                case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
+                case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
+                default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+            }
         }
 
         if (pkTableName == null) {
