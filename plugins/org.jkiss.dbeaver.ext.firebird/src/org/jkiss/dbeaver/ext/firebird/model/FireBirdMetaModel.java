@@ -224,12 +224,18 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
-        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$RELATION_NAME");
-        int relType = JDBCUtils.safeGetInt(dbResult, "RDB$RELATION_TYPE");
+        String relationName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$RELATION_NAME");
         boolean isSystem = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
+        int relType;
+        try {
+            relType = dbResult.getInt("RDB$RELATION_TYPE");
+        } catch (SQLException e) {
+            relType = JDBCUtils.safeGetBytes(dbResult, "RDB$VIEW_BLR") == null ? 0 : 1;
+
+        }
         GenericTableBase table;
         if (relType == 1) {
-            table = new FireBirdView(owner, tableName, isSystem ? "SYSTEM VIEW" : "VIEW", dbResult);
+            table = new FireBirdView(owner, relationName, isSystem ? "SYSTEM VIEW" : "VIEW", dbResult);
         } else {
             String tableType;
             switch (relType) {
@@ -249,7 +255,7 @@ public class FireBirdMetaModel extends GenericMetaModel
                     tableType = isSystem ? "SYSTEM TABLE" : "TABLE";
                     break;
             }
-            table = new FireBirdTable(owner, tableName, tableType, dbResult);
+            table = new FireBirdTable(owner, relationName, tableType, dbResult);
         }
         table.setPersisted(true);
         table.setSystem(isSystem);
