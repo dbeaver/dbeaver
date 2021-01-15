@@ -190,6 +190,22 @@
                 <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.sql.canOpenEditor">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <and>
+                        <not>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder"/>
+                        </not>
+                        <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSStructContainer"/>
+                        </or>
+                    </and>
+                </iterate>
+            </with>
+        </definition>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -621,6 +637,22 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <!-- Navigator context menu -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=sql_tools">
+            <menu label="%menu.org.jkiss.dbeaver.core.connection.sqleditor">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                </command>
+            </menu>
+        </menuContribution>
+
         <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
