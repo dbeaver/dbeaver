@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -139,6 +140,13 @@ public class DataExporterSQL extends StreamExporterAbstract {
         lineBeforeRows = CommonUtils.toBoolean(properties.get(PROP_LINE_BEFORE_ROWS));
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         dialect = SQLUtils.getDialectFromObject(site.getSource());
+
+        if (properties.containsKey(DBSDataManipulator.OPTION_USE_CURRENT_DIALECT_SETTINGS)) {
+            boolean useDBDefaultValueMode = CommonUtils.toBoolean(properties.get(DBSDataManipulator.OPTION_USE_CURRENT_DIALECT_SETTINGS));
+            if (useDBDefaultValueMode && getDefaultMultiValueInsertMode() != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
+                rowsInStatement = 1;
+            }
+        }
 
         String keywordCase = CommonUtils.toString(properties.get(PROP_KEYWORD_CASE));
         if (keywordCase.equalsIgnoreCase("lower")) {
@@ -383,12 +391,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
     }
 
-    /*private SQLDialect.MultiValueInsertMode getDefaultMultiValueInsertMode() {
+    private SQLDialect.MultiValueInsertMode getDefaultMultiValueInsertMode() {
         SQLDialect.MultiValueInsertMode insertMode = SQLDialect.MultiValueInsertMode.NOT_SUPPORTED;
         if (dialect != null && rowsInStatement != 1) {
             insertMode = dialect.getDefaultMultiValueInsertMode();
         }
         return insertMode;
-    }*/
+    }
 
 }
