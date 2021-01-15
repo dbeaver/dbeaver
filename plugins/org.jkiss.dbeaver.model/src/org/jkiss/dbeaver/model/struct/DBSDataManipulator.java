@@ -44,6 +44,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
 
     String OPTION_DISABLE_BATCHES = "data.manipulate.disableBatches";//$NON-NLS-1$
     String OPTION_INSERT_REPLACE_METHOD = "data.manipulate.insertReplaceMethod";//$NON-NLS-1$
+    String OPTION_USE_CURRENT_DIALECT_SETTINGS = "data.manipulate.useCurrentDialect";//$NON-NLS-1$
 
     interface ExecuteBatch extends AutoCloseable {
         void add(@NotNull Object[] attributeValues) throws DBCException;

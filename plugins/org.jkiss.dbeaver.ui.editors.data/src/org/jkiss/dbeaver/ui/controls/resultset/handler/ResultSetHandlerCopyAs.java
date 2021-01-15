@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -150,6 +151,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     for (DBPPropertyDescriptor prop : processor.getProperties()) {
                         properties.put(prop.getId(), prop.getDefaultValue());
                     }
+                    properties.put(DBSDataManipulator.OPTION_USE_CURRENT_DIALECT_SETTINGS, true);
 
                     consumer.initTransfer(
                         dataContainer,
