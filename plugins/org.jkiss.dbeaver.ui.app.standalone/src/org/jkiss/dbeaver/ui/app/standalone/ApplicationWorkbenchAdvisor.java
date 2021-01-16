@@ -17,23 +17,17 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
+import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -48,15 +42,12 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
-import org.osgi.framework.Bundle;
-
-import java.net.URL;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
  * the perspective id for the initial window.
  */
-public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static final Log log = Log.getLog(ApplicationWorkbenchAdvisor.class);
 
     private static final String PERSPECTIVE_ID = DBeaverPerspective.PERSPECTIVE_ID;
@@ -123,13 +114,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     @Override
     public void initialize(IWorkbenchConfigurer configurer) {
         super.initialize(configurer);
-        // make sure we always save and restore workspace state
-        configurer.setSaveAndRestore(true);
-
-        // register workspace IDE adapters
-        IDE.registerAdapters();
-
-        declareWorkbenchImages(configurer);
 
         //TrayDialog.setDialogHelpAvailable(true);
 
@@ -141,25 +125,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         }
         ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
 */
-    }
-
-    /**
-     * This is a bit hacky. Copied from IDEWorkbenchAdvisor.
-     * Adds standard Eclipse icons mappings
-     */
-    private void declareWorkbenchImages(IWorkbenchConfigurer configurer) {
-
-        Bundle ideBundle = Platform.getBundle(IDEWorkbenchPlugin.IDE_WORKBENCH);
-        final String ICONS_PATH = "$nl$/icons/full/";//$NON-NLS-1$
-        final String PATH_OBJECT = ICONS_PATH + "obj16/"; // Model object //$NON-NLS-1$
-        declareWorkbenchImage(configurer, ideBundle, IDE.SharedImages.IMG_OBJ_PROJECT,
-            PATH_OBJECT + "prj_obj.png", true); //$NON-NLS-1$
-    }
-
-    private void declareWorkbenchImage(IWorkbenchConfigurer configurer, Bundle ideBundle, String symbolicName, String path, boolean shared) {
-        URL url = FileLocator.find(ideBundle, new Path(path), null);
-        ImageDescriptor desc = ImageDescriptor.createFromURL(url);
-        configurer.declareImage(symbolicName, desc, shared);
     }
 
     @Override
@@ -174,21 +139,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         filterPreferencePages();
 
         startVersionChecker();
-
-/*
-        settingsChangeListener = event -> {
-            if (isPropertyChangeRequiresRestart(event.getProperty())) {
-                if (UIUtils.confirmAction(null,
-                    "System preference change",
-                    "System setting '" + event.getProperty() + "' has been changed. You will need to restart workbench to complete the change. Restart now?"))
-                {
-                    PlatformUI.getWorkbench().restart();
-                }
-            }
-        };
-        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(settingsChangeListener);
-*/
-
     }
 
     @Override
@@ -300,4 +250,5 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         processor.catchUp(display);
         super.eventLoopIdle(display);
     }
+
 }
