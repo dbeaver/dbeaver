@@ -20,17 +20,18 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ClipboardData;
+import org.jkiss.dbeaver.ui.CopyMode;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * DatabaseObjectListControl
@@ -64,14 +65,23 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
                 @Override
                 public void run()
                 {
-                    String text = getRenderer().getSelectedText();
-                    if (!CommonUtils.isEmpty(text)) {
-                        UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text);
-                    }
+                    ClipboardData clipboardData = new ClipboardData();
+                    addClipboardData(CopyMode.DEFAULT, clipboardData);
+                    clipboardData.pushToClipboard(getDisplay());
                 }
             };
-            copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
             manager.add(copyAction);
+            IAction copyAllAction = new Action(ActionUtils.findCommandName(IActionConstants.CMD_COPY_SPECIAL)) {
+                @Override
+                public void run()
+                {
+                    ClipboardData clipboardData = new ClipboardData();
+                    addClipboardData(CopyMode.ADVANCED, clipboardData);
+                    clipboardData.pushToClipboard(getDisplay());
+                }
+            };
+            manager.add(copyAllAction);
+
             manager.add(new Separator());
             fillCustomActions(manager);
         });
