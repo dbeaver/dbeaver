@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +27,9 @@ import java.util.List;
  */
 public class ImportData {
 
-    private List<ImportDriverInfo> drivers = new ArrayList<>();
-    private List<ImportConnectionInfo> connections = new ArrayList<>();
+    private final List<ImportDriverInfo> drivers = new ArrayList<>();
+    private final List<ImportConnectionInfo> connections = new ArrayList<>();
+    private DBPDataSourceFolder dataSourceFolder;
 
     public List<ImportDriverInfo> getDrivers()
     {
@@ -68,4 +71,11 @@ public class ImportData {
         connections.add(connectionInfo);
     }
 
+    public DBPDataSourceFolder getDataSourceFolder() {
+        return dataSourceFolder;
+    }
+
+    public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
+        this.dataSourceFolder = dataSourceFolder;
+    }
 }
