@@ -8,10 +8,8 @@
 
    <launcherArgs>
       <programArgs></programArgs>
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
-      </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
    </launcherArgs>
 
    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
