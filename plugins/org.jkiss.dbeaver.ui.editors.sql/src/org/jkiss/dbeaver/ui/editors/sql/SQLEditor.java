@@ -3939,6 +3939,7 @@ public class SQLEditor extends SQLEditorBase implements
             outputViewer.resetNewOutput();
             // Show output log view if needed
             UIUtils.asyncExec(() -> {
+                outputViewer.scrollToEnd();
                 if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
                     if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).isChecked()) {
                         showOutputPanel();

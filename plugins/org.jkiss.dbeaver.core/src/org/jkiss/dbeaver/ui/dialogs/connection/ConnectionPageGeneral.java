@@ -29,8 +29,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -45,7 +47,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
@@ -78,13 +80,12 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
-    private Combo connectionFolderCombo;
+    private ConnectionFolderSelector folderSelector;
+    private DBPDataSourceFolder curDataSourceFolder;
     private Text descriptionText;
 
     private boolean connectionNameChanged = false;
     private boolean activated = false;
-    private DBPDataSourceFolder dataSourceFolder;
-    private List<DBPDataSourceFolder> connectionFolders = new ArrayList<>();
 
     private Button readOnlyConnection;
 
@@ -148,19 +149,15 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 }
             }
         }
+        folderSelector.loadConnectionFolders(getWizard().getSelectedProject());
         if (dataSourceDescriptor != null) {
-            if (!activated) {
+            {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 connectionTypeCombo.select(conConfig.getConnectionType());
                 updateNavigatorSettingsPreset();
 
-                dataSourceFolder = dataSourceDescriptor.getFolder();
-                if (dataSourceDescriptor.getFolder() == null) {
-                    connectionFolderCombo.select(0);
-                } else {
-                    connectionFolderCombo.select(connectionFolders.indexOf(dataSourceFolder));
-                }
+                folderSelector.setFolder(dataSourceDescriptor.getFolder());
 
                 if (dataSourceDescriptor.getDescription() != null) {
                     descriptionText.setText(dataSourceDescriptor.getDescription());
@@ -173,11 +170,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         } else {
             // Default settings
             connectionTypeCombo.select(0);
-            if (dataSourceFolder != null) {
-                connectionFolderCombo.select(connectionFolders.indexOf(dataSourceFolder));
-            } else {
-                connectionFolderCombo.select(0);
-            }
+            folderSelector.setFolder(curDataSourceFolder);
 
             readOnlyConnection.setSelection(false);
         }
@@ -274,6 +267,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     @Override
     public void deactivatePage()
     {
+        saveSettings(dataSourceDescriptor);
     }
 
     @Override
@@ -365,21 +359,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 });
             }
 
-            {
-                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
-
-                connectionFolderCombo = new Combo(miscGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.widthHint = UIUtils.getFontHeight(connectionFolderCombo) * 20;
-                connectionFolderCombo.setLayoutData(gd);
-                loadConnectionFolders();
-                connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dataSourceFolder = connectionFolders.get(connectionFolderCombo.getSelectionIndex());
-                    }
-                });
-            }
+            folderSelector = new ConnectionFolderSelector(miscGroup);
 
             {
                 Label descLabel = UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_description);
@@ -519,33 +499,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
     }
 
-    private void loadConnectionFolders()
-    {
-        connectionFolderCombo.removeAll();
-        connectionFolderCombo.add(UINavigatorMessages.toolbar_datasource_selector_empty);
-        connectionFolders.clear();
-        connectionFolders.add(null);
-        DBPDataSourceRegistry registry = getWizard().getDataSourceRegistry();
-        if (registry != null) {
-            for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(registry.getRootFolders())) {
-                loadConnectionFolder(0, folder);
-            }
-        }
-    }
-
-    private void loadConnectionFolder(int level, DBPDataSourceFolder folder) {
-        String prefix = "";
-        for (int i = 0; i < level; i++) {
-            prefix += "   ";
-        }
-
-        connectionFolders.add(folder);
-        connectionFolderCombo.add(prefix + folder.getName());
-        for (DBPDataSourceFolder child : DBUtils.makeOrderedObjectList(folder.getChildren())) {
-            loadConnectionFolder(level + 1, child);
-        }
-    }
-
     @Override
     public boolean isPageComplete()
     {
@@ -562,7 +515,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
         String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
         dataSource.setName(name);
-        dataSource.setFolder(dataSourceFolder);
+        dataSource.setFolder(folderSelector.getFolder());
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
             confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
@@ -592,7 +545,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     }
 
     public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
-        this.dataSourceFolder = dataSourceFolder;
+        this.curDataSourceFolder = dataSourceFolder;
     }
 
     private static class ConnectionTypeLabelProvider extends LabelProvider implements IColorProvider {

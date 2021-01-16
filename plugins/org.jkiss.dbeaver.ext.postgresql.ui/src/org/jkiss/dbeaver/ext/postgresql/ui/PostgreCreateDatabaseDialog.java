@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * PostgreCreateDatabaseDialog
@@ -139,6 +141,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     allEncodings = supportsEncodings ? new ArrayList<>(database.getEncodings(monitor)) : null;
                     allTablespaces = supportsTablespaces ? new ArrayList<>(database.getTablespaces(monitor)) : null;
                     allTemplates = new ArrayList<>(dataSource.getTemplateDatabases(monitor));
+                    allTemplates.addAll(dataSource.getDatabases().stream().map(PostgreDatabase::getName).collect(Collectors.toList()));
+                    allTemplates.sort(Comparator.naturalOrder());
 
                     final PostgreRole dba = supportsRoles ? database.getDBA(monitor) : null;
                     final String defUserName = dba == null ? "" : dba.getName();
