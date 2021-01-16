@@ -88,6 +88,9 @@ public abstract class ConfigImportWizardPage extends WizardPage {
                 }
             });
         }
+        {
+
+        }
 
         UIUtils.packColumns(connectionTable);
 

@@ -74,6 +74,8 @@ public class UIMessages extends NLS {
     public static String save_execution_plan;
     public static String load_execution_plan;
 
+    public static String control_label_connection_folder;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
