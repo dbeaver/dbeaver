@@ -168,7 +168,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     @NotNull
-    private static SQLNavigatorContext getCurrentContext(ExecutionEvent event) throws InterruptedException {
+    static SQLNavigatorContext getCurrentContext(ExecutionEvent event) throws InterruptedException {
         SQLNavigatorContext context = new SQLNavigatorContext(event);
 
         if (context.getDataSourceContainer() == null) {
