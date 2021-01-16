@@ -349,7 +349,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_label_navigator_settings;
 	public static String dialog_connection_wizard_final_label_navigator_settings_customize;
 	public static String dialog_connection_wizard_final_label_edit;
-	public static String dialog_connection_wizard_final_label_connection_folder;
 	public static String dialog_connection_wizard_final_label_connection;
 	public static String dialog_connection_wizard_final_label_isolation_level;
 	public static String dialog_connection_wizard_final_label_default_database;
