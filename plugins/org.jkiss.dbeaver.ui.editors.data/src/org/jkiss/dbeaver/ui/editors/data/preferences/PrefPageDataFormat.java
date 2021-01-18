@@ -403,8 +403,8 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(DBPPreferenceStore store) {
+        propertiesControl.saveEditorValues();
         try {
             formatterProfile.setProfileName(profileName);
             formatterProfile.setLocale(profileLocale);
