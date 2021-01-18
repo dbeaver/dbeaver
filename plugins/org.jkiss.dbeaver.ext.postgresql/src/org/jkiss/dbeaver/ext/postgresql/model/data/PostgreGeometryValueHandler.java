@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -168,35 +170,30 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         }
         // Convert from PostGIS EWKT to Geometry type
         try {
-            int divPos = pgString.indexOf(';');
-            if (divPos == -1) {
-                // No SRID
-                if (dimensions == 2) {
-                    try {
-                        Geometry geometry = new WKTReader().read(pgString);
-                        return new DBGeometry(geometry);
-                    } catch (ParseException e) {
-                        // Can't parse
-                        return new DBGeometry(pgString);
-                    }
-                } else {
-                    return new DBGeometry(pgString);
-                }
-            }
-            String sridString = pgString.substring(0, divPos);
-            String wktString = pgString.substring(divPos + 1);
             int srid = 0;
-            if (sridString.startsWith("SRID=")) {
-                srid = CommonUtils.toInt(sridString.substring(5));
+            int divPos = pgString.indexOf(';');
+            if (divPos != -1) {
+                if (pgString.startsWith("SRID=")) {
+                    srid = CommonUtils.toInt(pgString.substring(5, divPos));
+                } else {
+                    srid = CommonUtils.toInt(pgString.substring(0, divPos));
+                }
+                pgString = pgString.substring(divPos + 1);
             }
-            if (dimensions == 2) {
-                Geometry geometry = new WKTReader().read(wktString);
+            try {
+                Geometry geometry = new WKTReader().read(pgString);
                 if (srid > 0) {
                     geometry.setSRID(srid);
                 }
+                if (dimensions > 2) {
+                    for (Coordinate coordinate : geometry.getCoordinates()) {
+                        coordinate.setCoordinate(new CoordinateXY(coordinate.getX(), coordinate.getY()));
+                    }
+                }
                 return new DBGeometry(geometry);
-            } else {
-                return new DBGeometry(wktString, srid);
+            } catch (ParseException ignored) {
+                // Can't parse
+                return new DBGeometry(pgString);
             }
         } catch (Throwable e) {
             throw new DBCException(e, session.getExecutionContext());
