@@ -310,20 +310,6 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public abstract String getDDL();
 
-    private static class ForeignKeyInfo {
-        String pkColumnName;
-        String fkTableCatalog;
-        String fkTableSchema;
-        String fkTableName;
-        String fkColumnName;
-        int keySeq;
-        int updateRuleNum;
-        int deleteRuleNum;
-        String fkName;
-        String pkName;
-        int deferabilityNum;
-    }
-
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -335,30 +321,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
             final GenericMetaObject fkObject = getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
-            final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
-            JDBCDatabaseMetaData metaData = session.getMetaData();
-            // Load indexes
-            try (JDBCResultSet dbResult = metaData.getExportedKeys(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getName()))
-            {
-                while (dbResult.next()) {
-                    ForeignKeyInfo fkInfo = new ForeignKeyInfo();
-                    fkInfo.pkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    fkInfo.fkTableCatalog = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_CAT);
-                    fkInfo.fkTableSchema = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
-                    fkInfo.fkTableName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_NAME);
-                    fkInfo.fkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    fkInfo.keySeq = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.KEY_SEQ);
-                    fkInfo.updateRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.UPDATE_RULE);
-                    fkInfo.deleteRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DELETE_RULE);
-                    fkInfo.fkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FK_NAME);
-                    fkInfo.pkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PK_NAME);
-                    fkInfo.deferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
-                    fkInfos.add(fkInfo);
-                }
-            }
+            final List<ForeignKeyInfo> fkInfos = loadReferenceInfoList(session, fkObject);
 
             List<GenericTableForeignKey> fkList = new ArrayList<>();
             Map<String, GenericTableForeignKey> fkMap = new HashMap<>();
@@ -461,6 +424,24 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                 throw new DBException(ex, getDataSource());
             }
         }
+    }
+
+    public List<ForeignKeyInfo> loadReferenceInfoList(@NotNull JDBCSession session, GenericMetaObject fkObject) throws SQLException {
+        final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
+        JDBCDatabaseMetaData metaData = session.getMetaData();
+        // Load indexes
+        try (JDBCResultSet dbResult = metaData.getExportedKeys(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                getName()))
+        {
+            while (dbResult.next()) {
+                ForeignKeyInfo fkInfo = new ForeignKeyInfo();
+                fkInfo.fetchColumnsInfo(fkObject, dbResult);
+                fkInfos.add(fkInfo);
+            }
+        }
+        return fkInfos;
     }
 
     @Nullable
