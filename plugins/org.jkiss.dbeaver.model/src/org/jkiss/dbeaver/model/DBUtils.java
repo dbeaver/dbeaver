@@ -279,7 +279,6 @@ public final class DBUtils {
 
     /**
      * Checks that object has valid object name.
-     * Some DB objects have dummy names (like "" or ".") - we won't use them for certain purposes.
      * @param name object name
      * @return true or false
      */
@@ -288,9 +287,9 @@ public final class DBUtils {
         if (name == null || name.isEmpty()) {
             return false;
         }
-        // We need at least one digit or letter
+        // We need at least one symbol that is not whitespace
         for (int i = 0; i < name.length(); i++) {
-            if (Character.isLetterOrDigit(name.charAt(i))) {
+            if (!Character.isWhitespace(name.charAt(i))) {
                 return true;
             }
         }
