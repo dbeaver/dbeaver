@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
 * BaseValueEditor
