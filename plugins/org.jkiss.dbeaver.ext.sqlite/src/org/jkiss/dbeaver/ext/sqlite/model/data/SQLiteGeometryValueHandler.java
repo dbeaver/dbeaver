@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -32,10 +31,8 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ByteArrayInStream;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.SQLException;
@@ -129,7 +126,7 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws SQLException {
         Object object = resultSet.getObject(index);
         return getValueFromObject(session, type, object, false, false);
     }
