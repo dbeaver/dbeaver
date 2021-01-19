@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.gis;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -114,6 +115,26 @@ public class DBGeometry implements DBDValue {
             jtsGeometry = jtsGeometry.copy();
         }
         jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+        return new DBGeometry(jtsGeometry, srid);
+    }
+
+    @NotNull
+    public DBGeometry force2D() throws DBException {
+        Geometry jtsGeometry = getGeometry();
+        if (jtsGeometry == null) {
+            try {
+                jtsGeometry = new WKTReader().read(getString());
+            } catch (Exception e) {
+                throw new DBException("Error parsing geometry WKT", e);
+            }
+        }
+        for (Coordinate coordinate : jtsGeometry.getCoordinates()) {
+            if (!Double.isNaN(coordinate.getZ())) {
+                jtsGeometry = jtsGeometry.copy();
+                jtsGeometry.apply(GeometryConverter.FORCE_2D_COORDINATE_FILTER);
+                break;
+            }
+        }
         return new DBGeometry(jtsGeometry, srid);
     }
 
