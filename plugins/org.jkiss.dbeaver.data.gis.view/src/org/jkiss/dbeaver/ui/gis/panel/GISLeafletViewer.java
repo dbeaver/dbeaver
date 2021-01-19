@@ -270,6 +270,11 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     log.error(e);
                 }
             }
+            try {
+                value = value.force2D();
+            } catch (DBException e) {
+                log.error("Error forcing geometry to 2D", e);
+            }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == GisConstants.SRID_SIMPLE) {
