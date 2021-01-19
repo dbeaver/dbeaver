@@ -17,7 +17,7 @@ import java.io.IOException;
  */
 public class GeometryConverter {
     public static final InvertCoordinateFilter INVERT_COORDINATE_FILTER = new InvertCoordinateFilter();
-    public static final Force2DCoordinatedFilter FORCE_2D_COORDINATE_FILTER = new Force2DCoordinatedFilter();
+    public static final Force2DCoordinateFilter FORCE_2D_COORDINATE_FILTER = new Force2DCoordinateFilter();
     /**
      * Little endian or Big endian
      */
@@ -104,7 +104,7 @@ public class GeometryConverter {
         }
     }
 
-    private static class Force2DCoordinatedFilter implements CoordinateFilter {
+    private static class Force2DCoordinateFilter implements CoordinateFilter {
         @Override
         public void filter(Coordinate coord) {
             coord.setZ(Double.NaN);
