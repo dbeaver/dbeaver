@@ -76,14 +76,14 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
             // http://www.geopackage.org/spec121/index.html#gpb_format
 
             if (buffer.get() != 'G' || buffer.get() != 'P') {
-                log.error("Invalid GeoPackage data");
+                log.debug("Invalid GeoPackage data");
                 return object;
             }
 
             final byte version = buffer.get();
 
             if (version != 0) {
-                log.error("Invalid GeoPackage version: " + version);
+                log.debug("Invalid GeoPackage version: " + version);
                 return object;
             }
 
@@ -118,8 +118,8 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
                 WKBReader wkbReader = new WKBReader(geometryFactory);
                 Geometry geometry = wkbReader.read(new ByteArrayInStream(wkb));
                 return new DBGeometry(geometry, srsId);
-            } catch (IOException | ParseException e) {
-                log.error("Error reading GeoPackage WKB", e);
+            } catch (Exception e) {
+                log.debug("Error reading GeoPackage WKB", e);
                 return object;
             }
         }
