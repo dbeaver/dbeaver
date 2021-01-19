@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCNameCacheCleaner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -46,7 +47,8 @@ import java.util.*;
 /**
 * Foreign key cache
 */
-class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
+class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableForeignKey, GenericTableForeignKeyColumnTable>
+implements JDBCNameCacheCleaner {
 
     private final Map<String, GenericUniqueKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
@@ -251,10 +253,17 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String fkName = "FK_" + parentName + "_" + pkTableName;
         if (cachedFKNames.contains(fkName) && keySeq == 1) {
             // Multiple unnamed foreign keys - #8286
-            // Column sequnce 1 means new FK so lets make a new one
+            // Column sequence 1 means new FK so lets make a new one
             fkName += "_" + (cachedFKNames.size() + 1);
         }
         cachedFKNames.add(fkName);
         return fkName;
+    }
+
+    @Override
+    public void clearNameCache() {
+        if (cachedFKNames != null) {
+            cachedFKNames.clear();
+        }
     }
 }

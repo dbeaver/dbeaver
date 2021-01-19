@@ -359,6 +359,9 @@ public abstract class JDBCCompositeCache<
                 }
                 finally {
                     dbResult.close();
+                    if (this instanceof JDBCNameCacheCleaner) {
+                        ((JDBCNameCacheCleaner) this).clearNameCache();
+                    }
                 }
             }
             finally {
