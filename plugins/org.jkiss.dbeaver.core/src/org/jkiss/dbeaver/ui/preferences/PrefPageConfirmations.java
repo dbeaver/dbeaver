@@ -48,11 +48,11 @@ import java.util.ResourceBundle;
 /**
  * PrefPageConfirmations
  */
-public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenchPreferencePage
-{
+public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
     private Table confirmTable;
+    private CustomTableEditor tableEditor;
 
     @Override
     public void init(IWorkbench workbench)
@@ -78,7 +78,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         UIUtils.createTableColumn(confirmTable, SWT.LEFT, CoreMessages.pref_page_confirmations_table_column_group);
         UIUtils.createTableColumn(confirmTable, SWT.RIGHT, CoreMessages.pref_page_confirmations_table_column_value);
 
-        final CustomTableEditor tableEditor = new CustomTableEditor(confirmTable) {
+        tableEditor = new CustomTableEditor(confirmTable) {
             {
                 firstTraverseIndex = 2;
                 lastTraverseIndex = 2;
@@ -169,10 +169,9 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
+        tableEditor.saveEditorValues();
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
         for (TableItem item : confirmTable.getItems()) {
             String id = (String) item.getData("id");
             String title = item.getText(2);

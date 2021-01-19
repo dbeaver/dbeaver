@@ -223,6 +223,7 @@ class TransformerSettingsDialog extends BaseDialog {
     }
 
     private void saveTransformerSettings() {
+        propertiesEditor.saveEditorValues();
         if (currentAttribute == null) {
             // Nothign to save - just ignore
             return;
