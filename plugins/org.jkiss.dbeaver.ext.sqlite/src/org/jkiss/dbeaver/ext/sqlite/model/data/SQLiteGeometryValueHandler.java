@@ -64,7 +64,7 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) {
         if (object == null) {
             return new DBGeometry();
         }
@@ -119,7 +119,8 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
                 Geometry geometry = wkbReader.read(new ByteArrayInStream(wkb));
                 return new DBGeometry(geometry, srsId);
             } catch (IOException | ParseException e) {
-                throw new DBCException("Error reading GeoPackage WKB", e);
+                log.error("Error reading GeoPackage WKB", e);
+                return object;
             }
         }
 
