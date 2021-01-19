@@ -106,6 +106,8 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
                 case 4:
                     buffer.position(buffer.position() + 64);
                     break;
+                default:
+                    break;
             }
 
             byte[] wkb = new byte[bytes.length - buffer.position()];
