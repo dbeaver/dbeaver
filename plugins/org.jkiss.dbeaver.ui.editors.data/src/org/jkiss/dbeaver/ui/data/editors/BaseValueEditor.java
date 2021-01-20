@@ -159,23 +159,25 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     private void addAutoSaveSupport(final Control inlineControl) {
         BaseValueEditor<?> editor = this;
         int[] coordinates = new int[2];
-        inlineControl.addMouseListener(new MouseListener() { //[#10561]
-            @Override
-            public void mouseDoubleClick(MouseEvent e) {
-                //nothing
-            }
+        if (GeneralUtils.isLinux()) { //[#10561]
+            inlineControl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    //nothing
+                }
 
-            @Override
-            public void mouseDown(MouseEvent e) {
-                coordinates[0] = e.x;
-                coordinates[1] = e.y;
-            }
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    coordinates[0] = e.x;
+                    coordinates[1] = e.y;
+                }
 
-            @Override
-            public void mouseUp(MouseEvent e) {
-                //nothing
-            }
-        });
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    //nothing
+                }
+            });
+        }
 
         // Do not use focus listener in dialogs (because dialog has controls like Ok/Cancel buttons)
         inlineControl.addFocusListener(new FocusListener() {
@@ -185,7 +187,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
             @Override
             public void focusLost(FocusEvent e) {
-                if (editor.control.getBounds().contains(coordinates[0], coordinates[1])) { //[#10561]
+                if (GeneralUtils.isLinux() && editor.control.getBounds().contains(coordinates[0], coordinates[1])) { //[#10561]
                     return;
                 }
                 // Check new focus control in async mode
