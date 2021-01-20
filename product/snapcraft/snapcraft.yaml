@@ -30,6 +30,8 @@ apps:
       - removable-media
       - ssh-keys
       - ssh-public-keys
+      - personal-files
+      - system-files
 
 parts:
   dbeaver-ce:
