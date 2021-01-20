@@ -39,7 +39,7 @@ public class SQLEditorHandlerOpenConsole extends AbstractHandler {
 
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
-                serviceSQL.openSQLConsole(navContext.getDataSourceContainer(), navContext.getExecutionContext(), "Console", "");
+                serviceSQL.openSQLConsole(navContext.getDataSourceContainer(), navContext.getExecutionContext(), navContext.getSelectedObject(), "Console", "");
             }
         } catch (Exception e) {
             // Ignore

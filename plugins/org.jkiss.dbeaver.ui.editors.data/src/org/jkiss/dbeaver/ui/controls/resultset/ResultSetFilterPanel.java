@@ -597,6 +597,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             serviceSQL.openSQLConsole(
                 dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
                 viewer.getExecutionContext(),
+                null,
                 editorName,
                 viewer.getActiveQueryText());
         }

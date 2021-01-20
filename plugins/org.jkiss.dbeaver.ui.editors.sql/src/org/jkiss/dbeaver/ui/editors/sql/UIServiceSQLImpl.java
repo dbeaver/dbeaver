@@ -136,10 +136,14 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, String name, String sqlText) {
+    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, DBSObject selectedObject, String name, String sqlText) {
+        SQLNavigatorContext navigatorContext = executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer);
+        if (selectedObject != null) {
+            navigatorContext.setSelectedObject(selectedObject);
+        }
         return SQLEditorHandlerOpenEditor.openSQLConsole(
             UIUtils.getActiveWorkbenchWindow(),
-            executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer),
+            navigatorContext,
             name,
             sqlText);
     }
