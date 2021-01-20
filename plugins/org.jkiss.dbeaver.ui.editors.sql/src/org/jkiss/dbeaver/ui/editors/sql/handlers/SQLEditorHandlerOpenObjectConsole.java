@@ -54,6 +54,8 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
     private static final Log log = Log.getLog(SQLEditorHandlerOpenObjectConsole.class);
 
+    private static final boolean OPEN_FILE_EDITOR = true;
+
     public SQLEditorHandlerOpenObjectConsole()
     {
     }
@@ -97,13 +99,18 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
 
-        DBPProject project = navigatorContext.getProject();
-        SQLEditorHandlerOpenEditor.checkProjectIsOpen(project);
-        IFolder folder = SQLEditorHandlerOpenEditor.getCurrentScriptFolder(currentSelection);
-        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, navigatorContext);
+        SQLEditor editor;
+        if (OPEN_FILE_EDITOR) {
+            DBPProject project = navigatorContext.getProject();
+            SQLEditorHandlerOpenEditor.checkProjectIsOpen(project);
+            IFolder folder = SQLEditorHandlerOpenEditor.getCurrentScriptFolder(currentSelection);
+            IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, navigatorContext);
 
-        FileEditorInput sqlInput = new FileEditorInput(scriptFile);
-        SQLEditor editor = (SQLEditor) workbenchWindow.getActivePage().openEditor(sqlInput, SQLEditor.class.getName());
+            FileEditorInput sqlInput = new FileEditorInput(scriptFile);
+            editor = (SQLEditor) workbenchWindow.getActivePage().openEditor(sqlInput, SQLEditor.class.getName());
+        } else {
+            editor = SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, navigatorContext, title, sql);
+        }
 
         if (editor != null) {
             editor.getDocument().set(sql);
