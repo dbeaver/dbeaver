@@ -155,10 +155,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
                 log.debug("Error loading task runs", e);
             }
         }
-        if (lastRun == null) {
-            lastRun = VOID_RUN;
-        }
-        return lastRun;
+        return lastRun == VOID_RUN ? null : lastRun;
     }
 
     @NotNull
