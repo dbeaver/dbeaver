@@ -239,6 +239,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(monitor, rows);
+        cachedFKNames.clear();
     }
 
     @Override
@@ -251,7 +252,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String fkName = "FK_" + parentName + "_" + pkTableName;
         if (cachedFKNames.contains(fkName) && keySeq == 1) {
             // Multiple unnamed foreign keys - #8286
-            // Column sequnce 1 means new FK so lets make a new one
+            // Column sequence 1 means new FK so lets make a new one
             fkName += "_" + (cachedFKNames.size() + 1);
         }
         cachedFKNames.add(fkName);
