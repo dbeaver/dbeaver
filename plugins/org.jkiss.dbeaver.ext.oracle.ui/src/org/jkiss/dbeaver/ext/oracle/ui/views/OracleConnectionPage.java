@@ -282,6 +282,9 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     @Override
     public boolean isComplete()
     {
+        if (!super.isComplete()) {
+            return false;
+        }
 //        if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
 //            return false;
 //        }
