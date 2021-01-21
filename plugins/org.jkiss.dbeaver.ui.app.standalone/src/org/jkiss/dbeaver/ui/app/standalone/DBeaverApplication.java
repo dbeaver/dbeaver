@@ -24,6 +24,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -104,6 +105,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     private Display display = null;
 
     private boolean resetUIOnRestart, resetWorkspaceOnRestart;
+    private long lastUserActivityTime = -1;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -147,12 +149,18 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
     }
 
+
+
     /**
      * Gets singleton instance of DBeaver application
      * @return application or null if application wasn't started or was stopped.
      */
     public static DBeaverApplication getInstance() {
         return instance;
+    }
+
+    public long getUserActivityTime() {
+        return lastUserActivityTime;
     }
 
     @Override
@@ -408,8 +416,17 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
             if (display == null) {
                 display = PlatformUI.createDisplay();
             }
+            addIdleListeners();
         }
         return display;
+    }
+
+    private void addIdleListeners() {
+        int [] events = {SWT.KeyDown, SWT.KeyUp, SWT.MouseDown, SWT.MouseMove, SWT.MouseUp, SWT.MouseWheel};
+        Listener idleListener = event -> lastUserActivityTime = System.currentTimeMillis();
+        for (int event : events) {
+            display.addFilter(event, idleListener);
+        }
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
