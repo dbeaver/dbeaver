@@ -50,7 +50,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     private final Map<String, GenericUniqueKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
-    private Set<String> cachedFKNames;
+    private int fkIndex;
 
     ForeignKeysCache(TableCache tableCache)
     {
@@ -60,6 +60,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FKTABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FK_NAME));
         foreignKeyObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
+        fkIndex = 1;
     }
 
     @Override
@@ -239,22 +240,18 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(monitor, rows);
+        fkIndex = 1;
     }
 
     @Override
     protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
-        if (cachedFKNames == null) {
-            cachedFKNames = new LinkedHashSet<>();
-        }
         final String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
         String fkName = "FK_" + parentName + "_" + pkTableName;
-        if (cachedFKNames.contains(fkName) && keySeq == 1) {
-            // Multiple unnamed foreign keys - #8286
-            // Column sequnce 1 means new FK so lets make a new one
-            fkName += "_" + (cachedFKNames.size() + 1);
+        if (fkIndex > 1 && keySeq == 1) {
+            fkName += "_" + fkIndex;
         }
-        cachedFKNames.add(fkName);
+        fkIndex++;
         return fkName;
     }
 }
