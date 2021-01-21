@@ -126,8 +126,7 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
     }
 
     private void showControl(Control control, boolean flag) {
-        control.setVisible(flag);
-        ((GridData) control.getLayoutData()).exclude = !flag;
+        UIUtils.setControlVisible(control, flag);
     }
 
     protected boolean isCertificatesSupported() {

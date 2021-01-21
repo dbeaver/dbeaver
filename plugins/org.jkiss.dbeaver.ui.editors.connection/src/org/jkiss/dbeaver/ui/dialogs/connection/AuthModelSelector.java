@@ -160,10 +160,8 @@ public class AuthModelSelector extends Composite {
             authModelCombo.select(allAuthModels.indexOf(selectedAuthModel));
         }
         boolean authSelectorVisible = allAuthModels.size() >= 2;
-        authModelLabel.setVisible(authSelectorVisible);
-        ((GridData)authModelLabel.getLayoutData()).exclude = !authSelectorVisible;
-        authModelComp.setVisible(authSelectorVisible);
-        ((GridData)authModelComp.getLayoutData()).exclude = !authSelectorVisible;
+        UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
+        UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
         {
