@@ -109,12 +109,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         finishLabel.setLayoutData(gd);
         finishLabel.setText("Finished");
 
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                UIUtils.packColumns(objectTree, false, null);
-            }
-        });
+        UIUtils.asyncExec(() -> UIUtils.packColumns(objectTree, false, null));
 
         return composite;
     }
@@ -157,11 +152,9 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         getButton(IDialogConstants.CLOSE_ID).setEnabled(true);
 
         Composite progressPanel = progressBar.getParent();
-        progressPanel.setVisible(false);
-        ((GridData)progressPanel.getLayoutData()).exclude = true;
+        UIUtils.setControlVisible(progressPanel, false);
 
-        finishLabel.setVisible(true);
-        ((GridData)finishLabel.getLayoutData()).exclude = false;
+        UIUtils.setControlVisible(finishLabel, true);
         finishLabel.setText("Finished - " + processedCount + " object(s) processed");
 
         progressPanel.getParent().layout();

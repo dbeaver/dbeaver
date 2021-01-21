@@ -2020,4 +2020,12 @@ public class UIUtils {
         }
         return text;
     }
+
+    public static void setControlVisible(Control control, boolean visible) {
+        control.setVisible(visible);
+        Object gd = control.getLayoutData();
+        if (gd instanceof GridData) {
+            ((GridData) gd).exclude = !visible;
+        }
+    }
 }
