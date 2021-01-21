@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hana;singleton:=true
-Bundle-Version: 1.2.27.qualifier
-Bundle-Release-Date: 20210118
+Bundle-Version: 1.2.28.qualifier
+Bundle-Release-Date: 20210201
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
