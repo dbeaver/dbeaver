@@ -126,7 +126,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
 
     @Override
     public boolean isComplete() {
-        return hostText != null && portText != null && 
+        return super.isComplete() &&
+            hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
     }
