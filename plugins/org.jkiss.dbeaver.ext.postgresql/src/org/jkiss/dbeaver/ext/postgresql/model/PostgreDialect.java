@@ -836,6 +836,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         return true;
     }
 
+    @Override
+    public boolean supportsNestedComments() {
+        return true;
+    }
+
     @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
