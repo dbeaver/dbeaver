@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public class SQLQuery implements SQLScriptElement {
 
-    private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("(?:--|/\\*)\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
+    private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     @Nullable
     private final DBPDataSource dataSource;
@@ -108,7 +108,7 @@ public class SQLQuery implements SQLScriptElement {
         queryTitle = null;
         final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
         if (matcher.find()) {
-            queryTitle = matcher.group(1);
+            queryTitle = matcher.group(1).trim();
         }
     }
 
