@@ -115,7 +115,7 @@ public class SQLRuleManager {
             }
         }
 
-        if (!minimalRules) {
+        {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
             String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
