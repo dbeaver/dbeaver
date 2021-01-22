@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
@@ -107,9 +108,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             }
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
-        } else if (object instanceof byte[]) {
+        } else if (object instanceof byte[] || object instanceof JDBCContentBytes) {
+            byte[] bytes;
+            if (object instanceof JDBCContentBytes) {
+                bytes = ((JDBCContentBytes) object).getRawValue();
+            } else {
+                bytes = (byte[]) object;
+            }
             try {
-                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, (byte[]) object);
+                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, bytes);
 //            if (invertCoordinates) {
 //                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
 //            }
