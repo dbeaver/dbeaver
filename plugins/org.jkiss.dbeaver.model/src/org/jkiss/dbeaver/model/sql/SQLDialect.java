@@ -258,6 +258,8 @@ public interface SQLDialect {
 
     boolean supportsOrderByIndex();
 
+    boolean supportsNestedComments();
+
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
      */

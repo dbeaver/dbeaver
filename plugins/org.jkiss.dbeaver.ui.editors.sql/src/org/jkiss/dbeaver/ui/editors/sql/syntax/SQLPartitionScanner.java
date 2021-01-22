@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +106,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         setPredicateRules(result);
     }
 
-    private void initRules(SQLDialect dialect) {
+    private void initRules(SQLDialect dialect, SQLRuleManager ruleManager) {
         TPRuleProvider ruleProvider = GeneralUtils.adapt(dialect, TPRuleProvider.class);
         if (ruleProvider != null) {
             List<TPRule> partRules = new ArrayList<>();
@@ -146,9 +146,9 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         rules.add(wordRule);
 
         // Add rules for multi-line comments
-        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
-        if (multiLineComments != null) {
-            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, true));
+        TPRule multiLineCommentRule = ruleManager.getMultiLineCommentRule();
+        if (multiLineCommentRule instanceof TPPredicateRule) {
+            rules.add(new PredicateRuleAdapter((TPPredicateRule) multiLineCommentRule));
         }
 
         String[] singleLineComments = dialect.getSingleLineComments();
@@ -159,9 +159,9 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         }
     }
 
-    public SQLPartitionScanner(DBPDataSource dataSource, SQLDialect dialect) {
+    public SQLPartitionScanner(DBPDataSource dataSource, SQLDialect dialect, SQLRuleManager ruleManager) {
         this.dataSource = dataSource;
-        initRules(dialect);
+        initRules(dialect, ruleManager);
         setupRules();
     }
 
