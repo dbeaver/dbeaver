@@ -108,6 +108,7 @@ public class PostgreMessages extends NLS {
 
     /* PostgreConnectionPage */
     public static String dialog_setting_connection_host;
+    public static String dialog_setting_connection_cloud_instance;
     public static String dialog_setting_connection_port;
     public static String dialog_setting_connection_database;
     public static String dialog_setting_connection_user;
