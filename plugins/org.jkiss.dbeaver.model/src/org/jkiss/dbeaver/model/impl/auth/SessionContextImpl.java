@@ -64,7 +64,7 @@ public class SessionContextImpl implements DBASessionContext {
                 }
             }
             if (session != null) {
-                sessions.add(session);
+                //sessions.add(session);
             }
         }
         return session;
