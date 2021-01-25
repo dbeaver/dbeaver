@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -110,10 +111,10 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         if (!parentNode.hasChildren(true)) {
             return EMPTY_CHILDREN;
         }
-        if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).needsInitialization()) {
+        if (parentNode instanceof DBNLazyNode && ((DBNLazyNode)parentNode).needsInitialization()) {
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
-                new TreeLoadService("Loading", ((DBNDatabaseNode) parentNode)));
+                new TreeLoadService("Loading", parentNode));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
