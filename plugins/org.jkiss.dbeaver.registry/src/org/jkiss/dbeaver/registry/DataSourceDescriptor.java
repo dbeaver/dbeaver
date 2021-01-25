@@ -768,12 +768,19 @@ public class DataSourceDescriptor
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
         // Update auth properties if possible
+
+        // 1. Get credentials from origin
+        if (origin instanceof DBAAuthCredentialsProvider) {
+            ((DBAAuthCredentialsProvider) origin).provideAuthParameters(this, resolvedConnectionInfo);
+        }
+
+        // 2. Get credentials from global provider
         boolean authProvided = true;
         DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
         if (authProvider != null) {
             authProvided = authProvider.provideAuthParameters(this, resolvedConnectionInfo);
         } else {
-            // Legacy password provider
+            // 3. USe legacy password provider
             if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                 // Ask for password
                 authProvided = askForPassword(this, null, false);

@@ -128,7 +128,8 @@ public abstract class AbstractPopupPanel extends Dialog {
         if (shell != null) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
-                if (focusControl.getShell().getData() instanceof ErrorDialog) {
+                Object dialog = focusControl.getShell().getData();
+                if (dialog instanceof BlockingPopupDialog || dialog instanceof ErrorDialog) {
                     // It is an error popup
                     return;
                 }

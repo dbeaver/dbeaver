@@ -48,7 +48,7 @@ import java.util.*;
 /**
  * DBNDatabaseNode
  */
-public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
+public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
 
     private static final DBNDatabaseNode[] EMPTY_NODES = new DBNDatabaseNode[0];
 
@@ -289,6 +289,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     }
 
+    @Override
     public boolean needsInitialization() {
         return childNodes == null && hasChildren(false);
     }
