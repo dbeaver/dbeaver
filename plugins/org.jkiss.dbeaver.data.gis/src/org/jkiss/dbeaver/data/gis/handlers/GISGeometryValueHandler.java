@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -35,6 +36,8 @@ import java.sql.SQLException;
  * GIS geometry handler
  */
 public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
+
+    private static final Log log = Log.getLog(GISGeometryValueHandler.class);
 
     private int defaultSRID;
     private boolean invertCoordinates;
@@ -153,6 +156,16 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
             return "'" + value.toString() + "'";
+        } else if (value instanceof JDBCContentBytes) {
+            byte[] bytes = ((JDBCContentBytes) value).getRawValue();
+            if (bytes.length != 0) {
+                try {
+                    Geometry geometry = convertGeometryFromBinaryFormat(null, bytes);
+                    return geometry.toString();
+                } catch (DBCException e) {
+                    log.debug("Error parsing string geometry value from binary");
+                }
+            }
         }
         return super.getValueDisplayString(column, value, format);
     }
