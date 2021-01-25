@@ -30,7 +30,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Base authentication dialog
  */
-public class BaseAuthDialog extends BaseDialog
+public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
 {
     private static final String DIALOG_ID = "DBeaver.BaseAuthDialog";//$NON-NLS-1$
 
