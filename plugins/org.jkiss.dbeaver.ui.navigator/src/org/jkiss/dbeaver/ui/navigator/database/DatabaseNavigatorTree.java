@@ -82,6 +82,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private INavigatorItemRenderer itemRenderer;
 
     private boolean filterShowConnected = false;
+    private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style) {
         this(parent, rootNode, style, false);
@@ -259,16 +260,27 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         // Create tree
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
-            CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(parent, treeStyle);
             if (navigatorFilter != null) {
+                CustomFilteredTree filteredTree = new CustomFilteredTree(treeStyle) {
+                    @Override
+                    protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
+                        return new CheckboxTreeViewer(parent, treeStyle);
+                    }
+                };
+                filterControl = filteredTree.getFilterControl();
+                return filteredTree.getViewer();
+
+/*
                 checkboxTreeViewer.addFilter(new ViewerFilter() {
                     @Override
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
                         return navigatorFilter.select(element);
                     }
                 });
+*/
+            } else {
+                return new CheckboxTreeViewer(parent, treeStyle);
             }
-            return checkboxTreeViewer;
         } else {
             if (navigatorFilter != null) {
                 CustomFilteredTree filteredTree = new CustomFilteredTree(treeStyle);
@@ -722,7 +734,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 // May happen in old Eclipse versions
             }
 
-            setInitialText(UINavigatorMessages.actions_navigator_search_tip);
+            setInitialText(getFilterPlaceholderText());
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
@@ -731,22 +743,29 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
-            ((GridLayout)parent.getLayout()).numColumns++;
 
-            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+                ((GridLayout)parent.getLayout()).numColumns++;
 
-            ToolBarManager filterManager = new ToolBarManager();
-            filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-            final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
-            if (menuService != null) {
-                menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+
+                ToolBarManager filterManager = new ToolBarManager();
+                filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+                final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
+                if (menuService != null) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+                }
+
+                filterManager.createControl(parent);
+
+                parent.addDisposeListener(e -> filterManager.dispose());
             }
 
-            filterManager.createControl(parent);
-
-            parent.addDisposeListener(e -> filterManager.dispose());
-
             return parent;
+        }
+
+        protected Text doCreateFilterText(Composite parent) {
+            return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
         }
 
         @Override
@@ -802,6 +821,14 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
             };
         }
+    }
+
+    protected String getFilterPlaceholderText() {
+        return filterPlaceholderText;
+    }
+
+    public void setFilterPlaceholderText(String filterPlaceholderText) {
+        this.filterPlaceholderText = filterPlaceholderText;
     }
 
     // Called by filtering job
