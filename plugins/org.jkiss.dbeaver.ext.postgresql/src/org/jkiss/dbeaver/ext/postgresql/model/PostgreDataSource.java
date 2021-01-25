@@ -660,6 +660,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 return ErrorType.TRANSACTION_ABORTED;
             }
         }
+        if (getServerType() instanceof DBPErrorAssistant) {
+            ErrorType errorType = ((DBPErrorAssistant) getServerType()).discoverErrorType(error);
+            if (errorType != null) {
+                return errorType;
+            }
+        }
 
         return super.discoverErrorType(error);
     }

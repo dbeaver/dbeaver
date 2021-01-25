@@ -168,4 +168,14 @@ public enum SQLState {
             return null;
         }
     }
+
+    public static int getCodeFromException(Throwable error) {
+        if (error instanceof DBException) {
+            return ((DBException) error).getErrorCode();
+        } else if (error instanceof SQLException) {
+            return ((SQLException) error).getErrorCode();
+        } else {
+            return 0;
+        }
+    }
 }
