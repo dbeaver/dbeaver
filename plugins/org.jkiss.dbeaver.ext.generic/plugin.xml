@@ -931,7 +931,7 @@
                     label="Trino"
                     icon="icons/trino_icon.png"
                     iconBig="icons/trino_icon_big.png"
-                    class="io.trino.jdbc.Trino"
+                    class="io.trino.jdbc.TrinoDriver"
                     sampleURL="jdbc:trino://{host}:{port}[/{database}]"
                     defaultPort="8080"
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
