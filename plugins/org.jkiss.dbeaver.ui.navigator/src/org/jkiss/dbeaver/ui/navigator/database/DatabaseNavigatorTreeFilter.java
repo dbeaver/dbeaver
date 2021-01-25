@@ -35,7 +35,7 @@ public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
         return filterObjectType;
     }
 
-    void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+    public void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
         this.filterObjectType = filterObjectType;
     }
 
