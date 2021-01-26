@@ -142,7 +142,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     public abstract void fillProcessParameters(SETTINGS settings, PROCESS_ARG arg, List<String> cmd) throws IOException;
 
-    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+    protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
     }
 
     protected boolean isLogInputStream() {
@@ -170,7 +170,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             if (this.isMergeProcessStreams()) {
                 processBuilder.redirectErrorStream(true);
             }
-            setupProcessParameters(settings, arg, processBuilder);
+            setupProcessParameters(monitor, settings, arg, processBuilder);
             Process process = processBuilder.start();
 
             startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
