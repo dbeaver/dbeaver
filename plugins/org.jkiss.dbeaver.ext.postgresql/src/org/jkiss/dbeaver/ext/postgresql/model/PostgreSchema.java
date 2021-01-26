@@ -508,6 +508,10 @@ public class PostgreSchema implements
             Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
             monitor.beginTask("Load data types", dataTypes.size());
             for (PostgreDataType dataType : dataTypes) {
+                if (dataType.hasAttributes() || dataType.isArray()) {
+                    // Skipp table types and arrays
+                    continue;
+                }
                 addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
                 if (monitor.isCanceled()) {
                     break;
