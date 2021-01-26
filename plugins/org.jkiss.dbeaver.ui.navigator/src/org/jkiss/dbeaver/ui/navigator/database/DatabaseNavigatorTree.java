@@ -744,7 +744,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (!UIUtils.isInDialog(parent) && navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
                 ((GridLayout)parent.getLayout()).numColumns++;
 
                 IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();

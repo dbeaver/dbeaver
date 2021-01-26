@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
@@ -113,6 +114,7 @@ public class ObjectBrowserDialog extends Dialog {
                 return super.isLeafObject(object);
             }
         };
+        filter.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
         navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, filter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
