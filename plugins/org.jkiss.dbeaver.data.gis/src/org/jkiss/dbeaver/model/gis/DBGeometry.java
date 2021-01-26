@@ -62,6 +62,12 @@ public class DBGeometry implements DBDValue {
         this.srid = srid;
     }
 
+    public DBGeometry(Object rawValue, int srid, Map<String, Object> properties) {
+        this.rawValue = rawValue;
+        this.srid = srid;
+        this.properties = properties == null ? null : new LinkedHashMap<>(properties);
+    }
+
     public Geometry getGeometry() {
         return rawValue instanceof Geometry ? (Geometry) rawValue : null;
     }
@@ -115,7 +121,7 @@ public class DBGeometry implements DBDValue {
             jtsGeometry = jtsGeometry.copy();
         }
         jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
-        return new DBGeometry(jtsGeometry, srid);
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     @NotNull
@@ -135,7 +141,10 @@ public class DBGeometry implements DBDValue {
                 break;
             }
         }
-        return new DBGeometry(jtsGeometry, srid);
+        if (jtsGeometry == getGeometry()) {
+            return this;
+        }
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     public Map<String, Object> getProperties() {
