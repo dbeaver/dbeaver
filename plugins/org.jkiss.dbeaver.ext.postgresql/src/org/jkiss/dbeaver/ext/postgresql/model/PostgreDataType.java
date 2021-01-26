@@ -369,6 +369,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return getDatabase().getDataType(monitor, baseTypeId);
     }
 
+    public boolean isArray() {
+        return elementTypeId != 0;
+    }
+
     @Property(viewable = true, optional = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
@@ -984,6 +988,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                 }
             }
+        }
+        if (skipTables && valueType == Types.ARRAY) {
+            // Skip arrays as well
+            return null;
         }
 
         return new PostgreDataType(
