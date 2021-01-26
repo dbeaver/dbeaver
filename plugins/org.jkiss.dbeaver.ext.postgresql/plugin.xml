@@ -535,6 +535,7 @@
                 label="%provider.data.type.postgresql.name">
 
             <datasource id="postgresql"/>
+            <datasource id="greenplum"/>
 
             <type name="*"/>
         </provider>
