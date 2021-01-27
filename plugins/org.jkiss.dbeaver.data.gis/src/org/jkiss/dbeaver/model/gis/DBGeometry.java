@@ -107,6 +107,9 @@ public class DBGeometry implements DBDValue {
 
     public void setSRID(int srid) {
         this.srid = srid;
+        if (rawValue instanceof Geometry) {
+            ((Geometry) rawValue).setSRID(srid);
+        }
     }
 
     public DBGeometry flipCoordinates() throws DBException {
