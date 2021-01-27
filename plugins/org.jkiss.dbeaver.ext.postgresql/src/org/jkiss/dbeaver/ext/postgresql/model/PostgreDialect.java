@@ -40,9 +40,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * PostgreSQL dialect
@@ -657,6 +655,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "GENERATE_SERIES",
         "GENERATE_SUBSCRIPTS"
     };
+
+    @Nullable
+    private static Collection<String> typesThatRequireCasting;
+
     //endregion
 
     private PostgreServerExtension serverExtension;
@@ -797,8 +799,15 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @NotNull
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
+        if (typesThatRequireCasting == null) {
+            typesThatRequireCasting = new HashSet<>(PostgreDataType.getOidTypes().length + 2, 1);
+            typesThatRequireCasting.addAll(Arrays.asList(PostgreDataType.getOidTypes()));
+            typesThatRequireCasting.add(PostgreConstants.TYPE_GEOMETRY);
+            typesThatRequireCasting.add(PostgreConstants.TYPE_GEOGRAPHY);
+            typesThatRequireCasting = Collections.unmodifiableCollection(typesThatRequireCasting);
+        }
         String typeName = attribute.getTypeName();
-        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || Objects.equals(typeName, PostgreConstants.TYPE_GEOMETRY)) {
+        if (typesThatRequireCasting.contains(typeName)) {
             return expression + "::" + typeName;
         }
         return expression;
