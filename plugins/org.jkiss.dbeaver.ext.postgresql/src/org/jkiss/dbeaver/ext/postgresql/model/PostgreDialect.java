@@ -264,7 +264,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     };
     //endregion
 
-
     //region FUNCTIONS KW
 
     public static String[] POSTGRE_FUNCTIONS_AGGREGATE = new String[]{
@@ -656,9 +655,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "GENERATE_SUBSCRIPTS"
     };
 
-    @Nullable
-    private static Collection<String> typesThatRequireCasting;
-
     //endregion
 
     private PostgreServerExtension serverExtension;
@@ -799,15 +795,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @NotNull
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
-        if (typesThatRequireCasting == null) {
-            typesThatRequireCasting = new HashSet<>(PostgreDataType.getOidTypes().length + 2, 1);
-            typesThatRequireCasting.addAll(Arrays.asList(PostgreDataType.getOidTypes()));
-            typesThatRequireCasting.add(PostgreConstants.TYPE_GEOMETRY);
-            typesThatRequireCasting.add(PostgreConstants.TYPE_GEOGRAPHY);
-            typesThatRequireCasting = Collections.unmodifiableCollection(typesThatRequireCasting);
-        }
         String typeName = attribute.getTypeName();
-        if (typesThatRequireCasting.contains(typeName)) {
+        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
             return expression + "::" + typeName;
         }
         return expression;
