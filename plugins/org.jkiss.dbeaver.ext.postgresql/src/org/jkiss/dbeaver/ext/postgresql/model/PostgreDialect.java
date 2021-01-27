@@ -40,20 +40,19 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreSQL dialect
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
-
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
             "SHOW", "SET"
         }
     );
+
     private static final String[][] PG_STRING_QUOTES = {
         {"'", "'"}
     };
@@ -264,7 +263,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "P"
     };
     //endregion
-
 
     //region FUNCTIONS KW
 
@@ -656,6 +654,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
         "GENERATE_SERIES",
         "GENERATE_SUBSCRIPTS"
     };
+
     //endregion
 
     private PostgreServerExtension serverExtension;
@@ -797,7 +796,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
         String typeName = attribute.getTypeName();
-        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName)) {
+        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || attribute.getTypeID() == Types.OTHER) {
             return expression + "::" + typeName;
         }
         return expression;
