@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.*;
 
 import java.sql.SQLException;
 
@@ -129,7 +130,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             }
         } else if (object instanceof String) {
             try {
-                Geometry jtsGeometry = GeometryConverter.getInstance().fromWKT((String) object);
+                Geometry jtsGeometry = new WKTReader().read((String) object);
                 geometry = new DBGeometry(jtsGeometry);
             } catch (Exception e) {
                 throw new DBCException("Error parsing geometry value from string", e);
@@ -144,11 +145,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
-        return GeometryConverter.getInstance().fromWKB(object);
+        try {
+            return new WKBReader().read(object);
+        } catch (ParseException e) {
+            throw new DBCException("Error reading geometry from binary data", e);
+        }
     }
 
     protected byte[] convertGeometryToBinaryFormat(DBCSession session, Geometry geometry) throws DBCException {
-        return GeometryConverter.getInstance().toWKB(geometry);
+        return new WKBWriter(2 /* default */, geometry.getSRID() > 0).write(geometry);
     }
 
     @NotNull
