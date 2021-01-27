@@ -798,7 +798,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String getTypeCastClause(DBSAttributeBase attribute, String expression) {
         String typeName = attribute.getTypeName();
-        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || Objects.equals(typeName, "geometry")) {
+        if (ArrayUtils.contains(PostgreDataType.getOidTypes(), typeName) || Objects.equals(typeName, PostgreConstants.TYPE_GEOMETRY)) {
             return expression + "::" + typeName;
         }
         return expression;
