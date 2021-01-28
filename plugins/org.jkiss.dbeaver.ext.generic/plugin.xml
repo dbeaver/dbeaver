@@ -937,7 +937,8 @@
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
                     webURL="https://trino.io/"
                     categories="sql,analytic,bigdata,hadoop">
-                    <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
+                    <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
