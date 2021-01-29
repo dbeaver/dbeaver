@@ -127,6 +127,22 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     log.debug(e);
                 }
             }
+            if (postgreColumn.getTable() instanceof PostgreTableForeign) {
+                String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
+                if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
+                    sql.append(" OPTIONS(");
+                    boolean firstElement = true;
+                    for (String option : foreignTableColumnOptions) {
+                        if (firstElement) {
+                            sql.append(option);
+                            firstElement = false;
+                        } else {
+                            sql.append(",").append(option);
+                        }
+                    }
+                    sql.append(")");
+                }
+            }
             if (rawType != null) {
                 sql.append("[]");
             }
