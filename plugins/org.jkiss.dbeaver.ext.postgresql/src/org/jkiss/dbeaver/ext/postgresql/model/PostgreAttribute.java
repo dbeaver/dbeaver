@@ -65,6 +65,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private Object acl;
     private long typeId;
     private int typeMod;
+    @Nullable
+    private String[] foreignTableColumnOptions;
 
     protected PostgreAttribute(
         OWNER table)
@@ -210,6 +212,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+
+        if (getTable() instanceof PostgreTableForeign) {
+            foreignTableColumnOptions = JDBCUtils.safeGetArray(dbResult, "attfdwoptions");
+        }
 
         setPersisted(true);
     }
@@ -370,6 +376,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return DBUtils.getFullTypeName(this);
         }
         return fqtn;
+    }
+
+    @Nullable
+    public String[] getForeignTableColumnOptions() {
+        return foreignTableColumnOptions;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {
