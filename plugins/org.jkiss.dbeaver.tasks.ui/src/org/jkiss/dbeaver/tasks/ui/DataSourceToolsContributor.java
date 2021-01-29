@@ -232,7 +232,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
     }
 
-    public class DataSourceEditorInput implements IEditorInput, IDataSourceContainerProvider, DBPContextProvider {
+    public static class DataSourceEditorInput implements IEditorInput, IDataSourceContainerProvider, DBPContextProvider {
 
         private final DBPDataSource dataSource;
         private final DBPEditorContribution editor;
