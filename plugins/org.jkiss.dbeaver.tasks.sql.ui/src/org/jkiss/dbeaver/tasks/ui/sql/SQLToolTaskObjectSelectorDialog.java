@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
-        INavigatorFilter dsFilter = new INavigatorFilter() {
+        INavigatorFilter dsFilter = new DatabaseNavigatorTreeFilter() {
             @Override
             public boolean filterFolders() {
                 return true;

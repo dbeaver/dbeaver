@@ -44,10 +44,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -83,6 +88,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style) {
         this(parent, rootNode, style, false);
@@ -171,16 +177,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     public DatabaseNavigatorTreeFilterObjectType getFilterObjectType() {
-        if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
-            return ((DatabaseNavigatorTreeFilter) navigatorFilter).getFilterObjectType();
-        }
-        return DatabaseNavigatorTreeFilterObjectType.table;
+        return filterObjectType;
     }
 
     public void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
-        if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
-            ((DatabaseNavigatorTreeFilter) navigatorFilter).setFilterObjectType(filterObjectType);
-        }
+        this.filterObjectType = filterObjectType;
     }
 
     public ILabelDecorator getLabelDecorator() {
@@ -693,9 +694,35 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             {
                 return hasVisibleConnections(viewer, (DBNLocalFolder)element);
             }
-            if (filter.select(element)) {
+            if (!filter.select(element)) {
+                return false;
+            }
+
+            boolean needToMatch = filter.filterObjectByPattern(element);
+            if (!needToMatch && element instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode) element).getObject();
+                switch (filterObjectType) {
+                    case connection:
+                        needToMatch = (object instanceof DBPDataSourceContainer);
+                        break;
+                    case container:
+                        needToMatch = object instanceof DBSSchema || object instanceof DBSCatalog;
+                        break;
+                    default:
+                        needToMatch =
+                            object instanceof DBSEntity ||
+                                object instanceof DBSProcedure ||
+                                object instanceof DBSTableIndex ||
+                                object instanceof DBSPackage ||
+                                object instanceof DBSSequence ||
+                                object instanceof DBAUser;
+                        break;
+                }
+            }
+            if (!needToMatch) {
                 return true;
             }
+
             return super.isLeafMatch(viewer, element);
         }
 

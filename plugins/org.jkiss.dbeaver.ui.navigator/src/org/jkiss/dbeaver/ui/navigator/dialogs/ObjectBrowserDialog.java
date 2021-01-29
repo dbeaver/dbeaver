@@ -29,8 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
@@ -114,12 +113,24 @@ public class ObjectBrowserDialog extends Dialog {
                 return super.isLeafObject(object);
             }
         };
-        filter.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
         navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, filter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
+
+        navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
+        if (resultTypes != null) {
+            for (Class<?> rt : resultTypes) {
+                if (DBSEntity.class.isAssignableFrom(rt) || DBSDataContainer.class.isAssignableFrom(rt)) {
+                    navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
+                    break;
+                } else if (DBSObjectContainer.class.isAssignableFrom(rt)) {
+                    navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.container);
+                    break;
+                }
+            }
+        }
 
         final TreeViewer treeViewer = navigatorTree.getViewer();
         treeViewer.addFilter(new ViewerFilter() {
