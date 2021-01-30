@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -129,7 +128,7 @@ public interface DBPDriver extends DBPNamedObject
     DBXTreeNode getNavigatorRoot();
 
     @NotNull
-    Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
+    DBPPropertyDescriptor[] getProviderPropertyDescriptors();
 
     @NotNull
     Map<String, Object> getDefaultConnectionProperties();
