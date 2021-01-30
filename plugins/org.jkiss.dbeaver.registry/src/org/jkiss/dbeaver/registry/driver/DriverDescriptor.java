@@ -149,7 +149,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
-    private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<>();
+    private final DBPPropertyDescriptor[] providerPropertyDescriptors;
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
@@ -161,7 +161,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final Map<String, Object> defaultConnectionProperties = new HashMap<>();
     private final Map<String, Object> customConnectionProperties = new HashMap<>();
 
-    private Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
+    private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -246,7 +246,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     this.libraries.add(library);
                 }
             }
-            this.connectionPropertyDescriptors.addAll(copyFrom.connectionPropertyDescriptors);
+            this.providerPropertyDescriptors = copyFrom.providerPropertyDescriptors;
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
             this.customParameters.putAll(copyFrom.customParameters);
@@ -256,6 +256,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         } else {
             this.categories = new ArrayList<>();
             this.name = "";
+            this.providerPropertyDescriptors = new DBPPropertyDescriptor[0];
         }
     }
 
@@ -323,11 +324,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         {
-            // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
-            for (IConfigurationElement prop : propElements) {
-                connectionPropertyDescriptors.addAll(PropertyDescriptor.extractProperties(prop));
-            }
+            this.providerPropertyDescriptors = Arrays.stream(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+                .map(PropertyDescriptor::extractProperties)
+                .flatMap(List<DBPPropertyDescriptor>::stream)
+                .toArray(DBPPropertyDescriptor[]::new);
         }
 
         {
@@ -888,8 +888,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public List<DBPPropertyDescriptor> getConnectionPropertyDescriptors() {
-        return connectionPropertyDescriptors;
+    public DBPPropertyDescriptor[] getProviderPropertyDescriptors() {
+        return Arrays.copyOf(providerPropertyDescriptors, providerPropertyDescriptors.length);
     }
 
     @NotNull
