@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * DataSourceProviderDescriptor
@@ -146,6 +147,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         this.drivers.add(loadDriver(driverElement));
                     } catch (Exception e) {
                         log.error("Error loading driver", e);
+                    }
+                }
+
+                // Load provider properties
+                {
+                    for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
+                        String driversSpec = propsElement.getAttribute("drivers");
+                        List<DBPPropertyDescriptor> providerProperties = new ArrayList<>();
+                        for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
+                            providerProperties.addAll(PropertyDescriptor.extractProperties(prop));
+                        }
+                        List<DriverDescriptor> appDrivers;
+                        if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
+                            appDrivers = drivers;
+                        } else {
+                            String[] driverIds = driversSpec.split(",");
+                            appDrivers = drivers.stream()
+                                .filter(d -> ArrayUtils.contains(driverIds, d.getId())).collect(Collectors.toList());
+                        }
+                        appDrivers.forEach(d -> d.addProviderPropertyDescriptors(providerProperties));
                     }
                 }
             }
