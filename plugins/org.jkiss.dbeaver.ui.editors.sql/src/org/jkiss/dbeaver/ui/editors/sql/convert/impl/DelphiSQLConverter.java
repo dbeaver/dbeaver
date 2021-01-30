@@ -25,11 +25,20 @@ import java.util.Map;
  * DelphiSQLConverter
  */
 public class DelphiSQLConverter extends SourceCodeSQLConverter {
+	
+	public static final String OPTION_USE_STRING_BUILDER = "use-string-builder";
 
     @Override
     protected void convertSourceLines(StringBuilder result, String[] sourceLines, String lineDelimiter, Map<String, Object> options) {
+    	boolean useStringBuilder = CommonUtils.toBoolean(options.get(OPTION_USE_STRING_BUILDER));
         boolean trailingLineFeed = lineDelimiter.startsWith("#");
+        if(useStringBuilder) {
+        	result.append("Query := TStringList.Create;\n");
+        }
         for (int i = 0; i < sourceLines.length; i++) {
+            if (useStringBuilder) {
+                result.append("Query.Add(");
+            }
             String line = sourceLines[i];
             result.append('\'').append(CommonUtils.escapeJavaString(line));
             if (!trailingLineFeed) {
@@ -39,10 +48,10 @@ public class DelphiSQLConverter extends SourceCodeSQLConverter {
             if (trailingLineFeed) {
                 result.append(lineDelimiter);
             }
-            if (i < sourceLines.length - 1) {
+            if ((i < sourceLines.length - 1) && (!useStringBuilder)) {
                 result.append(" + \n");
             } else {
-                result.append(";");
+                result.append(");\n");
             }
         }
     }
