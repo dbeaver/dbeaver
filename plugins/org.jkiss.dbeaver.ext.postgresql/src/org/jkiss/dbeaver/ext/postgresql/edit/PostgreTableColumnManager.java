@@ -40,6 +40,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -125,6 +126,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                 } catch (DBCException e) {
                     log.debug(e);
+                }
+            }
+            if (postgreColumn.getTable() instanceof PostgreTableForeign) {
+                String[] foreignTableColumnOptions = postgreColumn.getForeignTableColumnOptions();
+                if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
+                    sql.append(" OPTIONS(").append(String.join("," , Arrays.asList(foreignTableColumnOptions))).append(")");
                 }
             }
             if (rawType != null) {
