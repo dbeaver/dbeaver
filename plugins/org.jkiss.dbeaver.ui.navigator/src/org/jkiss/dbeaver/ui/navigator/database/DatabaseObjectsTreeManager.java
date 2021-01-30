@@ -68,8 +68,9 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
 
     private void updateElementsCheck(final Object[] elements, final boolean checked, final boolean change) {
         checkedElements.clear();
+        boolean inWizard = UIUtils.isInWizard(viewer.getControl());
         try {
-            runnableContext.run(false, true, (monitor -> {
+            runnableContext.run(!inWizard, true, (monitor -> {
                 monitor.beginTask("Load sources tree", 100 * elements.length);
                 try {
                     for (Object element : elements) {

@@ -32,6 +32,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
@@ -1383,6 +1384,10 @@ public class UIUtils {
 
     public static boolean isInDialog(Control control) {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
+    }
+
+    public static boolean isInWizard(Control control) {
+        return control.getShell().getData() instanceof IWizardContainer;
     }
 
     public static Link createLink(Composite parent, String text, SelectionListener listener) {
