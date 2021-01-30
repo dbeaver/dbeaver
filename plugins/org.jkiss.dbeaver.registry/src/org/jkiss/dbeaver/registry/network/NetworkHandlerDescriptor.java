@@ -19,17 +19,20 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * NetworkHandlerDescriptor
@@ -41,12 +44,13 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final String label;
     private final String codeName;
     private final String description;
-    private DBWHandlerType type;
+    private final DBWHandlerType type;
     private final boolean secured;
     private final ObjectType handlerType;
     private final int order;
-    private final List<String> replacesIDs = new ArrayList<>();
+    private final List<String> replacesIDs;
     private NetworkHandlerDescriptor replacedBy;
+    private final DBPPropertyDescriptor[] properties;
 
     NetworkHandlerDescriptor(
         IConfigurationElement config) {
@@ -61,9 +65,14 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
 
-        for (IConfigurationElement re : config.getChildren("replace")) {
-            replacesIDs.add(re.getAttribute("id"));
-        }
+        this.replacesIDs = Arrays.stream(config.getChildren("replace"))
+            .map(re -> re.getAttribute("id"))
+            .collect(Collectors.toList());
+
+        this.properties = Arrays.stream(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+            .map(PropertyDescriptor::extractProperties)
+            .flatMap(List<DBPPropertyDescriptor>::stream)
+            .toArray(DBPPropertyDescriptor[]::new);
     }
 
     @NotNull
@@ -92,12 +101,17 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return secured;
     }
 
+    @Override
+    public DBPPropertyDescriptor[] getHandlerProperties() {
+        return properties;
+    }
+
     public int getOrder() {
         return order;
     }
 
-    public boolean matches(DBPDataSourceContainer dataSource) {
-        return appliesTo(dataSource.getDriver().getDataSourceProvider(), dataSource);
+    public boolean matches(DBPDriver driver) {
+        return appliesTo(driver.getDataSourceProvider(), driver);
     }
 
     public ObjectType getHandlerType() {
