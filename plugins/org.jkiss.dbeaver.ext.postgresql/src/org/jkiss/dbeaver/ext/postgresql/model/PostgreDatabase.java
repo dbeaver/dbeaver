@@ -441,6 +441,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Association
+    public Collection<PostgreSetting> getSettings(DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return getDataSource().getSettingCache().getAllObjects(monitor, getDataSource());
+    }
+
+    @Association
     public Collection<PostgreCharset> getEncodings(DBRProgressMonitor monitor) throws DBException {
         if (!getDataSource().getServerType().supportsEncodings()) {
             return null;
