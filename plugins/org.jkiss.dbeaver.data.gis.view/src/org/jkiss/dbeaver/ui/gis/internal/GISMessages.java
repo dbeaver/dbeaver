@@ -20,7 +20,14 @@ package org.jkiss.dbeaver.ui.gis.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class GISMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
+
+	static {
+		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);
+	}
+
+	private GISMessages() {
+	}
 
 	public static String panel_leaflet_viewer_tool_bar_action_text_open;
 	public static String panel_leaflet_viewer_tool_bar_action_text_copy_as;
@@ -56,7 +63,9 @@ public class GISMessages extends NLS {
 	public static String panel_select_srid_dialog_button_label_manage;
 	
 	public static String panel_select_tiles_action_text_plain;
-	
+	public static String panel_select_tiles_action_no_tiles_selected;
+	public static String panel_select_tiles_action_manage_tiles_action;
+
 	public static String panel_set_crs_action_text_simple;
 	
 	public static String panel_show_srid_dialog_title_select;
@@ -65,13 +74,22 @@ public class GISMessages extends NLS {
 	public static String panel_show_srid_dialog_label_text_coordinate;
 	public static String panel_show_srid_dialog_label_text_projection;
 	public static String panel_show_srid_dialog_label_text_type;
-	
-	
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);
-	}
 
-	private GISMessages() {
-	}
+	public static String panel_select_tiles_action_manage_dialog_predefined_tiles;
+	public static String panel_select_tiles_action_manage_dialog_user_defined_tiles;
+	public static String panel_select_tiles_action_manage_dialog_title;
+	public static String panel_select_tiles_action_manage_dialog_tiles_column_name;
+	public static String panel_select_tiles_action_manage_dialog_toolbar_add_new_tiles;
+	public static String panel_select_tiles_action_manage_dialog_toolbar_edit_tiles;
+	public static String panel_select_tiles_action_manage_dialog_toolbar_delete_tiles;
+	public static String panel_select_tiles_action_manage_dialog_error_adding_new_tiles_title;
+	public static String panel_select_tiles_action_manage_dialog_error_adding_new_tiles_message;
+	public static String panel_select_tiles_action_manage_dialog_error_editing_tiles_title;
+	public static String panel_select_tiles_action_manage_dialog_error_editing_tiles_message;
+	public static String panel_select_tiles_action_manage_dialog_infolabel_about_checkboxes_meaning;
+	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_add_tiles_title;
+	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_edit_tiles_title;
+	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_tiles_properties_group;
+	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_label;
+	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_layers_definition;
 }

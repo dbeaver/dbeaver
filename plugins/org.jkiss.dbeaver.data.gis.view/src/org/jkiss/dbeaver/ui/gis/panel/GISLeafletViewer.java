@@ -416,7 +416,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         return lastValue;
     }
 
-    private void updateToolbar() {
+    void updateToolbar() {
         toolBarManager.removeAll();
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
