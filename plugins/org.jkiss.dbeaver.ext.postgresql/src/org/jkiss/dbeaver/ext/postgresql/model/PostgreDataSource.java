@@ -133,6 +133,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         databaseCache.setCache(dbList);
         // Initiate default context
         getDefaultInstance().checkInstanceConnection(monitor, false);
+        try {
+            // Preload some settings, if available
+            settingCache.getObject(monitor, this, "standard_conforming_strings");
+        } catch (DBException e) {
+            // ignore
+        }
     }
 
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
