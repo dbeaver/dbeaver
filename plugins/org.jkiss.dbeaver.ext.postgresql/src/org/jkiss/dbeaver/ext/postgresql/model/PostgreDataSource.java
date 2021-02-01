@@ -135,7 +135,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         getDefaultInstance().checkInstanceConnection(monitor, false);
         try {
             // Preload some settings, if available
-            settingCache.getObject(monitor, this, "standard_conforming_strings");
+            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         } catch (DBException e) {
             // ignore
         }
@@ -630,7 +630,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {
+    static class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource postgreDataSource, @Nullable PostgreSetting object, @Nullable String objectName) throws SQLException {

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting;
 
@@ -57,7 +58,7 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsBackslashStringEscape() {
-        final PostgreSetting setting = dataSource.getSetting("standard_conforming_strings");
+        final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         return setting != null && "off".equals(setting.getValue());
     }
 }
