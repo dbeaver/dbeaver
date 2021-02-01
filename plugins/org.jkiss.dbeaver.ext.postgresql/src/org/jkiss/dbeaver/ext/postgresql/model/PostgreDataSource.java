@@ -633,7 +633,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     static class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource postgreDataSource, @Nullable PostgreSetting object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @Nullable PostgreSetting object, @Nullable String objectName) throws SQLException {
             if (object != null || objectName != null) {
                 final JDBCPreparedStatement dbStat = session.prepareStatement("select * from pg_catalog.pg_settings where name=?");
                 dbStat.setString(1, object != null ? object.getName() : objectName);
