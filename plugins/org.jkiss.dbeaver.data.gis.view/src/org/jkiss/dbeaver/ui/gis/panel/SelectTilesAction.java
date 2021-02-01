@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.gis.panel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -28,13 +30,20 @@ import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 
 class SelectTilesAction extends Action {
-
-    private IGeometryValueEditor valueEditor;
+    private final IGeometryValueEditor valueEditor;
 
     SelectTilesAction(IGeometryValueEditor valueEditor) {
-        super(valueEditor.getValueSRID() == 0 ? GISMessages.panel_select_tiles_action_text_plain : GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLabel(), Action.AS_DROP_DOWN_MENU);
+        super(valueEditor.getValueSRID() == 0 ? GISMessages.panel_select_tiles_action_text_plain : getActionText(), Action.AS_DROP_DOWN_MENU);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PICTURE));
         this.valueEditor = valueEditor;
+    }
+
+    private static String getActionText() {
+        LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+        if (descriptor == null) {
+            return GISMessages.panel_select_tiles_action_no_tiles_selected;
+        }
+        return descriptor.getLabel();
     }
 
     @Override
@@ -43,24 +52,30 @@ class SelectTilesAction extends Action {
     }
 
     @Override
-    public void run() {
-        //valueEditor.refresh();
-    }
-
-    @Override
     public IMenuCreator getMenuCreator() {
         return new MenuCreator(control -> {
             MenuManager menuManager = new MenuManager();
             menuManager.setRemoveAllWhenShown(true);
             menuManager.addMenuListener(manager -> {
-                if (valueEditor.getValueSRID() != 0) {
-                    for (LeafletTilesDescriptor ld : GeometryViewerRegistry.getInstance().getLeafletTiles()) {
-                        menuManager.add(new SetTilesAction(valueEditor, ld));
-                    }
+                if (!isEnabled()) {
+                    return;
                 }
+                GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles().forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
+                GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles().forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
+                if (!menuManager.isEmpty()) {
+                    menuManager.add(new Separator());
+                }
+                menuManager.add(new Action(GISMessages.panel_select_tiles_action_manage_tiles_action) {
+                    @Override
+                    public void run() {
+                        int result = new TilesManagementDialog(valueEditor.getEditorControl().getShell()).open();
+                        if (result == IDialogConstants.OK_ID && valueEditor instanceof GISLeafletViewer) {
+                            ((GISLeafletViewer)valueEditor).updateToolbar();
+                        }
+                    }
+                });
             });
             return menuManager;
         });
     }
-
 }
