@@ -124,20 +124,21 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         boolean hasDoubleQuoteRule = false;
         String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
         String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
+        char stringEscapeCharacter = dialect.getStringEscapeCharacter();
         if (identifierQuoteStrings != null) {
             for (String[] quoteString : identifierQuoteStrings) {
-                rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, dialect.getStringEscapeCharacter()));
+                rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, stringEscapeCharacter));
                 if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
                     hasDoubleQuoteRule = true;
                 }
             }
         }
         if (!hasDoubleQuoteRule) {
-            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, stringEscapeCharacter));
         }
         if (!ArrayUtils.isEmpty(stringQuoteStrings)) {
             for (String[] quotes : stringQuoteStrings) {
-                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, dialect.getStringEscapeCharacter()));
+                rules.add(new MultiLineRule(quotes[0], quotes[1], sqlStringToken, stringEscapeCharacter));
             }
         }
 
