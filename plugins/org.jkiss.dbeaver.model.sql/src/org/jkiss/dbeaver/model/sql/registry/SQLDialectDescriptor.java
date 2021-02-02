@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -60,8 +61,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> types;
     private List<String> functions;
 
+    private List<String> insertMethodNames;
     private DBDInsertReplaceMethod[] insertReplaceMethods;
-    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors = new ArrayList<>();
+    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors;
 
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
@@ -73,8 +75,6 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
         this.isAbstract = CommonUtils.getBoolean(config.getAttribute("abstract"));
         this.isHidden = CommonUtils.getBoolean(config.getAttribute("hidden"));
-
-        List<String> insertMethods = new ArrayList<>();
 
         for (IConfigurationElement propElement : config.getChildren("property")) {
             String propName = propElement.getAttribute("name");
@@ -105,7 +105,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                     this.functions = loadList(propValue);
                     break;
                 case "insertMethods":
-                    insertMethods = loadList(propValue);
+                    insertMethodNames = loadList(propValue);
                     break;
                 default:
                     if (properties == null) {
@@ -115,21 +115,6 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                     break;
             }
         }
-
-        if (!CommonUtils.isEmpty(insertMethods)) {
-            try {
-                List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
-                for (String insertMethodId : insertMethods) {
-                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
-                    insertMethodDescriptors.add(method);
-                    methodsList.add(method.createInsertMethod());
-                }
-                insertReplaceMethods = methodsList.toArray(new DBDInsertReplaceMethod[0]);
-            } catch (DBException e) {
-                log.debug("Can't get SQL insert replace methods");
-            }
-        }
-
     }
 
     private List<String> loadList(String str) {
@@ -265,13 +250,29 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     @Override
     public DBDInsertReplaceMethod[] getSupportedInsertReplaceMethods() {
-        if (insertReplaceMethods.length != 0) {
+        getSupportedInsertReplaceMethodsDescriptors();
+        if (!ArrayUtils.isEmpty(insertReplaceMethods)) {
             return insertReplaceMethods;
         }
         return new DBDInsertReplaceMethod[0];
     }
 
     public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
+        if (insertReplaceMethods == null && !CommonUtils.isEmpty(insertMethodNames)) {
+            try {
+                insertMethodDescriptors = new ArrayList<>();
+                List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
+                for (String insertMethodId : insertMethodNames) {
+                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    insertMethodDescriptors.add(method);
+                    methodsList.add(method.createInsertMethod());
+                }
+                insertReplaceMethods = methodsList.toArray(new DBDInsertReplaceMethod[0]);
+            } catch (DBException e) {
+                log.debug("Can't get SQL insert replace methods");
+            }
+        }
+
         return insertMethodDescriptors;
     }
 
