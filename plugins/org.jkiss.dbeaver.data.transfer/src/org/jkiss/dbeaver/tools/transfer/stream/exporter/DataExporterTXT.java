@@ -47,12 +47,13 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private static final String PROP_DELIM_LEADING = "delimLeading";
     private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
+    private static final String PROP_DELIM_BETWEEN = "delimBetween";
 
     private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 3;
     private boolean showNulls;
-    private boolean delimLeading, delimHeader, delimTrailing;
+    private boolean delimLeading, delimHeader, delimTrailing, delimBetween;
     private Deque<String[]> batchQueue;
 
     private DBDAttributeBinding[] columns;
@@ -69,6 +70,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
+        this.delimBetween = CommonUtils.getBoolean(properties.get(PROP_DELIM_BETWEEN), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
         if (this.maxColumnSize > 0) {
             this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
@@ -132,31 +134,26 @@ public class DataExporterTXT extends StreamExporterAbstract {
         }
 
         while (!batchQueue.isEmpty()) {
+            writeRow(batchQueue.poll(), ' ');
+
             if (delimHeader) {
                 delimHeader = false;
-                writeRow(batchQueue.poll(), ' ', false);
-                writeRow(null, '-', true);
-            } else {
-                writeRow(batchQueue.poll(), ' ', true);
+                writeRow(null, '-');
             }
         }
 
         getWriter().flush();
     }
 
-    private void writeRow(String[] values, char fill, boolean separator) {
+    private void writeRow(String[] values, char fill) {
         final StringBuilder sb = new StringBuilder();
 
-        if (separator) {
-            sb.append(CommonUtils.getLineSeparator());
+        if (delimLeading) {
+            sb.append('|');
         }
 
-        for (int index = 0; index < columns.length; index++) {
+        for (int index = 0, length = columns.length; index < length; index++) {
             final String cell = ArrayUtils.isEmpty(values) ? "" : values[index];
-
-            if (delimLeading && index == 0) {
-                sb.append('|');
-            }
 
             if (maxColumnSize > 0) {
                 sb.append(CommonUtils.truncateString(cell, maxColumnSize));
@@ -168,10 +165,16 @@ public class DataExporterTXT extends StreamExporterAbstract {
                 sb.append(fill);
             }
 
-            if (delimTrailing) {
+            if (delimBetween && index < length - 1) {
                 sb.append('|');
             }
         }
+
+        if (delimTrailing) {
+            sb.append('|');
+        }
+
+        sb.append(CommonUtils.getLineSeparator());
 
         getWriter().write(sb.toString());
     }
