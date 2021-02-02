@@ -70,19 +70,16 @@ public class DataExporterTXT extends StreamExporterAbstract {
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
+        if (this.maxColumnSize > 0) {
+            this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
+        }
     }
 
     @Override
     public void exportHeader(DBCSession session) throws DBException, IOException {
         columns = getSite().getAttributes();
         colWidths = new int[columns.length];
-
-        if (maxColumnSize > 0) {
-            maxColumnSize = Math.max(maxColumnSize, minColumnSize);
-            Arrays.fill(colWidths, maxColumnSize);
-        } else {
-            Arrays.fill(colWidths, minColumnSize);
-        }
+        Arrays.fill(colWidths, minColumnSize);
 
         final String[] header = new String[columns.length];
 
@@ -95,7 +92,13 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
-        appendRow(row);
+        final String[] values = new String[columns.length];
+
+        for (int index = 0; index < columns.length; index++) {
+            values[index] = getCellString(columns[index], row[index]);
+        }
+
+        appendRow(values);
     }
 
     @Override
@@ -103,24 +106,12 @@ public class DataExporterTXT extends StreamExporterAbstract {
         writeQueue();
     }
 
-    private void appendRow(Object[] row) {
+    private void appendRow(String[] row) {
         if (batchQueue.size() == batchSize) {
             writeQueue();
         }
 
-        final String[] values = new String[columns.length];
-
-        for (int index = 0; index < columns.length; index++) {
-            String cell = getCellString(columns[index], row[index]);
-
-            if (maxColumnSize > 0 && cell.length() > maxColumnSize) {
-                cell = CommonUtils.truncateString(cell, maxColumnSize);
-            }
-
-            values[index] = cell;
-        }
-
-        batchQueue.add(values);
+        batchQueue.add(row);
     }
 
     private void writeQueue() {
@@ -128,14 +119,14 @@ public class DataExporterTXT extends StreamExporterAbstract {
             return;
         }
 
-        if (maxColumnSize == 0) {
-            for (String[] row : batchQueue) {
-                for (int index = 0; index < columns.length; index++) {
-                    final String cell = row[index];
+        for (String[] row : batchQueue) {
+            for (int index = 0; index < columns.length; index++) {
+                final String cell = row[index];
 
-                    if (cell.length() > colWidths[index]) {
-                        colWidths[index] = cell.length();
-                    }
+                if (maxColumnSize > 0 && cell.length() > maxColumnSize) {
+                    colWidths[index] = maxColumnSize;
+                } else if (cell.length() > colWidths[index]) {
+                    colWidths[index] = cell.length();
                 }
             }
         }
@@ -167,7 +158,11 @@ public class DataExporterTXT extends StreamExporterAbstract {
                 sb.append('|');
             }
 
-            sb.append(cell);
+            if (maxColumnSize > 0) {
+                sb.append(CommonUtils.truncateString(cell, maxColumnSize));
+            } else {
+                sb.append(cell);
+            }
 
             for (int width = cell.length(); width < colWidths[index]; width++) {
                 sb.append(fill);
