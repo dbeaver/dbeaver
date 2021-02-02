@@ -22,13 +22,6 @@ import org.eclipse.osgi.util.NLS;
 public class GISMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$
 
-	static {
-		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);
-	}
-
-	private GISMessages() {
-	}
-
 	public static String panel_leaflet_viewer_tool_bar_action_text_open;
 	public static String panel_leaflet_viewer_tool_bar_action_text_copy_as;
 	public static String panel_leaflet_viewer_tool_bar_action_text_save_as;
@@ -92,4 +85,11 @@ public class GISMessages extends NLS {
 	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_tiles_properties_group;
 	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_label;
 	public static String panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_layers_definition;
+
+	static {
+		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);
+	}
+
+	private GISMessages() {
+	}
 }

@@ -50,14 +50,6 @@ public class GeometryViewerRegistry {
     private static final String KEY_LAYERS_DEF = "layersDefinition";
     private static final String KEY_IS_VISIBLE = "isVisible";
 
-    private static class LazyHolder {
-        private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
-    }
-
-    public static GeometryViewerRegistry getInstance() {
-        return LazyHolder.INSTANCE;
-    }
-
     private final Map<String, GeometryViewerDescriptor> viewers = new HashMap<>();
     private final Collection<LeafletTilesDescriptor> predefinedTiles = new ArrayList<>();
     private final Collection<LeafletTilesDescriptor> userDefinedTiles = new ArrayList<>();
@@ -65,6 +57,14 @@ public class GeometryViewerRegistry {
 
     @Nullable
     private LeafletTilesDescriptor defaultLeafletTiles;
+
+    private static class LazyHolder {
+        private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
+    }
+
+    public static GeometryViewerRegistry getInstance() {
+        return LazyHolder.INSTANCE;
+    }
 
     private GeometryViewerRegistry(@NotNull IExtensionRegistry registry) {
         Collection<String> notVisiblePredefinedTilesIds = new HashSet<>();
@@ -98,19 +98,10 @@ public class GeometryViewerRegistry {
     }
 
     private void autoAssignDefaultLeafletTiles() {
-        for (LeafletTilesDescriptor descriptor: predefinedTiles) {
-            if (descriptor.isVisible()) {
-                setDefaultLeafletTilesNonSynchronized(descriptor);
-            }
-            return;
-        }
-        for (LeafletTilesDescriptor descriptor: userDefinedTiles) {
-            if (descriptor.isVisible()) {
-                setDefaultLeafletTilesNonSynchronized(descriptor);
-            }
-            return;
-        }
-        setDefaultLeafletTilesNonSynchronized(null);
+        Optional<LeafletTilesDescriptor> opt = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
+                .filter(LeafletTilesDescriptor::isVisible)
+                .findFirst();
+        setDefaultLeafletTilesNonSynchronized(opt.orElse(null));
     }
 
     private static void populateFromConfig(@NotNull Collection<String> notVisiblePredefinedTilesIds, @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles) {

@@ -124,11 +124,11 @@ class TilesManagementDialog extends BaseDialog {
         deleteTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_delete_tiles, UIIcon.DELETE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (lastSelectedTreeItem == null || lastSelectedTreeItem == predefinedTilesRootItem) {
+                if (lastSelectedTreeItem == null || lastSelectedTreeItem.equals(predefinedTilesRootItem)) {
                     log.error("Can't find tiles to delete!");
                     return;
                 }
-                if (lastSelectedTreeItem == userDefinedTilesRootItem) {
+                if (lastSelectedTreeItem.equals(userDefinedTilesRootItem)) {
                     userDefinedTiles.clear();
                     repopulateTree(null, true);
                     return;
@@ -170,7 +170,7 @@ class TilesManagementDialog extends BaseDialog {
             private void reactOnCheck(@NotNull TreeItem item) {
                 if (isRootItem(item)) {
                     Arrays.stream(item.getItems()).forEach(treeItem -> treeItem.setChecked(item.getChecked()));
-                    List<LeafletTilesDescriptor> list = item == userDefinedTilesRootItem ? userDefinedTiles : predefinedTiles;
+                    List<LeafletTilesDescriptor> list = item.equals(userDefinedTilesRootItem) ? userDefinedTiles : predefinedTiles;
                     for (int i = 0; i < list.size(); i++) {
                         LeafletTilesDescriptor descriptor = list.get(i);
                         if (item.getChecked() != descriptor.isVisible()) {
@@ -214,7 +214,7 @@ class TilesManagementDialog extends BaseDialog {
         }
         if (item.getData() == null) {
             editTilesItem.setEnabled(false);
-            deleteTilesItem.setEnabled(item == userDefinedTilesRootItem);
+            deleteTilesItem.setEnabled(item.equals(userDefinedTilesRootItem));
             return;
         }
         LeafletTilesDescriptor descriptor = (LeafletTilesDescriptor) item.getData();
@@ -232,7 +232,7 @@ class TilesManagementDialog extends BaseDialog {
     }
 
     private boolean isRootItem(@NotNull Widget widget) {
-        return (predefinedTilesRootItem != null && predefinedTilesRootItem == widget) || (userDefinedTilesRootItem != null && userDefinedTilesRootItem == widget);
+        return (predefinedTilesRootItem != null && predefinedTilesRootItem.equals(widget)) || (userDefinedTilesRootItem != null && userDefinedTilesRootItem.equals(widget));
     }
 
     private boolean isModelContainsDescriptorWithLabel(@NotNull String label) {
