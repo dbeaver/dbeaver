@@ -202,8 +202,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
         throws IOException, DBCException {
         DBDContentStorage contents = content.getContents(monitor);
-        if (contents == null) {
-            log.warn("Null value content");
+        if (DBUtils.isNullValue(contents)) {
             return null;
         }
         if (lobDirectory == null) {
