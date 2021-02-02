@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 public class GeometryViewerRegistry {
     private static final Log log = Log.getLog(GeometryViewerRegistry.class);
 
+    private static final String KEY_ROOT = "config";
     private static final String KEY_NON_VISIBLE_PREDEFINED_TILES = "notVisiblePredefinedTiles";
     private static final String KEY_USER_DEFINED_TILES = "userDefinedTiles";
     private static final String KEY_ID = "id";
@@ -238,23 +239,25 @@ public class GeometryViewerRegistry {
         try (OutputStream out = new FileOutputStream(getConfigFile())) {
             XMLBuilder xmlBuilder = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xmlBuilder.setButify(true);
-            try (XMLBuilder.Element ignored = xmlBuilder.startElement("userDefinedTilesDefinitions")) {
-                for (LeafletTilesDescriptor descriptor: userDefinedTiles) {
-                    try (XMLBuilder.Element ignored1 = xmlBuilder.startElement(KEY_USER_DEFINED_TILES)) {
-                        xmlBuilder.addAttribute(KEY_ID, descriptor.getId());
-                        xmlBuilder.addAttribute(KEY_LABEL, descriptor.getLabel());
-                        xmlBuilder.addAttribute(KEY_LAYERS_DEF, descriptor.getLayersDefinition());
-                        xmlBuilder.addAttribute(KEY_IS_VISIBLE, descriptor.isVisible());
+            try (XMLBuilder.Element ignored = xmlBuilder.startElement(KEY_ROOT)) {
+                try (XMLBuilder.Element ignored1 = xmlBuilder.startElement("userDefinedTilesDefinitions")) {
+                    for (LeafletTilesDescriptor descriptor : userDefinedTiles) {
+                        try (XMLBuilder.Element ignored2 = xmlBuilder.startElement(KEY_USER_DEFINED_TILES)) {
+                            xmlBuilder.addAttribute(KEY_ID, descriptor.getId());
+                            xmlBuilder.addAttribute(KEY_LABEL, descriptor.getLabel());
+                            xmlBuilder.addAttribute(KEY_LAYERS_DEF, descriptor.getLayersDefinition());
+                            xmlBuilder.addAttribute(KEY_IS_VISIBLE, descriptor.isVisible());
+                        }
                     }
                 }
-            }
-            try (XMLBuilder.Element ignored = xmlBuilder.startElement("notVisiblePredefinedTilesList")) {
-                for (LeafletTilesDescriptor descriptor: predefinedTiles) {
-                    if (descriptor.isVisible()) {
-                        continue;
-                    }
-                    try (XMLBuilder.Element ignored1 = xmlBuilder.startElement(KEY_NON_VISIBLE_PREDEFINED_TILES)) {
-                        xmlBuilder.addAttribute(KEY_ID, descriptor.getId());
+                try (XMLBuilder.Element ignored1 = xmlBuilder.startElement("notVisiblePredefinedTilesList")) {
+                    for (LeafletTilesDescriptor descriptor : predefinedTiles) {
+                        if (descriptor.isVisible()) {
+                            continue;
+                        }
+                        try (XMLBuilder.Element ignored2 = xmlBuilder.startElement(KEY_NON_VISIBLE_PREDEFINED_TILES)) {
+                            xmlBuilder.addAttribute(KEY_ID, descriptor.getId());
+                        }
                     }
                 }
             }

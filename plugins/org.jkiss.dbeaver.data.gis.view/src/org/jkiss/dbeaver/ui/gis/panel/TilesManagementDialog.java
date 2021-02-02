@@ -267,7 +267,7 @@ class TilesManagementDialog extends BaseDialog {
             predefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_predefined_tiles);
             for (LeafletTilesDescriptor tile: predefinedTiles) {
                 TreeItem item = new TreeItem(predefinedTilesRootItem, SWT.NONE);
-                item.setData(item);
+                item.setData(tile);
                 item.setText(tile.getLabel());
                 item.setChecked(tile.isVisible());
                 if (tile.equals(tilesToSelect)) {
@@ -282,7 +282,7 @@ class TilesManagementDialog extends BaseDialog {
             userDefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_user_defined_tiles);
             for (LeafletTilesDescriptor tile: userDefinedTiles) {
                 TreeItem item = new TreeItem(userDefinedTilesRootItem, SWT.NONE);
-                item.setData(item);
+                item.setData(tile);
                 item.setText(tile.getLabel());
                 item.setChecked(tile.isVisible());
                 if (tile.equals(tilesToSelect)) {
