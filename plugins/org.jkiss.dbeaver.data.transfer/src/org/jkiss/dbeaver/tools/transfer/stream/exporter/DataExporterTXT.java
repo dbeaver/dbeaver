@@ -161,11 +161,13 @@ public class DataExporterTXT extends StreamExporterAbstract {
                 sb.append(cell);
             }
 
-            for (int width = cell.length(); width < colWidths[index]; width++) {
-                sb.append(fill);
+            if (index < length - 1 || delimTrailing || fill != ' ') {
+                for (int width = cell.length(); width < colWidths[index]; width++) {
+                    sb.append(fill);
+                }
             }
 
-            if (delimBetween && index < length - 1) {
+            if (index < length - 1 && delimBetween) {
                 sb.append('|');
             }
         }
