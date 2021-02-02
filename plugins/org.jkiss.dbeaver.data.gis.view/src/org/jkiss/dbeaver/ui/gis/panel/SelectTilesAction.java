@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 
+import java.util.stream.Stream;
+
 class SelectTilesAction extends Action {
     private final IGeometryValueEditor valueEditor;
 
@@ -60,8 +62,9 @@ class SelectTilesAction extends Action {
                 if (!isEnabled()) {
                     return;
                 }
-                GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles().forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
-                GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles().forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
+                Stream.concat(GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles().stream(), GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles().stream())
+                        .filter(LeafletTilesDescriptor::isVisible)
+                        .forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
                 if (!menuManager.isEmpty()) {
                     menuManager.add(new Separator());
                 }
