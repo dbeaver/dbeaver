@@ -75,6 +75,9 @@ public class PostgreConstants {
     public static final String TEMP_SCHEMA_PREFIX = "pg_temp_";
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
+    // Settings names from 'pg_options' view
+    public static final String OPTION_STANDARD_CONFORMING_STRINGS = "standard_conforming_strings";
+
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";

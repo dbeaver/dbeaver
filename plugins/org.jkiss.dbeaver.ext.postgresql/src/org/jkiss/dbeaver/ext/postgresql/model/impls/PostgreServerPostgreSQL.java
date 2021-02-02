@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting;
 
 /**
  * PostgreServerPostgreSQL
@@ -52,5 +54,11 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     @Override
     public boolean supportsDatabaseSize() {
         return true;
+    }
+
+    @Override
+    public boolean supportsBackslashStringEscape() {
+        final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
+        return setting != null && "off".equals(setting.getValue());
     }
 }
