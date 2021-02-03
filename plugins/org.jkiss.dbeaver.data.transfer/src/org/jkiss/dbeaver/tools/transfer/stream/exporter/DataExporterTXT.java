@@ -47,12 +47,13 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private static final String PROP_DELIM_LEADING = "delimLeading";
     private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
+    private static final String PROP_DELIM_BETWEEN = "delimBetween";
 
     private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 3;
     private boolean showNulls;
-    private boolean delimLeading, delimHeader, delimTrailing;
+    private boolean delimLeading, delimHeader, delimTrailing, delimBetween;
     private Deque<String[]> batchQueue;
 
     private DBDAttributeBinding[] columns;
@@ -69,20 +70,18 @@ public class DataExporterTXT extends StreamExporterAbstract {
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
+        this.delimBetween = CommonUtils.getBoolean(properties.get(PROP_DELIM_BETWEEN), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
+        if (this.maxColumnSize > 0) {
+            this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
+        }
     }
 
     @Override
     public void exportHeader(DBCSession session) throws DBException, IOException {
         columns = getSite().getAttributes();
         colWidths = new int[columns.length];
-
-        if (maxColumnSize > 0) {
-            maxColumnSize = Math.max(maxColumnSize, minColumnSize);
-            Arrays.fill(colWidths, maxColumnSize);
-        } else {
-            Arrays.fill(colWidths, minColumnSize);
-        }
+        Arrays.fill(colWidths, minColumnSize);
 
         final String[] header = new String[columns.length];
 
@@ -95,7 +94,13 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
-        appendRow(row);
+        final String[] values = new String[columns.length];
+
+        for (int index = 0; index < columns.length; index++) {
+            values[index] = getCellString(columns[index], row[index]);
+        }
+
+        appendRow(values);
     }
 
     @Override
@@ -103,24 +108,12 @@ public class DataExporterTXT extends StreamExporterAbstract {
         writeQueue();
     }
 
-    private void appendRow(Object[] row) {
+    private void appendRow(String[] row) {
         if (batchQueue.size() == batchSize) {
             writeQueue();
         }
 
-        final String[] values = new String[columns.length];
-
-        for (int index = 0; index < columns.length; index++) {
-            String cell = getCellString(columns[index], row[index]);
-
-            if (maxColumnSize > 0 && cell.length() > maxColumnSize) {
-                cell = CommonUtils.truncateString(cell, maxColumnSize);
-            }
-
-            values[index] = cell;
-        }
-
-        batchQueue.add(values);
+        batchQueue.add(row);
     }
 
     private void writeQueue() {
@@ -128,55 +121,62 @@ public class DataExporterTXT extends StreamExporterAbstract {
             return;
         }
 
-        if (maxColumnSize == 0) {
-            for (String[] row : batchQueue) {
-                for (int index = 0; index < columns.length; index++) {
-                    final String cell = row[index];
+        for (String[] row : batchQueue) {
+            for (int index = 0; index < columns.length; index++) {
+                final String cell = row[index];
 
-                    if (cell.length() > colWidths[index]) {
-                        colWidths[index] = cell.length();
-                    }
+                if (maxColumnSize > 0 && cell.length() > maxColumnSize) {
+                    colWidths[index] = maxColumnSize;
+                } else if (cell.length() > colWidths[index]) {
+                    colWidths[index] = cell.length();
                 }
             }
         }
 
         while (!batchQueue.isEmpty()) {
+            writeRow(batchQueue.poll(), ' ');
+
             if (delimHeader) {
                 delimHeader = false;
-                writeRow(batchQueue.poll(), ' ', false);
-                writeRow(null, '-', true);
-            } else {
-                writeRow(batchQueue.poll(), ' ', true);
+                writeRow(null, '-');
             }
         }
 
         getWriter().flush();
     }
 
-    private void writeRow(String[] values, char fill, boolean separator) {
+    private void writeRow(String[] values, char fill) {
         final StringBuilder sb = new StringBuilder();
 
-        if (separator) {
-            sb.append(CommonUtils.getLineSeparator());
+        if (delimLeading) {
+            sb.append('|');
         }
 
-        for (int index = 0; index < columns.length; index++) {
+        for (int index = 0, length = columns.length; index < length; index++) {
             final String cell = ArrayUtils.isEmpty(values) ? "" : values[index];
 
-            if (delimLeading && index == 0) {
-                sb.append('|');
+            if (maxColumnSize > 0) {
+                sb.append(CommonUtils.truncateString(cell, maxColumnSize));
+            } else {
+                sb.append(cell);
             }
 
-            sb.append(cell);
-
-            for (int width = cell.length(); width < colWidths[index]; width++) {
-                sb.append(fill);
+            if (index < length - 1 || delimTrailing || fill != ' ') {
+                for (int width = cell.length(); width < colWidths[index]; width++) {
+                    sb.append(fill);
+                }
             }
 
-            if (delimTrailing) {
+            if (index < length - 1 && delimBetween) {
                 sb.append('|');
             }
         }
+
+        if (delimTrailing) {
+            sb.append('|');
+        }
+
+        sb.append(CommonUtils.getLineSeparator());
 
         getWriter().write(sb.toString());
     }
