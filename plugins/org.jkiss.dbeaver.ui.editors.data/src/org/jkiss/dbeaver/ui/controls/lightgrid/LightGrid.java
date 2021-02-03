@@ -4254,7 +4254,9 @@ public abstract class LightGrid extends Canvas {
         }
         List<GridCell> cells = new ArrayList<>(selectedCells.size());
         for (GridPos pos : selectedCells) {
-            cells.add(posToCell(pos));
+        	GridCell cell = posToCell(pos);
+        	if (cell != null)
+        		cells.add(cell);
         }
         return cells;
     }
