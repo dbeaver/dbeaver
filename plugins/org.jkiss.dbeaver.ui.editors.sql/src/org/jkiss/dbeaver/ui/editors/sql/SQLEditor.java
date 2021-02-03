@@ -1073,8 +1073,12 @@ public class SQLEditor extends SQLEditorBase implements
         logViewer = new SQLLogPanel(sqlExtraPanelFolder, this);
         outputViewer = new SQLEditorOutputConsoleViewer(getSite(), sqlExtraPanelFolder, SWT.NONE);
 
-        // Create results tab
-        createQueryProcessor(true, true);
+        if (false) {
+            // Create results tab
+            createQueryProcessor(true, true);
+        } else {
+            resultsSash.setMaximizedControl(sqlEditorPanel);
+        }
 
         {
             resultTabs.addMouseListener(new MouseAdapter() {
@@ -2302,7 +2306,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (getDataSourceContainer() == null) {
             resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
-            resultsSash.setMaximizedControl(null);
+            if (curQueryProcessor != null) {
+                resultsSash.setMaximizedControl(null);
+            }
         }
 
         lastExecutionContext = executionContext;
