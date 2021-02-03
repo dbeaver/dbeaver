@@ -53,9 +53,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
-    private static final int MAX_COLUMN_LENGTH = 1024;
 
-    private static final int MAX_DATA_TYPE_SAMPLES = 1000;
+    // Default length for new column. This is a "lower" bound, so sample data could be longer than this threshold
+    private static final int DEFAULT_COLUMN_LENGTH = 1024;
+    // Amount of sample rows used to determine approximate type and data length of the column
+    private static final int MAX_COLUMN_SAMPLES = 1000;
 
     public enum HeaderPosition {
         none,
@@ -87,12 +89,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
                     }
-                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, MAX_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, DEFAULT_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
                     columnsInfo.add(columnInfo);
                 }
 
-                for (int sample = 0; sample < MAX_DATA_TYPE_SAMPLES; sample++) {
+                for (int sample = 0; sample < MAX_COLUMN_SAMPLES; sample++) {
                     String[] line;
 
                     if (sample == 0 && headerPosition == HeaderPosition.none) {
@@ -113,6 +115,10 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             case STRING:
                                 columnInfo.setDataKind(dataType.getFirst());
                                 columnInfo.setTypeName(dataType.getSecond());
+                                int length = line[i].length();
+                                if (length > columnInfo.getMaxLength()) {
+                                    columnInfo.setMaxLength(length);
+                                }
                                 break;
                             case NUMERIC:
                             case BOOLEAN:
