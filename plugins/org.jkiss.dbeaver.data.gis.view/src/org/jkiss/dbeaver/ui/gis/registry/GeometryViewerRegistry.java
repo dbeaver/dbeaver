@@ -34,13 +34,12 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GeometryViewerRegistry {
     private static final Log log = Log.getLog(GeometryViewerRegistry.class);
+    private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
 
     private static final String KEY_ROOT = "config";
     private static final String KEY_NON_VISIBLE_PREDEFINED_TILES = "notVisiblePredefinedTiles";
@@ -51,19 +50,15 @@ public class GeometryViewerRegistry {
     private static final String KEY_IS_VISIBLE = "isVisible";
 
     private final Map<String, GeometryViewerDescriptor> viewers = new HashMap<>();
-    private final Collection<LeafletTilesDescriptor> predefinedTiles = new ArrayList<>();
-    private final Collection<LeafletTilesDescriptor> userDefinedTiles = new ArrayList<>();
-    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final List<LeafletTilesDescriptor> predefinedTiles = new ArrayList<>();
+    private final List<LeafletTilesDescriptor> userDefinedTiles = new ArrayList<>();
+    private final Object tilesLock = new Object();
 
     @Nullable
     private LeafletTilesDescriptor defaultLeafletTiles;
 
-    private static class LazyHolder {
-        private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
-    }
-
     public static GeometryViewerRegistry getInstance() {
-        return LazyHolder.INSTANCE;
+        return INSTANCE;
     }
 
     private GeometryViewerRegistry(@NotNull IExtensionRegistry registry) {
@@ -161,41 +156,29 @@ public class GeometryViewerRegistry {
     }
 
     @NotNull
-    public Collection<LeafletTilesDescriptor> getPredefinedLeafletTiles() {
-        rwLock.readLock().lock();
-        try {
-            return Collections.unmodifiableCollection(predefinedTiles);
-        } finally {
-            rwLock.readLock().unlock();
+    public List<LeafletTilesDescriptor> getPredefinedLeafletTiles() {
+        synchronized (tilesLock) {
+            return Collections.unmodifiableList(predefinedTiles);
         }
     }
 
     @NotNull
-    public Collection<LeafletTilesDescriptor> getUserDefinedLeafletTiles() {
-        rwLock.readLock().lock();
-        try {
-            return Collections.unmodifiableCollection(userDefinedTiles);
-        } finally {
-            rwLock.readLock().unlock();
+    public List<LeafletTilesDescriptor> getUserDefinedLeafletTiles() {
+        synchronized (tilesLock) {
+            return Collections.unmodifiableList(userDefinedTiles);
         }
     }
 
     @Nullable
     public LeafletTilesDescriptor getDefaultLeafletTiles() {
-        rwLock.readLock().lock();
-        try {
+        synchronized (tilesLock) {
             return defaultLeafletTiles;
-        } finally {
-            rwLock.readLock().unlock();
         }
     }
 
     public void setDefaultLeafletTiles(@Nullable LeafletTilesDescriptor defaultLeafletTiles) {
-        rwLock.writeLock().lock();
-        try {
+        synchronized (tilesLock) {
             setDefaultLeafletTilesNonSynchronized(defaultLeafletTiles);
-        } finally {
-            rwLock.writeLock().unlock();
         }
     }
 
@@ -211,8 +194,7 @@ public class GeometryViewerRegistry {
     }
 
     public void updateTiles(@NotNull Collection<LeafletTilesDescriptor> predefinedDescriptors, @NotNull Collection<LeafletTilesDescriptor> userDefinedDescriptors) {
-        rwLock.writeLock().lock();
-        try {
+        synchronized (tilesLock) {
             predefinedTiles.clear();
             predefinedTiles.addAll(predefinedDescriptors);
             userDefinedTiles.clear();
@@ -221,8 +203,6 @@ public class GeometryViewerRegistry {
                 autoAssignDefaultLeafletTiles();
             }
             flushConfig();
-        } finally {
-            rwLock.writeLock().unlock();
         }
     }
 
