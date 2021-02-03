@@ -62,7 +62,8 @@ class SelectTilesAction extends Action {
                 if (!isEnabled()) {
                     return;
                 }
-                Stream.concat(GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles().stream(), GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles().stream())
+                GeometryViewerRegistry registry = GeometryViewerRegistry.getInstance();
+                Stream.concat(registry.getPredefinedLeafletTiles().stream(), registry.getUserDefinedLeafletTiles().stream())
                         .filter(LeafletTilesDescriptor::isVisible)
                         .forEach(tile -> menuManager.add(new SetTilesAction(valueEditor, tile)));
                 if (!menuManager.isEmpty()) {
