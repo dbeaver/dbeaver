@@ -246,13 +246,6 @@ public class ExasolUser extends ExasolGrantee
 		this.type = ExasolUserType.LDAP;
 	}
 	
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
-		return this;
-	}
-	
 	public ExasolUserType getType()
 	{
 		return type;
