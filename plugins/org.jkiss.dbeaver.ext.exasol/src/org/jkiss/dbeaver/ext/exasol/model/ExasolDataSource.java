@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.exasol.model.security.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -458,6 +459,15 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		return props;
 	}
 
+	private void refreshSecurityCaches(DBSObjectCache<ExasolDataSource, ?> userCache2)
+	{
+	    if (userCache2 != null)
+	    {
+	    	userCache2.clearCache();
+	    }
+		
+	}
+	
 	@Override
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
@@ -465,46 +475,13 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		super.refreshObject(monitor);
 		
 		this.schemaCache.clearCache();
-
-		
 		this.dataTypeCache.clearCache();
-
-		if (this.connectionCache != null)
-			this.connectionCache.clearCache();
-		
-		if (this.userCache != null) { 
-			this.userCache.clearCache();
-			this.userCache.getAllObjects(monitor, this);
-		}
-
-		if (this.roleCache != null)
-		{
-			this.roleCache.clearCache();
-			this.roleCache.getAllObjects(monitor, this);
-		}
-			
-
-		if (this.baseTableGrantCache != null && this.baseTableGrantCache.isFullyCached())
-		{
-			this.baseTableGrantCache.clearCache();
-			this.baseTableGrantCache.getAllObjects(monitor, this);
-		}
-
-		if (this.systemGrantCache != null && this.systemGrantCache.isFullyCached()) 
-		{
-			this.systemGrantCache.clearCache();
-			this.systemGrantCache.getAllObjects(monitor, this);
-		}
-
-		if (this.connectionGrantCache != null && this.systemGrantCache.isFullyCached()) {
-			this.connectionGrantCache.clearCache();
-			this.connectionGrantCache.getAllObjects(monitor, this);
-		}
-		
-
-		
-		
-
+		this.connectionCache.clearCache();
+		this.userCache.clearCache();
+		this.roleCache.clearCache();
+		this.baseTableGrantCache.clearCache();
+		this.systemGrantCache.clearCache();
+		this.connectionGrantCache.clearCache();
 		this.initialize(monitor);
 
 		return this;
