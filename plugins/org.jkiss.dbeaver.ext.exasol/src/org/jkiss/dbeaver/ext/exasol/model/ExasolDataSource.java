@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ext.exasol.model.security.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -459,15 +458,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 		return props;
 	}
 
-	private void refreshSecurityCaches(DBSObjectCache<ExasolDataSource, ?> userCache2)
-	{
-	    if (userCache2 != null)
-	    {
-	    	userCache2.clearCache();
-	    }
-		
-	}
-	
 	@Override
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
