@@ -149,7 +149,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 for (int i = 0; i < columnBindings.length; i++) {
                     DBDAttributeBinding column = columnBindings[i];
                     Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
-                    if (value instanceof DBDContent && !settings.isOutputClipboard()) {
+                    if (value instanceof DBDContent) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent) value)) {
                             switch (settings.getLobExtractType()) {
@@ -161,8 +161,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                     // Just pass content to exporter
                                     break;
                                 case FILES:
-                                    // Save content to file and pass file reference to exporter
-                                    value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
+                                    if (!settings.isOutputClipboard()) {
+                                        // Save content to file and pass file reference to exporter
+                                        value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
+                                    }
                                     break;
                             }
                         }
@@ -200,8 +202,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
         throws IOException, DBCException {
         DBDContentStorage contents = content.getContents(monitor);
-        if (contents == null) {
-            log.warn("Null value content");
+        if (DBUtils.isNullValue(contents)) {
             return null;
         }
         if (lobDirectory == null) {
