@@ -179,7 +179,7 @@ public class ExasolBaseObjectGrant implements DBAPrivilege  {
     @Property(hidden = true)
 	public String getName()
 	{
-		return exasolGrantee;
+		return exasolGrantee+"|"+type+"|"+schema+"|"+name;
 	}
 	
 	@Override
