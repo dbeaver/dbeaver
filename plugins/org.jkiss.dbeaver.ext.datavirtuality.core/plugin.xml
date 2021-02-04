@@ -29,7 +29,10 @@
                         iconBig="icons/datavirtuality_icon_big.png"
                         sampleURL="jdbc:datavirtuality:{database}@mm//{host}:{port}"
                         defaultPort="31000"
-                        description="Data Virtualtiy JDBC driver"
+                        defaultDatabase="datavirtuality"
+                        defaultUser="admin"
+                        defaultPassword="admin"
+                        description="Data Virtuality JDBC driver"
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
                         categories="sql,analytic">
                     <replace provider="generic" driver="datavirtuality_generic"/>
