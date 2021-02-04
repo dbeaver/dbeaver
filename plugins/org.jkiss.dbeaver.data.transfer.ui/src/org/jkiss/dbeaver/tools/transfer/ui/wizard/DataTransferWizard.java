@@ -568,7 +568,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                         new DialogSettingsMap(getWizardDialogSettings()),
                         new DataTransferState(),
                         true,
-                        CommonUtils.isEmpty(consumers));
+                        CommonUtils.isEmpty(consumers),
+                        false);
                 }
             });
 

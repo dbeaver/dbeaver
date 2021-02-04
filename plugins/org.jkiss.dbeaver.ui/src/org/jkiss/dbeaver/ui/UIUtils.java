@@ -32,6 +32,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
@@ -89,6 +90,8 @@ public class UIUtils {
     private static final Log log = Log.getLog(UIUtils.class);
 
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
+    private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
+    private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
 
     private static SharedTextColors sharedTextColors = new SharedTextColors();
     private static SharedFonts sharedFonts = new SharedFonts();
@@ -1383,6 +1386,10 @@ public class UIUtils {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }
 
+    public static boolean isInWizard(Control control) {
+        return control.getShell().getData() instanceof IWizardContainer;
+    }
+
     public static Link createLink(Composite parent, String text, SelectionListener listener) {
         Link link = new Link(parent, SWT.NONE);
         link.setText(text);
@@ -1928,16 +1935,18 @@ public class UIUtils {
     /**
      * Calculate the Contrast color based on Luma(brightness)
      * https://en.wikipedia.org/wiki/Luma_(video)
+     *
+     * Do not dispose returned color.
      */
     public static Color getContrastColor(Color color) {
-        if (color == null)
-            return new Color(null, 0, 0, 0);
-
+        if (color == null) {
+            return COLOR_BLACK;
+        }
         double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
-
-        int c = (luminance > 0.5) ? 255 : 0;
-
-        return new Color(null, c, c, c);
+        if (luminance > 0.5) {
+            return COLOR_WHITE;
+        }
+        return COLOR_BLACK;
     }  
 
     public static void openWebBrowser(String url)
@@ -2015,5 +2024,13 @@ public class UIUtils {
             return CommonUtils.toString(text).trim();
         }
         return text;
+    }
+
+    public static void setControlVisible(Control control, boolean visible) {
+        control.setVisible(visible);
+        Object gd = control.getLayoutData();
+        if (gd instanceof GridData) {
+            ((GridData) gd).exclude = !visible;
+        }
     }
 }

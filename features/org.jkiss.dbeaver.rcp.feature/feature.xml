@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.rcp.feature"
       label="%featureName"
-      version="2.1.117.qualifier"
+      version="2.1.125.qualifier"
       provider-name="%providerName">
 
     <description>
@@ -75,10 +75,12 @@
     <plugin id="org.eclipse.emf.ecore" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.emf.ecore.change" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.emf.ecore.xmi" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.felix.scr" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.app" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.equinox.bidi" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.common" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.equinox.ds" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.event" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.equinox.launcher" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.preferences" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.registry" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.equinox.simpleconfigurator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -87,6 +89,7 @@
     <plugin id="org.eclipse.help" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface.databinding" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.jface.notifications" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.jface.text" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.osgi" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.osgi.services" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

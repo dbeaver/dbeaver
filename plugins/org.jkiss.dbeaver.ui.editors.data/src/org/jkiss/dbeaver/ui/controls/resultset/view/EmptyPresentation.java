@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
@@ -35,6 +36,9 @@ import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Empty presentation.
@@ -138,10 +142,10 @@ public class EmptyPresentation extends AbstractPresentation {
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String copySelectionToString(ResultSetCopySettings settings) {
-        return null;
+    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+        return Collections.emptyMap();
     }
 
     @Override

@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelForeignKeyFetcher;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -48,7 +50,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     private final Map<String, GenericUniqueKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
-    private Set<String> cachedFKNames;
+    private int fkIndex;
 
     ForeignKeysCache(TableCache tableCache)
     {
@@ -58,6 +60,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FKTABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FK_NAME));
         foreignKeyObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
+        fkIndex = 1;
     }
 
     @Override
@@ -72,13 +75,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
-        return session.getMetaData().getImportedKeys(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
-            forParent == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                forParent.getName())
-            .getSourceStatement();
+        return owner.getDataSource().getMetaModel().prepareForeignKeysLoadStatement(session, owner, forParent);
     }
 
     @Nullable
@@ -93,19 +90,32 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
-        int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
-        int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
         String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
-        int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
 
-        DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-        DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+        DBSForeignKeyModifyRule deleteRule;
+        DBSForeignKeyModifyRule updateRule;
         DBSForeignKeyDeferability deferability;
-        switch (deferabilityNum) {
-            case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
-            case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
-            case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
-            default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+
+        GenericMetaModel metaModel = owner.getDataSource().getMetaModel();
+
+        if (metaModel instanceof GenericMetaModelForeignKeyFetcher) {
+            GenericMetaModelForeignKeyFetcher foreignKeyFetcher = (GenericMetaModelForeignKeyFetcher) metaModel;
+            deleteRule = foreignKeyFetcher.fetchDeleteRule(foreignKeyObject, dbResult);
+            updateRule = foreignKeyFetcher.fetchUpdateRule(foreignKeyObject, dbResult);
+            deferability = foreignKeyFetcher.fetchDeferability(foreignKeyObject, dbResult);
+        } else {
+            int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
+            int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
+            int deferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
+
+            deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+            updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+            switch (deferabilityNum) {
+                case DatabaseMetaData.importedKeyInitiallyDeferred: deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED; break;
+                case DatabaseMetaData.importedKeyInitiallyImmediate: deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE; break;
+                case DatabaseMetaData.importedKeyNotDeferrable: deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE; break;
+                default: deferability = DBSForeignKeyDeferability.UNKNOWN; break;
+            }
         }
 
         if (pkTableName == null) {
@@ -152,7 +162,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
             if (pk == null) {
                 // No PK. Let's try unique indexes
-                Collection<GenericTableIndex> indexes = pkTable.getIndexes(session.getProgressMonitor());
+                Collection<? extends GenericTableIndex> indexes = pkTable.getIndexes(session.getProgressMonitor());
                 if (indexes != null) {
                     for (GenericTableIndex index : indexes) {
                         if (index.isUnique() && DBUtils.getConstraintAttribute(session.getProgressMonitor(), index, pkColumn) != null) {
@@ -172,7 +182,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                 fakePk = pkMap.get(pkFullName);
                 if (fakePk == null) {
-                    fakePk = new GenericUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    fakePk = pkTable.getDataSource().getMetaModel().createConstraintImpl(pkTable, pkName,  DBSEntityConstraintType.PRIMARY_KEY, dbResult, true);
                     pkMap.put(pkFullName, fakePk);
                     // Add this fake constraint to it's owner
                     fakePk.getTable().addUniqueKey(fakePk);
@@ -230,22 +240,18 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(monitor, rows);
+        fkIndex = 1;
     }
 
     @Override
     protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
-        if (cachedFKNames == null) {
-            cachedFKNames = new LinkedHashSet<>();
-        }
         final String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
         String fkName = "FK_" + parentName + "_" + pkTableName;
-        if (cachedFKNames.contains(fkName) && keySeq == 1) {
-            // Multiple unnamed foreign keys - #8286
-            // Column sequnce 1 means new FK so lets make a new one
-            fkName += "_" + (cachedFKNames.size() + 1);
+        if (fkIndex > 1 && keySeq == 1) {
+            fkName += "_" + fkIndex;
         }
-        cachedFKNames.add(fkName);
+        fkIndex++;
         return fkName;
     }
 }

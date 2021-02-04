@@ -71,6 +71,7 @@ public interface UIServiceSQL {
     Object openSQLConsole(
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @Nullable DBCExecutionContext executionContext,
+        DBSObject selectedObject,
         String name,
         String sqlText);
 

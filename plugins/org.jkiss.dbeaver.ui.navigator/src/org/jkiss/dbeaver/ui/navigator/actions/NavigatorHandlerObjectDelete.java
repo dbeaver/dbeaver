@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -32,7 +34,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -40,8 +44,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.Map;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     @Override
@@ -71,11 +75,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         final ConfirmationDialog dialog = ConfirmationDialog.of(
                 window.getShell(),
                 selectedObjects,
-                deleter.getShowCascade(),
-                deleter.getShowViewScript()
-        );
+                deleter);
         final int result = dialog.open();
-        deleter.setCheckCascade(dialog.cascadeCheck);
         if (result == IDialogConstants.YES_ID) {
             deleter.delete();
         } else if (result == IDialogConstants.DETAILS_ID) {
@@ -91,14 +92,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     private static class ConfirmationDialog extends MessageDialog {
         private final List<Object> selectedObjects;
 
-        private final boolean showCascade;
-
-        private final boolean showViewScript;
-
-        private boolean cascadeCheck;
+        private final NavigatorObjectsDeleter deleter;
 
         private ConfirmationDialog(final Shell shell, final String title, final String message,
-                                   final List<Object> selectedObjects, final boolean showCascade, final boolean showViewScript) {
+                                   final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
             super(
                     shell,
                     title,
@@ -109,38 +106,36 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     0
             );
             this.selectedObjects = selectedObjects;
-            this.showCascade = showCascade;
-            this.showViewScript = showViewScript;
+            this.deleter = deleter;
         }
 
         static ConfirmationDialog of(final Shell shell, final List<Object> selectedObjects,
-                                     final boolean showCascade, final boolean showViewScript) {
+                                     final NavigatorObjectsDeleter deleter) {
             if (selectedObjects.size() > 1) {
                 return new ConfirmationDialog(
                         shell,
                         UINavigatorMessages.confirm_deleting_multiple_objects_title,
-                        UINavigatorMessages.confirm_deleting_multiple_objects_message,
+                        NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()),
                         selectedObjects,
-                        showCascade,
-                        showViewScript
-                );
+                        deleter);
             }
             final DBNNode node = (DBNNode) selectedObjects.get(0);
             final String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
             final String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
-            return new ConfirmationDialog(shell, title, message, selectedObjects, showCascade, showViewScript);
+            return new ConfirmationDialog(shell, title, message, selectedObjects, deleter);
         }
 
         @Override
         protected Control createCustomArea(final Composite parent) {
             if (selectedObjects.size() > 1) {
-                setUpObjectsTable(parent);
+                createObjectsTable(parent);
             }
-            setUpCascadeButton(parent);
+            createDeleteContents(parent);
+            createCascadeButton(parent);
             return super.createCustomArea(parent);
         }
 
-        private void setUpObjectsTable(final Composite parent) {
+        private void createObjectsTable(final Composite parent) {
             final Composite placeholder = UIUtils.createComposite(parent, 1);
             placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
             final Group tableGroup = UIUtils.createControlGroup(placeholder, UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name, 1, GridData.FILL_BOTH, 0);
@@ -148,9 +143,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             final Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
             objectsTable.setHeaderVisible(false);
             objectsTable.setLinesVisible(true);
-            objectsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
-            UIUtils.createTableColumn(objectsTable, SWT.RIGHT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            int fontHeight = UIUtils.getFontHeight(objectsTable);
+            int rowCount = selectedObjects.size();
+            gd.widthHint = fontHeight * 7;
+            gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
+            objectsTable.setLayoutData(gd);
+            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
+            UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
             for (Object obj: selectedObjects) {
                 if (!(obj instanceof DBNNode)) {
                     continue;
@@ -158,14 +158,49 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 final DBNNode node = (DBNNode) obj;
                 final TableItem item = new TableItem(objectsTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-                item.setText(0, node.getNodeFullName());
-                item.setText(1, CommonUtils.toString(node.getNodeDescription()));
+                if (node instanceof DBNResource && ((DBNResource) node).getResource() != null) {
+                    item.setText(0, node.getName());
+                    IPath resLocation = ((DBNResource) node).getResource().getLocation();
+                    item.setText(1, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
+                } else {
+                    item.setText(0, node.getNodeFullName());
+                    item.setText(1, CommonUtils.toString(node.getNodeDescription()));
+                }
             }
-            UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
+            UIUtils.packColumns(objectsTable, true);
         }
 
-        private void setUpCascadeButton(final Composite parent) {
-            if (!showCascade) {
+        private void createDeleteContents(final Composite parent) {
+            if (!deleter.isShowDeleteContents()) {
+                return;
+            }
+            IProject project = deleter.getProjectToDelete();
+            if (project == null) {
+                return;
+            }
+            final Composite ph = UIUtils.createPlaceholder(parent, 2, 5);
+            final Button keepContentsCheck =
+                UIUtils.createCheckbox(
+                    ph,
+                    UINavigatorMessages.confirm_deleting_delete_contents_checkbox,
+                    UINavigatorMessages.confirm_deleting_delete_contents_checkbox_tooltip,
+                    false,
+                    2
+                );
+            keepContentsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    deleter.setDeleteContents(keepContentsCheck.getSelection());
+                }
+            });
+            UIUtils.createLabelText(ph,
+                UINavigatorMessages.confirm_deleting_project_location_label,
+                project.getLocation().toFile().getAbsolutePath(),
+                SWT.READ_ONLY);
+        }
+
+        private void createCascadeButton(final Composite parent) {
+            if (!deleter.isShowCascade()) {
                 return;
             }
             final Composite ph = UIUtils.createPlaceholder(parent, 1, 5);
@@ -180,7 +215,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             cascadeCheckButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    cascadeCheck = cascadeCheckButton.getSelection();
+                    deleter.setDeleteCascade(cascadeCheckButton.getSelection());
                 }
             });
         }
@@ -189,9 +224,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         protected void createButtonsForButtonBar(final Composite parent) {
             createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
             createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
-            if (showViewScript) {
+            if (deleter.isShowViewScript()) {
                 createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
             }
+        }
+
+        @Override
+        protected boolean isResizable() {
+            return true;
         }
     }
 

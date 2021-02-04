@@ -203,6 +203,11 @@ public class DBVEntityAttribute implements DBSEntityAttribute, DBPNamedObject2, 
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public void setMaxLength(long maxLength) {
         this.maxLength = maxLength;
     }

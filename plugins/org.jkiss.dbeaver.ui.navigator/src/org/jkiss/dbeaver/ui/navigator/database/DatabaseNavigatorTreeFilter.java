@@ -16,28 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
 /**
  * Default database navigator filter
  */
 public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
-
-    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
-
-    DatabaseNavigatorTreeFilterObjectType getFilterObjectType() {
-        return filterObjectType;
-    }
-
-    void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
-        this.filterObjectType = filterObjectType;
-    }
 
     @Override
     public boolean filterFolders() {
@@ -50,27 +34,14 @@ public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
     }
 
     @Override
-    public boolean select(Object element) {
-        if (!(element instanceof DBNDatabaseNode)) {
-            return true;
-        }
-        DBSObject object = ((DBNDatabaseNode) element).getObject();
-        switch (filterObjectType) {
-            case connection:
-                return
-                    !(object instanceof DBPDataSourceContainer);
-            case container:
-                return
-                    !(object instanceof DBSSchema) &&
-                    !(object instanceof DBSCatalog);
-            default:
-                return
-                    !(object instanceof DBSEntity) &&
-                        !(object instanceof DBSProcedure) &&
-                        !(object instanceof DBSTableIndex) &&
-                        !(object instanceof DBSPackage) &&
-                        !(object instanceof DBSSequence) &&
-                        !(object instanceof DBAUser);
-        }
+    public boolean filterObjectByPattern(Object object) {
+        return false;
     }
+
+    @Override
+    public boolean select(Object element) {
+        return true;
+    }
+
+
 }

@@ -92,13 +92,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
-            List<GenericTableBase> filtered = new ArrayList<>();
+            List<GenericView> filtered = new ArrayList<>();
             for (GenericTableBase table : tables) {
-                if (table.isView()) {
-                    filtered.add(table);
+                if (table instanceof GenericView) {
+                    filtered.add((GenericView) table);
                 }
             }
             return filtered;
@@ -173,7 +173,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                                 return;
                             }
                             monitor.subTask("Read indexes for '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
-                            Collection<GenericTableIndex> tableIndexes = table.getIndexes(monitor);
+                            Collection<? extends GenericTableIndex> tableIndexes = table.getIndexes(monitor);
                             newIndexCache.addAll(tableIndexes);
                             monitor.worked(1);
                         }
@@ -262,7 +262,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public synchronized Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
         throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
@@ -280,7 +280,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public synchronized List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);

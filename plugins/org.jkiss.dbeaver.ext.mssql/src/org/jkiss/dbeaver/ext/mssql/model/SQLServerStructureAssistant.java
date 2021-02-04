@@ -98,7 +98,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             SQLServerObjectType.U,
             SQLServerObjectType.V,
             SQLServerObjectType.P,
-            };
+            SQLServerObjectType.FN,
+            SQLServerObjectType.IF,
+            SQLServerObjectType.TF,
+            SQLServerObjectType.X
+        };
     }
 
     @NotNull
@@ -126,6 +130,10 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return Collections.emptyList();
         }
         SQLServerSchema schema = parentObject instanceof SQLServerSchema ? (SQLServerSchema) parentObject : null;
+
+        if (schema == null && !globalSearch) {
+            schema = executionContext.getContextDefaults().getDefaultSchema();
+        }
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();

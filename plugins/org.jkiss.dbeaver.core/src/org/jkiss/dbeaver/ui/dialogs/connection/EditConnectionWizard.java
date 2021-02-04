@@ -74,7 +74,7 @@ public class EditConnectionWizard extends ConnectionWizard
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource)
     {
         this.originalDataSource = dataSource;
-        this.dataSource = new DataSourceDescriptor(dataSource);
+        this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         if (!this.dataSource.isSavePassword()) {
             this.dataSource.getConnectionConfiguration().setUserPassword(null);
         }
@@ -207,8 +207,8 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
-        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource);
-        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource);
+        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, originalDataSource.getRegistry());
+        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         saveSettings(dsChanged);
 
         if (dsCopy.equalSettings(dsChanged)) {

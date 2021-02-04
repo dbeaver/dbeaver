@@ -125,8 +125,9 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
-                                        <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                        <itemType label="%tree.partition.node.name" icon="#partition" type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition"/>
+                                        <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition" recursive="../..">
                                         </items>
                                     </folder>
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses() &amp;&amp; !object.isPartition()">
@@ -260,7 +261,10 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" label="%tree.avalextensions.node.name" icon="#extensions" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                 <items label="%tree.avalextension.node.name" path="extension" property="availableExtensions" icon="#extension"/>
-                        </folder>       
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting" label="%tree.settings.node.name" icon="#settings" description="Settings">
+                            <items label="%tree.setting.node.name" path="setting" property="settings" icon="#setting"/>
+                        </folder>
                     </folder>
 
                 </items>
@@ -445,7 +449,9 @@
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>
+<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
+<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-no-awssdk-1.2.51.1078.jar" bundle="!drivers.redshift"/>-->
+                        <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-1.2.51.1078.zip" bundle="!drivers.redshift"/>-->
 <!--                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE" bundle="!drivers.redshift"/>-->
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
@@ -475,6 +481,17 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
+
+                <provider-properties drivers="*">
+                    <propertyGroup label="Database list">
+                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
+                        <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
+                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
+                    </propertyGroup>
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
+                    </propertyGroup>
+                </provider-properties>
 
             </drivers>
 
@@ -532,25 +549,20 @@
                 label="%provider.data.type.postgresql.name">
 
             <datasource id="postgresql"/>
+            <datasource id="greenplum"/>
 
-            <type standard="ARRAY"/>
-            <type standard="STRUCT"/>
-            <type kind="DATETIME"/>
-            <type kind="STRING"/>
-            <type name="HSTORE"/>
-            <type name="JSON"/>
-            <type name="JSONB"/>
-            <type name="BIT"/>
-            <type name="REFCURSOR"/>
-            <type name="MONEY"/>
-            <type name="GEOMETRY"/>
-            <type name="GEOGRAPHY"/>
-            <type name="INTERVAL"/>
+            <type name="*"/>
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="pgInsertIgnore" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreInsertReplaceMethodIgnore" label="ON CONFLICT DO NOTHING" description="Insert ignore duplicate key value"/>
+        <method id="pgReplaceIgnore" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreInsertReplaceMethod" label="ON CONFLICT DO UPDATE SET" description="Insert replace duplicate key value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="postgresql" parent="basic" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="PostgreSQL" description="PostgreSQL dialect." icon="icons/postgresql_icon.png">
+            <property name="insertMethods" value="pgInsertIgnore,pgReplaceIgnore"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>

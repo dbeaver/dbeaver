@@ -52,6 +52,7 @@ public class DriverDescriptorSerializer {
                 DriverVariablesResolver.VAR_DRIVERS_HOME,
                 SystemVariablesResolver.VAR_WORKSPACE,
                 SystemVariablesResolver.VAR_HOME,
+                SystemVariablesResolver.VAR_APP_PATH,
                 SystemVariablesResolver.VAR_DBEAVER_HOME};
             for (String varName : variables) {
                 String varValue = varResolver.get(varName);

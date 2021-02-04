@@ -23,6 +23,8 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,6 +40,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * ResultSetControl
@@ -248,7 +252,8 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
                     (event.keyCode == '-' || event.keyCode == '+' || event.keyCode == SWT.KEYPAD_ADD || event.keyCode == SWT.KEYPAD_SUBTRACT) ||
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
-                    (event.keyCode >= '0' && event.keyCode <= '9')))
+                    (event.keyCode >= '0' && event.keyCode <= '9')) ||
+                    Character.isLetterOrDigit(event.character))
                 {
                     Control editorControl = tableEditor.getEditor();
                     if (editorControl == null || editorControl.isDisposed()) {
@@ -303,8 +308,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                         case COPY_VALUE: {
                             ResultSetCopySettings copySettings = new ResultSetCopySettings();
                             copySettings.setFormat(DBDDisplayFormat.EDIT);
-                            String stringValue = presentation.copySelectionToString(copySettings);
-                            ResultSetUtils.copyToClipboard(stringValue);
+                            ResultSetUtils.copyToClipboard(
+                                presentation.copySelection(copySettings)
+                            );
                             break;
                         }
 
@@ -318,7 +324,11 @@ public class Spreadsheet extends LightGrid implements Listener {
                                     if (currentAttribute != null && currentRow != null) {
                                         Object cellValue = presentation.getController().getModel().getCellValue(currentAttribute, currentRow);
                                         ResultSetCopySettings copySettings = new ResultSetCopySettings();
-                                        valueReflector.insertCurrentCellValue(currentAttribute, cellValue, presentation.copySelectionToString(copySettings));
+                                        Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
+                                        Object textValue = selFormats.get(TextTransfer.getInstance());
+                                        if (textValue != null) {
+                                            valueReflector.insertCurrentCellValue(currentAttribute, cellValue, CommonUtils.toString(textValue));
+                                        }
                                     }
                                 } else {
                                     // No value reflector - open inline editor then

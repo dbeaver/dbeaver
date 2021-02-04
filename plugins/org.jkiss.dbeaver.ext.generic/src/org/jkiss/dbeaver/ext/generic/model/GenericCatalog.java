@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 {
-    private String catalogName;
+    private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
 
@@ -135,10 +135,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+        if (!CommonUtils.isEmpty(schemas) || (monitor != null && !CommonUtils.isEmpty(getSchemas(monitor)))) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;

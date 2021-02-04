@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.DBPOverloadedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -36,7 +37,7 @@ import java.util.List;
 /**
 * SQL Server table
 */
-public class SQLServerGenericTable extends GenericTable implements DBPOverloadedObject {
+public class SQLServerGenericTable extends GenericTable implements DBPOverloadedObject, DBPObjectWithLazyDescription {
 
     public SQLServerGenericTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -64,6 +65,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPOverloaded
         return super.getDescription();
     }
 
+    @Override
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         String description = getDescription();

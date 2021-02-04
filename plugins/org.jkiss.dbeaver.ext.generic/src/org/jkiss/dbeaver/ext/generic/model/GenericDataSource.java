@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -104,6 +105,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
 
         initializeRemoteInstance(monitor);
+    }
+
+    // Constructor for tests
+    @ForTest
+    public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
+            throws DBException {
+        super(monitor, container, dialect, false);
+        this.metaModel = metaModel;
+        this.dataTypeCache = metaModel.createDataTypeCache(this);
+        this.tableTypeCache = new TableTypeCache();
     }
 
     @Override
@@ -212,22 +223,27 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
         final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
         if (supportsReferences != null) {
-            info.setSupportsReferences(Boolean.valueOf(supportsReferences.toString()));
+            info.setSupportsReferences(CommonUtils.toBoolean(supportsReferences));
         }
 
         final Object supportsIndexes = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_INDEXES);
         if (supportsIndexes != null) {
-            info.setSupportsIndexes(Boolean.valueOf(supportsIndexes.toString()));
+            info.setSupportsIndexes(CommonUtils.toBoolean(supportsIndexes));
+        }
+
+        final Object supportsViews = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_VIEWS);
+        if (supportsViews != null) {
+            info.setSupportsViews(CommonUtils.toBoolean(supportsViews));
         }
 
         final Object supportsStoredCode = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STORED_CODE);
         if (supportsStoredCode != null) {
-            info.setSupportsStoredCode(Boolean.valueOf(supportsStoredCode.toString()));
+            info.setSupportsStoredCode(CommonUtils.toBoolean(supportsStoredCode));
         }
 
         final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
         if (supportsSubqueries != null) {
-            dialect.setSupportsSubqueries(Boolean.valueOf(supportsSubqueries.toString()));
+            dialect.setSupportsSubqueries(CommonUtils.toBoolean(supportsSubqueries));
         }
 
         final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
@@ -349,7 +365,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
 
     @Override
-    public List<? extends GenericTableBase> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 
@@ -491,8 +507,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     // Just skip it
                     log.debug("Catalog list not supported: " + e.getMessage());
                 } catch (Throwable e) {
-                    // Error reading catalogs - just warn about it
-                    log.warn("Can't read catalog list", e);
+                    if (metaModel.isCatalogsOptional()) {
+                        // Error reading catalogs - just warn about it
+                        log.warn("Can't read catalog list", e);
+                    } else {
+                        throw new DBException("Error reading catalog list", e);
+                    }
                 }
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
@@ -514,7 +534,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                         this.schemas = tmpSchemas;
                     }
                 } catch (Throwable e) {
-                    log.warn("Can't read schema list", e);
+                    if (metaModel.isSchemasOptional()) {
+                        log.warn("Can't read schema list", e);
+                    } else {
+                        if (e instanceof DBException) {
+                            throw (DBException) e;
+                        }
+                        throw new DBException("Error reading schema list", e, this);
+                    }
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
@@ -522,6 +549,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                 }
             }
         } catch (Throwable ex) {
+            if (ex instanceof DBException) {
+                throw (DBException) ex;
+            }
             throw new DBException("Error reading metadata", ex, this);
         }
     }
@@ -628,7 +658,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (!CommonUtils.isEmpty(schemas)) {
@@ -810,6 +840,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return null;
     }
 
+    public boolean supportsCatalogChangeInTransaction() {
+        return true;
+    }
+
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @NotNull
         @Override
@@ -850,7 +884,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
         @NotNull
         @Override
-        public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
             return GenericTable.class;
         }
 

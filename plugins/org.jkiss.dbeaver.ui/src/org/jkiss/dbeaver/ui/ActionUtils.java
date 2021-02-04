@@ -398,12 +398,16 @@ public class ActionUtils
         }
     }
 
-    public static void fireCommandRefresh(final String commandID)
+    public static void fireCommandRefresh(final String ... commandIDs)
     {
         // Update commands
         final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
-            UIUtils.asyncExec(() -> commandService.refreshElements(commandID, null));
+            UIUtils.asyncExec(() -> {
+                for (String commandID : commandIDs) {
+                    commandService.refreshElements(commandID, null);
+                }
+            });
         }
     }
 }

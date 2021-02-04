@@ -23,6 +23,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
@@ -37,8 +40,12 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     protected Combo createControl(Composite editPlaceholder)
     {
         final Combo editor = new Combo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
-        editor.add(Boolean.FALSE.toString()); //$NON-NLS-1$
-        editor.add(Boolean.TRUE.toString()); //$NON-NLS-1$
+        DBSTypedObject attr = valueController.getValueType();
+        editor.add(Boolean.FALSE.toString());
+        editor.add(Boolean.TRUE.toString());
+        if (attr instanceof DBSAttributeBase && !((DBSAttributeBase) attr).isRequired()) {
+            editor.add(DBConstants.NULL_VALUE_LABEL);
+        }
         editor.setEnabled(!valueController.isReadOnly());
         editor.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -52,7 +59,10 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(value == null ? Boolean.FALSE.toString() : value.toString()); //$NON-NLS-1$
+        if (value instanceof Number) {
+            value = ((Number) value).byteValue() != 0;
+        }
+        control.setText(value == null ? DBConstants.NULL_VALUE_LABEL : value.toString()); //$NON-NLS-1$
     }
 
     @Override

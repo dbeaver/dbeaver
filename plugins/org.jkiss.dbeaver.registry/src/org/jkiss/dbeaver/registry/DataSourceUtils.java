@@ -207,16 +207,22 @@ public class DataSourceUtils {
 
         if (dsId != null) {
             dataSource = dsRegistry.getDataSource(dsId);
-            if (dataSource != null || !createNewDataSource) {
-                return dataSource;
-            }
         }
 
         if (dsName != null) {
             dataSource = dsRegistry.findDataSourceByName(dsName);
-            if (dataSource != null || !createNewDataSource) {
-                return dataSource;
-            }
+        }
+
+        if (dataSource != null) {
+            DBPConnectionConfiguration connConfig = dataSource.getConnectionConfiguration();
+            if (!CommonUtils.isEmpty(database)) connConfig.setDatabaseName(database);
+            if (!CommonUtils.isEmpty(user)) connConfig.setUserName(user);
+            if (!CommonUtils.isEmpty(password)) connConfig.setUserPassword(password);
+            if (!CommonUtils.isEmpty(conProperties)) connConfig.setProperties(conProperties);
+            if (!CommonUtils.isEmpty(authProperties)) connConfig.setAuthProperties(authProperties);
+            if (!CommonUtils.isEmpty(authModelId)) connConfig.setAuthModelId(authModelId);
+
+            return dataSource;
         }
 
         if (searchByParameters) {

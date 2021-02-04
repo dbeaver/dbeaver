@@ -83,11 +83,11 @@ class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, Gen
     protected GenericUniqueKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        return new GenericUniqueKey(
+        return owner.getDataSource().getMetaModel().createConstraintImpl(
             parent,
             pkName,
-            null,
             owner.getDataSource().getMetaModel().getUniqueConstraintType(dbResult),
+            dbResult,
             true);
     }
 
@@ -98,26 +98,7 @@ class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, Gen
         GenericTableBase parent, GenericUniqueKey object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
-        if (CommonUtils.isEmpty(columnName)) {
-            log.debug("Null primary key column for '" + object.getName() + "'");
-            return null;
-        }
-        if ((columnName.startsWith("[") && columnName.endsWith("]")) ||
-            (columnName.startsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE) && columnName.endsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE))) {
-            // [JDBC: SQLite] Escaped column name. Let's un-escape it
-            columnName = columnName.substring(1, columnName.length() - 1);
-        }
-        int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
-
-        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
-        if (tableColumn == null) {
-            log.warn("Column '" + columnName + "' not found in table '" + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' for PK '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
-            return null;
-        }
-
-        return new GenericTableConstraintColumn[] {
-            new GenericTableConstraintColumn(object, tableColumn, keySeq) };
+        return parent.getDataSource().getMetaModel().createConstraintColumnsImpl(session, parent, object, pkObject, dbResult);
     }
 
     @Override

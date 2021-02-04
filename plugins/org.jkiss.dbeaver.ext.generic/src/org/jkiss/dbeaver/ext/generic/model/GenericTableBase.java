@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -147,7 +148,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public synchronized List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -160,8 +161,16 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return this.getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
+    public void addAttribute(GenericTableColumn column) {
+        this.getContainer().getTableCache().getChildrenCache(this).cacheObject(column);
+    }
+
+    public void removeAttribute(GenericTableColumn column) {
+        this.getContainer().getTableCache().getChildrenCache(this).removeObject(column, false);
+    }
+
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsIndexes()) {
@@ -199,7 +208,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public synchronized Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -228,7 +237,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getConstraintKeysCache().clearObjectCache(this);
@@ -239,7 +248,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
     @Property(viewable = false, expensive = true, order = 5, category = CAT_STATISTICS)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
@@ -278,7 +287,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         try {
             // Try to get cardinality from some unique index
             // Cardinality
-            final Collection<GenericTableIndex> indexList = getIndexes(monitor);
+            final Collection<? extends GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {
                 for (GenericTableIndex index : indexList) {
                     if (index.isUnique()/* || index.getIndexType() == DBSIndexType.STATISTIC*/) {
@@ -301,21 +310,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public abstract String getDDL();
 
-    private static class ForeignKeyInfo {
-        String pkColumnName;
-        String fkTableCatalog;
-        String fkTableSchema;
-        String fkTableName;
-        String fkColumnName;
-        int keySeq;
-        int updateRuleNum;
-        int deleteRuleNum;
-        String fkName;
-        String pkName;
-        int deferabilityNum;
-    }
-
-    private synchronized List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
+    private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -326,30 +321,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
             final GenericMetaObject fkObject = getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
-            final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
-            JDBCDatabaseMetaData metaData = session.getMetaData();
-            // Load indexes
-            try (JDBCResultSet dbResult = metaData.getExportedKeys(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getName()))
-            {
-                while (dbResult.next()) {
-                    ForeignKeyInfo fkInfo = new ForeignKeyInfo();
-                    fkInfo.pkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    fkInfo.fkTableCatalog = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_CAT);
-                    fkInfo.fkTableSchema = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
-                    fkInfo.fkTableName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_NAME);
-                    fkInfo.fkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    fkInfo.keySeq = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.KEY_SEQ);
-                    fkInfo.updateRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.UPDATE_RULE);
-                    fkInfo.deleteRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DELETE_RULE);
-                    fkInfo.fkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FK_NAME);
-                    fkInfo.pkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PK_NAME);
-                    fkInfo.deferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
-                    fkInfos.add(fkInfo);
-                }
-            }
+            final List<ForeignKeyInfo> fkInfos = loadReferenceInfoList(session, fkObject);
 
             List<GenericTableForeignKey> fkList = new ArrayList<>();
             Map<String, GenericTableForeignKey> fkMap = new HashMap<>();
@@ -408,7 +380,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
                     log.warn("Can't find unique key for table " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumn.getName());
                     // Too bad. But we have to create new fake PK for this FK
                     //String pkFullName = getFullyQualifiedName() + "." + info.pkName;
-                    pk = new GenericUniqueKey(this, info.pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                    pk = this.getDataSource().getMetaModel().createConstraintImpl(this, info.pkName, DBSEntityConstraintType.PRIMARY_KEY, null, true);
                     pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, info.keySeq));
                     // Add this fake constraint to it's owner
                     this.addUniqueKey(pk);
@@ -454,6 +426,24 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         }
     }
 
+    public List<ForeignKeyInfo> loadReferenceInfoList(@NotNull JDBCSession session, GenericMetaObject fkObject) throws SQLException {
+        final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
+        JDBCDatabaseMetaData metaData = session.getMetaData();
+        // Load indexes
+        try (JDBCResultSet dbResult = metaData.getExportedKeys(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                getName()))
+        {
+            while (dbResult.next()) {
+                ForeignKeyInfo fkInfo = new ForeignKeyInfo();
+                fkInfo.fetchColumnsInfo(fkObject, dbResult);
+                fkInfos.add(fkInfo);
+            }
+        }
+        return fkInfos;
+    }
+
     @Nullable
     @Association
     public List<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -474,5 +464,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public List<? extends GenericTrigger> getTriggerCache() {
         return triggers;
+    }
+
+    public boolean supportUniqueIndexes() {
+        return true;
+    }
+
+    public Collection<DBSIndexType> getTableIndexTypes() {
+        return Collections.singletonList(DBSIndexType.OTHER);
     }
 }

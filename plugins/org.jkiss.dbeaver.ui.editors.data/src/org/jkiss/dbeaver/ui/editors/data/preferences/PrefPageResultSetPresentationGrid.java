@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.editors.data.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.PreferenceLinkArea;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -95,6 +97,14 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
             useSmoothScrolling = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
             showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
+            PreferenceLinkArea editorsLink = new PreferenceLinkArea(uiGroup, SWT.NONE,
+                "org.jkiss.dbeaver.preferences.editors",
+                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
+                (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            editorsLink.getControl().setLayoutData(gd);
+
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());

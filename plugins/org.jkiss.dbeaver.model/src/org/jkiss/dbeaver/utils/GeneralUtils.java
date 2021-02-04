@@ -54,8 +54,11 @@ import java.util.regex.Pattern;
  * General non-ui utility methods
  */
 public class GeneralUtils {
-
     private static final Log log = Log.getLog(GeneralUtils.class);
+
+    private static final boolean IS_MACOS = Platform.getOS().contains("macos");
+    private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
+    private static final boolean IS_LINUX = Platform.getOS().contains("linux");
 
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
@@ -93,13 +96,11 @@ public class GeneralUtils {
      */
     public static String getDefaultFileEncoding() {
         return UTF8_ENCODING;
-        //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
     public static String getDefaultLocalFileEncoding() {
         return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
     }
-
 
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
@@ -662,20 +663,16 @@ public class GeneralUtils {
         return new URI(path.replace(" ", "%20"));
     }
 
-    public static String encodeTopic(@NotNull String topic) {
-        return topic.replace(".", "__dot__");
-    }
-
-    public static String decodeTopic(@NotNull String topic) {
-        return topic.replace("__dot__", ".");
-    }
-
     public static boolean isWindows() {
-        return Platform.getOS().contains("win32");
+        return IS_WINDOWS;
     }
 
     public static boolean isMacOS() {
-        return Platform.getOS().contains("macos");
+        return IS_MACOS;
+    }
+
+    public static boolean isLinux() {
+        return IS_LINUX;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -719,7 +716,7 @@ public class GeneralUtils {
                     + sourceObject.getClass().getName() + " returned " + result.getClass().getName() //$NON-NLS-1$
                     + " that is not an instance of " + adapter.getName()); //$NON-NLS-1$
             }
-            return (T) result;
+            return adapter.cast(result);
         }
 
         return null;
@@ -738,7 +735,6 @@ public class GeneralUtils {
         }
         return result;
     }
-
 
     public static byte[] getBytesFromUUID(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
@@ -768,5 +764,4 @@ public class GeneralUtils {
         target.rewind();
         return new UUID(target.getLong(), target.getLong());
     }
-
 }

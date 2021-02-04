@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,12 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
-{
-
-    private static final ImageDescriptor LOG_AZURE = SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png");
-    private static final ImageDescriptor LOGO_SQLSERVER = SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png");
-    private static final ImageDescriptor LOGO_SYBASE = SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png");
+public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
 
     private Text hostText;
     private Text portText;
@@ -57,22 +52,35 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Combo authCombo;
 //    private Button windowsAuthenticationButton;
 //    private Button adpAuthenticationButton;
-    private Button trustServerCertificate;
     private Button showAllSchemas;
 
     private boolean activated;
+
+    private final Image LOGO_AZURE;
+    private final Image LOGO_SQLSERVER;
+    private final Image LOGO_SYBASE;
+
+    public SQLServerConnectionPage() {
+        LOGO_AZURE = createImage("icons/azure_logo.png");
+        LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
+        LOGO_SYBASE = createImage("icons/sybase_logo.png");
+
+    }
 
     @Override
     public void dispose()
     {
         super.dispose();
+        UIUtils.dispose(LOGO_AZURE);
+        UIUtils.dispose(LOGO_SQLSERVER);
+        UIUtils.dispose(LOGO_SYBASE);
     }
 
     @Override
     public void createControl(Composite composite)
     {
-        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
-        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
+        boolean isSqlServer = isSqlServer();
+        boolean isDriverAzure = isSqlServer && isDriverAzure();
 
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
@@ -194,7 +202,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             secureGroup.setLayout(new GridLayout(1, false));
 
             createPasswordControls(secureGroup);
-            trustServerCertificate = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
@@ -209,20 +216,31 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     }
 
     @Override
+    public Image getImage() {
+        boolean isSqlServer = isSqlServer();
+        boolean isDriverAzure = isSqlServer && isDriverAzure();
+
+        return isSqlServer ?
+            (isDriverAzure ?
+                LOGO_AZURE :
+                LOGO_SQLSERVER) :
+            LOGO_SYBASE;
+    }
+
+    private boolean isDriverAzure() {
+        return SQLServerUtils.isDriverAzure(getSite().getDriver());
+    }
+
+    private boolean isSqlServer() {
+        return SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+    }
+
+    @Override
     public void loadSettings()
     {
         super.loadSettings();
 
-        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
-        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
-
-        {
-            setImageDescriptor(isSqlServer ?
-                (isDriverAzure ?
-                    LOG_AZURE :
-                    LOGO_SQLSERVER) :
-                LOGO_SYBASE);
-        }
+        boolean isDriverAzure = isSqlServer() && isDriverAzure();
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
@@ -272,7 +290,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             adpAuthenticationButton.setSelection(SQLServerUtils.isActiveDirectoryAuth(connectionInfo));
         }
 */
-        trustServerCertificate.setSelection(CommonUtils.getBoolean(connectionInfo.getProperty(SQLServerConstants.PROP_TRUST_SERVER_CERTIFICATE), true));
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         activated = true;
@@ -337,10 +354,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             }
         }
 */
-        if (trustServerCertificate != null) {
-            connectionInfo.setProperty(SQLServerConstants.PROP_TRUST_SERVER_CERTIFICATE,
-                String.valueOf(trustServerCertificate.getSelection()));
-        }
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));

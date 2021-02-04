@@ -270,6 +270,11 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     log.error(e);
                 }
             }
+            try {
+                value = value.force2D();
+            } catch (DBException e) {
+                log.error("Error forcing geometry to 2D", e);
+            }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == GisConstants.SRID_SIMPLE) {
@@ -411,7 +416,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         return lastValue;
     }
 
-    private void updateToolbar() {
+    void updateToolbar() {
         toolBarManager.removeAll();
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override

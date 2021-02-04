@@ -35,6 +35,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_wizard_final_checkbox_save_password_locally;
 
     public static String controls_client_home_selector_browse;
+    public static String controls_client_home_selector_missing;
+    public static String controls_client_home_selector_tip;
     public static String controls_client_homes_panel_button_add_home;
     public static String controls_client_homes_panel_button_remove_home;
     public static String controls_client_homes_panel_confirm_remove_home_text;
@@ -55,7 +57,20 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_setting_ssl_configurator_label_optional;
     public static String dialog_setting_ssl_configurator_label_description;
-    
+    public static String dialog_setting_ssl_configurator_legend_parameters;
+    public static String dialog_setting_ssl_configurator_method;
+    public static String dialog_setting_ssl_configurator_method_certs;
+    public static String dialog_setting_ssl_configurator_method_keystore;
+    public static String dialog_setting_ssl_configurator_certs_ca_name;
+    public static String dialog_setting_ssl_configurator_certs_ca_title;
+    public static String dialog_setting_ssl_configurator_certs_client_name;
+    public static String dialog_setting_ssl_configurator_certs_client_title;
+    public static String dialog_setting_ssl_configurator_certs_client_key_name;
+    public static String dialog_setting_ssl_configurator_certs_client_key_title;
+    public static String dialog_setting_ssl_configurator_keystore_name;
+    public static String dialog_setting_ssl_configurator_keystore_title;
+    public static String dialog_setting_ssl_configurator_keystore_password_name;
+
     public static String controls_connection_properties_action_add_property;
     public static String controls_connection_properties_action_remove_property;
     public static String controls_connection_properties_category_user_properties;
@@ -239,6 +254,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_ui_general_label_proxy_user;
     public static String pref_page_ui_general_label_proxy_password;
     public static String pref_page_drivers_group_location;
+
+    public static String dialog_connection_driver_project;
 
     static {
         // initialize resource bundle

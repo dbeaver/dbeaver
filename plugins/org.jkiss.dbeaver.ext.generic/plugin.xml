@@ -68,7 +68,7 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip" visibleIf="object.dataSource.metaModel.supportsViews(object.dataSource)">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -122,6 +122,7 @@
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-views" label="Driver supports views" description="Driver supports table views" type="boolean" required="false" defaultValue="true"/>
                     <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
@@ -152,12 +153,13 @@
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
-                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) driverss" type="boolean" required="false" defaultValue="false"/>
+                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) drivers" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
-                    <property id="ddl-drop-column-brackets" label="Drop column - usee brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
+                    <property id="ddl-drop-column-brackets" label="Drop column - use brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
+                    <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -229,9 +231,7 @@
                     description="IBM Informix Dynamic Server"
                     categories="sql">
 
-                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
-                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
-                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
+                    <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -239,6 +239,8 @@
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value="DATABASE ?"/>
                     <parameter name="legacy-sql-dialect" value="true"/>
+
+                    <parameter name="ddl-drop-column-short" value="true"/>
 
                     <property name="@dbeaver-default-resultset.column.label.ignore" value="true"/>
                 </driver>
@@ -337,7 +339,7 @@
                     icon="icons/derby_icon.png"
                     iconBig="icons/derby_icon_big.png"
                     category="Derby"
-                    class="org.apache.derby.jdbc.ClientDriver"
+                    class="org.apache.derby.client.ClientAutoloadedDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
@@ -419,16 +421,30 @@
                 <driver
                     id="cache"
                     label="Cache"
-                    icon="icons/cache_icon.png"
-                    iconBig="icons/cache_icon_big.png"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
-                    description="Intersystems Cache"
+                    description="InterSystems Cache"
                     categories="sql,object">
                     <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
                     <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="iris"
+                    label="InterSystems IRIS"
+                    icon="icons/intersystems_icon.png"
+                    iconBig="icons/intersystems_icon_big.png"
+                    class="com.intersystems.jdbc.IRISDriver"
+                    sampleURL="jdbc:IRIS://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/iris/"
+                    description="InterSystems IRIS. Replaces Cache driver."
+                    categories="sql,object">
+<!--                    <replace provider="generic" driver="cache"/>-->
+                    <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -497,6 +513,8 @@
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-multiple-results" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT DATABASE"/>
+                    <parameter name="query-set-active-db" value="DATABASE &quot;?&quot;"/>
                 </driver>
 
                 <driver
@@ -523,6 +541,9 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
@@ -548,6 +569,9 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-views" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
@@ -822,12 +846,13 @@
                     description="Yandex ClickHouse"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.5]" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter-table-add-column" value="true"/>
                 </driver>
 
                 <!-- OrientDB -->
@@ -890,10 +915,30 @@
                         class="io.prestosql.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
-                        description="Community Presto (prestosql) JDBC driver"
+                        description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
                         webURL="https://prestosql.io/"
                         categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                    <parameter name="krb5.show-service" value="true"/>
+                    <parameter name="krb5.show-ssl-jks" value="true"/>
+                </driver>
+
+                <!-- Trino, formerly PrestoSQL -->
+                <driver
+                    id="trino_jdbc"
+                    label="Trino"
+                    icon="icons/trino_icon.png"
+                    iconBig="icons/trino_icon_big.png"
+                    class="io.trino.jdbc.TrinoDriver"
+                    sampleURL="jdbc:trino://{host}:{port}[/{database}]"
+                    defaultPort="8080"
+                    description="Trino JDBC driver, newer replacement for PrestoSQL"
+                    webURL="https://trino.io/"
+                    categories="sql,analytic,bigdata,hadoop">
+                    <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
+                    <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>

@@ -50,10 +50,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * ColumnsMappingDialog
@@ -276,7 +273,7 @@ class ColumnsMappingDialog extends BaseDialog {
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
 
-                    Set<String> types = new LinkedHashSet<>();
+                    Set<String> types = new TreeSet<>();
                     DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                     if (dataSource instanceof DBPDataTypeProvider) {
                         for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getLocalDataTypes()) {

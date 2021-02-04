@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,7 +41,7 @@ public class OracleCLOBValueHandler extends JDBCContentValueHandler {
     @Override
     public void writeStreamValue(DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull DBDContent object, @NotNull Writer writer) throws DBCException, IOException {
         DBDContentStorage contents = object.getContents(monitor);
-        if (contents == null) {
+        if (DBUtils.isNullValue(contents)) {
             writer.write("NULL");
             return;
         }

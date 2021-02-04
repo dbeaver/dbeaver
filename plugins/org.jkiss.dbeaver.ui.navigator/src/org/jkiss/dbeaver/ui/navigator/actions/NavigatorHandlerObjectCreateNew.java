@@ -243,25 +243,49 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
     private static void addDatabaseNodeCreateItems(@Nullable IWorkbenchPartSite site, List<IContributionItem> createActions, DBNDatabaseNode node) {
         if (node instanceof DBNDatabaseFolder) {
-            final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
+            DBXTreeFolder folderMeta = ((DBNDatabaseFolder) node).getMeta();
+            final List<DBXTreeNode> metaChildren = folderMeta.getChildren(node);
             if (!CommonUtils.isEmpty(metaChildren)) {
+                // Test direct child node items
                 Class<?> nodeClass = null;
                 if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
                     nodeClass = node.getChildrenClass((DBXTreeItem)metaChildren.get(0));
+                }
+                {
+                    Class<?> childrenClass = ((DBNDatabaseFolder) node).getChildrenClass();
+                    if (nodeClass == null || (childrenClass != null && nodeClass.isAssignableFrom(childrenClass))) {
+                        // folder.getChildrenClass may return more precise type than node.getChildrenClass
+                        nodeClass = childrenClass;
+                    }
                 }
                 if (nodeClass == null) {
                     nodeClass = ((DBNDatabaseFolder) node).getChildrenClass();
                 }
                 String nodeType = metaChildren.get(0).getChildrenTypeLabel(node.getDataSource(), null);
-                DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
                     if (isCreateSupported(node, nodeClass)) {
+                        DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
                         IContributionItem item = makeCreateContributionItem(
                             site, nodeClass.getName(), nodeType, nodeIcon, false);
                         createActions.add(item);
                     }
                 }
             }
+            // Test explicit create types
+            DBXTreeFolder.ItemType[] itemTypes = folderMeta.getItemTypes();
+            if (itemTypes != null) {
+                for (DBXTreeFolder.ItemType itemType : itemTypes) {
+                    Class<Object> itemClass = folderMeta.getSource().getObjectClass(itemType.getClassName(), Object.class);
+                    if (itemClass != null) {
+                        if (isCreateSupported(node, itemClass)) {
+                            IContributionItem item = makeCreateContributionItem(
+                                site, itemType.getClassName(), itemType.getItemType(), itemType.getItemIcon(), false);
+                            createActions.add(item);
+                        }
+                    }
+                }
+            }
+
         } else {
             if (node.getObject() == null) {
                 return;

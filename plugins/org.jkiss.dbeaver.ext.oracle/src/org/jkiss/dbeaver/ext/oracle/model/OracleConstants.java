@@ -85,6 +85,7 @@ public class OracleConstants {
     public static final String PROP_USE_META_OPTIMIZER = DBConstants.INTERNAL_PROP_PREFIX + "use-meta-optimizer@";
     public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
+    public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
 
 
     public static final String OS_AUTH_PROP = DBConstants.INTERNAL_PROP_PREFIX + "os-authentication@";
@@ -104,6 +105,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
+    public static final String TYPE_NAME_REFCURSOR = "REFCURSOR";
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
@@ -151,6 +153,7 @@ public class OracleConstants {
 
     public static final int DATA_TYPE_TIMESTAMP_WITH_TIMEZONE = 101;
     public static final int DATA_TYPE_TIMESTAMP_WITH_LOCAL_TIMEZONE = 102;
+    public static final int DATA_TYPE_REFCURSOR = -10;
 
     public static final DBSEntityConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSEntityConstraintType("V", "With Check Option", null, false, false, false, false);
     public static final DBSEntityConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSEntityConstraintType("O", "With Read Only", null, false, false, false, false);

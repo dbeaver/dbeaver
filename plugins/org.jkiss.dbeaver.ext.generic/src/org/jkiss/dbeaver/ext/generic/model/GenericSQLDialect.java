@@ -50,11 +50,11 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean callableQueryInBrackets;
 
     public GenericSQLDialect() {
-        super("Generic");
+        super("Generic", "generic");
     }
 
-    protected GenericSQLDialect(String name) {
-        super(name);
+    protected GenericSQLDialect(String name, String id) {
+        super(name, id);
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

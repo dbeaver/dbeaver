@@ -62,6 +62,9 @@ public class TransactionMonitorToolbar {
     private static final int MONITOR_UPDATE_DELAY = 250;
     private static final Log log = Log.getLog(TransactionMonitorToolbar.class);
 
+    private static final RGB RGB_DARK_YELLOW = new RGB (128, 128, 0);
+    private static final RGB RGB_DARK_GREEN = new RGB (0, 255, 0);
+
     private IWorkbenchWindow workbenchWindow;
 
     private TransactionMonitorToolbar(IWorkbenchWindow workbenchWindow) {
@@ -74,12 +77,14 @@ public class TransactionMonitorToolbar {
         final IPartListener partListener = new AbstractPartListener() {
             @Override
             public void partActivated(IWorkbenchPart part) {
-                monitorPanel.refresh();
+                if (part instanceof DBPContextProvider) {
+                    monitorPanel.refresh();
+                }
             }
 
             @Override
             public void partDeactivated(IWorkbenchPart part) {
-                monitorPanel.refresh();
+                //monitorPanel.refresh();
             }
         };
         final IWorkbenchPage activePage = this.workbenchWindow.getActivePage();
@@ -165,21 +170,20 @@ public class TransactionMonitorToolbar {
 
             ColorRegistry colorRegistry = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-            Color colorTransaction = colorRegistry.get(QueryLogViewer.COLOR_TRANSACTION);
-            Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
-            Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
-            final RGB COLOR_FULL = colorReverted == null ? getDisplay().getSystemColor(SWT.COLOR_DARK_YELLOW).getRGB() : colorReverted.getRGB();
-            final RGB COLOR_EMPTY = colorCommitted == null ? getDisplay().getSystemColor(SWT.COLOR_GREEN).getRGB() : colorCommitted.getRGB();
-
             final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
 
             if (txnState == null || !txnState.isTransactionMode()) {
                 bg = UIStyles.getDefaultTextBackground();
             } else if (updateCount == 0) {
-                bg = colorTransaction;
+                bg = colorRegistry.get(QueryLogViewer.COLOR_TRANSACTION);
             } else {
                 // Use gradient depending on update count
                 ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
+
+                Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
+                Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
+                final RGB COLOR_FULL = colorReverted == null ? RGB_DARK_YELLOW : colorReverted.getRGB();
+                final RGB COLOR_EMPTY = colorCommitted == null ? RGB_DARK_GREEN : colorCommitted.getRGB();
 
                 int minCount = 0, maxCount = 400;
                 int ratio = ((updateCount - minCount) * 100) / (maxCount - minCount);
@@ -205,7 +209,7 @@ public class TransactionMonitorToolbar {
             }
             final Point textSize = e.gc.textExtent(count);
             e.gc.setForeground(UIStyles.getDefaultTextForeground());
-            e.gc.drawText(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
+            e.gc.drawString(count, bounds.x + (bounds.width - textSize.x) / 2 - 2, bounds.y + (bounds.height - textSize.y) / 2 - 1);
         }
 
         public void refresh() {

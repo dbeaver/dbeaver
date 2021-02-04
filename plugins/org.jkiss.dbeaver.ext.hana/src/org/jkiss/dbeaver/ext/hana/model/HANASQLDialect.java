@@ -42,7 +42,7 @@ public class HANASQLDialect extends GenericSQLDialect {
     };
 
     public HANASQLDialect() {
-        super("HANA");
+        super("HANA", "sap_hana");
     }
 
     @Override
@@ -63,6 +63,11 @@ public class HANASQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
+    }
+    
     /*
      * expression evaluation
      */

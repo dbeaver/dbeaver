@@ -70,7 +70,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
-                    return convertStringArrayToCollection(session, arrayType, strValue);
+                    return convertStringArrayToCollection(session, arrayType, itemType, strValue);
                 } else if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
@@ -120,8 +120,8 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         }
     }
 
-    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
-        Object parsedArray = PostgreValueParser.convertStringToValue(session, itemType, strValue);
+    private JDBCCollection convertStringArrayToCollection(@NotNull DBCSession session, @NotNull PostgreDataType arrayType, @NotNull PostgreDataType itemType, @NotNull String strValue) throws DBCException {
+        Object parsedArray = PostgreValueParser.convertStringToValue(session, arrayType, strValue);
         if (parsedArray instanceof Object[]){
             return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), (Object[]) parsedArray);
         } else {
@@ -133,12 +133,18 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        return convertArrayToString(column, value, format, false);
+    }
+
+    private String convertArrayToString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format, boolean nested) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
             DBDCollection collection = (DBDCollection) value;
+            boolean isNativeFormat = format == DBDDisplayFormat.NATIVE;
+            boolean isStringArray = collection.getComponentType().getDataKind() == DBPDataKind.STRING;
 
             DBDValueHandler valueHandler = collection.getComponentValueHandler();
             StringBuilder str = new StringBuilder();
-            if (format == DBDDisplayFormat.NATIVE) {
+            if (isNativeFormat && !nested) {
                 str.append("'");
             }
             str.append("{");
@@ -150,18 +156,21 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 String itemString;
                 if (item instanceof JDBCCollection) {
                     // Multi-dimensional arrays case
-                    itemString = getValueDisplayString(column, item, format);
+                    itemString = convertArrayToString(column, item, format, true);
                 } else {
                     itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, format);
                 }
-                if (format == DBDDisplayFormat.NATIVE) {
+
+                if (isNativeFormat) {
+                    if (item instanceof String) str.append('"');
                     str.append(SQLUtils.escapeString(collection.getComponentType().getDataSource(), itemString));
+                    if (item instanceof String) str.append('"');
                 } else {
                     str.append(itemString);
                 }
             }
             str.append("}");
-            if (format == DBDDisplayFormat.NATIVE) {
+            if (isNativeFormat && !nested) {
                 str.append("'");
             }
 

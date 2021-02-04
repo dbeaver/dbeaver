@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -37,6 +38,8 @@ import java.util.Date;
  */
 public class Log
 {
+    private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
+
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
     private static ILog eclipseLog;
@@ -58,8 +61,8 @@ public class Log
     private static boolean quietMode;
     private final boolean doEclipseLog;
 
-    @NotNull
-    private static PrintStream defaultDebugStream = System.err;
+    @Nullable
+    private static PrintStream defaultDebugStream;
 
     public static void setDefaultDebugStream(@NotNull PrintStream defaultDebugStream) {
         Log.defaultDebugStream = defaultDebugStream;
@@ -175,10 +178,18 @@ public class Log
 
     public void trace(Object message)
     {
+        if (message instanceof Throwable) {
+            trace(message.toString(), (Throwable)message);
+        } else {
+            trace(message, null);
+        }
     }
 
     public void trace(Object message, Throwable t)
     {
+        if (TRACE_LOG_ENABLED) {
+            debug(message, t);
+        }
     }
 
     public void debug(Object message)
@@ -199,6 +210,9 @@ public class Log
         PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
             PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : defaultDebugStream);
+            if (debugWriter == null && !quietMode) {
+                debugWriter = System.err;
+            }
             if (debugWriter == null) {
                 return;
             }

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPCredentialsProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -76,7 +75,6 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String connectionColor;
     private int keepAliveInterval;
 
-    private DBPCredentialsProvider credentialsProvider;
     private String authModelId;
     private Map<String, String> authProperties;
 
@@ -197,6 +195,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         properties.put(name, value);
     }
 
+    public void removeProperty(String name) {
+        properties.remove(name);
+    }
+    
     @NotNull
     public Map<String, String> getProperties() {
         return properties;
@@ -393,14 +395,6 @@ public class DBPConnectionConfiguration implements DBPObject {
             authProperties = new HashMap<>();
         }
         this.authProperties.put(name, value);
-    }
-
-    public DBPCredentialsProvider getCredentialsProvider() {
-        return credentialsProvider;
-    }
-
-    public void setCredentialsProvider(DBPCredentialsProvider credentialsProvider) {
-        this.credentialsProvider = credentialsProvider;
     }
 
     ///////////////////////////////////////////////////////////

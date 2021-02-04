@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.MissingDataSourceProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * DataSourceProviderDescriptor
@@ -147,6 +149,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         log.error("Error loading driver", e);
                     }
                 }
+
+                // Load provider properties
+                {
+                    for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
+                        String driversSpec = propsElement.getAttribute("drivers");
+                        List<DBPPropertyDescriptor> providerProperties = new ArrayList<>();
+                        for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
+                            providerProperties.addAll(PropertyDescriptor.extractProperties(prop));
+                        }
+                        List<DriverDescriptor> appDrivers;
+                        if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
+                            appDrivers = drivers;
+                        } else {
+                            String[] driverIds = driversSpec.split(",");
+                            appDrivers = drivers.stream()
+                                .filter(d -> ArrayUtils.contains(driverIds, d.getId())).collect(Collectors.toList());
+                        }
+                        appDrivers.forEach(d -> d.addProviderPropertyDescriptors(providerProperties));
+                    }
+                }
             }
         }
 
@@ -166,7 +188,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
-        this.implType = new ObjectType(DBPDataSourceProvider.class.getName());
+        this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeDescriptor = new DBXTreeItem(this, null, null, id, id, false, true, false, false, true, null, null);
         this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);

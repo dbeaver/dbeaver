@@ -56,6 +56,7 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
+    public static String pref_page_database_resultsets_label_show_boolean_config_link;
     public static String pref_page_database_resultsets_label_double_click_behavior;
 
     public static String pref_page_result_selector_editor;
@@ -93,7 +94,12 @@ public class DataEditorsMessages extends NLS {
 	public static String virtual_structure_editor_table_column_source_table;
 	public static String virtual_structure_editor_table_column_source_datasource;
 	public static String virtual_structure_editor_dialog_button_refresh;
-	
+
+    public static String complex_object_editor_dialog_menu_copy_element;
+    public static String complex_object_editor_dialog_menu_add_element;
+    public static String complex_object_editor_dialog_menu_remove_element;
+    public static String complex_object_editor_dialog_menu_move_up_element;
+    public static String complex_object_editor_dialog_menu_move_down_element;
 
     static {
 		// initialize resource bundle

@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.lock;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.Date;
@@ -43,14 +45,19 @@ public class OracleLock implements DBAServerLock {
      
      private DBAServerLock hold = null;
      private List<DBAServerLock> waiters = new ArrayList<>(0);
+
+	 private OracleDataSource dataSource;
      
-     public OracleLock(ResultSet dbResult) {
+     public OracleLock(ResultSet dbResult, OracleDataSource dataSource) {
     	 this.wait_sid = JDBCUtils.safeGetInt(dbResult, "waiting_session");
     	 this.serial = JDBCUtils.safeGetInt(dbResult, "serial");
     	 this.hold_sid  = JDBCUtils.safeGetInt(dbResult, "holding_session");
     	 this.wait_pid = JDBCUtils.safeGetInt(dbResult, "wait_pid");
     	 this.hold_pid = JDBCUtils.safeGetInt(dbResult, "hold_pid");
     	 this.oname = JDBCUtils.safeGetString(dbResult, "oname");
+    	 if (oname == null) {
+    	 	oname = "name";
+		 }
     	 this.owner = JDBCUtils.safeGetString(dbResult, "owner");
     	 this.row_lock = JDBCUtils.safeGetLong(dbResult, "row_lock");
     	 this.wait_user = JDBCUtils.safeGetString(dbResult, "waiting_user");
@@ -58,6 +65,8 @@ public class OracleLock implements DBAServerLock {
     	 this.ltime = JDBCUtils.safeGetDate(dbResult, "logon_time");
     	 this.status = JDBCUtils.safeGetString(dbResult, "blocking_session_status");
     	 this.event = JDBCUtils.safeGetString(dbResult, "event");
+
+    	 this.dataSource = dataSource;
      }
      
 
@@ -109,7 +118,7 @@ public class OracleLock implements DBAServerLock {
 		return wait_sid;
 	}
 
- 	@Property(viewable = true, order = 2)
+ 	@Property(viewable = true, order = 2, visibleIf = OracleLockColumnsValueValidator.class)
 	public int getWait_pid()
 	{
 		return wait_pid;
@@ -121,19 +130,19 @@ public class OracleLock implements DBAServerLock {
 		return wait_user;
 	}
 
- 	@Property(viewable = true, order = 4)
+ 	@Property(viewable = true, order = 4, visibleIf = OracleLockColumnsValueValidator.class)
 	public String getOname()
 	{
 		return oname;
 	}
 
- 	@Property(viewable = true, order = 5)
+ 	@Property(viewable = true, order = 5, visibleIf = OracleLockColumnsValueValidator.class)
 	public String getOwner()
 	{
 		return owner;
 	}
 
- 	@Property(viewable = true, order = 6)
+ 	@Property(viewable = true, order = 6, visibleIf = OracleLockColumnsValueValidator.class)
 	public long getRow_lock()
 	{
 		return row_lock;
@@ -145,7 +154,7 @@ public class OracleLock implements DBAServerLock {
 		return hold_sid;
 	}
 
- 	@Property(viewable = true, order = 8)
+ 	@Property(viewable = true, order = 8, visibleIf = OracleLockColumnsValueValidator.class)
 	public int getHold_pid()
 	{
 		return hold_pid;
@@ -157,19 +166,19 @@ public class OracleLock implements DBAServerLock {
 		return hold_user;
 	}
 
- 	@Property(viewable = true, order = 10)
+ 	@Property(viewable = true, order = 10, visibleIf = OracleLockColumnsValueValidator.class)
 	public Date getLtime()
 	{
 		return ltime;
 	}
 
- 	@Property(viewable = true, order = 11)
+ 	@Property(viewable = true, order = 11, visibleIf = OracleLockColumnsValueValidator.class)
 	public String getStatus()
 	{
 		return status;
 	}
 
- 	@Property(viewable = true, order = 12)
+ 	@Property(viewable = true, order = 12, visibleIf = OracleLockColumnsValueValidator.class)
 	public String getEvent()
 	{
 		return event;
@@ -178,6 +187,18 @@ public class OracleLock implements DBAServerLock {
  	public int getSerial()
 	{
 		return serial;
+	}
+
+	public OracleDataSource getDataSource() {
+		return dataSource;
+	}
+
+	public static class OracleLockColumnsValueValidator implements IPropertyValueValidator<OracleLock, Object> {
+
+		@Override
+		public boolean isValidValue(OracleLock lock, Object value) throws IllegalArgumentException {
+			return lock.getDataSource().isAtLeastV10();
+		}
 	}
  	
 }

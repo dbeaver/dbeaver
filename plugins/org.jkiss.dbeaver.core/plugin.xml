@@ -78,7 +78,7 @@
             class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
             namespace="org.jkiss.dbeaver.model"
-            properties="childOfType"
+            properties="childOfType,isTableContainer"
             type="org.jkiss.dbeaver.model.struct.DBSObject"/>
     </extension>
 
@@ -550,23 +550,6 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <separator name="sql_tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
-                </command>
-                <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
-                    <visibleWhen>
-                        <and>
-                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
-                            <test property="org.jkiss.dbeaver.core.global.standalone"/>
-                        </and>
-                    </visibleWhen>
-                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
@@ -668,27 +651,6 @@
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
             <separator name="sql_tools" visible="true"/>
-
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
 
             <command commandId="org.jkiss.dbeaver.core.project.active">
                 <visibleWhen checkEnabled="true"/>
@@ -810,6 +772,9 @@
             <command commandId="org.eclipse.ui.edit.rename" label="%command.org.eclipse.ui.edit.rename.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            
+            
+            
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
@@ -1053,9 +1018,6 @@
         <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
             <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
-        </factory>
-        <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver"/>
         </factory>
     </extension>
 

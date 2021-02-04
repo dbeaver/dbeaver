@@ -140,6 +140,11 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
         return vAttribute.getMaxLength();
     }
 
+    @Override
+    public long getTypeModifiers() {
+        return vAttribute.getTypeModifiers();
+    }
+
     /**
      * Attribute label
      */

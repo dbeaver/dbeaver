@@ -51,7 +51,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
-    @NotNull
+    @Nullable
     private PostgreDataType dataType;
     private String comment;
     private long charLength;
@@ -65,6 +65,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private Object acl;
     private long typeId;
     private int typeMod;
+    @Nullable
+    private String[] foreignTableColumnOptions;
 
     protected PostgreAttribute(
         OWNER table)
@@ -118,7 +120,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public void setMaxLength(long maxLength) {
         super.setMaxLength(maxLength);
-        if (getDataKind() == DBPDataKind.STRING && this.precision != null) {
+        if (getDataKind() == DBPDataKind.STRING && this.precision != -1) {
             this.precision = (int)maxLength;
         }
     }
@@ -140,6 +142,20 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
+        String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
+        String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq";
+        //set serial types manually
+        if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
+                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
+            if (typeId == PostgreOid.INT4) {
+                typeId = PostgreOid.SERIAL;
+            } else if (typeId == PostgreOid.INT2) {
+                typeId = PostgreOid.SMALLSERIAL;
+            } else if (typeId == PostgreOid.INT8) {
+                typeId = PostgreOid.BIGSERIAL;
+            }
+        }
+        setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
@@ -157,7 +173,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
         DBPDataKind dataKind = dataType.getDataKind();
@@ -197,6 +212,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+
+        if (getTable() instanceof PostgreTableForeign) {
+            foreignTableColumnOptions = JDBCUtils.safeGetArray(dbResult, "attfdwoptions");
+        }
 
         setPersisted(true);
     }
@@ -357,6 +376,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return DBUtils.getFullTypeName(this);
         }
         return fqtn;
+    }
+
+    @Nullable
+    public String[] getForeignTableColumnOptions() {
+        return foreignTableColumnOptions;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {

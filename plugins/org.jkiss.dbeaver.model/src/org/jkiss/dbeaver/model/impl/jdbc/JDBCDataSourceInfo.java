@@ -60,6 +60,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     private boolean supportsStoredCode = true;
     private boolean supportsBatchUpdates = false;
     private boolean supportsScroll;
+    private boolean supportsViews = true;
 
     public JDBCDataSourceInfo(DBPDataSourceContainer container)
     {
@@ -285,6 +286,15 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     public void setSupportsIndexes(boolean supportsIndexes)
     {
         this.supportsIndexes = supportsIndexes;
+    }
+
+
+    public boolean supportsViews() {
+        return supportsViews;
+    }
+
+    public void setSupportsViews(boolean supportsViews) {
+        this.supportsViews = supportsViews;
     }
 
     @Override

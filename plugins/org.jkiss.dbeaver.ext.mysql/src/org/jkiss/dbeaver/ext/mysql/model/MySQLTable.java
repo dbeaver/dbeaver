@@ -443,21 +443,26 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
 
                     // Find PK
                     MySQLTableConstraint pk = null;
-                    if (pkTable != null && pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
-                        if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-                        }
-                    }
-                    if (pk == null && pkTable != null) {
+                    if (pkTable != null) {
+                    	// Find pk based on referenced columns
                         Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
                             for (MySQLTableConstraint pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
-                                    break;
+                                    if (pkConstraint.getName().equals(pkName))
+                                    	break;
+                                    // If pk name does not match, keep searching (actual pk might not be this one)
                                 }
                             }
+                        }
+                    }
+                    if (pk == null && pkTable != null && pkName != null) {
+                    	// Find pk based on name
+                    	Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+                    	pk = DBUtils.findObject(constraints, pkName);
+                        if (pk == null) {
+                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         }
                     }
                     if (pk == null && pkTable != null) {
@@ -494,7 +499,14 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics
                             fkList.add(fk);
                         }
                         MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                        fk.addColumn(fkColumnInfo);
+                        if (fk.hasColumn(fkColumnInfo)) {
+                            // Known MySQL bug, metaData.getImportedKeys() can return duplicates
+                            // https://bugs.mysql.com/bug.php?id=95280
+                            log.debug("FK "+ fkName +" has already been added, skip");
+                        }
+                        else {
+                            fk.addColumn(fkColumnInfo);
+                        }
                     }
                 }
             } finally {

@@ -16,26 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+import java.util.*;
 
-public class FireBirdView extends FireBirdTable implements DBSObjectWithScript, DBSView {
+public class FireBirdView extends GenericView implements FireBirdTableBase, DBSObjectWithScript, DBSView {
 
-    private String ddl;
+    private String ownerName;
+    private Map<String, String> columnDomainTypes;
 
     public FireBirdView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+
+        if (dbResult != null) {
+            ownerName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$OWNER_NAME");
+        }
     }
 
     @Override
@@ -43,21 +51,30 @@ public class FireBirdView extends FireBirdTable implements DBSObjectWithScript, 
         return true;
     }
 
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
-            ddl = null;
-        }
-        if (ddl == null) {
-            ddl = isPersisted() ? FireBirdUtils.getViewSource(monitor, this) : "";
-        }
-        return ddl;
+    @Property(viewable = true, order = 20)
+    public String getOwnerName() {
+        return ownerName;
     }
 
     @Override
-    public void setObjectDefinitionText(String source) {
-        this.ddl = source;
+    public synchronized List<FireBirdTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        Collection<? extends GenericTableColumn> childColumns = super.getAttributes(monitor);
+        if (childColumns == null) {
+            return Collections.emptyList();
+        }
+        List<FireBirdTableColumn> columns = new ArrayList<>();
+        for (GenericTableColumn gtc : childColumns) {
+            columns.add((FireBirdTableColumn) gtc);
+        }
+        columns.sort(DBUtils.orderComparator());
+        return columns;
+    }
+
+    public String getColumnDomainType(DBRProgressMonitor monitor, FireBirdTableColumn column) throws DBException {
+        if (columnDomainTypes == null) {
+            columnDomainTypes = FireBirdUtils.readColumnDomainTypes(monitor, this);
+        }
+        return columnDomainTypes.get(column.getName());
     }
 
 }

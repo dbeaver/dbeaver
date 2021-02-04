@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * PostgreTable
@@ -417,19 +419,15 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
 
     @Nullable
     @Association
-    public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
             return null;
         }
-        List<PostgreTableBase> result = new ArrayList<>(si.size());
-        for (int i1 = 0; i1 < si.size(); i1++) {
-            PostgreTableBase table = si.get(i1).getParentObject();
-            if (table.isPartition()) {
-                result.add(table);
-            }
-        }
-        return result;
+        return si.stream()
+            .map(AbstractTableConstraint::getParentObject)
+            .filter(PostgreTableBase::isPartition)
+            .collect(Collectors.toList());
     }
 
     @Override

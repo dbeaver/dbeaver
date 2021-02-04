@@ -19,23 +19,20 @@ package org.jkiss.dbeaver.ext.firebird.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
 import java.util.*;
 
-public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
+public class FireBirdTable extends GenericTable implements FireBirdTableBase, DBPNamedObject2 {
 
     private int keyLength;
     private String externalFile;
@@ -86,35 +83,11 @@ public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
         return columns;
     }
 
-    String getColumnDomainType(DBRProgressMonitor monitor, FireBirdTableColumn column) throws DBException {
+    public String getColumnDomainType(DBRProgressMonitor monitor, FireBirdTableColumn column) throws DBException {
         if (columnDomainTypes == null) {
-            columnDomainTypes = readColumnDomainTypes(monitor);
+            columnDomainTypes = FireBirdUtils.readColumnDomainTypes(monitor, this);
         }
         return columnDomainTypes.get(column.getName());
-    }
-
-    private Map<String, String> readColumnDomainTypes(DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read column domain type")) {
-            // Read metadata
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
-                dbStat.setString(1, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    Map<String, String> dtMap = new HashMap<>();
-                    while (dbResult.next()) {
-                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
-                        String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
-                        if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
-                            dtMap.put(columnName, domainTypeName);
-                        }
-                    }
-                    return dtMap;
-                }
-            }
-
-        } catch (SQLException ex) {
-            throw new DBException("Error reading column domain types for " + getName(), ex);
-        }
-
     }
 
 }

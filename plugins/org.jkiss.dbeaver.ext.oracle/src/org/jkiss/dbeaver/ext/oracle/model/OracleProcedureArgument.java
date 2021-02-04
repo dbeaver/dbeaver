@@ -170,6 +170,11 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public String getTypeName()
     {
         return type == null ? packageTypeName : type.getName();

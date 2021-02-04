@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 public class DB2ZOSSQLDialect extends GenericSQLDialect {
 
     public DB2ZOSSQLDialect() {
-        super("DB2 for z/OS");
+        super("DB2 for z/OS", "db2_zos");
     }
 
     @Override

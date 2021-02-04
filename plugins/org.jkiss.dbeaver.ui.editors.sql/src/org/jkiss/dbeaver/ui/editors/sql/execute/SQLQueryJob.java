@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -303,6 +304,8 @@ public class SQLQueryJob extends DataSourceJob
                 "Error during SQL job execution: " + ex.getMessage());
         }
         finally {
+            monitor.done();
+
             // Notify job end
             if (listener != null) {
                 try {
@@ -311,7 +314,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error(e);
                 }
             }
-            monitor.done();
         }
     }
 
@@ -543,8 +545,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (!hasResultSet) {
                     try {
                         updateCount = dbcStatement.getUpdateRowCount();
+                        SQLQueryResult.ExecuteResult executeResult = curResult.addExecuteResult(false);
                         if (updateCount >= 0) {
-                            curResult.addExecuteResult(false).setUpdateCount(updateCount);
+                            executeResult.setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
@@ -596,7 +599,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private void showExecutionResult(DBCSession session) {
-        if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
+        int statementsCount = statistics.getStatementsCount();
+        if (statementsCount > 1 || // Many statements
+            (statementsCount == 1 && resultSetNumber == 0) || // Single non-select statement
+            (resultSetNumber == 0 && (statistics.getRowsUpdated() >= 0 || statistics.getRowsFetched() >= 0))) { // Single statement with some stats
             SQLQuery query = new SQLQuery(session.getDataSource(), "", -1, -1);
             if (queries.size() == 1) {
                 query.setText(queries.get(0).getText());
@@ -635,7 +641,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
                 new Date());
-            executeResult.setResultSetName("Statistics");
+            executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
@@ -644,7 +650,7 @@ public class SQLQueryJob extends DataSourceJob
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(updateCount, query.getText(), new Date());
 
-            executeResult.setResultSetName("Result");
+            executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
@@ -700,7 +706,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
-                    sourceName = "Result";
+                    sourceName = SQLEditorMessages.editors_sql_data_grid;
                 }
                 executeResult.setResultSetName(sourceName);
             }

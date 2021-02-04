@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
@@ -54,7 +56,8 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
             return null;
         }
 
-        if (navigatorView instanceof ProjectExplorerView) {
+        if (navigatorView instanceof ProjectExplorerView ||
+                (navigatorView instanceof ProjectNavigatorView && activeEditor instanceof ITextEditor)) {
             IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
             if (file != null) {
                 showResourceInNavigator(navigatorView, file);

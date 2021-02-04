@@ -45,14 +45,20 @@ public class BooleanAttributeTransformer implements DBDAttributeTransformer {
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
         attribute.setPresentationAttribute(
-            new TransformerPresentationAttribute(attribute, "Boolean", -1, DBPDataKind.BOOLEAN));
+            new TransformerPresentationAttribute(attribute, "boolean", -1, DBPDataKind.BOOLEAN));
 
         attribute.setTransformHandler(new BooleanValueHandler(attribute.getValueHandler()));
     }
 
     private class BooleanValueHandler extends ProxyValueHandler {
-        public BooleanValueHandler(DBDValueHandler target) {
+        BooleanValueHandler(DBDValueHandler target) {
             super(target);
+        }
+
+        @NotNull
+        @Override
+        public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
+            return Boolean.class;
         }
 
         @Override

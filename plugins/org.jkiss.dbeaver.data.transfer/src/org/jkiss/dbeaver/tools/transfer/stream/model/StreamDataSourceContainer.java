@@ -87,6 +87,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @NotNull
     @Override
+    public DBPDataSourceOrigin getOrigin() {
+        throw new IllegalStateException("Stream datasource doesn't have origin");
+    }
+
+    @NotNull
+    @Override
     public DBPPlatform getPlatform() {
         return DBWorkbench.getPlatform();
     }
@@ -112,6 +118,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isProvided() {
         return true;
+    }
+
+    @Override
+    public boolean isManageable() {
+        return false;
     }
 
     @Override

@@ -48,6 +48,8 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_group_security;
     public static String wizard_backup_page_setting_group_security_label_info;
     public static String wizard_backup_page_setting_group_security_btn_authentication;
+    public static String wizard_backup_page_setting_authentication_save_password;
+    public static String wizard_backup_page_setting_authentication_save_password_tip;
     public static String wizard_backup_page_setting_group_security_btn_reset_default;
 
     /* wizard restore*/
@@ -98,11 +100,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_extension_database;
 
     /* PostgresSSLConfigurator */
-    public static String dialog_connection_network_postgres_ssl_certificates;
-    public static String dialog_connection_network_postgres_ssl_certificates_root;
-    public static String dialog_connection_network_postgres_ssl_certificates_ca;
-    public static String dialog_connection_network_postgres_ssl_certificates_ssl;
-    public static String dialog_connection_network_postgres_ssl_certificates_ssl_key;
     public static String dialog_connection_network_postgres_ssl_advanced;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_mode;
     public static String dialog_connection_network_postgres_ssl_advanced_ssl_factory;

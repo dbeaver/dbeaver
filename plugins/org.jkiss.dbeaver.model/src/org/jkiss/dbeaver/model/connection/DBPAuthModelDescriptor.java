@@ -45,6 +45,6 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     DBAAuthModel getInstance();
 
     @NotNull
-    DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource);
+    DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource, @Nullable DBPConnectionConfiguration configuration);
 
 }

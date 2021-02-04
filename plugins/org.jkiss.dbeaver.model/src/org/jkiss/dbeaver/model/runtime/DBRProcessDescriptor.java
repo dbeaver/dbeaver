@@ -50,6 +50,7 @@ public class DBRProcessDescriptor
         String commandLine = variablesResolver == null ?
             command.getCommand() :
             GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
+        commandLine = CommonUtils.notEmpty(commandLine);
 
         processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
         // Set working directory

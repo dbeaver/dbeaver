@@ -48,6 +48,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     public static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
     public static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
+    public static final String BASE_MATERIALIZED_VIEW_NAME = "NewMView"; //$NON-NLS-1$
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)

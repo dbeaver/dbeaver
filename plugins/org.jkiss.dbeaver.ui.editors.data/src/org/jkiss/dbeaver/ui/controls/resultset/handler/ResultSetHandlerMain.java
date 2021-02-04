@@ -226,9 +226,6 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
-                if (insertAfter) {
-                    presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
-                }
                 break;
             }
             case CMD_ROW_DELETE:
@@ -360,7 +357,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
-                    presentation.copySelectionToString(
+                    presentation.copySelection(
                         new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
@@ -371,7 +368,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:
                 ResultSetUtils.copyToClipboard(
-                    presentation.copySelectionToString(
+                    presentation.copySelection(
                         new ResultSetCopySettings(false, false, true, true, false, null, null, null, DBDDisplayFormat.EDIT))
                 );
                 break;
@@ -473,7 +470,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_FILTER_CLEAR_SETTING: {
-                rsv.resetDataFilter(true);
+                rsv.clearDataFilter(true);
             }
             case CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);

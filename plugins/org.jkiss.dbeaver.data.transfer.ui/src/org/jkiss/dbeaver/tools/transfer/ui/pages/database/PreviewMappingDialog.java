@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseProgressDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -195,7 +196,7 @@ class PreviewMappingDialog extends BaseProgressDialog {
                         attrTarget = attr.sourceAttr;
                     }
                     String valueStr = attr.targetValueHandler.getValueDisplayString(attrTarget, value, DBDDisplayFormat.UI);
-                    strRow[attr.targetIndex] = valueStr;
+                    strRow[attr.targetIndex] = CommonUtils.getSingleLineString(valueStr);
                 }
                 strRows.add(strRow);
             }

@@ -53,6 +53,10 @@ public class SQLIdentifierDetector extends TPWordDetector {
         return false;
     }
 
+    public char getStructSeparator() {
+        return structSeparator;
+    }
+
     public boolean containsSeparator(String identifier) {
         return identifier.indexOf(structSeparator) != -1;
     }

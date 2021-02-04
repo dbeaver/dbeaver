@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerConstants {
@@ -35,7 +37,14 @@ public class SQLServerConstants {
 
     public static final String HANDLER_SSL = "mssql_ssl";
 
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_KEYSTORE} instead */
+    @Deprecated
+    public static final String PROP_SSL_KEYSTORE = "sslKeyStore";
+    /** @deprecated Use {@link DBWHandlerConfiguration#getPassword()} instead */
+    @Deprecated
+    public static final String PROP_SSL_KEYSTORE_PASSWORD = "sslKeyStorePassword";
     public static final String PROP_SSL_KEYSTORE_HOSTNAME = "sslKeyStoreHostname";
+    public static final String PROP_SSL_TRUST_SERVER_CERTIFICATE = "sslTrustServerCertificate";
 
     public static final boolean USE_GSS = false;
 
@@ -75,14 +84,16 @@ public class SQLServerConstants {
     public static final String TYPE_HIERARCHYID = "hierarchyid";
     public static final String TYPE_XML = "xml";
 
+    public static final int TABLE_TYPE_SYSTEM_ID = 243;
+
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
 
+    public static final String PROP_CLOSE_EXISTING_CONNECTIONS = "closeExistingConnections";
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
     public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
     public static final String PROP_CONNECTION_AUTHENTICATION_SCHEME = "authenticationScheme";
 
-    public static final String PROP_TRUST_SERVER_CERTIFICATE = "trustServerCertificate";
     public static final String PROP_DOMAIN = "domain";
 
     public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
@@ -110,6 +121,7 @@ public class SQLServerConstants {
 
     public static final DBSIndexType INDEX_TYPE_HEAP = new DBSIndexType("HEAP", SQLServerMessages.index_type_Heap); //$NON-NLS-1$
     public static final DBSIndexType INDEX_TYPE_NON_CLUSTERED = new DBSIndexType("NON_CLUSTERED", SQLServerMessages.index_type_NonClustered); //$NON-NLS-1$
+    public static final DBSIndexType INDEX_TYPE_DEFAULT = new DBSIndexType("DEFAULT", SQLServerMessages.index_type_Default); //$NON-NLS-1$
     public static final DBSIndexType INDEX_TYPE_XML = new DBSIndexType("XML", SQLServerMessages.index_type_XML); //$NON-NLS-1$
     public static final DBSIndexType INDEX_TYPE_SPATIAL = new DBSIndexType("SPATIAL", SQLServerMessages.index_type_Spatial); //$NON-NLS-1$
 

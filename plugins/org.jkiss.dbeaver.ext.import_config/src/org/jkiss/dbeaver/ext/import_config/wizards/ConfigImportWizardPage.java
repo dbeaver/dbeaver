@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -31,13 +30,17 @@ import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 
-public abstract class ConfigImportWizardPage extends WizardPage {
+public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImportWizard> {
 
     private Table connectionTable;
     private ImportData importData;
+    private ConnectionFolderSelector folderSelector;
 
     protected ConfigImportWizardPage(String pageName)
     {
@@ -66,7 +69,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_url);
 
         {
-            Composite buttonsPanel = UIUtils.createComposite(placeholder, 2);
+            Composite buttonsPanel = UIUtils.createComposite(placeholder, 4);
             UIUtils.createDialogButton(buttonsPanel, "Select All", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -87,6 +90,9 @@ public abstract class ConfigImportWizardPage extends WizardPage {
                     getContainer().updateButtons();
                 }
             });
+
+            folderSelector = new ConnectionFolderSelector(buttonsPanel);
+            folderSelector.loadConnectionFolders(NavigatorUtils.getSelectedProject());
         }
 
         UIUtils.packColumns(connectionTable);
@@ -105,40 +111,45 @@ public abstract class ConfigImportWizardPage extends WizardPage {
     }
 
     @Override
-    public void setVisible(boolean visible)
-    {
-        if (visible) {
-            connectionTable.removeAll();
-            importData = new ImportData();
-            boolean loaded = false;
-            try {
-                loadConnections(importData);
-                loaded = true;
-            } catch (DBException e) {
-                setMessage(e.getMessage(), IMessageProvider.ERROR);
-            }
-            getContainer().updateButtons();
-            if (loaded) {
-                if (CommonUtils.isEmpty(importData.getConnections())) {
-                    setMessage(ImportConfigMessages.config_import_wizard_page_label_connection_list, IMessageProvider.WARNING);
-                } else {
-                    for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
-                        TableItem item = new TableItem(connectionTable, SWT.NONE);
-                        item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-                        item.setText(0, connectionInfo.getAlias());
-                        item.setText(1, connectionInfo.getDriverInfo().getName());
-                        String url = connectionInfo.getUrl();
-                        if (CommonUtils.isEmpty(url)) {
-                            url = connectionInfo.getHost();
-                        }
-                        item.setText(2, url);
-                        item.setData(connectionInfo);
+    public void activatePage() {
+        connectionTable.removeAll();
+        importData = new ImportData();
+        boolean loaded = false;
+        try {
+            loadConnections(importData);
+            loaded = true;
+        } catch (DBException e) {
+            setMessage(e.getMessage(), IMessageProvider.ERROR);
+        }
+        getContainer().updateButtons();
+        if (loaded) {
+            if (CommonUtils.isEmpty(importData.getConnections())) {
+                setMessage(ImportConfigMessages.config_import_wizard_page_label_connection_list, IMessageProvider.WARNING);
+            } else {
+                for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
+                    TableItem item = new TableItem(connectionTable, SWT.NONE);
+                    item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+                    item.setText(0, connectionInfo.getAlias());
+                    item.setText(1, connectionInfo.getDriverInfo().getName());
+                    String url = connectionInfo.getUrl();
+                    if (CommonUtils.isEmpty(url)) {
+                        url = connectionInfo.getHost();
                     }
+                    if (CommonUtils.isEmpty(url)) {
+                        url = "jdbc:???";
+                    }
+                    item.setText(2, url);
+                    item.setData(connectionInfo);
                 }
             }
-            UIUtils.packColumns(connectionTable);
         }
-        super.setVisible(visible);
+        UIUtils.packColumns(connectionTable);
+    }
+
+    @Override
+    public void deactivatePage() {
+        importData.setDataSourceFolder(folderSelector.getFolder());
+        super.deactivatePage();
     }
 
     protected abstract void loadConnections(ImportData importData) throws DBException;

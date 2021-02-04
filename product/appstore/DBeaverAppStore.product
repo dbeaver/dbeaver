@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore" application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="7.2.2.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore" application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="7.3.4.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
       <programArgs></programArgs>
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
-      </vmArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
    </launcherArgs>
 
    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
@@ -65,7 +63,6 @@
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <!-- This is important because simpleconfigurator conflicts with update.configurator -->
       <plugin id="org.eclipse.update.configurator" autoStart="false"  startLevel="10" />

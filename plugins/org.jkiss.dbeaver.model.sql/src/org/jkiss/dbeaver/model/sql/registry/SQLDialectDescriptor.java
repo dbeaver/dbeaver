@@ -21,10 +21,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -35,6 +38,8 @@ import java.util.*;
 public class SQLDialectDescriptor extends AbstractContextDescriptor implements SQLDialectMetadata {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlDialect"; //$NON-NLS-1$
+
+    private static final Log log = Log.getLog(SQLDialectDescriptor.class);
 
     private final String id;
     private final String label;
@@ -55,6 +60,10 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> txnKeywords;
     private List<String> types;
     private List<String> functions;
+
+    private List<String> insertMethodNames;
+    private DBDInsertReplaceMethod[] insertReplaceMethods;
+    private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors;
 
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
@@ -95,6 +104,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                 case "functions":
                     this.functions = loadList(propValue);
                     break;
+                case "insertMethods":
+                    insertMethodNames = loadList(propValue);
+                    break;
                 default:
                     if (properties == null) {
                         properties = new LinkedHashMap<>();
@@ -103,7 +115,6 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
                     break;
             }
         }
-
     }
 
     private List<String> loadList(String str) {
@@ -235,6 +246,34 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             }
         }
         return subs;
+    }
+
+    @Override
+    public DBDInsertReplaceMethod[] getSupportedInsertReplaceMethods() {
+        getSupportedInsertReplaceMethodsDescriptors();
+        if (!ArrayUtils.isEmpty(insertReplaceMethods)) {
+            return insertReplaceMethods;
+        }
+        return new DBDInsertReplaceMethod[0];
+    }
+
+    public List<SQLInsertReplaceMethodDescriptor> getSupportedInsertReplaceMethodsDescriptors() {
+        if (insertReplaceMethods == null && !CommonUtils.isEmpty(insertMethodNames)) {
+            try {
+                insertMethodDescriptors = new ArrayList<>();
+                List<DBDInsertReplaceMethod> methodsList = new ArrayList<>();
+                for (String insertMethodId : insertMethodNames) {
+                    SQLInsertReplaceMethodDescriptor method = SQLInsertReplaceMethodRegistry.getInstance().getInsertMethod(insertMethodId);
+                    insertMethodDescriptors.add(method);
+                    methodsList.add(method.createInsertMethod());
+                }
+                insertReplaceMethods = methodsList.toArray(new DBDInsertReplaceMethod[0]);
+            } catch (DBException e) {
+                log.debug("Can't get SQL insert replace methods");
+            }
+        }
+
+        return insertMethodDescriptors;
     }
 
     @Override

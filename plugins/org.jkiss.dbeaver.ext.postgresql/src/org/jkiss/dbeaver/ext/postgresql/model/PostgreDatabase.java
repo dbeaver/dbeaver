@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -62,7 +63,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         PostgreObject,
         DBPDataTypeProvider,
         DBSInstanceLazy,
-        DBPObjectStatistics {
+        DBPObjectStatistics,
+        DBPObjectWithLazyDescription
+{
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -126,7 +129,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // We need to set name first
         this.name = databaseName;
         this.initCaches();
-        checkInstanceConnection(monitor);
+        checkInstanceConnection(monitor, false);
 
         try {
             readDatabaseInfo(monitor);
@@ -148,6 +151,16 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding == null ? 0 : encoding.getObjectId();
         this.initCaches();
+    }
+
+    @ForTest
+    PostgreDatabase(PostgreDataSource dataSource, String databaseName) {
+        super(dataSource);
+        this.name = databaseName;
+        this.initCaches();
+        PostgreSchema sysSchema = new PostgreSchema(this, PostgreConstants.CATALOG_SCHEMA_NAME);
+        sysSchema.getDataTypeCache().loadDefaultTypes(sysSchema);
+        schemaCache.cacheObject(sysSchema);
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -192,8 +205,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Override
     public void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (executionContext == null) {
+            checkInstanceConnection(monitor, true);
+        }
+    }
+
+    // We mustn't cache metadata when checkInstanceConnection called during datasource instantiation
+    // Because datasource is not fully initialized yet
+    void checkInstanceConnection(@NotNull DBRProgressMonitor monitor, boolean cacheMetadata) throws DBException {
+        if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
+            if (cacheMetadata)
+                cacheDataTypes(monitor, true);
         }
     }
 
@@ -243,7 +266,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @NotNull
@@ -258,7 +281,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return JDBCExecutionContext.TYPE_METADATA + " <" + getName() + ">";
     }
 
-    @Property(viewable = true, multiline = true, order = 100)
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
@@ -279,6 +303,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
         
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -413,6 +441,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Association
+    public Collection<PostgreSetting> getSettings(DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return getDataSource().getSettingCache().getAllObjects(monitor, getDataSource());
+    }
+
+    @Association
     public Collection<PostgreCharset> getEncodings(DBRProgressMonitor monitor) throws DBException {
         if (!getDataSource().getServerType().supportsEncodings()) {
             return null;
@@ -454,13 +488,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
     ///////////////////////////////////////////////
     // Data types
 
+    @NotNull
     @Override
-    public DBPDataKind resolveDataKind(String typeName, int typeID) {
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int typeID) {
         return dataSource.resolveDataKind(typeName, typeID);
     }
 
     @Override
-    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException {
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         return dataSource.resolveDataType(monitor, typeFullName);
     }
 
@@ -596,7 +631,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreSchema.class;
     }
 
@@ -789,7 +824,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     /////////////////////////////////////////////////////////////////////////////////////
     // Caches
 
-    class RoleCache extends JDBCObjectCache<PostgreDatabase, PostgreRole> {
+    private static abstract class PostgreDatabaseJDBCObjectCache<OBJECT extends DBSObject> extends JDBCObjectCache<PostgreDatabase, OBJECT> {
+        boolean handlePermissionDeniedError(Exception e) {
+            if (e instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) e).getDatabaseState())) {
+                log.warn(e);
+                setCache(Collections.emptyList());
+                return true;
+            }
+            return false;
+        }
+    }
+
+    static class RoleCache extends PostgreDatabaseJDBCObjectCache<PostgreRole> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -810,17 +856,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
         protected boolean handleCacheReadError(Exception error) {
             // #271, #501: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
-            if (error instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) error).getDatabaseState())) {
-                log.warn(error);
-                setCache(Collections.emptyList());
-                return true;
-            }
-            return false;
+            return handlePermissionDeniedError(error);
         }
     }
 
-    class AccessMethodCache extends JDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
-
+    static class AccessMethodCache extends PostgreDatabaseJDBCObjectCache<PostgreAccessMethod> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -838,8 +878,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class EncodingCache extends JDBCObjectCache<PostgreDatabase, PostgreCharset> {
-
+    static class EncodingCache extends PostgreDatabaseJDBCObjectCache<PostgreCharset> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -859,8 +898,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class CollationCache extends JDBCObjectCache<PostgreDatabase, PostgreCollation> {
-
+    static class CollationCache extends PostgreDatabaseJDBCObjectCache<PostgreCollation> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -879,8 +917,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class LanguageCache extends JDBCObjectCache<PostgreDatabase, PostgreLanguage> {
-
+    static class LanguageCache extends PostgreDatabaseJDBCObjectCache<PostgreLanguage> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -898,8 +935,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class ForeignDataWrapperCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignDataWrapper> {
-
+    static class ForeignDataWrapperCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignDataWrapper> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -919,8 +955,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class ForeignServerCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignServer> {
-
+    static class ForeignServerCache extends PostgreDatabaseJDBCObjectCache<PostgreForeignServer> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -938,8 +973,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    class TablespaceCache extends JDBCObjectCache<PostgreDatabase, PostgreTablespace> {
-
+    static class TablespaceCache extends PostgreDatabaseJDBCObjectCache<PostgreTablespace> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -957,10 +991,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
             throws SQLException, DBException {
             return new PostgreTablespace(owner, dbResult);
         }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            return handlePermissionDeniedError(error);
+        }
     }
-    
- class AvailableExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreAvailableExtension> {
-        
+
+    static class AvailableExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreAvailableExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -977,8 +1015,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
     
-    class ExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreExtension> {
-
+    static class ExtensionCache extends PostgreDatabaseJDBCObjectCache<PostgreExtension> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
@@ -1115,5 +1152,4 @@ public class PostgreDatabase extends JDBCRemoteInstance
             }
         }
     }
-
 }

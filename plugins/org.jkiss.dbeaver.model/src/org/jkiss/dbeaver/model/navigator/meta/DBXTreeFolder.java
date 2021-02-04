@@ -21,12 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,12 +43,57 @@ public class DBXTreeFolder extends DBXTreeNode {
     private String description;
 
     private List<String> contributedCategories = null;
+    private ItemType[] itemTypes = null;
+
+    public static class ItemType {
+        private String className;
+        private String itemType;
+        private DBPImage itemIcon;
+
+        private ItemType(String className, String itemType, DBPImage itemIcon) {
+            this.className = className;
+            this.itemType = itemType;
+            this.itemIcon = itemIcon;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getItemType() {
+            return itemType;
+        }
+
+        public DBPImage getItemIcon() {
+            return itemIcon;
+        }
+    }
 
     public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String type, boolean navigable, boolean virtual, String visibleIf) {
         super(source, parent, config, navigable, false, virtual, false, visibleIf, null);
         this.type = type;
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+
+        IConfigurationElement[] itemTypesConfig = config.getChildren("itemType");
+        if (!ArrayUtils.isEmpty(itemTypesConfig)) {
+            List<ItemType> objectCreateTypes = null;
+            for (IConfigurationElement it : itemTypesConfig) {
+                String itemTypeName = it.getAttribute("type");
+                if (!CommonUtils.isEmpty(itemTypeName)) {
+                    if (objectCreateTypes == null) {
+                        objectCreateTypes = new ArrayList<>();
+                    }
+                    objectCreateTypes.add(new ItemType(
+                        itemTypeName,
+                        it.getAttribute("label"),
+                        source.iconToImage(it.getAttribute("icon"))));
+                }
+            }
+            if (objectCreateTypes != null) {
+                itemTypes = objectCreateTypes.toArray(new ItemType[0]);
+            }
+        }
     }
 
     DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, DBXTreeFolder folder) {
@@ -138,5 +185,9 @@ public class DBXTreeFolder extends DBXTreeNode {
             contributedCategories = new ArrayList<>();
         }
         contributedCategories.add(category);
+    }
+
+    public ItemType[] getItemTypes() {
+        return itemTypes;
     }
 }

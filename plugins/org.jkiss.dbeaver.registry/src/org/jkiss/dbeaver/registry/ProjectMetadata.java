@@ -25,7 +25,6 @@ import org.eclipse.core.internal.localstore.BucketTree;
 import org.eclipse.core.internal.properties.PropertyBucket;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.DBASessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -70,6 +70,10 @@ public class ProjectMetadata implements DBPProject {
 
     private final DBPWorkspace workspace;
     private final IProject project;
+    private final DBASessionContext sessionContext;
+
+    private String projectName;
+    private File projectPath;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
@@ -79,11 +83,27 @@ public class ProjectMetadata implements DBPProject {
     private DBASecureStorage secureStorage;
     private UUID projectID;
     private final Object metadataSync = new Object();
+    private boolean inMemory;
 
-    public ProjectMetadata(DBPWorkspace workspace, IProject project) {
+    public ProjectMetadata(DBPWorkspace workspace, IProject project, DBASessionContext sessionContext) {
         this.workspace = workspace;
         this.project = project;
         this.metadataSyncJob = new ProjectSyncJob();
+        this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
+    }
+
+    public ProjectMetadata(DBPWorkspace workspace, String name, File path, DBASessionContext sessionContext) {
+        this(workspace, workspace.getActiveProject() == null ? null : workspace.getActiveProject().getEclipseProject(), sessionContext);
+        this.projectName = name;
+        this.projectPath = path;
+    }
+
+    public void setInMemory(boolean inMemory) {
+        this.inMemory = inMemory;
+    }
+
+    public boolean isInMemory() {
+        return inMemory;
     }
 
     @NotNull
@@ -92,10 +112,15 @@ public class ProjectMetadata implements DBPProject {
         return workspace;
     }
 
+    @Override
+    public boolean isVirtual() {
+        return projectName != null;
+    }
+
     @NotNull
     @Override
     public String getName() {
-        return project.getName();
+        return projectName != null ? projectName : project.getName();
     }
 
     @Override
@@ -115,7 +140,7 @@ public class ProjectMetadata implements DBPProject {
     @NotNull
     @Override
     public File getAbsolutePath() {
-        return project.getLocation().toFile();
+        return projectPath != null ? projectPath : project.getLocation().toFile();
     }
 
     @NotNull
@@ -126,13 +151,11 @@ public class ProjectMetadata implements DBPProject {
 
     @NotNull
     @Override
-    public IFolder getMetadataFolder(boolean create) {
-        IFolder metadataFolder = project.getFolder(METADATA_FOLDER);
+    public File getMetadataFolder(boolean create) {
+        File metadataFolder = new File(getAbsolutePath(), METADATA_FOLDER);
         if (create && !metadataFolder.exists()) {
-            try {
-                metadataFolder.create(IResource.FORCE | IResource.HIDDEN, true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                log.error("Error creating project metadata folder", e);
+            if (!metadataFolder.mkdirs()) {
+                log.error("Error creating metadata folder");
             }
         }
 
@@ -146,7 +169,7 @@ public class ProjectMetadata implements DBPProject {
 
     @Override
     public boolean isOpen() {
-        return project.isOpen();
+        return project == null || project.isOpen();
     }
 
     @Override
@@ -154,7 +177,7 @@ public class ProjectMetadata implements DBPProject {
         if (format != ProjectFormat.UNKNOWN) {
             return;
         }
-        if (!project.isOpen()) {
+        if (project != null && !project.isOpen()) {
             try {
                 NullProgressMonitor monitor = new NullProgressMonitor();
                 project.open(monitor);
@@ -164,8 +187,12 @@ public class ProjectMetadata implements DBPProject {
                 return;
             }
         }
+        if (inMemory) {
+            format = ProjectFormat.MODERN;
+            return;
+        }
 
-        IFolder mdFolder = getMetadataFolder(false);
+        File mdFolder = getMetadataFolder(false);
 
         File dsConfig = new File(getAbsolutePath(), DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (!mdFolder.exists() && dsConfig.exists()) {
@@ -226,6 +253,12 @@ public class ProjectMetadata implements DBPProject {
             }
         }
         return secureStorage;
+    }
+
+    @NotNull
+    @Override
+    public DBASessionContext getSessionContext() {
+        return sessionContext;
     }
 
     ////////////////////////////////////////////////////////
@@ -356,6 +389,9 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void loadMetadata() {
+        if (isInMemory()) {
+            return;
+        }
         ensureOpen();
         synchronized (metadataSync) {
             if (resourceProperties != null) {
@@ -486,6 +522,9 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void flushMetadata() {
+        if (inMemory) {
+            return;
+        }
         synchronized (metadataSync) {
             metadataSyncJob.schedule(100);
         }
@@ -526,7 +565,7 @@ public class ProjectMetadata implements DBPProject {
         protected IStatus run(DBRProgressMonitor monitor) {
             setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
 
-            ContentUtils.makeFileBackup(getMetadataFolder(true).getFile(new Path(METADATA_STORAGE_FILE)));
+            ContentUtils.makeFileBackup(new File(getMetadataFolder(true), METADATA_STORAGE_FILE));
 
             synchronized (metadataSync) {
                 File mdFile = new File(getMetadataPath(), METADATA_STORAGE_FILE);

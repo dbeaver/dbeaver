@@ -61,6 +61,10 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_order;
     public static String controls_resultset_viewer_action_filter;
+    public static String controls_resultset_viewer_action_filter_clipboard;
+    public static String controls_resultset_viewer_action_filter_value;
+    public static String controls_resultset_viewer_action_filter_input;
+    public static String controls_resultset_viewer_action_filter_remove;
     public static String controls_resultset_viewer_action_custom_filter;
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
@@ -190,6 +194,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_label_sample;
     public static String pref_page_data_format_label_settingt;
     public static String pref_page_data_format_label_type;
+    public static String pref_page_data_format_link_patterns;
 
     public static String dialog_data_format_profiles_button_delete_profile;
     public static String dialog_data_format_profiles_button_new_profile;
@@ -215,7 +220,11 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;
     public static String pref_page_database_resultsets_label_use_sql_tip;
-    public static String pref_page_database_resultsets_label_server_side_order;
+    public static String pref_page_database_resultsets_label_order_mode;
+    public static String pref_page_database_resultsets_label_order_mode_tip;
+    public static String pref_page_database_resultsets_label_order_mode_smart;
+    public static String pref_page_database_resultsets_label_order_mode_always_client;
+    public static String pref_page_database_resultsets_label_order_mode_always_server;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;

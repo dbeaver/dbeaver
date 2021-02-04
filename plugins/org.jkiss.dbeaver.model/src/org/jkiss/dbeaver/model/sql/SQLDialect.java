@@ -51,8 +51,12 @@ public interface SQLDialect {
     enum MultiValueInsertMode {
         NOT_SUPPORTED,
         GROUP_ROWS,
-        PLAIN
+        PLAIN,
+        INSERT_ALL
     }
+
+    @NotNull
+    String getDialectId();
 
     /**
      * Dialect name
@@ -206,6 +210,14 @@ public interface SQLDialect {
     String[] getBlockHeaderStrings();
 
     /**
+     * Inner block prefixes strings.
+     * Determines if the block is a child of the header block.
+     * @return inner block prefixes or null (if not supported)
+     */
+    @Nullable
+    String[] getInnerBlockPrefixes();
+
+    /**
      * Retrieves whether a catalog appears at the start of a fully qualified
      * table name.  If not, the catalog appears at the end.
      *
@@ -245,6 +257,8 @@ public interface SQLDialect {
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
+
+    boolean supportsNestedComments();
 
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
@@ -289,8 +303,13 @@ public interface SQLDialect {
     @NotNull
     String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue);
 
+    /**
+     * Default multi-value insertion mode
+     * Used e.g. to SQL export
+     * @return MultiValueInsertMode enum value
+     */
     @NotNull
-    MultiValueInsertMode getMultiValueInsertMode();
+    MultiValueInsertMode getDefaultMultiValueInsertMode();
 
     String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
 
@@ -316,6 +335,11 @@ public interface SQLDialect {
      * True if anonymous SQL blocks must be finished with delimiter
      */
     boolean isDelimiterAfterBlock();
+
+    /**
+     * True if dialect requires delimiter for a query which starts with @firstKeyword and ends with @lastKeyword
+     */
+    boolean needsDelimiterFor(String firstKeyword, String lastKeyword);
 
     /**
      * Should we quote column/table/etc names if they conflicts with reserved words?

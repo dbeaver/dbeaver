@@ -53,6 +53,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
         {
             // SQL prefs
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, true);
@@ -84,7 +85,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FOLDING_ENABLED, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FOLDING_ENABLED, true);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
@@ -108,6 +109,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(
             store,
             SQLPreferenceConstants.RESULT_SET_ORIENTATION, SQLEditor.ResultSetOrientation.HORIZONTAL.name());
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, true);
 
         // Text editor default preferences
         PrefUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);

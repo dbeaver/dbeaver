@@ -90,6 +90,11 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public boolean isRequired()
     {
         return false;

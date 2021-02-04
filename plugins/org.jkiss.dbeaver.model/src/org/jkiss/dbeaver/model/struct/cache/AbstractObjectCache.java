@@ -229,6 +229,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         synchronized (cacheSync) {
             if (this.objectMap == null) {
                 this.objectMap = new HashMap<>();
+                if (objectList.size() > 0) {
+                    detectCaseSensitivity(objectList.get(0));
+                }
+
                 for (OBJECT object : objectList) {
                     String name = getObjectName(object);
                     checkDuplicateName(name, object);

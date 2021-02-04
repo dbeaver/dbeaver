@@ -110,6 +110,8 @@ public class TaskUIMessages extends NLS {
 	public static String task_handler_delete_confirm_question_delete_task;
 	public static String task_handler_delete_confirm_title_delete_tasks;
 	public static String task_handler_delete_confirm_question_delete_tasks;
+	public static String task_handler_delete_error_deleting_task_from_scheduler_title;
+	public static String task_handler_delete_error_deleting_task_from_scheduler_message;
 
 	public static String task_configuration_wizard_page_task_error_message_enter_task_name;
 	public static String task_configuration_wizard_page_task_already_exists;

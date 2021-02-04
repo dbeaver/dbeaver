@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
- * DatabaseEditorPropertyTester
+ * NavigatorPropertyTester
  */
 public class NavigatorPropertyTester extends PropertyTester
 {

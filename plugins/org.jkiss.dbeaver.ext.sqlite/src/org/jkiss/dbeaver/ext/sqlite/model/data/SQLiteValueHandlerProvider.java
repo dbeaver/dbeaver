@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * SQLiteValueHandlerProvider
@@ -37,6 +38,9 @@ public class SQLiteValueHandlerProvider implements DBDValueHandlerProvider {
         final DBPDataKind dataKind = typedObject.getDataKind();
         if (dataKind == DBPDataKind.BINARY) {
             return JDBCContentValueHandler.INSTANCE;
+        }
+        if (ArrayUtils.contains(SQLiteGeometryValueHandler.GEOMETRY_TYPES, typedObject.getTypeName())) {
+            return SQLiteGeometryValueHandler.INSTANCE;
         }
         // All types must be handled by unified SQLite handler
         return new SQLiteValueHandler(typedObject, preferences);

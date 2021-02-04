@@ -128,4 +128,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsDatabaseSize() {
         return true;
     }
+
+    @Override
+    public boolean supportsPartitions() {
+        return true;
+    }
 }

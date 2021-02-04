@@ -98,7 +98,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public DBSTypedObject getValueType()
     {
-        return binding.getAttribute();
+        return binding.getPresentationAttribute();
     }
 
     @NotNull
@@ -155,12 +155,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         }
         if (updated && updatePresentation) {
             // Update controls
-            UIUtils.syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    controller.updatePanelsContent(false);
-                }
-            });
+            UIUtils.syncExec(() -> controller.updatePanelsContent(false));
             if (controller instanceof ResultSetViewer) {
                 ((ResultSetViewer)controller).fireResultSetChange();
             }
@@ -199,7 +194,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public IValueManager getValueManager() {
         DBSAttributeBase valueType = binding.getPresentationAttribute();
         final DBCExecutionContext executionContext = getExecutionContext();
-        Class<?> valueObjectType = getValueHandler().getValueObjectType(valueType);
+        Class<?> valueObjectType = binding.getValueHandler().getValueObjectType(valueType);
         if (valueObjectType == Object.class) {
             // Try to get type from value itself
             Object value = getValue();

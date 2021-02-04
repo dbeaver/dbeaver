@@ -55,4 +55,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         }
         processObjectRename(commandContext, object, newName);
     }
+
+    @Override
+    protected boolean isIncludeDropInDDL() {
+        return false;
+    }
 }

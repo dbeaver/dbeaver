@@ -51,6 +51,8 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 }
             case Types.STRUCT:
                 return OracleObjectValueHandler.INSTANCE;
+            case OracleConstants.DATA_TYPE_REFCURSOR:
+                return OracleRefCursorValueHandler.INSTANCE;
         }
 
         final String typeName = typedObject.getTypeName();
@@ -60,6 +62,8 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
                 return OracleXMLValueHandler.INSTANCE;
             case OracleConstants.TYPE_NAME_BFILE:
                 return OracleBFILEValueHandler.INSTANCE;
+            case OracleConstants.TYPE_NAME_REFCURSOR:
+                return OracleRefCursorValueHandler.INSTANCE;
         }
 
         if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {

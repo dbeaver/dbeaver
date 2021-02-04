@@ -51,6 +51,7 @@
                     <property id="nullString" label="%dataTransfer.producer.stream.processor.csv.property.nullString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
                     <property id="timestampFormat" label="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.description" defaultValue="yyyy-MM-dd[ HH:mm:ss[.SSS]]" required="false"/>
+                    <property id="timestampZone" label="%dataTransfer.producer.stream.processor.csv.property.timestampZone.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampZone.description" defaultValue="" required="false"/>
                 </propertyGroup>
             </processor>
         </node>
@@ -115,7 +116,8 @@
                     contentType="text/html">
                 <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
-                    <property id="header" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
+                    <property id="tableHeader" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
+                    <property id="columnHeaders" label="%dataTransfer.processor.html.property.columnHeaders.name" type="boolean" description="%dataTransfer.processor.html.property.columnHeaders.description" defaultValue="true"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
                 </propertyGroup>
             </processor>
@@ -130,7 +132,7 @@
                     <property id="extension" label="%dataTransfer.processor.csv.property.extension.label" defaultValue="csv"/>
                     <property id="delimiter" label="%dataTransfer.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
                     <property id="rowDelimiter" label="%dataTransfer.processor.csv.property.rowDelimiter.name" type="string" description="%dataTransfer.processor.csv.property.rowDelimiter.description" defaultValue="default" validValues="default,\n,\r,\r\n,\n\r" required="true"/>
-                    <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                    <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom"/>
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
                     <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="string" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="default" required="false" validValues="disabled,all,strings,all but numbers"/>
@@ -168,6 +170,12 @@
                     <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>
+                <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.formatting.label">
+                    <property id="lineBeforeRows" label="%dataTransfer.processor.sql.property.lineBeforeRows.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeRows.description" defaultValue="true" />
+                    <property id="keywordCase" label="%dataTransfer.processor.sql.property.keywordCase.name" type="string" description="%dataTransfer.processor.sql.property.keywordCase.description" defaultValue="upper" required="true" validValues="upper,lower"/>
+                    <property id="upsertKeyword" label="%dataTransfer.processor.sql.property.upsertKeyword.name" type="string" description="%dataTransfer.processor.sql.property.upsertKeyword.description" defaultValue="INSERT" required="true" validValues="INSERT,INSERT ALL,UPDATE OR,UPSERT INTO,REPLACE INTO,ON DUPLICATE KEY UPDATE,ON CONFLICT"/>
+                    <property id="insertOnConflict" label="%dataTransfer.processor.sql.property.insertOnConflict.name" type="string" description="%dataTransfer.processor.sql.property.insertOnConflict.description" defaultValue="" required="true"/>
+                </propertyGroup>
             </processor>
             <processor
                     id="stream.txt"
@@ -178,11 +186,14 @@
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.txt.property.extension.label" type="string" defaultValue="txt"/>
-                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="100"/>
+                    <property id="batchSize" label="%dataTransfer.processor.txt.property.batchSize.label" defaultValue="200"/>
+                    <property id="minColumnLength" label="%dataTransfer.processor.txt.property.minColumnLength.label" defaultValue="3"/>
+                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="0"/>
                     <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" type="boolean" defaultValue="false"/>
-                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
                     <property id="delimHeader" label="%dataTransfer.processor.txt.property.delimHeader.label" type="boolean" defaultValue="true"/>
+                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
                     <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean" defaultValue="true"/>
+                    <property id="delimBetween" label="%dataTransfer.processor.txt.property.delimBetween.label" type="boolean" defaultValue="true"/>
                 </propertyGroup>
             </processor>
             <processor

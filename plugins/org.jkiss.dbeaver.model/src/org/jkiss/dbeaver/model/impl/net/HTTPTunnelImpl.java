@@ -49,6 +49,11 @@ public class HTTPTunnelImpl implements DBWTunnel {
     }
 
     @Override
+    public Object getImplementation() {
+        return null;
+    }
+
+    @Override
     public boolean matchesParameters(String host, int port) {
         return false;
     }

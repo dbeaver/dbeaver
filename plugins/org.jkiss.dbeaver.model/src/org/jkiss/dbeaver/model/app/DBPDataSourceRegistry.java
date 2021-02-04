@@ -17,19 +17,19 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
+import java.io.File;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Datasource registry.
@@ -86,7 +86,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
 
     @NotNull
-    List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull IFile fromFile);
+    List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull File fromFile);
 
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
@@ -99,8 +99,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
-
-    DBPDataSourceRegistry createCopy(DBPProject project, Function<DBPDataSourceContainer, Boolean> filter);
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);
@@ -137,6 +135,10 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     @NotNull
     ISecurePreferences getSecurePreferences();
+
+    // Registry auth provider. Null by default.
+    @Nullable
+    DBAAuthCredentialsProvider getAuthCredentialsProvider();
 
     void dispose();
 

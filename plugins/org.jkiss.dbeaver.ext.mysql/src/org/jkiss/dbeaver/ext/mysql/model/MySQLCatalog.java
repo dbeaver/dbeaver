@@ -344,6 +344,7 @@ public class MySQLCatalog implements
         return tableCache.getTypedObjects(monitor, this, MySQLView.class);
     }
 
+    @Override
     @Association
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
@@ -351,6 +352,7 @@ public class MySQLCatalog implements
                 Collections.emptyList();
     }
 
+    @Override
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
         throws DBException
     {
@@ -400,7 +402,7 @@ public class MySQLCatalog implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;

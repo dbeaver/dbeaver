@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -29,20 +28,26 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigPanel;
@@ -60,9 +65,9 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
-import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +110,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
             DBSObject databaseObject = getTableNode(pipe).getDatabaseObject();
             return databaseObject == null ? null : databaseObject.getDataSource();
         }
-        
+
         @Override
         public void createControl(Composite parent, TaskConfigurationWizard wizard, Runnable propertyChangeListener) {
             dtWizard = (DataTransferWizard) wizard;
@@ -163,50 +168,120 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator {
                 UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DBPDataSource lastDataSource = getLastDataSource();
-                        if (lastDataSource == null) {
-                            SelectDataSourceDialog dsDialog = new SelectDataSourceDialog(group.getShell(), currentProject, null);
-                            if (dsDialog.open() == IDialogConstants.OK_ID) {
-                                DBPDataSourceContainer dataSource = dsDialog.getDataSource();
-                                if (dataSource == null) {
-                                    return;
-                                }
-                                if (!dataSource.isConnected()) {
-                                    try {
-                                        runnableContext.run(true, true, monitor -> {
-                                            try {
-                                                dataSource.connect(monitor, true, true);
-                                            } catch (DBException ex) {
-                                                throw new InvocationTargetException(ex);
-                                            }
-                                        });
-                                    } catch (InvocationTargetException ex) {
-                                        DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
-                                                DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
-                                        return;
-                                    } catch (InterruptedException ex) {
-                                        return;
-                                    }
-                                }
-                                lastDataSource = dataSource.getDataSource();
+                        DBSObject dataSourceObject = null;
+                        DBPDataSource dataSource = null;
+
+                        DBNProjectDatabases rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(currentProject).getDatabases();
+                        DBNNode selNode = null;
+                        if (objectsTable.getItemCount() > 0) {
+                            DBPDataSource lastDataSource = getLastDataSource();
+                            if (lastDataSource != null) {
+                                selNode = rootNode.getDataSource(lastDataSource.getContainer().getId());
+                            }
+                        }
+                        DBNNode node = ObjectBrowserDialog.selectObject(
+                            group.getShell(),
+                            DTUIMessages.data_transfer_task_configurator_tables_title_choose_source,
+                            rootNode,
+                            selNode,
+                            new Class[]{DBSObjectContainer.class},
+                            new Class[]{DBPDataSource.class, DBSCatalog.class, DBSSchema.class},
+                            null);
+
+                        if (node != null) {
+                            if (node instanceof DBNDataSource) {
+                                dataSourceObject = ((DBNDataSource) node).getDataSource();
+                                dataSource = ((DBNDataSource) node).getDataSource();
+                            } else if (node instanceof DBNDatabaseItem) {
+                                dataSourceObject = ((DBNDatabaseItem) node).getObject();
+                                dataSource = dataSourceObject.getDataSource();
+                            } else {
+                                log.debug("Unhandled node type: " + node);
+                                return;
                             }
                         }
 
-                        if (lastDataSource != null) {
+                        if (dataSource != null) {
+                            DBPDataSourceContainer dataSourceContainer = DBUtils.getContainer(dataSource);
+
+                            if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
+                                try {
+                                    runnableContext.run(true, true, monitor -> {
+                                        try {
+                                            dataSourceContainer.connect(monitor, true, true);
+                                        } catch (DBException ex) {
+                                            throw new InvocationTargetException(ex);
+                                        }
+                                    });
+                                } catch (InvocationTargetException ex) {
+                                    DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_task_configurator_title_error_opening_data_source,
+                                            DTUIMessages.data_transfer_task_configurator_message_error_while_opening_data_source, ex);
+                                    return;
+                                } catch (InterruptedException ex) {
+                                    return;
+                                }
+                            }
+
+                            String newInstanceName;
+                            String newObjectName;
+
+                            if (dataSourceObject instanceof DBSCatalog) {
+                                newInstanceName = dataSourceObject.getName();
+                                newObjectName = null;
+                            } else if (dataSourceObject instanceof DBSSchema) {
+                                DBSObject parentObject = dataSourceObject.getParentObject();
+                                newInstanceName = parentObject instanceof DBSCatalog ? parentObject.getName() : null;
+                                newObjectName = dataSourceObject.getName();
+                            } else {
+                                // Use default database and schema
+                                newInstanceName = null;
+                                newObjectName = null;
+                            }
+
+                            DataSourceContextProvider contextProvider = new DataSourceContextProvider(dataSourceObject);
+                            DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+
+                            String oldInstanceName = null;
+                            String oldObjectName = null;
+
+                            if (executionContext instanceof DBCExecutionContextDefaults) {
+                                DBCExecutionContextDefaults<?, ?> contextDefaults = ((DBCExecutionContextDefaults<?, ?>) executionContext);
+                                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                                if (defaultCatalog != null) {
+                                    oldInstanceName = defaultCatalog.getName();
+                                }
+                                DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                                if (defaultSchema != null) {
+                                    oldObjectName = defaultSchema.getName();
+                                }
+                            }
+
+                            try {
+                                DBExecUtils.setExecutionContextDefaults(new VoidProgressMonitor(), dataSource, executionContext, newInstanceName, null, newObjectName);
+                            } catch (DBException ex) {
+                                log.error("Error setting context defaults", ex);
+                                return;
+                            }
+
                             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                             if (serviceSQL != null) {
-                                DataSourceContextProvider contextProvider = new DataSourceContextProvider(lastDataSource);
                                 String query = serviceSQL.openSQLEditor(contextProvider, DTUIMessages.data_transfer_task_configurator_sql_query_title, UIIcon.SQL_SCRIPT, "");
                                 if (query != null) {
-
-                                    DataTransferPipe pipe = new DataTransferPipe(
-                                        new DatabaseTransferProducer(
-                                            new SQLQueryDataContainer(contextProvider, new SQLQuery(lastDataSource, query), null, log)),
-                                        null);
-
+                                    SQLScriptContext scriptContext = new SQLScriptContext(null, contextProvider, null, new PrintWriter(System.err, true), null);
+                                    SQLQueryDataContainer container = new SQLQueryDataContainer(contextProvider, new SQLQuery(dataSource, query), scriptContext, log);
+                                    DatabaseTransferProducer producer = new DatabaseTransferProducer(container);
+                                    producer.setDefaultCatalog(newInstanceName);
+                                    producer.setDefaultSchema(newObjectName);
+                                    DataTransferPipe pipe = new DataTransferPipe(producer, null);
                                     addPipeToTable(pipe);
                                     updateSettings(propertyChangeListener);
                                 }
+                            }
+
+                            try {
+                                DBExecUtils.setExecutionContextDefaults(new VoidProgressMonitor(), dataSource, executionContext, oldInstanceName, null, oldObjectName);
+                            } catch (DBException ex) {
+                                log.error("Error setting context defaults", ex);
                             }
                         }
                     }

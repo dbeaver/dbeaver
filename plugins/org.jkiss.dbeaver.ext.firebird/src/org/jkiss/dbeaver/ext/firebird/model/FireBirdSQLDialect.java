@@ -27,7 +27,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     public static final String[] FB_BLOCK_HEADERS = new String[]{
         "EXECUTE BLOCK",
-        "DECLARE",
+        //"DECLARE",
         //"IS",
     };
 
@@ -40,7 +40,7 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     public FireBirdSQLDialect() {
-        super("Firebird");
+        super("Firebird", "firebird");
     }
 
     @NotNull

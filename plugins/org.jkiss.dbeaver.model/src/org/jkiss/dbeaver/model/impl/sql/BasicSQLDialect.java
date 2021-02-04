@@ -77,6 +77,12 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
 
     @NotNull
     @Override
+    public String getDialectId() {
+        return ID;
+    }
+
+    @NotNull
+    @Override
     public String getDialectName() {
         return "SQL";
     }

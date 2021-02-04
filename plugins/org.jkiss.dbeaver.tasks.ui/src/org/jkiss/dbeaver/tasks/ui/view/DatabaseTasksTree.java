@@ -69,8 +69,7 @@ public class DatabaseTasksTree {
         ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         colorError = colorRegistry.get("org.jkiss.dbeaver.txn.color.reverted.background");
         colorErrorForeground = UIUtils.getContrastColor(colorError);
-        composite.addDisposeListener(e -> colorErrorForeground.dispose());
-
+        
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
             new NamedObjectPatternFilter(), TaskUIMessages.db_tasks_tree_text_tasks_type);
@@ -132,7 +131,7 @@ public class DatabaseTasksTree {
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
                     DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null) {
+                    if (lastRun == null || lastRun.getStartTime() == null) {
                         return "N/A";
                     } else {
                         return dateFormat.format(lastRun.getStartTime());
@@ -304,23 +303,22 @@ public class DatabaseTasksTree {
         }
     }
 
-    public void refresh() {
+    void refresh() {
         refreshTasks();
-        regroupTasks();
-        taskViewer.refresh(true);
+        regroupTasks(ExpansionOptions.RETAIN);
+        //taskViewer.refresh(true);
         if (refreshScheduledTasks()) {
             taskViewer.refresh(true);
         }
     }
 
-    public void loadTasks() {
+    void loadTasks() {
         refreshTasks();
         refreshScheduledTasks();
-
-        regroupTasks();
+        regroupTasks(ExpansionOptions.EXPAND_ALL);
     }
 
-    public void regroupTasks() {
+    void regroupTasks(ExpansionOptions options) {
         taskViewer.getTree().setRedraw(false);
         try {
             List<Object> rootObjects = new ArrayList<>();
@@ -337,9 +335,20 @@ public class DatabaseTasksTree {
             } else {
                 rootObjects.addAll(allTasks);
             }
-
-            taskViewer.setInput(rootObjects);
-            taskViewer.expandAll();
+            switch (options) {
+                case EXPAND_ALL:
+                    taskViewer.setInput(rootObjects);
+                    taskViewer.expandAll();
+                    break;
+                case RETAIN:
+                    Object[] expandedElements = taskViewer.getExpandedElements();
+                    taskViewer.setInput(rootObjects);
+                    taskViewer.setExpandedElements(expandedElements);
+                    break;
+                default:
+                    log.warn("Unknown expansion option reached!");
+                    break;
+            }
             taskColumnController.repackColumns();
         } finally {
             taskViewer.getTree().setRedraw(true);
@@ -392,10 +401,10 @@ public class DatabaseTasksTree {
             }
             Collections.addAll(allTasks, tasks);
         }
-        allTasks.sort(this::comparTasksTime);
+        allTasks.sort(Comparator.comparing(DBTTask::getName));
     }
 
-    private int comparTasksTime(DBTTask o1, DBTTask o2) {
+    private int compareTasksTime(DBTTask o1, DBTTask o2) {
         DBTTaskRun lr1 = o1.getLastRun();
         DBTTaskRun lr2 = o2.getLastRun();
         if (lr1 == null) {
@@ -447,6 +456,11 @@ public class DatabaseTasksTree {
         for (TreeItem child : item.getItems()) {
             addCheckedItem(child, tasks);
         }
+    }
+
+    enum ExpansionOptions {
+        EXPAND_ALL,
+        RETAIN,
     }
 
     private class TreeListContentProvider implements ITreeContentProvider {
@@ -709,5 +723,4 @@ public class DatabaseTasksTree {
             }
         });
     }
-
 }

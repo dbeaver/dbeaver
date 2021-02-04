@@ -87,10 +87,10 @@ public class CommonUtils {
         return res.toString();
     }
 
-    @Nullable
+    @NotNull
     public static String escapeFileName(@Nullable String str) {
         if (str == null) {
-            return null;
+            return "";
         }
         StringBuilder res = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
@@ -800,5 +800,16 @@ public class CommonUtils {
         return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
             cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
             cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
+    }
+
+    public static String escapeBourneShellString(@NotNull String s) {
+        return "'" + s.replace("'", "'\\''") + "'";
+    }
+
+    public static String unescapeBourneShellString(@NotNull String s) {
+        if (!s.startsWith("'") || !s.endsWith("'") || s.length() < 2) { //not an escaped bourne shell string
+            return s;
+        }
+        return s.substring(1, s.length() - 1).replace("'\\''", "'");
     }
 }

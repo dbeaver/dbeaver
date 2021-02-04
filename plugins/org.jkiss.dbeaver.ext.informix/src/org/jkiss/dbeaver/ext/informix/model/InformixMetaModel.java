@@ -111,4 +111,8 @@ public class InformixMetaModel extends GenericMetaModel
         return InformixUtils.getTriggerDDL(monitor, trigger);
     }
 
+    @Override
+    public boolean hasFunctionSupport() {
+        return false;
+    }
 }

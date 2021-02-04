@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -32,7 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Execute batch.
@@ -104,7 +108,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             }
         }
 
-        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && Boolean.FALSE.equals(options.get(DBSDataManipulator.OPTION_DISABLE_BATCHES));
+        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement && !CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_DISABLE_BATCHES));
         if (values.size() <= 1) {
             useBatch = false;
         }
@@ -127,6 +131,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 if (session.getProgressMonitor().isCanceled()) {
                     break;
                 }
+                if (rowIndex > 0 && rowIndex % 100 == 0) {
+                    //session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
+                }
+
                 boolean reuse = reuseStatement;
                 if (reuse) {
                     for (int i = 0; i < rowValues.length; i++) {
@@ -189,9 +197,6 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     if (!reuse) {
                         statement.close();
                     }
-                    if (rowIndex > 0 && rowIndex % 100 == 0) {
-                        session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
-                    }
                 }
             }
             values.clear();
@@ -243,7 +248,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         session.getDataSource(),
                         attributes[paramIndex],
                         handlers[paramIndex],
-                        rowValues[paramIndex]);
+                        rowValues[paramIndex],
+                        DBDDisplayFormat.NATIVE);
                     formatted.append(paramValue);
                     continue;
                 }

@@ -82,6 +82,7 @@ public class SQLPreferenceConstants
     public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled";
 
     // Auto-save
+    public static final String AUTO_SAVE_ON_CHANGE                     = "SQLEditor.autoSaveOnChange";
     public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose";
     public static final String AUTO_SAVE_ON_EXECUTE                    = "SQLEditor.autoSaveOnExecute";
     public static final String AUTO_SAVE_ACTIVE_SCHEMA                 = "SQLEditor.autoSaveActiveSchema";
@@ -114,6 +115,8 @@ public class SQLPreferenceConstants
     public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
+    public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
+    public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";
 
     public static final String SCRIPT_BIND_EMBEDDED_READ                = "SQLEditor.script.bind.embedded.read"; //$NON-NLS-1$
     public static final String SCRIPT_BIND_EMBEDDED_WRITE               = "SQLEditor.script.bind.embedded.write"; //$NON-NLS-1$

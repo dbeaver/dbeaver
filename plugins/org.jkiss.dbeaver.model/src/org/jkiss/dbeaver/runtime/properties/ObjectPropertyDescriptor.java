@@ -141,16 +141,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.expensive();
     }
 
-    public boolean isNumeric()
-    {
+    public boolean isNumeric() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
-    public boolean isDateTime()
-    {
+    public boolean isDateTime() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && Date.class.isAssignableFrom(propType);
+    }
+
+    public boolean isBoolean() {
+        Class<?> propType = getGetter().getReturnType();
+        return propType == Boolean.class || propType == Boolean.TYPE;
     }
 
     public boolean isMultiLine() {
@@ -167,6 +170,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public boolean isLinkPossible() {
         return propInfo.linkPossible();
+    }
+
+    public boolean isHref() {
+        return propInfo.href();
     }
 
     public boolean supportsPreview()
@@ -233,6 +240,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isExpensive()) features.add("expensive");
         if (this.isEditPossible()) features.add("editPossible");
         if (this.isLinkPossible()) features.add("linkPossible");
+        if (this.isHref()) features.add("href");
         if (this.isViewable()) features.add("viewable");
         if (this.isPassword()) features.add("password");
         return features.toArray(new String[0]);

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -184,7 +185,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     if (!databaseObject.isPersisted()) {
                         return null;
                     }
-                    if (DBUtils.getOrOpenDefaultContext(databaseObject, false) == null) {
+                    try {
+                        DBUtils.getOrOpenDefaultContext(databaseObject, false);
+                    } catch (DBCException ignored) {
                         return null;
                     }
 

@@ -35,6 +35,8 @@ public interface IResultSetPanel extends IActionContributor {
 
     void deactivatePanel();
 
+    void setFocus();
+
     void refresh(boolean force);
 
 }

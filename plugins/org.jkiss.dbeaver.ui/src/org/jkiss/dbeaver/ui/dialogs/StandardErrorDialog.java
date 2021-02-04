@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * StandardErrorDialog
  */
-public class StandardErrorDialog extends ErrorDialog {
+public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDialog {
 
     private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
     private Text messageText;

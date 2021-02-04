@@ -262,7 +262,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     PostgrePrivilegeGrant.Kind kind;
                     String objectName;
                     if (permissionsOwner instanceof PostgreProcedure) {
-                        kind = PostgrePrivilegeGrant.Kind.FUNCTION;
+                        if (((PostgreProcedure) permissionsOwner).getKind() == PostgreProcedureKind.p) {
+                            kind = PostgrePrivilegeGrant.Kind.PROCEDURE;
+                        } else {
+                            kind = PostgrePrivilegeGrant.Kind.FUNCTION;
+                        }
                         objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
                     } else {
                         if (permissionsOwner instanceof PostgreSchema) {
@@ -312,6 +316,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 new PostgreCommandGrantPrivilege(
                     databaseObject,
                     grant,
+                    currentObject,
                     permission,
                     privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
                 new DBECommandReflector<PostgrePrivilegeOwner, PostgreCommandGrantPrivilege>() {

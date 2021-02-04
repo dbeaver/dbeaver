@@ -21,10 +21,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -47,8 +49,14 @@ public class PostgreConstants {
 
     public static final String PROP_SSL = "ssl";
 
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_KEY} instead */
+    @Deprecated
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
+    /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CA_CERT} instead */
+    @Deprecated
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
@@ -67,6 +75,9 @@ public class PostgreConstants {
     public static final String TEMP_SCHEMA_PREFIX = "pg_temp_";
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
+    // Settings names from 'pg_options' view
+    public static final String OPTION_STANDARD_CONFORMING_STRINGS = "standard_conforming_strings";
+
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
@@ -75,6 +86,8 @@ public class PostgreConstants {
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
 
+    public static final String TYPE_UUID = "uuid";
+    public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_HSTORE = "hstore";
     public static final String TYPE_JSON = "json";
@@ -98,12 +111,10 @@ public class PostgreConstants {
 
     public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
     public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
-    public static final String PG_INSTALL_PROP_VERSION = "Version";
     public static final String PG_INSTALL_PROP_BRANDING = "Branding";
-    public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
-    public static final Map<String, String> SERIAL_TYPES = new HashMap<>();
+    public static final Map<String, String> SERIAL_TYPES = new LinkedHashMap<>();
     public static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
     public static final Map<String, String> DATA_TYPE_CANONICAL_NAMES = new HashMap<>();
 

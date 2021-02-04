@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -54,13 +55,17 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
     private Button expandOnConnectCheck;
     private Text restoreStateDepthText;
-    private Button showObjectTipsCheck;
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
     private Button showConnectionHostCheck;
     private Button showStatisticsCheck;
     private Button showNodeActionsCheck;
     private Button colorAllNodesCheck;
+
+    private Button showObjectTipsCheck;
+    private Button showToolTipsCheck;
+    private Button showContentsInToolTipsContents;
+
     private Button showResourceFolderPlaceholdersCheck;
     private Button groupByDriverCheck;
     private Text longListFetchSizeText;
@@ -83,10 +88,11 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     @Override
     protected Control createContents(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
             Group navigatorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
+            ((GridData)navigatorGroup.getLayoutData()).verticalSpan = 2;
 
             showConnectionHostCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_host_name, UINavigatorMessages.pref_page_database_general_label_show_host_name_tip, false, 2);
             showStatisticsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_statistics, UINavigatorMessages.pref_page_database_general_label_show_statistics_tip, false, 2);
@@ -96,14 +102,17 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
             groupByDriverCheck.setEnabled(false);
 
-            showObjectTipsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree_tip, false, 2);
             sortCaseInsensitiveCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically, "", false, 2);
 
             colorAllNodesCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_color_all_nodes, UINavigatorMessages.pref_page_database_general_label_color_all_nodes_tip, false, 2);
+
+            showObjectTipsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree, UINavigatorMessages.pref_page_database_general_label_show_tips_in_tree_tip, false, 2);
+            showToolTipsCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_tooltips, UINavigatorMessages.pref_page_database_general_label_show_tooltips_tip, false, 2);
+            showContentsInToolTipsContents = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_show_contents_in_tooltips, UINavigatorMessages.pref_page_database_general_label_show_contents_in_tooltips_tip, false, 2);
         }
 
         {
-            Group behaviorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_behavior, 2, SWT.NONE, 0);
+            Group behaviorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_behavior, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             objDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
             objDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_node_open_properties, 0);
@@ -120,7 +129,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, SWT.NONE, 0);
+            Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             expandOnConnectCheck = UIUtils.createCheckbox(miscGroup, UINavigatorMessages.pref_page_database_general_label_expand_navigator_tree, "", false, 2);
 
@@ -146,6 +155,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         expandOnConnectCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
         restoreStateDepthText.setText(store.getString(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH));
         showObjectTipsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
+        showToolTipsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS));
+        showContentsInToolTipsContents.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
         sortFoldersFirstCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         showConnectionHostCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME));
@@ -184,6 +195,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH, restoreStateDepthText.getText());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, showObjectTipsCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS, showToolTipsCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP, showContentsInToolTipsContents.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());

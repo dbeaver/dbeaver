@@ -37,4 +37,6 @@ public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
     void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
+    Object getImplementation();
+
 }

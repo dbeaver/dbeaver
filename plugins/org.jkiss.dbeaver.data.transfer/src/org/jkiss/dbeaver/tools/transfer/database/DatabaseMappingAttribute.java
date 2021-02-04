@@ -24,9 +24,13 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * DatabaseMappingAttribute
@@ -49,6 +53,15 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
+    }
+
+    DatabaseMappingAttribute(DatabaseMappingAttribute attribute, DatabaseMappingContainer parent) {
+        this.parent = parent;
+        this.source = attribute.source;
+        this.target = attribute.target;
+        this.targetName = attribute.targetName;
+        this.targetType = attribute.targetType;
+        this.mappingType = attribute.mappingType;
     }
 
     public DatabaseMappingContainer getParent()
@@ -123,8 +136,32 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                         targetName = source.getName();
                     }
                     DBSEntity targetEntity = (DBSEntity) parent.getTarget();
-                    this.target = DBUtils.findObject(
-                        targetEntity.getAttributes(monitor), DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName));
+                    List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
+                    target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+
+                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
+                        StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
+
+                        if (!source.isMappingMetadataPresent()) {
+                            List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
+                                .stream()
+                                .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
+                                .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
+                                .collect(Collectors.toList());
+
+                            if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
+                                DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
+                                targetName = targetAttribute.getName();
+                                target = DBUtils.findObject(targetAttributes, DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName), true);
+                            }
+                        }
+
+                        if (target != null) {
+                            source.setTypeName(target.getTypeName());
+                            source.setMaxLength(target.getMaxLength());
+                            source.setDataKind(target.getDataKind());
+                        }
+                    }
                     if (this.target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {

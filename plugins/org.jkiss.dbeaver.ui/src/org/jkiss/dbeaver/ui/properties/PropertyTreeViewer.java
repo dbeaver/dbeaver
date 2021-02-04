@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
+import org.jkiss.dbeaver.ui.BooleanRenderer;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -66,7 +67,6 @@ import java.util.*;
  * Driver properties control
  */
 public class PropertyTreeViewer extends TreeViewer {
-
     public static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     public enum ExpandMode {
@@ -80,6 +80,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private boolean expandSingleRoot = true;
     private boolean namesEditable = false;
     private boolean newPropertiesAllowed = false;
+    private boolean isMouseEventOnMacos = false; // [#10279] [#10366] [#10361]
     private TreeEditor treeEditor;
 
     private Font boldFont;
@@ -401,7 +402,13 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void widgetSelected(final SelectionEvent e)
             {
-                showEditor((TreeItem) e.item, (e.stateMask & SWT.BUTTON_MASK) != 0);
+                TreeItem item = (TreeItem) e.item;
+                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                    showEditor(item, isMouseEventOnMacos);
+                    isMouseEventOnMacos = false;
+                    return;
+                }
+                showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
         });
         treeControl.addMouseListener(new MouseAdapter() {
@@ -409,6 +416,9 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                    isMouseEventOnMacos = true;
+                }
                 if (item != null) {
                     selectedColumn = UIUtils.getColumnAtPos(item, e.x, e.y);
                 } else {
@@ -777,12 +787,15 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     public void saveEditorValues() {
-        if (curCellEditor != null && curCellEditor.isActivated()) {
+        if (GeneralUtils.isMacOS() && curCellEditor != null && curCellEditor.isActivated()) {
             try {
                 // This is a hack. On MacOS buttons don't get focus so when user closes dialog
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
                 // This is workaround. Calling protected method focusLost in okPressed saves the value.
-                // See https://github.com/dbeaver/dbeaver/issues/3553
+                // See:
+                // https://github.com/dbeaver/dbeaver/issues/3553
+                // https://github.com/dbeaver/dbeaver/issues/10366
+                // https://github.com/dbeaver/dbeaver/issues/10361
                 Method focusLost = CellEditor.class.getDeclaredMethod("focusLost");
                 focusLost.setAccessible(true);
                 focusLost.invoke(curCellEditor);
@@ -867,7 +880,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+    static class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {
@@ -936,8 +949,16 @@ public class PropertyTreeViewer extends TreeViewer {
                 }
             } else {
                 if (node.property != null) {
-                    final Object propertyValue = getPropertyValue(node);
-                    if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
+                    Object propertyValue = getPropertyValue(node);
+
+                    Class<?> propDataType = node.property.getDataType();
+                    if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
+                        BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+                        if (propertyValue != null && !(propertyValue instanceof Boolean)) {
+                            propertyValue = CommonUtils.toBoolean(propertyValue);
+                        }
+                        return booleanStyle.getText((Boolean) propertyValue);
+                    } else if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (isHidePropertyValue(node.property)) {
                         // Mask value
@@ -961,9 +982,6 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         str.append("]");
                         return str.toString();
-                    }
-                    if (propertyValue instanceof Boolean) {
-                        return "";
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {

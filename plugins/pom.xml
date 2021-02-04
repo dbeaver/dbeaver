@@ -67,6 +67,8 @@
         <module>org.jkiss.dbeaver.net.ssh.sshj</module>
         <module>org.jkiss.dbeaver.slf4j</module>
         <module>org.jkiss.dbeaver.team.git</module>
+
+        <module>org.jkiss.dbeaver.headless</module>
     </modules>
 
     <profiles>
@@ -85,6 +87,7 @@
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
 
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
+                <module>org.jkiss.dbeaver.ext.hana.ui</module>
                 <module>org.jkiss.dbeaver.ext.mssql.ui</module>
                 <module>org.jkiss.dbeaver.ext.mysql.ui</module>
                 <module>org.jkiss.dbeaver.ext.oracle.ui</module>
