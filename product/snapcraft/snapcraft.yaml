@@ -11,6 +11,7 @@ architectures:
   - build-on: [amd64, i386]
     run-on: amd64
 
+
 apps:
   dbeaver-ce:
     command: $SNAP/usr/share/dbeaver/dbeaver
@@ -27,10 +28,14 @@ apps:
       - network
       - home
       - removable-media
+      - ssh-keys
+      - ssh-public-keys
+      - personal-files
+      - system-files
 
 parts:
   dbeaver-ce:
-    source: https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+    source: ${SOURCE}
     plugin: dump
     build-packages:
       - ca-certificates
@@ -46,6 +51,8 @@ parts:
       - xdg-utils
       - mariadb-client
       - mysql-client
+      - ibus-gtk3
+      - libibus-1.0-5
     override-build: |
       set -e
       snapcraftctl build

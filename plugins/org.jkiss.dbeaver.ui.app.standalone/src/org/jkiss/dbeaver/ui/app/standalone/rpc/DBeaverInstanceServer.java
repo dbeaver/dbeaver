@@ -18,6 +18,10 @@
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
 import org.apache.commons.cli.CommandLine;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -40,9 +44,14 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.Map;
@@ -129,7 +138,13 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void quit() {
         log.info("Program termination requested");
 
-        System.exit(-1);
+        new Job("Terminate application") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                System.exit(-1);
+                return Status.OK_STATUS;
+            }
+        }.schedule(1000);
     }
 
     @Override
@@ -165,10 +180,8 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     public static IInstanceController startInstanceServer(CommandLine commandLine, IInstanceController server) {
         try {
-            portNumber = IOUtils.findFreePort(20000, 65000);
+            openRmiRegistry();
 
-            log.debug("Starting RMI server at " + portNumber);
-            registry = LocateRegistry.createRegistry(portNumber);
             {
                 IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
                 registry.bind(CONTROLLER_ID, stub);
@@ -187,6 +200,20 @@ public class DBeaverInstanceServer implements IInstanceController {
         } catch (Exception e) {
             log.error("Can't start RMI server", e);
             return null;
+        }
+    }
+
+    private static void openRmiRegistry() throws RemoteException {
+        portNumber = IOUtils.findFreePort(20000, 65000);
+
+        log.debug("Starting RMI server at " + portNumber);
+
+        if (System.getProperty("java.rmi.server.hostname") == null) {
+            RMIClientSocketFactory csf = RMISocketFactory.getDefaultSocketFactory();
+            RMIServerSocketFactory ssf = port -> new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+            registry = LocateRegistry.createRegistry(portNumber, csf, ssf);
+        } else {
+            registry = LocateRegistry.createRegistry(portNumber);
         }
     }
 

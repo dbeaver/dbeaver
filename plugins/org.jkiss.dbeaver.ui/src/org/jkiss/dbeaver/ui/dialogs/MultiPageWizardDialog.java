@@ -83,6 +83,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
+    public Tree getPagesTree() {
+        return pagesTree;
+    }
+
     public IWizard getWizard() {
         return wizard;
     }

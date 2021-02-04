@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.binary;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.SimpleByteArrayTransfer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -105,57 +106,6 @@ public class BinaryClipboard {
                 log.warn(ex);
                 return null;
             }
-        }
-
-        @Override
-        protected String[] getTypeNames()
-        {
-            return new String[]{FORMAT_NAME};
-        }
-
-        @Override
-        protected int[] getTypeIds()
-        {
-            return new int[]{FORMAT_ID};
-        }
-    }
-
-
-    static class MemoryByteArrayTransfer extends ByteArrayTransfer {
-        static final String FORMAT_NAME = "BinaryMemoryByteArrayTypeName";
-        static final int FORMAT_ID = registerType(FORMAT_NAME);
-
-        static final MemoryByteArrayTransfer instance = new MemoryByteArrayTransfer();
-
-        private MemoryByteArrayTransfer()
-        {
-        }
-
-        static MemoryByteArrayTransfer getInstance()
-        {
-            return instance;
-        }
-
-        @Override
-        public void javaToNative(Object object, TransferData transferData)
-        {
-            if (object == null || !(object instanceof byte[])) return;
-
-            if (isSupportedType(transferData)) {
-                byte[] buffer = (byte[]) object;
-                super.javaToNative(buffer, transferData);
-            }
-        }
-
-        @Override
-        public Object nativeToJava(TransferData transferData)
-        {
-            Object result = null;
-            if (isSupportedType(transferData)) {
-                result = super.nativeToJava(transferData);
-            }
-
-            return result;
         }
 
         @Override
@@ -281,7 +231,7 @@ public class BinaryClipboard {
     {
         TransferData[] available = clipboard.getAvailableTypes();
         for (int i = 0; i < available.length; ++i) {
-            if (MemoryByteArrayTransfer.getInstance().isSupportedType(available[i]) ||
+            if (SimpleByteArrayTransfer.getInstance().isSupportedType(available[i]) ||
                 TextTransfer.getInstance().isSupportedType(available[i]) ||
                 FileByteArrayTransfer.getInstance().isSupportedType(available[i]) ||
                 FileTransfer.getInstance().isSupportedType(available[i]))
@@ -307,7 +257,7 @@ public class BinaryClipboard {
                 content.get(ByteBuffer.wrap(byteArrayData), start);
                 String textData = new String(byteArrayData);
                 transfers =
-                    new Transfer[]{MemoryByteArrayTransfer.getInstance(), TextTransfer.getInstance()};
+                    new Transfer[]{SimpleByteArrayTransfer.getInstance(), TextTransfer.getInstance()};
                 data = new Object[]{byteArrayData, textData};
             } else {
                 content.get(clipboardFile, start, length);
@@ -317,7 +267,7 @@ public class BinaryClipboard {
         }
         catch (IOException e) {
             clipboard.setContents(new Object[]{new byte[1]},
-                                    new Transfer[]{MemoryByteArrayTransfer.getInstance()});
+                                    new Transfer[]{SimpleByteArrayTransfer.getInstance()});
             clipboard.clearContents();
             emptyClipboardFile();
             return;  // copy nothing then
@@ -432,7 +382,7 @@ public class BinaryClipboard {
 
     long tryGettingMemoryByteArray(BinaryContent content, long start, boolean insert)
     {
-        byte[] byteArray = (byte[]) clipboard.getContents(MemoryByteArrayTransfer.getInstance());
+        byte[] byteArray = (byte[]) clipboard.getContents(SimpleByteArrayTransfer.getInstance());
         if (byteArray == null) {
             String text = (String) clipboard.getContents(TextTransfer.getInstance());
             if (text != null) {

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -251,6 +252,10 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             super.fillCustomActions(contributionManager);
             if (part != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
+                if (part instanceof ObjectPropertiesEditor) {
+                    contributionManager.add(new Separator());
+                    ((ObjectPropertiesEditor) part).createPropertyRefreshAction(contributionManager);
+                }
             }
         }
 

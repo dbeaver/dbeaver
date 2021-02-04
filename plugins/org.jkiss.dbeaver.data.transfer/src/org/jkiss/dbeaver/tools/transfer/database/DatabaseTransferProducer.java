@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -37,6 +38,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -65,6 +68,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     private DBSDataContainer dataContainer;
     @Nullable
     private DBDDataFilter dataFilter;
+    @Nullable
+    private String defaultCatalog;
+    @Nullable
+    private String defaultSchema;
 
     public DatabaseTransferProducer() {
     }
@@ -118,6 +125,24 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         return null;
     }
 
+    @Nullable
+    public String getDefaultCatalog() {
+        return defaultCatalog;
+    }
+
+    public void setDefaultCatalog(@Nullable String defaultCatalog) {
+        this.defaultCatalog = defaultCatalog;
+    }
+
+    @Nullable
+    public String getDefaultSchema() {
+        return defaultSchema;
+    }
+
+    public void setDefaultSchema(@Nullable String defaultSchema) {
+        this.defaultSchema = defaultSchema;
+    }
+
     @Override
     public void transferData(
         @NotNull DBRProgressMonitor monitor1,
@@ -160,6 +185,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
                 if (!selectiveExportFromUI && newConnection) {
                     context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
+                    DBExecUtils.setExecutionContextDefaults(monitor, dataSource, context, defaultCatalog, null, defaultSchema);
                 }
                 if (task != null) {
                     DBTaskUtils.initFromContext(monitor, task, context);
@@ -235,7 +261,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     } finally {
                         if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                            if (txnManager != null && txnManager.isSupportsTransactions()) {
+                            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
                                 try {
                                     txnManager.commit(session);
                                 } catch (Exception e) {
@@ -292,6 +318,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 if (dataSource != null) {
                     state.put("project", dataSource.getProject().getName());
                     state.put("dataSource", dataSource.getId());
+                    if (object.defaultCatalog != null) {
+                        state.put("defaultCatalog", object.defaultCatalog);
+                    }
+                    if (object.defaultSchema != null) {
+                        state.put("defaultSchema", object.defaultSchema);
+                    }
                 }
                 SQLScriptElement query = queryContainer.getQuery();
                 state.put("query", query.getOriginalText());
@@ -339,10 +371,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 }
                                 DBPDataSource dataSource = ds.getDataSource();
                                 SQLQuery query = new SQLQuery(dataSource, queryText);
-                                TaskContextProvider taskContextProvider = new TaskContextProvider(runnableContext, dataSource, objectContext);
+                                DataSourceContextProvider taskContextProvider = new DataSourceContextProvider(dataSource);
                                 SQLScriptContext scriptContext = new SQLScriptContext(null,
                                     taskContextProvider, null, new PrintWriter(System.err, true), null);
                                 scriptContext.setVariables(DBTaskUtils.getVariables(objectContext));
+                                producer.defaultCatalog = CommonUtils.toString(state.get("defaultCatalog"), null);
+                                producer.defaultSchema = CommonUtils.toString(state.get("defaultSchema"), null);
                                 producer.dataContainer = new SQLQueryDataContainer(
                                     taskContextProvider,
                                     query,
@@ -366,37 +400,4 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             return producer;
         }
     }
-
-    public static class TaskContextProvider implements DBPContextProvider {
-        private final DBRRunnableContext runnableContext;
-        private final DBPDataSource dataSource;
-        private final DBTTask task;
-        private DBCExecutionContext executionContext;
-
-        TaskContextProvider(DBRRunnableContext runnableContext, DBPDataSource dataSource, DBTTask task) {
-            this.runnableContext = runnableContext;
-            this.dataSource = dataSource;
-            this.task = task;
-        }
-
-        @Override
-        public DBCExecutionContext getExecutionContext() {
-            if (executionContext == null) {
-                executionContext = DBUtils.getDefaultContext(dataSource, false);
-                try {
-                    runnableContext.run(true, true, monitor -> {
-                        try {
-                            DBTaskUtils.initFromContext(monitor, task, executionContext);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                } catch (Exception e) {
-                    log.error("Error initializing context", e);
-                }
-            }
-            return executionContext;
-        }
-    }
-
 }

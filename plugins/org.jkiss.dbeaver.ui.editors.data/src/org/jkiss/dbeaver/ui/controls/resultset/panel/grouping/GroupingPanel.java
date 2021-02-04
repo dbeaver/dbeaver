@@ -137,6 +137,11 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     @Override
+    public void setFocus() {
+        //resultsContainer.getResultSetController().getControl().setFocus();
+    }
+
+    @Override
     public void refresh(boolean force) {
         // Here we can refresh grouping (makes sense if source query was modified with some conditions)
         // Or just clear it (if brand new query was executed)

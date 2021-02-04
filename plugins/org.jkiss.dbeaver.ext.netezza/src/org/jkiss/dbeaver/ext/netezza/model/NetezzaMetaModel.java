@@ -44,7 +44,7 @@ public class NetezzaMetaModel extends GenericMetaModel
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT v.definition " +
-                "FROM _v_view v " +
+                "FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".DEFINITION_SCHEMA._V_VIEW v " +
                 "WHERE v.VIEWNAME=?"))
             {
                 //dbStat.setString(1, sourceObject.getContainer().getName());
@@ -69,7 +69,7 @@ public class NetezzaMetaModel extends GenericMetaModel
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.proceduresignature,p.returns,p.proceduresource " +
-                "FROM _v_procedure p " +
+                "FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".DEFINITION_SCHEMA._V_PROCEDURE p " +
                 "WHERE p.procedure=?"))
             {
                 //dbStat.setString(1, sourceObject.getContainer().getName());

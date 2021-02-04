@@ -254,7 +254,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    viewer.resetDataFilter(true);
+                    viewer.clearDataFilter(true);
                 }
             });
             filtersClearButton.setEnabled(false);
@@ -597,6 +597,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             serviceSQL.openSQLConsole(
                 dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
                 viewer.getExecutionContext(),
+                null,
                 editorName,
                 viewer.getActiveQueryText());
         }

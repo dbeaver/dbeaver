@@ -24,11 +24,11 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.ui.ImageUtils;
+import org.jkiss.dbeaver.ui.BooleanRenderer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,8 +50,9 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected Control createControl(Composite parent) {
+        //Composite ph = UIUtils.createPlaceholder(parent, 1);
         checkBox = new Label(parent, SWT.NONE);
-        setCheckIcon();
+        //setCheckIcon();
         checkBox.setFont(parent.getFont());
 
         checkBox.addFocusListener(new FocusAdapter() {
@@ -66,8 +67,12 @@ public class CustomCheckboxCellEditor extends CellEditor {
     }
 
     private void setCheckIcon() {
-        Image image = checked ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
-        checkBox.setImage(image);
+        BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+        if (booleanStyle.isText()) {
+            checkBox.setText(booleanStyle.getText(checked));
+        } else {
+            checkBox.setImage(DBeaverIcons.getImage(booleanStyle.getImage(checked)));
+        }
     }
 
     @Override
@@ -84,7 +89,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     protected void doSetValue(Object value) {
         Assert.isTrue(checkBox != null && (value instanceof Boolean));
         checked = CommonUtils.toBoolean(value);
-        setCheckIcon();
+        //setCheckIcon();
     }
 
     @Override
@@ -121,7 +126,10 @@ public class CustomCheckboxCellEditor extends CellEditor {
         setCheckIcon();
         applyEditorValue();
         // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
-        UIUtils.asyncExec(this::fireApplyEditorValue);
+        UIUtils.asyncExec(() -> {
+            fireApplyEditorValue();
+            dispose();
+        });
     }
 
     private void addMouseListener() {

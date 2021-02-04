@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -178,7 +177,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
             if (nodeObject instanceof DBSObjectContainer) {
                 try {
-                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getPrimaryChildType(new VoidProgressMonitor());
+                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getPrimaryChildType(null);
                     if (childrenClass != null) {
                         if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
                             // Upper level of container

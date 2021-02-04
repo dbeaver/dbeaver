@@ -23,6 +23,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
  */
 public class BigQuerySQLDialect extends GenericSQLDialect {
     public BigQuerySQLDialect() {
-        super("BigQuery");
+        super("BigQuery", "google_bigquery");
     }
 }

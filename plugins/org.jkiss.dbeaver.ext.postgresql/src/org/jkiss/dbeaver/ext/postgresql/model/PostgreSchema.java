@@ -91,7 +91,7 @@ public class PostgreSchema implements
     private final PostgreDataTypeCache dataTypeCache;
     protected volatile boolean hasStatistics;
 
-    private PostgreSchema(PostgreDatabase database, String name) {
+    PostgreSchema(PostgreDatabase database, String name) {
         this.database = database;
         this.name = name;
 
@@ -302,6 +302,12 @@ public class PostgreSchema implements
     }
 
     @Association
+    public PostgreMaterializedView getMaterializedView(DBRProgressMonitor monitor, String name)
+            throws DBException {
+        return getTableCache().getObject(monitor, this, name, PostgreMaterializedView.class);
+    }
+
+    @Association
     public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreSequence.class);
@@ -348,7 +354,7 @@ public class PostgreSchema implements
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return PostgreTableRegular.class;
     }
 
@@ -502,6 +508,10 @@ public class PostgreSchema implements
             Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
             monitor.beginTask("Load data types", dataTypes.size());
             for (PostgreDataType dataType : dataTypes) {
+                if (dataType.hasAttributes() || dataType.isArray()) {
+                    // Skipp table types and arrays
+                    continue;
+                }
                 addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
                 if (monitor.isCanceled()) {
                     break;
@@ -608,6 +618,25 @@ public class PostgreSchema implements
                || DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
+    public void readSchemaInfo(DBRProgressMonitor monitor) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read schema id")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT s.oid as schema_id\n" +
+                            "from pg_catalog.pg_namespace s\n" +
+                            "WHERE s.nspname =?"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        oid = dbResult.getLong(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Error reading schema information ", e);
+        }
+    }
+
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
 
         @NotNull
@@ -704,13 +733,17 @@ public class PostgreSchema implements
         protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final String kindString = getDataSource().isServerVersionAtLeast(10, 0) 
-                                      && JDBCUtils.safeGetString(dbResult, "relkind").equals(PostgreClass.RelKind.r.getCode()) 
-                                      && JDBCUtils.safeGetBoolean(dbResult, "relispartition") 
+            final String kindString = getDataSource().getServerType().supportsPartitions()
+                                      && CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, "relkind"), PostgreClass.RelKind.r.getCode())
+                                      && isPartitionTableRow(dbResult)
                                       ? PostgreClass.RelKind.R.getCode() : JDBCUtils.safeGetString(dbResult, "relkind");
             
             PostgreClass.RelKind kind = PostgreClass.RelKind.valueOf(kindString);
             return container.getDataSource().getServerType().createRelationOfClass(PostgreSchema.this, kind, dbResult);
+        }
+
+        protected boolean isPartitionTableRow(@NotNull JDBCResultSet dbResult) {
+            return JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         }
 
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container)

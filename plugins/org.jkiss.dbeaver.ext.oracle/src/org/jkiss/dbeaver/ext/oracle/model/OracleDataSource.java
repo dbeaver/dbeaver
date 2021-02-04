@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -179,6 +176,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 throw new DBException("You can't set empty password");
             }
             Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+            connectProps.setProperty(JDBCConstants.PROP_USER, passwordInfo.getUserName());
+            connectProps.setProperty(JDBCConstants.PROP_PASSWORD, passwordInfo.getOldPassword());
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);
@@ -309,7 +308,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Program name
             String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
-            appName = appName.replace('(', '_').replace(')', '_'); // Replace brackets - Oracle don't like them
+            appName = appName.replaceAll("[^ a-zA-Z0-9]", "?"); // Replace any special characters - Oracle don't like them
             connectionsProps.put("v$session.program", CommonUtils.truncateString(appName, 48));
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
@@ -484,7 +483,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public Class<? extends OracleSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         return OracleSchema.class;
     }

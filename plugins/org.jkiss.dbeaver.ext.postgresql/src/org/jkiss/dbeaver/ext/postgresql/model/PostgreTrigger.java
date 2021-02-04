@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -71,6 +72,7 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
     private PostgreTableColumn[] columnRefs;
     protected String description;
     protected String name;
+    private String body;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
@@ -249,33 +251,39 @@ public class PostgreTrigger implements DBSTrigger, DBSEntityElement, DBPQualifie
         return table.getDatabase();
     }
 
-    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        StringBuilder ddl = new StringBuilder();
-
-        ddl.append("-- DROP TRIGGER ")
-                .append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
-                .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
-
-        ddl.append("CREATE TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                .append("\n    AFTER INSERT")
-                .append("\n    ON ").append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                .append("\n    FOR EACH ROW")
-                .append("\n        EXECUTE PROCEDURE ").append(getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL)).append("();\n");
-
-        if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
-            ddl.append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                    .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .append(" IS ")
-                    .append(SQLUtils.quoteString(this, getDescription())).append(";");
+        if (body != null) {
+            return body;
         }
 
-        return ddl.toString();
+        if (persisted) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
+                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                if (body != null) {
+                    body = SQLFormatUtils.formatSQL(getDataSource(), body);
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        } else {
+            body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
+                       + "\n    AFTER INSERT"
+                       + "\n    ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                       + "\n    FOR EACH ROW"
+                       + "\n    EXECUTE PROCEDURE " + getFunction(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL) + "();\n";
+        }
+
+        return body;
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Trigger DDL is read-only");
+    public void setObjectDefinitionText(String sourceText) {
+        this.body = sourceText;
+    }
+
+    public String getBody() {
+        return body;
     }
 
     @Override

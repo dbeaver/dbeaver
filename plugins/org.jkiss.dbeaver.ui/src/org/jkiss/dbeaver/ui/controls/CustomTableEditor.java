@@ -101,14 +101,26 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         editor.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                saveEditorValue(editor, columnIndex, tableEditor.getItem());
-                if (!isProposalPopupActive()) {
-                    closeEditor();
-                }
+                onFocusLost(editor);
             }
         });
         editor.addTraverseListener(this);
         tableEditor.setEditor(editor, item, columnIndex);
+    }
+
+    private void onFocusLost(Control editor) {
+        saveEditorValue(editor, columnIndex, tableEditor.getItem());
+        if (!isProposalPopupActive()) {
+            closeEditor();
+        }
+    }
+
+    public void saveEditorValues() {
+        //see [#10740] and also PropertyTreeViewer.saveEditorValues()
+        Control editor = tableEditor.getEditor();
+        if (editor != null) {
+            onFocusLost(editor);
+        }
     }
 
     private boolean isProposalPopupActive() {

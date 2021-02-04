@@ -323,6 +323,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     DBVEntityForeignKey virtualFK = EditForeignKeyPage.createVirtualForeignKey(vEntity);
                     if (virtualFK != null) {
                         createForeignKeyItem(fkTable, virtualFK, true);
+                        vEntity.persistConfiguration();
                     }
                 }
             });
@@ -339,6 +340,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
                     vEntity.removeForeignKey(virtualFK);
                     fkTable.remove(fkTable.getSelectionIndices());
                     ((Button)e.widget).setEnabled(false);
+                    vEntity.persistConfiguration();
                 }
             });
             btnRemove.setEnabled(false);

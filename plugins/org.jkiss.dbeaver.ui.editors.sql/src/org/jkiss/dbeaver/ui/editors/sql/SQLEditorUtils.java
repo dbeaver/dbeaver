@@ -195,9 +195,8 @@ public class SQLEditorUtils {
                 description = "<empty>";
             }
             return description;
-        } else {
-            return "";
         }
+        return "";
     }
 
     public static class ResourceInfo {

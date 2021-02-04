@@ -146,26 +146,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
-                TransferTarget target;
-                if (!selection.isEmpty()) {
-                    target = (TransferTarget) selection.getFirstElement();
-                } else {
-                    target = null;
-                }
-                DataTransferSettings settings = getWizard().getSettings();
-                if (target == null) {
-                    settings.selectConsumer(null, null, true);
-                } else {
-                    if (settings.isConsumerOptional()) {
-                        settings.selectConsumer(target.node, target.processor, true);
-                    } else if (settings.isProducerOptional()) {
-                        settings.selectProducer(target.node, target.processor, true);
-                    } else {
-                        // no optional nodes
-                    }
-                }
-                updatePageCompletion();
+                setSelectedSettings();
             }
 
             @Override
@@ -177,6 +158,29 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 }
             }
         });
+    }
+
+    private void setSelectedSettings() {
+        final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
+        TransferTarget target;
+        if (!selection.isEmpty()) {
+            target = (TransferTarget) selection.getFirstElement();
+        } else {
+            target = null;
+        }
+        DataTransferSettings settings = getWizard().getSettings();
+        if (target == null) {
+            settings.selectConsumer(null, null, true);
+        } else {
+            if (settings.isConsumerOptional()) {
+                settings.selectConsumer(target.node, target.processor, true);
+            } else if (settings.isProducerOptional()) {
+                settings.selectProducer(target.node, target.processor, true);
+            } else {
+                // no optional nodes
+            }
+        }
+        updatePageCompletion();
     }
 
     private void createInputsTable(Composite composite) {
@@ -245,7 +249,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
             for (TransferTarget target : targets) {
                 if ((target.node == consumer || target.node == producer) && target.processor == processor) {
-                    UIUtils.asyncExec(() -> nodesTable.setSelection(new StructuredSelection(target)));
+                    UIUtils.asyncExec(() -> {
+                        nodesTable.setSelection(new StructuredSelection(target));
+                        setSelectedSettings();
+                    });
                     break;
                 }
             }

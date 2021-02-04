@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -26,12 +27,8 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -42,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -52,7 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable {
+public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, IAdaptable, DBCQueryTransformProviderExt {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
 
@@ -134,25 +132,50 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
-            try {
-                SSLHandlerTrustStoreImpl.initializeTrustStore(monitor, this, sslConfig);
-                DBACertificateStorage certificateStorage = getContainer().getPlatform().getCertificateStorage();
-                String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
-
-                properties.setProperty("encrypt", "true");
-                properties.setProperty("trustStore", keyStorePath);
-                properties.setProperty("trustStoreType", "JKS");
-
-                final String keystoreHostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
-                if (!CommonUtils.isEmpty(keystoreHostnameProp)) {
-                    properties.put("hostNameInCertificate", keystoreHostnameProp);
-                }
-            } catch (Exception e) {
-                throw new DBCException("Error initializing SSL trust store", e);
-            }
+            initSSL(monitor, properties, sslConfig);
         }
 
         return properties;
+    }
+
+    private void initSSL(DBRProgressMonitor monitor, Properties properties, DBWHandlerConfiguration sslConfig) throws DBCException {
+        monitor.subTask("Install SSL certificates");
+
+        try {
+//            SSLHandlerTrustStoreImpl.initializeTrustStore(monitor, this, sslConfig);
+//            DBACertificateStorage certificateStorage = getContainer().getPlatform().getCertificateStorage();
+//            String keyStorePath = certificateStorage.getKeyStorePath(getContainer(), "ssl").getAbsolutePath();
+
+            properties.put("encrypt", "true");
+            properties.put("trustServerCertificate", sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE));
+
+            final String keystoreFileProp;
+            final String keystorePasswordProp;
+
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                // Backward compatibility
+                keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
+                keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
+            } else {
+                keystoreFileProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
+                keystorePasswordProp = sslConfig.getPassword();
+            }
+
+            if (!CommonUtils.isEmpty(keystoreFileProp)) {
+                properties.put("trustStore", keystoreFileProp);
+            }
+
+            if (!CommonUtils.isEmpty(keystorePasswordProp)) {
+                properties.put("trustStorePassword", keystorePasswordProp);
+            }
+
+            final String keystoreHostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
+            if (!CommonUtils.isEmpty(keystoreHostnameProp)) {
+                properties.put("hostNameInCertificate", keystoreHostnameProp);
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error initializing SSL trust store", e);
+        }
     }
 
     @Override
@@ -230,7 +253,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 return dt;
             }
         }
-        if (systemTypeId != 243) { // 243 - ID of user defined types
+        if (systemTypeId != SQLServerConstants.TABLE_TYPE_SYSTEM_ID) { // 243 - ID of user defined table types
             log.debug("System data type " + systemTypeId + " not found");
         }
         SQLServerDataType sdt = new SQLServerDataType(this, String.valueOf(systemTypeId), systemTypeId, DBPDataKind.OBJECT, java.sql.Types.OTHER);
@@ -259,7 +282,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             case NUMERIC: return "int";
             case STRING: return "varchar";
             case DATETIME: return SQLServerConstants.TYPE_DATETIME;
-            case BINARY: return "binary";
+            case BINARY:
             case CONTENT: return "varbinary";
             case ROWID: return "uniqueidentifier";
             default:
@@ -315,7 +338,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return SQLServerDatabase.class;
     }
 
@@ -408,6 +431,17 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         } finally {
             hasStatistics = true;
         }
+    }
+
+    @Override
+    public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        try {
+            SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
+            return table != null && table.isClustered(session.getProgressMonitor());
+        } catch (DBException | SQLException e) {
+            log.debug("Table not found. ", e);
+        }
+        return false;
     }
 
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {

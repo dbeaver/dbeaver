@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +60,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getDDL())) {
+        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, options))) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -67,6 +70,17 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     public DBSObjectCache<? extends DBSObject, GenericTableBase> getObjectsCache(GenericTableBase object)
     {
         return object.getContainer().getTableCache();
+    }
+
+    @Override
+    public boolean canCreateObject(Object container) {
+        if (container instanceof DBSObject) {
+            DBPDataSource dataSource = ((DBSObject) container).getDataSource();
+            if (dataSource instanceof GenericDataSource) {
+                return ((GenericDataSource) dataSource).getMetaModel().supportsViews((GenericDataSource) dataSource);
+            }
+        }
+        return super.canCreateObject(container);
     }
 
     @Override
@@ -90,12 +104,6 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
-        createOrReplaceViewQuery(actionList, command);
-    }
-
-    @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
@@ -114,6 +122,22 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     {
         final GenericView view = (GenericView)command.getObject();
         actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
+    }
+
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
+        final GenericView view = (GenericView)command.getObject();
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        if (!hasComment || command.getProperties().size() > 1) {
+            actionList.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
+        }
+        if (hasComment) {
+            actionList.add(new SQLDatabasePersistAction(
+                    "Comment view",
+                    "COMMENT ON VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                            " IS " + SQLUtils.quoteString(command.getObject(), CommonUtils.notEmpty(command.getObject().getDescription()))));
+        }
     }
 
 }

@@ -40,19 +40,17 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSObjectWithScript, DBPObjectStatisticsCollector {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject, DBSProcedureContainer, DBSObjectWithScript, DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(SQLServerSchema.class);
 
@@ -262,7 +260,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return SQLServerTable.class;
     }
 
@@ -483,7 +481,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             } else {
                 sql.append(" AND t.schema_id = ?");
             }
-            sql.append("\nORDER BY i.object_id,i.index_id,ic.index_column_id");
+            sql.append("\nORDER BY i.object_id,i.index_id,ic.key_ordinal");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
@@ -503,8 +501,12 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             DBSIndexType indexType;
             switch (indexTypeNum) {
                 case 0: indexType = SQLServerConstants.INDEX_TYPE_HEAP; break;
-                case 1: indexType = DBSIndexType.CLUSTERED; break;
-                case 2: indexType = SQLServerConstants.INDEX_TYPE_NON_CLUSTERED; break;
+                case 1:
+                case 5:
+                    indexType = DBSIndexType.CLUSTERED; break;
+                case 2:
+                case 6:
+                    indexType = SQLServerConstants.INDEX_TYPE_NON_CLUSTERED; break;
                 default:
                     indexType = DBSIndexType.OTHER;
                     break;
@@ -800,11 +802,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     //////////////////////////////////////////////////
     // Procedures
 
+    @Override
     @Association
     public Collection<SQLServerProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
         return procedureCache.getAllObjects(monitor, this);
     }
 
+    @Override
     public SQLServerProcedure getProcedure(DBRProgressMonitor monitor, String name) throws DBException {
         return procedureCache.getObject(monitor, this, name);
     }

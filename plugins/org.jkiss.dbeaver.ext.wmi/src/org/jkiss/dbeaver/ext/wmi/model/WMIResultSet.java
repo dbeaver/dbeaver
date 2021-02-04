@@ -233,6 +233,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
+        public long getTypeModifiers() {
+            return 0;
+        }
+
+        @Override
         public String getTypeName()
         {
             return attribute.getTypeName();

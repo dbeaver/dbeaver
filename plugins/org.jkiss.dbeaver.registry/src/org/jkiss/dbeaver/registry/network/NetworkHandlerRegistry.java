@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -79,15 +80,13 @@ public class NetworkHandlerRegistry {
     }
 
     public List<NetworkHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource) {
-/*
-        if (dataSource.getDriver().isEmbedded()) {
-            // No network handlers for embedded drivers
-            return Collections.emptyList();
-        }
-*/
+        return getDescriptors(dataSource.getDriver());
+    }
+
+    public List<NetworkHandlerDescriptor> getDescriptors(DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(dataSource)) {
+            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {
                 result.add(d);
             }
         }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 
@@ -136,6 +137,9 @@ public class LoadingJob<RESULT>  extends AbstractJob {
                         getName(),
                     null,
                     innerError);
+            }
+            if (visualizer instanceof ILoadVisualizerExt) {
+                ((ILoadVisualizerExt) visualizer).finalizeLoading();
             }
         }
     }

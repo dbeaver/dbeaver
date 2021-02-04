@@ -81,7 +81,7 @@ public class PostgreRoleMember implements DBSObject {
     @Override
     public String getName()
     {
-        return String.valueOf(member);
+        return member + "." + role;
     }
 
     @Property(viewable = true, order = 1)

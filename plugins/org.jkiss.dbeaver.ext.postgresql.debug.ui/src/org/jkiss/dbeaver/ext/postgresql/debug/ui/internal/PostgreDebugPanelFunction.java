@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
-
     private DBGConfigurationPanelContainer container;
     private Button kindLocal;
     private Button kindGlobal;
@@ -89,6 +88,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             kindGlobal = new Button(kindGroup, SWT.RADIO);
             kindGlobal.setText("Global");
             kindGlobal.addSelectionListener(listener);
+            kindGlobal.setEnabled(false);
         }
         createFunctionGroup(parent);
         createParametersGroup(parent);

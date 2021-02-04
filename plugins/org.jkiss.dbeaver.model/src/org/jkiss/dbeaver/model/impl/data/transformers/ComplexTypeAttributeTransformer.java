@@ -58,7 +58,7 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
     static void createNestedTypeBindings(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows, DBSEntity dataType) throws DBException {
         List<DBDAttributeBinding> nestedBindings = new ArrayList<>();
         for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(dataType.getAttributes(session.getProgressMonitor()))) {
-            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr);
+            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr, nestedBindings.size());
             nestedBinding.lateBinding(session, rows);
             nestedBindings.add(nestedBinding);
         }

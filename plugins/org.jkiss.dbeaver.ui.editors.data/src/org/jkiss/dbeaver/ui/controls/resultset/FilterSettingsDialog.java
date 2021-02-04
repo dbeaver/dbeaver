@@ -48,13 +48,13 @@ import org.jkiss.dbeaver.ui.controls.NamedObjectPatternFilter;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.*;
 
 class FilterSettingsDialog extends HelpEnabledDialog {
-
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
 
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = (o1, o2) -> {
@@ -78,6 +78,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveDownButton;
     private ToolItem moveBottomButton;
     private Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
+    private FilterSettingsTreeEditor treeEditor;
 
     FilterSettingsDialog(ResultSetViewer resultSetViewer)
     {
@@ -151,60 +152,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             UIUtils.createTreeColumn(columnsTree, SWT.LEFT, ResultSetMessages.controls_resultset_filter_column_order);
             criteriaColumn = UIUtils.createTreeColumn(columnsTree, SWT.LEFT, ResultSetMessages.controls_resultset_filter_column_criteria);
 
-            new CustomTreeEditor(columnsTree) {
-                {
-                    firstTraverseIndex = 3;
-                    lastTraverseIndex = 3;
-                }
-                @Override
-                protected Control createEditor(Tree table, int index, TreeItem item) {
-                    if (index == 2) {
-                        toggleColumnOrder(item);
-                        return null;
-                    } else if (index == 3 && resultSetViewer.supportsDataFilter()) {
-                        Text text = new Text(columnsTree, SWT.BORDER);
-                        text.setText(item.getText(index));
-                        text.selectAll();
-                        return text;
-                    }
-                    return null;
-                }
-                @Override
-                protected void saveEditorValue(Control control, int index, TreeItem item) {
-                    Text text = (Text) control;
-                    String criteria = text.getText().trim();
-                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
-                    if (CommonUtils.isEmpty(criteria)) {
-                        constraint.setCriteria(null);
-                    } else {
-                        constraint.setCriteria(criteria);
-                    }
-                    item.setText(3, criteria);
-                }
-                private void toggleColumnOrder(TreeItem item)
-                {
-                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
-                    if (constraint.getOrderPosition() == 0) {
-                        // Add new ordered column
-                        constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-                        constraint.setOrderDescending(false);
-                    } else if (!constraint.isOrderDescending()) {
-                        constraint.setOrderDescending(true);
-                    } else {
-                        // Remove ordered column
-/*
-                        for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
-                            if (con2.getOrderPosition() > constraint.getOrderPosition()) {
-                                con2.setOrderPosition(con2.getOrderPosition() - 1);
-                            }
-                        }
-*/
-                        constraint.setOrderPosition(0);
-                        constraint.setOrderDescending(false);
-                    }
-                    columnsViewer.refresh();
-                }
-            };
+            treeEditor = new FilterSettingsTreeEditor(columnsTree);
 
             columnsViewer.addCheckStateListener(event -> {
                 DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) event.getElement());
@@ -420,6 +368,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed()
     {
+        treeEditor.okPressed();
         boolean hasVisibleColumns = false;
         for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
             // Set correct visible position
@@ -551,4 +500,78 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         return item;
     }
 
+    /**
+     * This class was introduced exclusively to bypass the issue with
+     * macos buttons not getting focus when dialog closes.
+     *
+     * See https://github.com/dbeaver/dbeaver/issues/10346
+     * See org.jkiss.dbeaver.ui.properties.PropertyTreeViewer.saveEditorValues()
+     */
+    private class FilterSettingsTreeEditor extends CustomTreeEditor {
+        private final Tree columnsTree;
+
+        @Nullable
+        private TreeItem lastTreeItem;
+
+        @Nullable
+        private Control lastEditor;
+
+        public FilterSettingsTreeEditor(Tree columnsTree) {
+            super(columnsTree);
+            firstTraverseIndex = 3;
+            lastTraverseIndex = 3;
+            this.columnsTree = columnsTree;
+        }
+
+        @Override
+        protected Control createEditor(Tree tree, int index, TreeItem item) {
+            if (index == 2) {
+                toggleColumnOrder(item);
+                return null;
+            } else if (index == 3 && resultSetViewer.supportsDataFilter()) {
+                Text text = new Text(columnsTree, SWT.BORDER);
+                text.setText(item.getText(index));
+                text.selectAll();
+                lastEditor = text;
+                lastTreeItem = item;
+                return text;
+            }
+            return null;
+        }
+
+        @Override
+        protected void saveEditorValue(Control control, int index, TreeItem item) {
+            Text text = (Text) control;
+            String criteria = text.getText().trim();
+            DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
+            if (CommonUtils.isEmpty(criteria)) {
+                constraint.setCriteria(null);
+            } else {
+                constraint.setCriteria(criteria);
+            }
+            item.setText(3, criteria);
+        }
+
+        public void okPressed() {
+            if (GeneralUtils.isMacOS() && lastTreeItem != null && lastEditor != null) {
+                saveEditorValue(lastEditor, 3, lastTreeItem);
+            }
+        }
+
+        private void toggleColumnOrder(TreeItem item)
+        {
+            DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
+            if (constraint.getOrderPosition() == 0) {
+                // Add new ordered column
+                constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+                constraint.setOrderDescending(false);
+            } else if (!constraint.isOrderDescending()) {
+                constraint.setOrderDescending(true);
+            } else {
+                constraint.setOrderPosition(0);
+                constraint.setOrderDescending(false);
+            }
+            columnsViewer.refresh();
+        }
+    }
 }

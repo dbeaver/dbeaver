@@ -35,10 +35,12 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utils
@@ -84,11 +86,27 @@ public class ResultSetUtils
         }
     }
 
-    public static boolean isServerSideFiltering(IResultSetController controller)
-    {
-        return
-            controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
-                (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
+    public static void copyToClipboard(Map<Transfer, Object> formats) {
+        if (!formats.isEmpty()) {
+            Clipboard clipboard = new Clipboard(Display.getCurrent());
+            try {
+                Transfer[] transfers = new Transfer[formats.size()];
+                Object[] values = new Object[formats.size()];
+                int index = 0;
+                for (Map.Entry<Transfer, Object> fmtEntry : formats.entrySet()) {
+                    transfers[index] = fmtEntry.getKey();
+                    values[index] = fmtEntry.getValue();
+                    index++;
+                }
+                clipboard.setContents(values, transfers);
+            } finally {
+                clipboard.dispose();
+            }
+        }
+    }
+
+    public static OrderingMode getOrderingMode(IResultSetController controller) {
+        return CommonUtils.valueOf(OrderingMode.class, controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), OrderingMode.SMART);
     }
 
     // Use linear interpolation to make gradient color in a range
@@ -155,5 +173,21 @@ public class ResultSetUtils
 
     static String formatRowCount(long rows) {
         return rows < 0 ? "0" : String.valueOf(rows);
+    }
+
+    public enum OrderingMode {
+        SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
+        CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
+        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
+
+        private final String text;
+
+        OrderingMode(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
     }
 }

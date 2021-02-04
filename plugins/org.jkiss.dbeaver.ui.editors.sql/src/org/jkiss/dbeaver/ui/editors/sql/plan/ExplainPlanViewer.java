@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -349,7 +351,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             return new PlanLoadVisualizer();
         }
 
-        class PlanLoadVisualizer extends ProgressVisualizer<DBCPlan> {
+        class PlanLoadVisualizer extends ProgressVisualizer<DBCPlan> implements ILoadVisualizerExt {
             @Override
             public void completeLoading(DBCPlan plan) {
                 super.completeLoading(plan);
@@ -357,6 +359,15 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                     visualizePlan(plan);
                 }
                 explainService = null;
+            }
+
+            @Override
+            public void finalizeLoading() {
+                // Redraw editor
+                // We need to update UI controls state after error dialog
+                if (workbenchPart instanceof SQLEditor) {
+                    ((SQLEditor) workbenchPart).refreshActions();
+                }
             }
         }
     }

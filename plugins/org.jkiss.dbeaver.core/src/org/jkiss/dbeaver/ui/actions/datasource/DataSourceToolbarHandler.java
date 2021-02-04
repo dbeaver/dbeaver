@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
-import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -151,8 +150,8 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         // but in fact it doesn't. I don't know better way than trigger update explicitly.
         // TODO: replace with something smarter
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
-            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
-            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+            //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
+            //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
             UIUtils.asyncExec(
                 () -> {
                     if (workbenchWindow instanceof WorkbenchWindow) {

@@ -93,13 +93,17 @@ public abstract class JDBCDataSource
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect, boolean initContext)
         throws DBException
     {
+        this(container, dialect);
+        if (initContext) {
+            initializeRemoteInstance(monitor);
+        }
+    }
+
+    protected JDBCDataSource(@NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect) {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
         this.sqlDialect = dialect;
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
-        if (initContext) {
-            initializeRemoteInstance(monitor);
-        }
     }
 
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -162,7 +166,7 @@ public abstract class JDBCDataSource
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
                 authModel.initAuthentication(monitor, this, credentials, connectionInfo, connectProps);
             } catch (DBException e) {
-                throw new DBCException("Authentication error", e);
+                throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
@@ -540,6 +544,8 @@ public abstract class JDBCDataSource
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return DBPDataKind.STRING;
             case Types.BIGINT:
             case Types.DECIMAL:
@@ -570,8 +576,6 @@ public abstract class JDBCDataSource
             case Types.BLOB:
             case Types.CLOB:
             case Types.NCLOB:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
                 return DBPDataKind.CONTENT;
             case Types.SQLXML:
                 return DBPDataKind.CONTENT;

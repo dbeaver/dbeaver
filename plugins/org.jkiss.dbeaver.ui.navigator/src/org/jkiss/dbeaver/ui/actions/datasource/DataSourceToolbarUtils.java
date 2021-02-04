@@ -87,17 +87,15 @@ public class DataSourceToolbarUtils
                         }
 
                         MElementContainer<? extends MUIElement> container = (MElementContainer<? extends MUIElement>)element;
+
                         for (MUIElement tbItem : container.getChildren()) {
                             // Handle Eclipse bug. By default it doesn't update contents of main toolbar elements
-                            // So we need to hide/shot it to force text update
+                            // So we need to hide/show it to force text update
                             if (showConnectionSelector) {
                                 tbItem.setVisible(false);
                             }
                             tbItem.setVisible(showConnectionSelector);
                         }
-//                        for (MUIElement tbItem : container.getChildren()) {
-//                            tbItem.setVisible(true);
-//                        }
                     }
                     return;
                 }
@@ -112,7 +110,7 @@ public class DataSourceToolbarUtils
         if (commandService != null) {
             commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.connection", null);
             commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.schema", null);
-            commandService.refreshElements("org.jkiss.dbeaver.ui.editors.sql.sync.connection", null);
+            //commandService.refreshElements("org.jkiss.dbeaver.ui.editors.sql.sync.connection", null);
         }
     }
 }

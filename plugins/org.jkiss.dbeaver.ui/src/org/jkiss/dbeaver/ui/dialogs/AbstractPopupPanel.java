@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -127,6 +128,11 @@ public abstract class AbstractPopupPanel extends Dialog {
         if (shell != null) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
+                Object dialog = focusControl.getShell().getData();
+                if (dialog instanceof BlockingPopupDialog || dialog instanceof ErrorDialog) {
+                    // It is an error popup
+                    return;
+                }
                 cancelPressed();
             }
         } else {

@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -171,7 +168,11 @@ public class DBeaverCommandLine
         if (!uiActivated) {
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
-                controller.quit();
+                try {
+                    controller.quit();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 return true;
             }
             if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
@@ -270,18 +271,32 @@ public class DBeaverCommandLine
             return false;
         }
         boolean exit = false;
-        for (ParameterDescriptor param : customParameters.values()) {
-            if (commandLine.hasOption(param.name)) {
-                try {
+        for (Option cliOption : commandLine.getOptions()) {
+            ParameterDescriptor param = customParameters.get(cliOption.getOpt());
+            if (param == null) {
+                param = customParameters.get(cliOption.getLongOpt());
+            }
+            if (param == null) {
+                log.error("Wrong command line parameter " + cliOption);
+                continue;
+            }
+            try {
+                if (param.hasArg) {
+                    for (String optValue : commandLine.getOptionValues(param.name)) {
+                        param.handler.handleParameter(
+                            param.name,
+                            optValue);
+                    }
+                } else {
                     param.handler.handleParameter(
                         param.name,
-                        param.hasArg ? commandLine.getOptionValue(param.name) : null);
-                } catch (Exception e) {
-                    log.error("Error evaluating parameter '" + param.name + "'", e);
+                        null);
                 }
-                if (param.exitAfterExecute) {
-                    exit = true;
-                }
+            } catch (Exception e) {
+                log.error("Error evaluating parameter '" + param.name + "'", e);
+            }
+            if (param.exitAfterExecute) {
+                exit = true;
             }
         }
 

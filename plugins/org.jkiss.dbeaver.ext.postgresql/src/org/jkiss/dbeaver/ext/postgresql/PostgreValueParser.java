@@ -43,13 +43,13 @@ public class PostgreValueParser {
 
     private static final Log log = Log.getLog(PostgreValueParser.class);
 
-    public static Object convertStringToValue(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
-        if (itemType.getDataKind() == DBPDataKind.ARRAY) {
+    public static Object convertStringToValue(DBCSession session, DBSTypedObject arrayType, String string) throws DBCException {
+        if (arrayType.getDataKind() == DBPDataKind.ARRAY) {
             if (CommonUtils.isEmpty(string)) {
                 return new Object[0];
             } else if (string.startsWith("{") && string.endsWith("}")) {
                 try {
-                    return prepareToParseArray(session, itemType, string);
+                    return prepareToParseArray(session, arrayType, string);
                 } catch (Exception e) {
                     log.error("Array parsing failed " + e.getMessage());
                     return string;
@@ -60,10 +60,10 @@ public class PostgreValueParser {
             }
         }
         if (CommonUtils.isEmpty(string)) {
-            return convertStringToSimpleValue(session, itemType, string);
+            return convertStringToSimpleValue(session, arrayType, string);
         }
         try {
-            switch (itemType.getTypeID()) {
+            switch (arrayType.getTypeID()) {
                 case Types.BOOLEAN:
                     return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't'; //todo: add support of alternatives to "true/false"
                 case Types.TINYINT:
@@ -81,7 +81,7 @@ public class PostgreValueParser {
                 case Types.DOUBLE:
                     return Double.parseDouble(string);
                 default: {
-                    return convertStringToSimpleValue(session, itemType, string);
+                    return convertStringToSimpleValue(session, arrayType, string);
                 }
             }
         } catch (NumberFormatException e) {
@@ -89,12 +89,12 @@ public class PostgreValueParser {
         }
     }
 
-    private static Object prepareToParseArray(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
-        DBSDataType arrayDataType = itemType instanceof DBSDataType ? (DBSDataType) itemType : ((DBSTypedObjectEx) itemType).getDataType();
+    private static Object prepareToParseArray(DBCSession session, DBSTypedObject arrayType, String string) throws DBCException {
+        DBSDataType arrayDataType = arrayType instanceof DBSDataType ? (DBSDataType) arrayType : ((DBSTypedObjectEx) arrayType).getDataType();
         try {
             DBSDataType componentType = arrayDataType.getComponentType(session.getProgressMonitor());
             if (componentType == null) {
-                log.error("Can't get component type from array '" + itemType.getFullTypeName() + "'");
+                log.error("Can't get component type from array '" + arrayType.getFullTypeName() + "'");
                 return string;
             } else {
                 if (componentType instanceof PostgreDataType) {
@@ -102,12 +102,12 @@ public class PostgreValueParser {
                     List<Object> itemStrings = parseArrayString(string, ",");
                     return startTransformListOfValuesIntoArray(session, (PostgreDataType)componentType, itemStrings);
                 } else {
-                    log.error("Incorrect type '" + itemType.getFullTypeName() + "'");
+                    log.error("Incorrect type '" + arrayType.getFullTypeName() + "'");
                     return string;
                 }
             }
         } catch (Exception e) {
-            throw new DBCException("Error extracting array '" + itemType.getFullTypeName() + "' items", e);
+            throw new DBCException("Error extracting array '" + arrayType.getFullTypeName() + "' items", e);
         }
     }
 

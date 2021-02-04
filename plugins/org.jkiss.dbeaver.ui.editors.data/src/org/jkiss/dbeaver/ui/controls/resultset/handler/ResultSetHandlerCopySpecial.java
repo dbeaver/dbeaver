@@ -63,8 +63,8 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     public static void showAdvancedCopyDialog(IResultSetController resultSet, Shell shell) {
         AdvancedCopyConfigDialog configDialog = new AdvancedCopyConfigDialog(shell);
         if (configDialog.open() == IDialogConstants.OK_ID) {
-            ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
-                configDialog.copySettings));
+            ResultSetUtils.copyToClipboard(
+                resultSet.getActivePresentation().copySelection(configDialog.copySettings));
         }
     }
 
@@ -155,11 +155,13 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
         static final String PARAM_QUOTE_CELLS = "quoteCells";
         static final String PARAM_FORCE_QUOTES = "forceQuotes";
         static final String PARAM_FORMAT = "format";
+        static final String PARAM_COPY_HTML = "copyHTML";
 
         private Button copyHeaderCheck;
         private Button copyRowsCheck;
         private Button quoteCellsCheck;
         private Button forceQuoteCheck;
+        private Button copyHtmlCheck;
         private ValueFormatSelector formatSelector;
 
         protected AdvancedCopyConfigDialog(Shell shell)
@@ -184,6 +186,9 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             if (settings.get(PARAM_FORMAT) != null) {
                 copySettings.setFormat(DBDDisplayFormat.valueOf(settings.get(PARAM_FORMAT)));
             }
+            if (settings.get(PARAM_COPY_HTML) != null) {
+                copySettings.setCopyHTML(settings.getBoolean(PARAM_COPY_HTML));
+            }
         }
 
         @Override
@@ -192,6 +197,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
             quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes if it contains column or row delimiter", copySettings.isQuoteCells(), 2);
             forceQuoteCheck = UIUtils.createCheckbox(group, "Always quote values", "Place all cell values in quotes", copySettings.isForceQuotes(), 2);
+            copyHtmlCheck = UIUtils.createCheckbox(group, "Copy as HTML", "Copy as HTML (in addition to plaintext format)", copySettings.isCopyHTML(), 2);
 
             formatSelector = new ValueFormatSelector(group);
             formatSelector.select(copySettings.getFormat());
@@ -203,16 +209,17 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             copySettings.setCopyRowNumbers(copyRowsCheck.getSelection());
             copySettings.setQuoteCells(quoteCellsCheck.getSelection());
             copySettings.setForceQuotes(forceQuoteCheck.getSelection());
+            copySettings.setCopyHTML(copyHtmlCheck.getSelection());
             copySettings.setFormat(formatSelector.getSelection());
 
             settings.put(PARAM_COPY_HEADER, copySettings.isCopyHeader());
             settings.put(PARAM_COPY_ROWS, copySettings.isCopyRowNumbers());
             settings.put(PARAM_QUOTE_CELLS, copySettings.isQuoteCells());
             settings.put(PARAM_FORCE_QUOTES, copySettings.isForceQuotes());
+            settings.put(PARAM_COPY_HTML, copySettings.isCopyHTML());
             settings.put(PARAM_FORMAT, copySettings.getFormat().name());
 
             super.okPressed();
         }
     }
-
 }

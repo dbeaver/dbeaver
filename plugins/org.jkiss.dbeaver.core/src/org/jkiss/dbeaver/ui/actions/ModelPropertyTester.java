@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 /**
  * ModelPropertyTester
@@ -32,6 +36,7 @@ public class ModelPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.model";
     public static final String PROP_CHILD_OF_TYPE = "childOfType";
+    public static final String PROP_IS_TABLE_CONTAINER = "isTableContainer";
 
     public ModelPropertyTester() {
         super();
@@ -56,7 +61,7 @@ public class ModelPropertyTester extends PropertyTester
                         if (expectedValue instanceof String) {
                             try {
                                 Class<?> expectedChildClass = Class.forName((String)expectedValue);
-                                Class<? extends DBSObject> childType = ((DBSObjectContainer)object).getPrimaryChildType(new VoidProgressMonitor());
+                                Class<? extends DBSObject> childType = ((DBSObjectContainer)object).getPrimaryChildType(null);
                                 return expectedChildClass.isAssignableFrom(childType);
                             } catch (Exception e) {
                                 return false;
@@ -66,6 +71,31 @@ public class ModelPropertyTester extends PropertyTester
                 }
                 return false;
             }
+            case PROP_IS_TABLE_CONTAINER: {
+                DBSObject object = DBUtils.getPublicObject((DBSObject) receiver);
+                if (object instanceof DBNContainer) {
+                    Object valueObject = ((DBNContainer) object).getValueObject();
+                    if (valueObject instanceof DBSObject) {
+                        object = (DBSObject) valueObject;
+                    }
+                }
+                if (object instanceof DBSSchema) {
+                    return true;
+                }
+                if (object instanceof DBSObjectContainer) {
+                    try {
+                        Class<? extends DBSObject> primaryChildType = ((DBSObjectContainer)object).getPrimaryChildType(null);
+                        if (DBSDataContainer.class.isAssignableFrom(primaryChildType)) {
+                            return true;
+                        }
+                    } catch (DBException e) {
+                        log.debug(e);
+                    }
+                }
+
+                return false;
+            }
+
         }
         return false;
     }

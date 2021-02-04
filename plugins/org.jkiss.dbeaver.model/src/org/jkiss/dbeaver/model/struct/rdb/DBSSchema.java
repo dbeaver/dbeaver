@@ -17,14 +17,14 @@
 
 package org.jkiss.dbeaver.model.struct.rdb;
 
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 
 /**
  * Schema is a simple entity container.
  * Do not provides any additional attributes but may be used in some JDBC specific issues
  * to determine difference in catalog/schema containment.
  */
-public interface DBSSchema extends DBSObjectContainer
+public interface DBSSchema extends DBSStructContainer
 {
 
 }

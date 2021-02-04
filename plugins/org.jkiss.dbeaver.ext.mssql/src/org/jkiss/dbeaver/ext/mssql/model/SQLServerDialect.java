@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -57,7 +58,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     };
 
 
-    private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC" };
+    private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC", "EXECUTE" };
 
     private static String[] PLAIN_TYPE_NAMES = {
         SQLServerConstants.TYPE_GEOGRAPHY,
@@ -91,7 +92,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
     private boolean isSqlServer;
 
     public SQLServerDialect() {
-        super("SQLServer");
+        super("SQLServer", "sqlserver");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -136,12 +137,22 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean needsDelimiterFor(String firstKeyword, String lastKeyword) {
+        return SQLConstants.KEYWORD_MERGE.equalsIgnoreCase(firstKeyword) && lastKeyword != null;
+    }
+
+    @Override
     public boolean supportsSubqueries() {
         return true;
     }
 
     @Override
     public boolean supportsAliasInSelect() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsNestedComments() {
         return true;
     }
 
@@ -160,14 +171,14 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         if (isSqlServer) {
             if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
                 return MultiValueInsertMode.GROUP_ROWS;
             }
-            return super.getMultiValueInsertMode();
+            return super.getDefaultMultiValueInsertMode();
         } else {
-            return super.getMultiValueInsertMode();
+            return super.getDefaultMultiValueInsertMode();
         }
     }
 
@@ -182,7 +193,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
                     return "(" + scale + ')';
                 }
             }
-        } else if (dataKind == DBPDataKind.STRING) {
+        } else if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.BINARY) {
             switch (typeName) {
                 case SQLServerConstants.TYPE_CHAR:
                 case SQLServerConstants.TYPE_NCHAR:
@@ -193,7 +204,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
                     long maxLength = column.getMaxLength();
                     if (maxLength == 0) {
                         return null;
-                    } else if (maxLength == -1) {
+                    } else if (maxLength == -1 || maxLength > 8000) {
                         return "(MAX)";
                     } else {
                         return "(" + maxLength + ")";

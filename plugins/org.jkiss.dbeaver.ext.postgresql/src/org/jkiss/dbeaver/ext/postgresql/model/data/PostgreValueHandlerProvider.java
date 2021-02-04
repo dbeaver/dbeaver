@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.RedshiftGeometryValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -31,8 +34,7 @@ import java.sql.Types;
 /**
  * PostgreValueHandlerProvider
  */
-public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
-
+public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvider {
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
@@ -72,16 +74,21 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                         return PostgreMoneyValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_GEOMETRY:
                     case PostgreConstants.TYPE_GEOGRAPHY:
+                        if (((PostgreDataSource) dataSource).getServerType() instanceof PostgreServerRedshift) {
+                            return RedshiftGeometryValueHandler.INSTANCE;
+                        }
                         return PostgreGeometryValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
                     default:
-                        if (typedObject.getDataKind() == DBPDataKind.STRING) {
+                        if (PostgreConstants.SERIAL_TYPES.containsKey(typedObject.getTypeName())) {
+                            return new JDBCNumberValueHandler(typedObject, preferences);
+                        }
+                        if (typeID == Types.OTHER || typedObject.getDataKind() == DBPDataKind.STRING) {
                             return PostgreStringValueHandler.INSTANCE;
                         }
-                        return null;
                 }
         }
+        return super.getValueHandler(dataSource, preferences, typedObject);
     }
-
 }

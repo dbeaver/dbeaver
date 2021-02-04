@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class TeradataSQLDialect extends GenericSQLDialect {
 
     public TeradataSQLDialect() {
-        super("Teradata");
+        super("Teradata", "teradata");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

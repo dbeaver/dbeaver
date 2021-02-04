@@ -40,7 +40,9 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -66,6 +68,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private static final Log log = Log.getLog(PostgreDataSource.class);
 
     private DatabaseCache databaseCache;
+    private SettingCache settingCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     private String serverVersion;
@@ -78,6 +81,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         super(monitor, container, new PostgreDialect());
 
         hasStatistics = !container.getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_STATISTICS);
+    }
+
+    // Constructor for tests
+    @ForTest
+    public PostgreDataSource(DBPDataSourceContainer container, String serverVersion, String activeDatabaseName) {
+        super(container, new PostgreDialect());
+        this.serverVersion = serverVersion;
+        this.activeDatabaseName = activeDatabaseName;
+        this.hasStatistics = false;
+
+        databaseCache = new DatabaseCache();
+        PostgreDatabase defDatabase = new PostgreDatabase(
+            this,
+            activeDatabaseName);
+        databaseCache.setCache(Collections.singletonList(defDatabase));
+        settingCache = new SettingCache();
     }
 
     @Override
@@ -101,7 +120,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
         }
         databaseCache = new DatabaseCache();
-
+        settingCache = new SettingCache();
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
         final boolean showNDD = CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
         List<PostgreDatabase> dbList = new ArrayList<>();
@@ -113,7 +132,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor);
+        getDefaultInstance().checkInstanceConnection(monitor, false);
+        try {
+            // Preload some settings, if available
+            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
+        } catch (DBException e) {
+            // ignore
+        }
     }
 
     private void loadAvailableDatabases(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration configuration, List<PostgreDatabase> dbList) throws DBException {
@@ -189,15 +214,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        final String rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+        final String rootCertProp;
+        final String clientCertProp;
+        final String keyCertProp;
+
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+            clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+            keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+        } else {
+            rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+            keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        }
+
         if (!CommonUtils.isEmpty(rootCertProp)) {
             props.put("sslrootcert", rootCertProp);
         }
-        final String clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+
         if (!CommonUtils.isEmpty(clientCertProp)) {
             props.put("sslcert", clientCertProp);
         }
-        final String keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+
         if (!CommonUtils.isEmpty(keyCertProp)) {
             props.put("sslkey", keyCertProp);
         }
@@ -248,6 +287,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObject(name);
     }
 
+    public SettingCache getSettingCache() {
+        return settingCache;
+    }
+
+    public Collection<PostgreSetting> getSettings() {
+        return settingCache.getCachedObjects();
+    }
+
+    public PostgreSetting getSetting(String name) {
+        return settingCache.getCachedObject(name);
+    }
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -293,7 +344,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
-    public Class<? extends PostgreDatabase> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) {
+    public Class<? extends PostgreDatabase> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return PostgreDatabase.class;
     }
 
@@ -492,7 +543,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     public boolean supportsRoles() {
-        return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities();
+        return getServerType().supportsRoles() && !getContainer().getNavigatorSettings().isShowOnlyEntities() && !getContainer().getNavigatorSettings().isHideFolders();
     }
 
     @Override
@@ -579,6 +630,27 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
+    static class SettingCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreSetting> {
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @Nullable PostgreSetting object, @Nullable String objectName) throws SQLException {
+            if (object != null || objectName != null) {
+                final JDBCPreparedStatement dbStat = session.prepareStatement("select * from pg_catalog.pg_settings where name=?");
+                dbStat.setString(1, object != null ? object.getName() : objectName);
+                return dbStat;
+            }
+
+            return session.prepareStatement("select * from pg_catalog.pg_settings");
+        }
+
+        @Nullable
+        @Override
+        protected PostgreSetting fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new PostgreSetting(owner, dbResult);
+        }
+    }
+
+
     private final Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+\\s*: ([0-9]+)");
 
     @Nullable
@@ -626,6 +698,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;
+            }
+        }
+        if (getServerType() instanceof DBPErrorAssistant) {
+            ErrorType errorType = ((DBPErrorAssistant) getServerType()).discoverErrorType(error);
+            if (errorType != null) {
+                return errorType;
             }
         }
 

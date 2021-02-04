@@ -486,6 +486,10 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
         return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
     }
 
+    protected boolean isResourceExists() {
+        return resource != null && resource.exists();
+    }
+
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (resource != null && adapter.isAssignableFrom(resource.getClass())) {
@@ -508,4 +512,5 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     public String toString() {
         return resource == null ? super.toString() : resource.toString();
     }
+
 }

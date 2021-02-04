@@ -92,6 +92,11 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 numberFormat.setMinimumFractionDigits(fractionDigits);
             }
         }
+        if (type != null && (type.getTypeModifiers() & DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES) > 0) {
+            // Override number format style set from properties in favor of type's own formatting rules
+            numberFormat.setMinimumIntegerDigits((int) type.getMaxLength());
+            numberFormat.setGroupingUsed(false);
+        }
         buffer = new StringBuffer();
         position = new FieldPosition(0);
     }
@@ -136,13 +141,26 @@ public class NumberDataFormatter implements DBDDataFormatter {
             numberFormat.setParseBigDecimal(typeHint == BigDecimal.class || typeHint == BigInteger.class);
             Number number = numberFormat.parse(value);
             if (number != null && typeHint != null) {
+                boolean isFloat = number instanceof Double || number instanceof Float;
                 if (typeHint == Byte.class) {
+                    if (isFloat) {
+                        return number;
+                    }
                     return number.byteValue();
                 } else if (typeHint == Short.class) {
+                    if (isFloat) {
+                        return number;
+                    }
                     return number.shortValue();
                 } else if (typeHint == Integer.class) {
+                    if (isFloat) {
+                        return number;
+                    }
                     return number.intValue();
                 } else if (typeHint == Long.class) {
+                    if (isFloat) {
+                        return number;
+                    }
                     return number.longValue();
                 } else if (typeHint == Float.class) {
                     return number.floatValue();

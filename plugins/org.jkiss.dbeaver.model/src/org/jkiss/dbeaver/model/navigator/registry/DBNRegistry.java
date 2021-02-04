@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeExtendable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,18 +60,21 @@ public class DBNRegistry {
         if (modelExtenders.isEmpty()) {
             return;
         }
-        List<DBNNode> extraNodes = new ArrayList<>();
+        List<DBNNode> extraNodes = null;
         for (DBNModelExtenderDescriptor med : modelExtenders) {
             try {
                 DBNNode[] enList = med.getInstance().getExtraNodes((DBNNode) parentNode);
                 if (enList != null) {
+                    if (extraNodes == null) {
+                        extraNodes = new ArrayList<>();
+                    }
                     Collections.addAll(extraNodes, enList);
                 }
             } catch (DBException e) {
                 log.debug("Error getting model extenders", e);
             }
         }
-        if (!extraNodes.isEmpty()) {
+        if (!CommonUtils.isEmpty(extraNodes)) {
             for (DBNNode eNode : extraNodes) {
                 parentNode.addExtraNode(eNode);
             }

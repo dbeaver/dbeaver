@@ -192,7 +192,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, Tree tree, Event event) {
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-        int treeWidth = getTreeWidth(tree);
+        ScrollBar horizontalScrollBar = tree.getHorizontalBar();
+        if (horizontalScrollBar != null && horizontalScrollBar.isVisible()) {
+            return null;
+        }
         int widthOccupied = 0;
         for (INavigatorNodeActionHandler nah : nodeActions) {
             if (!nah.isSticky(view, element)) {
@@ -213,7 +216,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 int imageSize = imageBounds.height;
                 widthOccupied += imageSize;
 
-                if (event.x > treeWidth - widthOccupied) {
+                if (event.x > tree.getClientArea().width - widthOccupied) {
                     return nah;
                 }
             }

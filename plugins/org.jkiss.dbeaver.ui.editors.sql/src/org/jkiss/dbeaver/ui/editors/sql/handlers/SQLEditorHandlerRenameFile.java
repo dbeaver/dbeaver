@@ -20,16 +20,20 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
@@ -70,10 +74,33 @@ public class SQLEditorHandlerRenameFile extends AbstractDataSourceHandler {
             if (editor instanceof IEditorPart) {
                 ((IEditorPart)editor).doSave(monitor);
             }
+            String oldExtension = file.getFileExtension();
             try {
-                file.move(file.getParent().getFullPath().append(newName), true, monitor);
+                IPath newFilePath = file.getParent().getFullPath().append(newName);
+                file.move(newFilePath, true, monitor);
+                file = file.getWorkspace().getRoot().getFile(newFilePath);
             } catch (CoreException e) {
                 DBWorkbench.getPlatformUI().showError("Rename", "Error renaming file '" + file.getName() + "'", e);
+            }
+            IFile newFile = file;
+            String newExtension = file.getFileExtension();
+            if (SQLEditorUtils.SCRIPT_FILE_EXTENSION.equals(newExtension) && !newExtension.equals(oldExtension)) {
+                // File become an SQL editor
+                // We need to reopen editor
+                UIJob reopenJob = new UIJob("Reopen SQL script") {
+                    @Override
+                    public IStatus runInUIThread(IProgressMonitor monitor) {
+                        FileEditorInput editorInput = new FileEditorInput(newFile);
+                        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+                        IEditorPart openEditor = activePage.findEditor(editorInput);
+                        if (openEditor != null) {
+                            activePage.closeEditor(openEditor, true);
+                            SQLEditorHandlerOpenEditor.openResource(newFile);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                reopenJob.schedule(250);
             }
         }
     }

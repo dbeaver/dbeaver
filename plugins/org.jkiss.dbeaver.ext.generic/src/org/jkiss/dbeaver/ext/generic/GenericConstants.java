@@ -29,6 +29,7 @@ public class GenericConstants {
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
     public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
+    public static final String PARAM_SUPPORTS_VIEWS = "supports-views";
     public static final String PARAM_SUPPORTS_STORED_CODE = "supports-stored-code";
     public static final String PARAM_SUPPORTS_SUBQUERIES = "supports-subqueries";
     public static final String PARAM_SUPPORTS_SELECT_COUNT = "supports-select-count";
@@ -52,6 +53,7 @@ public class GenericConstants {
     public static final String PARAM_EMBEDDED = "embedded";
     public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
     public static final String PARAM_DDL_DROP_COLUMN_BRACKETS = "ddl-drop-column-brackets";
+    public static final String PARAM_ALTER_TABLE_ADD_COLUMN = "alter-table-add-column";
     public static final String PARAM_LEGACY_DIALECT = "legacy-sql-dialect";
     public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
     public static final String PARAM_USE_SEARCH_STRING_ESCAPE = "use-search-string-escape";
@@ -91,4 +93,6 @@ public class GenericConstants {
 
     public static final String TABLE_TYPE_VIEW = "VIEW";
     public static final String TABLE_TYPE_TABLE = "TABLE";
+
+    public static final String BASE_CONSTRAINT_NAME = "new_key";
 }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -58,7 +59,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private static final String CAT_FUNCTIONS = "Functions";
     private static final String CAT_ARRAY = "Array";
 
-    private static String[] OID_TYPES = new String[] {
+    private static final String[] OID_TYPES = new String[] {
         "regproc",
         "regprocedure",
         "regoper",
@@ -104,6 +105,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private String canonicalName;
     private String constraintText;
     private String description;
+    private boolean extraDataType;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
@@ -238,6 +240,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.enumValues = null;
     }
 
+    @ForTest
+    PostgreDataType(PostgreSchema schema, int valueType, String name) {
+        super(schema, valueType, name, null, false, false, -1, -1, -1);
+        alias = false;
+        ownerId = 0;
+        attributeCache = null;
+    }
+
     void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {
         if (baseTypeId > 0) {
             PostgreDataType baseType = getBaseType(monitor);
@@ -254,6 +264,18 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     public boolean isAlias() {
         return alias;
+    }
+
+    public void setTypeId(long typeId) {
+        this.typeId = typeId;
+    }
+
+    public boolean isExtraDataType() {
+        return extraDataType;
+    }
+
+    public void setExtraDataType(boolean extraDataType) {
+        this.extraDataType = extraDataType;
     }
 
     private void readEnumValues(JDBCSession session) throws DBException {
@@ -345,6 +367,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Property(viewable = true, optional = true, order = 12)
     public PostgreDataType getBaseType(DBRProgressMonitor monitor) {
         return getDatabase().getDataType(monitor, baseTypeId);
+    }
+
+    public boolean isArray() {
+        return elementTypeId != 0;
     }
 
     @Property(viewable = true, optional = true, order = 13)
@@ -962,6 +988,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         break;
                 }
             }
+        }
+        if (skipTables && valueType == Types.ARRAY) {
+            // Skip arrays as well
+            return null;
         }
 
         return new PostgreDataType(

@@ -104,7 +104,7 @@ public class ValueManagerRegistry {
         boolean isTextContent = ContentUtils.isTextContent(value);
         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
         for (StreamValueManagerDescriptor contentManager : streamManagers) {
-            if (isTextContent != contentManager.supportsText()) {
+            if (isTextContent && !contentManager.supportsText()) {
                 // Skip different kind of manager
                 continue;
             }

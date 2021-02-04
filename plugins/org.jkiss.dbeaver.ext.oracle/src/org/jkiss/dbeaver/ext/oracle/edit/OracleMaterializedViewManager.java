@@ -19,17 +19,18 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDDLFormat;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -57,7 +58,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS))) {
+        if (CommonUtils.isEmpty(command.getObject().getObjectDefinitionText(monitor, options))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -72,9 +73,17 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     protected OracleMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleMaterializedView newView = new OracleMaterializedView((OracleSchema) container, "NewView"); //$NON-NLS-1$
+        OracleSchema schema = (OracleSchema) container;
+        OracleMaterializedView newView = new OracleMaterializedView(schema, "NEW_MVIEW"); //$NON-NLS-1$
+        setNewObjectName(monitor, schema, newView);
         newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
+        newView.setCurrentDDLFormat(OracleDDLFormat.COMPACT);
         return newView;
+    }
+
+    @Override
+    protected String getBaseObjectName() {
+        return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;
     }
 
     @Override
@@ -103,9 +112,9 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
 
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        boolean hasComment = command.getProperty("comment") != null;
+        boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
-            String mViewDefinition = view.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS).trim();
+            String mViewDefinition = view.getMViewText().trim();
             if (mViewDefinition.startsWith("CREATE MATERIALIZED VIEW")) {
                 if (mViewDefinition.endsWith(";")) mViewDefinition = mViewDefinition.substring(0, mViewDefinition.length() - 1);
                 decl.append(mViewDefinition);

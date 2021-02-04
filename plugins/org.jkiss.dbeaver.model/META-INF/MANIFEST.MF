@@ -1,10 +1,10 @@
-Manifest-Version: 1.0
+fManifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.0.131.qualifier
-Bundle-Release-Date: 20201004
+Bundle-Version: 1.0.139.qualifier
+Bundle-Release-Date: 20210201
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -77,7 +77,6 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.properties,
  org.jkiss.dbeaver.runtime.qm,
  org.jkiss.dbeaver.runtime.resource,
- org.jkiss.dbeaver.runtime.resource.links,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.runtime.ui.console,
  org.jkiss.dbeaver.runtime.serialize,

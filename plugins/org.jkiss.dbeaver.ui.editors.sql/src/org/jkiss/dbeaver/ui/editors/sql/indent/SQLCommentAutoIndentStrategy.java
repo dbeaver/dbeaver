@@ -85,14 +85,15 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
                 String indentation = commentExtractLinePrefix(d, d.getLineOfOffset(c.offset));
                 buf.append(indentation);
                 if (end < c.offset) {
-                    //If it is the sinle line comment '//', don't append '*'.
+                    //If it is the single line comment '//', don't append '*'.
                     if (d.getChar(end) == '/' && d.getChar(end + 1) != '/') {
                         // SQL multi-line comment started on this line
                         buf.append(" * "); //$NON-NLS-1$
 
                         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
                             SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS)
-                            && isNewComment(d, c.offset, partitioning)) {
+                            && isNewComment(d, c.offset, partitioning) &&
+                            !hasCloseCommentSlash(d, c, end)) { // already has comment close block
                             String lineDelimiter = getLineDelimiter(d);
 
                             String endTag = lineDelimiter + indentation + " */"; //$NON-NLS-1$
@@ -110,6 +111,21 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
         catch (BadLocationException excp) {
             // stop work
         }
+    }
+
+    private boolean hasCloseCommentSlash(IDocument d, DocumentCommand c, int endOfWhiteSpace) throws BadLocationException {
+        int nextCharPos = endOfWhiteSpace + c.text.length();
+        if (d.getLength() < nextCharPos + 1) {
+            return false;
+        }
+        if (d.getChar(nextCharPos) == '*' && d.getChar(nextCharPos + 1) == '/') {
+            return true;
+        }
+        int nextCharPosAfterDelimiter = endOfWhiteSpace + c.text.length() + getLineDelimiter(d).length();
+        if (d.getLength() >= nextCharPosAfterDelimiter + 2) {
+            return d.getChar(nextCharPosAfterDelimiter + 1) == '*' && d.getChar(nextCharPosAfterDelimiter + 2) == '/';
+        }
+        return false;
     }
 
     protected void commentIndentForCommentEnd(IDocument d, DocumentCommand c)

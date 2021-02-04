@@ -146,7 +146,8 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 					"	INNER JOIN" + 
 					"		sys.EXA_SCHEMAS o" + 
 					"	ON" + 
-					"		o.schema_name = s.SCHEMA_NAME" 
+					"		o.schema_name = s.SCHEMA_NAME" +
+					" ORDER BY S.SCHEMA_NAME"
 					);
 		}
 		
@@ -476,7 +477,7 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@NotNull DBRProgressMonitor monitor) throws DBException
+	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
 	{
 		return ExasolSchema.class;
 	}

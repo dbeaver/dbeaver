@@ -292,6 +292,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return null;
     }
 
+    @Nullable
+    @Override
+    public String[] getInnerBlockPrefixes() {
+        return null;
+    }
+
     @Override
     public boolean validIdentifierStart(char c) {
         return Character.isLetter(c);
@@ -358,7 +364,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.NOT_SUPPORTED;
     }
 
@@ -393,6 +399,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsNestedComments() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return false;
     }
@@ -419,6 +430,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isDelimiterAfterBlock() {
+        return false;
+    }
+
+    @Override
+    public boolean needsDelimiterFor(String firstKeyword, String lastKeyword) {
         return false;
     }
 

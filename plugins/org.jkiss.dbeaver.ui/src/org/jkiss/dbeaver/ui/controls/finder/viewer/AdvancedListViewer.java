@@ -53,10 +53,10 @@ public class AdvancedListViewer extends StructuredViewer {
             }
         });
 
-        control.getContainer().addPaintListener(e -> {
+        control.addPaintListener(e -> {
             ViewerFilter[] filters = getFilters();
             if (control.getItems().length == 0 && filters != null && filters.length > 0) {
-                UIUtils.drawMessageOverControl(control.getContainer(), e, "No items found", 0);
+                UIUtils.drawMessageOverControl(control, e, "No items found", 0);
             }
         });
     }
@@ -82,8 +82,8 @@ public class AdvancedListViewer extends StructuredViewer {
     }
 
     @Override
-    protected List getSelectionFromWidget() {
-        List list = new ArrayList();
+    protected List<Object> getSelectionFromWidget() {
+        List<Object> list = new ArrayList<>();
         AdvancedListItem item = this.control.getSelectedItem();
         if (item != null) {
             list.add(item.getData());
@@ -106,11 +106,7 @@ public class AdvancedListViewer extends StructuredViewer {
             new AdvancedListItem(control, item, labelProvider);
         }
 
-        if (true) {
-            UIUtils.asyncExec(() -> control.updateSize(true));
-        } else {
-            control.updateSize(true);
-        }
+        control.redraw();
     }
 
     @Override
@@ -129,4 +125,15 @@ public class AdvancedListViewer extends StructuredViewer {
         internalRefresh(getInput());
     }
 
+    @Override
+    public void setFilters(ViewerFilter... filters) {
+        super.setFilters(filters);
+        control.refreshFilters();
+    }
+
+    @Override
+    public void resetFilters() {
+        super.resetFilters();
+        control.refreshFilters();
+    }
 }

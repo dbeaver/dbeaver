@@ -22,6 +22,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -64,6 +65,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -163,6 +165,8 @@ public class ComplexObjectEditor extends TreeViewer {
     private CopyAction copyValueAction;
     private Action addElementAction;
     private Action removeElementAction;
+    private Action moveElementUpAction;
+    private Action moveElementDownAction;
 
     private Map<Object, ComplexElement[]> childrenMap = new IdentityHashMap<>();
 
@@ -259,9 +263,13 @@ public class ComplexObjectEditor extends TreeViewer {
         this.copyValueAction = new CopyAction(false);
         this.addElementAction = new AddElementAction();
         this.removeElementAction = new RemoveElementAction();
+        this.moveElementUpAction = new MoveElementAction(SWT.UP);
+        this.moveElementDownAction = new MoveElementAction(SWT.DOWN);
 
         addElementAction.setEnabled(true);
         removeElementAction.setEnabled(false);
+        moveElementUpAction.setEnabled(false);
+        moveElementDownAction.setEnabled(false);
 
         addSelectionChangedListener(event -> {
             final IStructuredSelection selection = (IStructuredSelection)event.getSelection();
@@ -269,14 +277,20 @@ public class ComplexObjectEditor extends TreeViewer {
                 copyNameAction.setEnabled(false);
                 copyValueAction.setEnabled(false);
                 removeElementAction.setEnabled(false);
-                addElementAction.setEnabled(getInput() instanceof DBDCollection);
+                addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
+                moveElementUpAction.setEnabled(false);
+                moveElementDownAction.setEnabled(false);
             } else {
                 copyNameAction.setEnabled(true);
                 copyValueAction.setEnabled(true);
                 final Object element = selection.getFirstElement();
                 if (element instanceof ArrayItem) {
-                    removeElementAction.setEnabled(true);
-                    addElementAction.setEnabled(true);
+                    int itemIndex = ((ArrayItem)element).index;
+                    int itemCount = childrenMap.get(getInput()).length;
+                    removeElementAction.setEnabled(getInput() instanceof DBDComplexValue);
+                    addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
+                    moveElementUpAction.setEnabled(getInput() instanceof DBDComplexValue && itemCount > 0 && itemIndex > 0);
+                    moveElementDownAction.setEnabled(getInput() instanceof DBDComplexValue && itemCount > 0 && itemIndex < itemCount - 1);
                 }
             }
         });
@@ -314,6 +328,8 @@ public class ComplexObjectEditor extends TreeViewer {
             this.childrenMap.clear();
             setInput(value);
             expandToLevel(2);
+
+            addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
         } finally {
             getTree().setRedraw(true);
         }
@@ -389,6 +405,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
                 ((DBDCollection) complexValue).setContents(newValues);
             }
+//        } else if (complexValue instanceof List) {
+//            ((List) complexValue).clear();
+//            if (items != null) {
+//                for (int i = 0; i < items.length; i++) {
+//                    ((List) complexValue).add(items[i].value);
+//                }
+//            }
         }
         return complexValue;
     }
@@ -453,7 +476,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 ArrayItem arrayItem = (ArrayItem) this.item;
                 valueHandler = arrayItem.array.valueHandler;
                 type = arrayItem.array.componentType;
-                name = type.getTypeName() + "["  + arrayItem.index + "]";
+                name = (type == null ? "?" : type.getTypeName()) + "["  + arrayItem.index + "]";
                 value = arrayItem.value;
             } else if (this.item instanceof MapEntry) {
                 valueHandler = DefaultValueHandler.INSTANCE;
@@ -722,9 +745,9 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     @NotNull
-    private ArrayInfo makeArrayInfo(DBDCollection array) {
+    private ArrayInfo makeArrayInfo(@Nullable DBDCollection array) {
         ArrayInfo arrayInfo = new ArrayInfo();
-        arrayInfo.componentType = array.getComponentType();
+        arrayInfo.componentType = array == null ? null : array.getComponentType();
         if (arrayInfo.componentType == null) {
             arrayInfo.valueHandler = parentController.getExecutionContext().getDataSource().getContainer().getDefaultValueHandler();;
         } else {
@@ -780,7 +803,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private class CopyAction extends Action {
         private final boolean isName;
         CopyAction(boolean isName) {
-            super(WorkbenchMessages.Workbench_copy + " " + getTree().getColumn(isName ? 0 : 1).getText());
+            super(NLS.bind(DataEditorsMessages.complex_object_editor_dialog_menu_copy_element, getTree().getColumn(isName ? 0 : 1).getText()));
             this.isName = isName;
         }
 
@@ -802,27 +825,27 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private class AddElementAction extends Action {
         AddElementAction() {
-            super("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
+            super(DataEditorsMessages.complex_object_editor_dialog_menu_add_element, DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
         }
 
         @Override
         public void run() {
             disposeOldEditor();
-            DBDCollection collection = (DBDCollection) getInput();
-            ComplexElement[] arrayItems = childrenMap.get(collection);
-            if (collection == null) {
+            Object input = getInput();
+            if (input == null) {
                 try {
-                    collection = DBUtils.createNewAttributeValue(
+                    input = DBUtils.createNewAttributeValue(
                         parentController.getExecutionContext(),
                         parentController.getValueHandler(),
                         parentController.getValueType(),
-                        DBDCollection.class);
-                    setInput(collection);
+                        Object.class);
+                    setInput(input);
                 } catch (DBCException e) {
                     DBWorkbench.getPlatformUI().showError("New object create", "Error creating new collection", e);
                     return;
                 }
             }
+            ComplexElement[] arrayItems = childrenMap.get(input);
             if (arrayItems == null) {
                 arrayItems = new ComplexElement[0];
                 //log.error("Can't find children items for add");
@@ -831,14 +854,14 @@ public class ComplexObjectEditor extends TreeViewer {
             final IStructuredSelection selection = getStructuredSelection();
             ArrayItem newItem;
             if (selection.isEmpty()) {
-                newItem = new ArrayItem(makeArrayInfo(collection), arrayItems.length, null);
+                newItem = new ArrayItem(makeArrayInfo(input instanceof DBDCollection ? (DBDCollection) input : null), arrayItems.length, null);
             } else {
                 ArrayItem curItem = (ArrayItem) selection.getFirstElement();
                 newItem = new ArrayItem(curItem.array, curItem.index + 1, null);
             }
             shiftArrayItems(arrayItems, newItem.index, 1);
             arrayItems = ArrayUtils.insertArea(ComplexElement.class, arrayItems, newItem.index, new ComplexElement[] {newItem} );
-            childrenMap.put(collection, arrayItems);
+            childrenMap.put(input, arrayItems);
 
             refresh();
 
@@ -854,7 +877,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private class RemoveElementAction extends Action {
         RemoveElementAction() {
-            super("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
+            super(DataEditorsMessages.complex_object_editor_dialog_menu_remove_element, DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
         }
 
         @Override
@@ -889,9 +912,69 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
+    private class MoveElementAction extends Action {
+        private final int direction;
+
+        MoveElementAction(int dir) {
+            super(dir == SWT.UP
+                      ? DataEditorsMessages.complex_object_editor_dialog_menu_move_up_element
+                      : DataEditorsMessages.complex_object_editor_dialog_menu_move_down_element,
+                DBeaverIcons.getImageDescriptor(dir == SWT.UP ? UIIcon.ARROW_UP : UIIcon.ARROW_DOWN));
+            this.direction = dir;
+        }
+
+        @Override
+        public void run() {
+            disposeOldEditor();
+
+            IStructuredSelection selection = getStructuredSelection();
+            if (selection.isEmpty()) {
+                return;
+            }
+
+            DBDCollection collection = (DBDCollection) getInput();
+            ComplexElement[] arrayItems = childrenMap.get(collection);
+            if (arrayItems == null) {
+                log.error("Can't find children items to move");
+                return;
+            }
+
+            ArrayItem selectedItem = (ArrayItem) selection.getFirstElement();
+            int selectedItemIndex = selectedItem.index;
+
+            if (direction == SWT.UP) {
+                if (selectedItemIndex == 0) {
+                    return;
+                }
+                swapArrayItems(arrayItems, selectedItemIndex, selectedItemIndex - 1);
+                setSelection(new StructuredSelection(arrayItems[selectedItemIndex - 1]));
+                childrenMap.put(collection, arrayItems);
+            } else if (direction == SWT.DOWN) {
+                if (selectedItemIndex == arrayItems.length - 1) {
+                    return;
+                }
+                swapArrayItems(arrayItems, selectedItemIndex, selectedItemIndex + 1);
+                setSelection(new StructuredSelection(arrayItems[selectedItemIndex + 1]));
+                childrenMap.put(collection, arrayItems);
+            }
+
+            refresh();
+            autoUpdateComplexValue();
+        }
+
+        private void swapArrayItems(ComplexElement[] arrayItems, int firstIndex, int secondIndex) {
+            ComplexElement temp = arrayItems[firstIndex];
+            ((ArrayItem)(arrayItems[firstIndex] = arrayItems[secondIndex])).index = firstIndex;
+            ((ArrayItem)(arrayItems[secondIndex] = temp)).index = secondIndex;
+        }
+    }
+
     public void contributeActions(IContributionManager manager) {
         manager.add(addElementAction);
         manager.add(removeElementAction);
+        manager.add(new Separator());
+        manager.add(moveElementUpAction);
+        manager.add(moveElementDownAction);
     }
 
 }

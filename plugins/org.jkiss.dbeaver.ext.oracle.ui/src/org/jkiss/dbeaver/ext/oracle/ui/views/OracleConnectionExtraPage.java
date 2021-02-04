@@ -52,11 +52,12 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useRuleHint;
     private Button useOptimizerHint;
     private Button useSimpleConstraints;
+    private Button useAlternativeTableMetadataQuery;
 
     public OracleConnectionExtraPage()
     {
         setTitle(OracleUIMessages.dialog_connection_oracle_properties);
-        setDescription(OracleUIMessages.dialog_connection_oracle_properties_discription);
+        setDescription(OracleUIMessages.dialog_connection_oracle_properties_description);
     }
 
     @Override
@@ -109,8 +110,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             hideEmptySchemasCheckbox.setToolTipText(
             		OracleUIMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
 
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_discription, false, 1);
-            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_discription, false, 1);
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_show, OracleUIMessages.edit_create_checkbox_content_group_show_description, false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use,  OracleUIMessages.edit_create_checkbox_content_group_use_description, false, 1);
             useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleUIMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
@@ -124,6 +125,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
             useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleUIMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
+
+            useAlternativeTableMetadataQuery = UIUtils.createCheckbox(contentGroup, OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query, false);
+            useAlternativeTableMetadataQuery.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query_description);
         }
 
         setControl(cfgGroup);
@@ -173,6 +177,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         useSimpleConstraints.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS), false));
         useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
         useOptimizerHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER), false));
+        useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY), false));
     }
 
     @Override
@@ -224,6 +229,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_USE_META_OPTIMIZER,
                 String.valueOf(useOptimizerHint.getSelection()));
+            providerProperties.put(
+                    OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
+                    String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
 
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());

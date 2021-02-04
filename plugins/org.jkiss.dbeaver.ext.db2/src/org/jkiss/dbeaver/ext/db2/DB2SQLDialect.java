@@ -40,7 +40,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     };
 
     public DB2SQLDialect() {
-        super("DB2 LUW");
+        super("DB2 LUW", "db2_luw");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -53,7 +53,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public MultiValueInsertMode getMultiValueInsertMode()
+    public MultiValueInsertMode getDefaultMultiValueInsertMode()
     {
         return MultiValueInsertMode.GROUP_ROWS;
     }
@@ -85,5 +85,10 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     @Override
     public String[][] getBlockBoundStrings() {
         return DB2_BEGIN_END_BLOCK;
+    }
+    
+    @Override
+    public String getScriptDelimiterRedefiner() {
+    	return "DELIMITER";
     }
 }

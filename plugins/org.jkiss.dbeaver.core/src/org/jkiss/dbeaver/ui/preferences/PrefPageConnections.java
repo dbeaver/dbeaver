@@ -59,6 +59,7 @@ public class PrefPageConnections extends TargetPrefPage
         SystemVariablesResolver.VAR_DBEAVER_HOME,
         SystemVariablesResolver.VAR_APP_NAME,
         SystemVariablesResolver.VAR_APP_VERSION,
+        SystemVariablesResolver.VAR_APP_PATH,
         SystemVariablesResolver.VAR_LOCAL_IP,
     };
 

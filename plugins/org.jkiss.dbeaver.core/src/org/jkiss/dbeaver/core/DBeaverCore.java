@@ -173,6 +173,11 @@ public class DBeaverCore extends BasePlatformImpl {
         log.debug("Shutdown Core...");
 
         DBeaverCore.setClosing(true);
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationController) {
+            // Shutdown in headless mode
+            ((DBPApplicationController) application).setHeadlessMode(true);
+        }
 
         super.dispose();
 

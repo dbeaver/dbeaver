@@ -87,9 +87,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         }
 
         if (userType) {
-            SQLServerDataType systemDataType = getSystemDataType();
-            this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
-            this.valueType = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
+            if (systemTypeId == SQLServerConstants.TABLE_TYPE_SYSTEM_ID) { // 243 - ID of user defined table types
+                this.dataKind = DBPDataKind.OBJECT;
+                this.valueType = Types.OTHER;
+            } else {
+                SQLServerDataType systemDataType = getSystemDataType();
+                this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
+                this.valueType = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
+            }
         } else {
             this.dataKind = getDataKindByName(this.name);
             this.valueType = getDataTypeIDByName(this.name);
@@ -221,6 +226,11 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Override
+    public long getTypeModifiers() {
+        return 0;
+    }
+
+    @Override
     public int getMinScale() {
         return scale;
     }
@@ -327,6 +337,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case SQLServerConstants.TYPE_SMALLINT:
             case SQLServerConstants.TYPE_DECIMAL:
             case SQLServerConstants.TYPE_FLOAT:
+            case SQLServerConstants.TYPE_MONEY:
+            case SQLServerConstants.TYPE_SMALLMONEY:
                 return DBPDataKind.NUMERIC;
 
             case SQLServerConstants.TYPE_DATETIME:
@@ -340,11 +352,11 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 return DBPDataKind.STRING;
 
             case SQLServerConstants.TYPE_BINARY:
+            case SQLServerConstants.TYPE_VARBINARY:
             case SQLServerConstants.TYPE_TIMESTAMP:
                 return DBPDataKind.BINARY;
 
             case SQLServerConstants.TYPE_IMAGE:
-            case SQLServerConstants.TYPE_VARBINARY:
                 return DBPDataKind.CONTENT;
 
             case SQLServerConstants.TYPE_UNIQUEIDENTIFIER:
@@ -355,8 +367,6 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case SQLServerConstants.TYPE_HIERARCHYID:
                 return DBPDataKind.BINARY;
 
-            case SQLServerConstants.TYPE_MONEY:
-            case SQLServerConstants.TYPE_SMALLMONEY:
             case SQLServerConstants.TYPE_SQL_VARIANT:
                 return DBPDataKind.OBJECT;
 

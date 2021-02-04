@@ -84,6 +84,8 @@ public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativ
                     authDialog.setUserName(wizard.getSettings().getToolUserName());
                     authDialog.setUserPassword(wizard.getSettings().getToolUserPassword());
                     authDialog.setSavePassword(savePassword);
+                    authDialog.setSavePasswordText(PostgreMessages.wizard_backup_page_setting_authentication_save_password);
+                    authDialog.setSavePasswordToolTipText(PostgreMessages.wizard_backup_page_setting_authentication_save_password_tip);
                     if (authDialog.open() == IDialogConstants.OK_ID) {
                         wizard.getSettings().setToolUserName(authDialog.getUserName());
                         wizard.getSettings().setToolUserPassword(authDialog.getUserPassword());

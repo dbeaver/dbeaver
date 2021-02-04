@@ -21,14 +21,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * TextWithOpen
  */
 public class TextWithOpenFile extends TextWithOpen
 {
-    private String title;
-    private String[] filterExt;
+    private final String title;
+    private final String[] filterExt;
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt) {
@@ -42,9 +48,13 @@ public class TextWithOpenFile extends TextWithOpen
     }
 
     protected void openBrowser() {
+        String directory = getDialogDirectory();
         String selected;
         if (openFolder) {
             DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.OPEN | SWT.SINGLE);
+            if (directory != null) {
+                fd.setFilterPath(directory);
+            }
             if (title != null) {
                 fd.setText(title);
             }
@@ -53,11 +63,33 @@ public class TextWithOpenFile extends TextWithOpen
             FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
             fd.setText(title);
             fd.setFilterExtensions(filterExt);
+            if (directory != null) {
+                DialogUtils.setCurDialogFolder(directory);
+            }
             selected = DialogUtils.openFileDialog(fd);
         }
         if (selected != null) {
             setText(selected);
         }
+    }
+
+    protected String getDialogDirectory() {
+        final String text = getText();
+        if (CommonUtils.isEmptyTrimmed(text)) {
+            return null;
+        }
+        try {
+            final Path path = Paths.get(text);
+            if (Files.isDirectory(path)) {
+                return path.toString();
+            }
+            final Path parent = path.getParent();
+            if (parent != null) {
+                return parent.toString();
+            }
+        } catch (InvalidPathException ignored) {
+        }
+        return null;
     }
 
 }

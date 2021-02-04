@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.internal.SQLServerActivator;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -62,6 +64,12 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        if (SQLServerActivator.getDefault().getPreferences().getBoolean(SQLServerConstants.PROP_CLOSE_EXISTING_CONNECTIONS)) {
+            actions.add(new SQLDatabasePersistAction(
+                "Drop database connections",
+                "ALTER DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()) + " SET SINGLE_USER WITH ROLLBACK IMMEDIATE;"
+            ));
+        }
         actions.add(new SQLDatabasePersistAction(
                 "Drop database",
                 "DROP DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()) + ";"

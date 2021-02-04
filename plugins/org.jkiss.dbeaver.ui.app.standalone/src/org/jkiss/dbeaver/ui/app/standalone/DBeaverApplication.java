@@ -24,6 +24,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -32,11 +33,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
-import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
@@ -63,7 +65,7 @@ import java.util.Properties;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication extends BaseApplicationImpl {
+public class DBeaverApplication extends BaseApplicationImpl implements DBPApplicationController {
 
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
@@ -103,6 +105,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
     private Display display = null;
 
     private boolean resetUIOnRestart, resetWorkspaceOnRestart;
+    private long lastUserActivityTime = -1;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -146,12 +149,18 @@ public class DBeaverApplication extends BaseApplicationImpl {
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
     }
 
+
+
     /**
      * Gets singleton instance of DBeaver application
      * @return application or null if application wasn't started or was stopped.
      */
     public static DBeaverApplication getInstance() {
         return instance;
+    }
+
+    public long getUserActivityTime() {
+        return lastUserActivityTime;
     }
 
     @Override
@@ -407,9 +416,17 @@ public class DBeaverApplication extends BaseApplicationImpl {
             if (display == null) {
                 display = PlatformUI.createDisplay();
             }
-            DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
+            addIdleListeners();
         }
         return display;
+    }
+
+    private void addIdleListeners() {
+        int [] events = {SWT.KeyDown, SWT.KeyUp, SWT.MouseDown, SWT.MouseMove, SWT.MouseUp, SWT.MouseWheel};
+        Listener idleListener = event -> lastUserActivityTime = System.currentTimeMillis();
+        for (int event : events) {
+            display.addFilter(event, idleListener);
+        }
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
@@ -534,7 +551,7 @@ public class DBeaverApplication extends BaseApplicationImpl {
         }
         String logLocation = preferenceStore.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION);
         if (CommonUtils.isEmpty(logLocation)) {
-            logLocation = new File(GeneralUtils.getMetadataFolder(), "dbeaver-debug.log").getAbsolutePath(); //$NON-NLS-1$
+            logLocation = new File(GeneralUtils.getMetadataFolder(), DBConstants.DEBUG_LOG_FILE_NAME).getAbsolutePath(); //$NON-NLS-1$
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
@@ -592,6 +609,11 @@ public class DBeaverApplication extends BaseApplicationImpl {
     @Override
     public boolean isHeadlessMode() {
         return headlessMode;
+    }
+
+    @Override
+    public void setHeadlessMode(boolean headlessMode) {
+        this.headlessMode = headlessMode;
     }
 
     @NotNull
@@ -673,5 +695,4 @@ public class DBeaverApplication extends BaseApplicationImpl {
         }
 
     }
-
 }

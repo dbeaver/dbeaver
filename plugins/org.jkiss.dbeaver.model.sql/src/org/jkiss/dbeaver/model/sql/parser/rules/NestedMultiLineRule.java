@@ -17,128 +17,84 @@
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
-import org.jkiss.dbeaver.model.text.parser.TPPartitionScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
-import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.rules.MultiLineRule;
 
-public class NestedMultiLineRule extends MultiLineRule
-{
-    protected int _commentNestingDepth = 0;
+public class NestedMultiLineRule extends MultiLineRule {
+    private static final Log log = Log.getLog(NestedMultiLineRule.class);
 
-    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token)
-    {
-        super(startSequence, endSequence, token);
-    }
+    /**
+     * Current nesting depth. If level is zero i.e start and
+     * end sequences are balanced, then this rule evaluated
+     * to the result of <code>getSuccessToken()</code>
+     */
+    private int fNestingLevel;
 
-    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter)
-    {
-        super(startSequence, endSequence, token, escapeCharacter);
-    }
+    /**
+     * Controls whether rollback to the last end sequence index
+     * should be performed in order to avoid applying this rule
+     * to the entire document when EOF is reached.
+     */
+    private boolean fRollback;
 
-    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token, char escapeCharacter,
-        boolean breaksOnEOF)
-    {
-        super(startSequence, endSequence, token, escapeCharacter, breaksOnEOF);
-    }
-
-    @Override
-    protected boolean endSequenceDetected(TPCharacterScanner scanner)
-    {
-        int c;
-        //char[][] delimiters = scanner.getLegalLineDelimiters();
-        //boolean previousWasEscapeCharacter = false;
-        while ((c = scanner.read()) != TPCharacterScanner.EOF)
-        {
-            if (c == fEscapeCharacter)
-            {
-                // Skip the escaped character.
-                scanner.read();
-            }
-            else if (fEndSequence.length > 0 && c == fEndSequence[0])
-            {
-                // Check if the specified end sequence has been found.
-                if (sequenceDetected(scanner, fEndSequence, true))
-                {
-                    _commentNestingDepth--;
-                }
-                if (_commentNestingDepth <= 0)
-                {
-                    return true;
-                }
-            }
-            else if (fStartSequence.length > 0 && c == fStartSequence[0])
-            {
-                // Check if the nested start sequence has been found.
-                if (sequenceDetected(scanner, fStartSequence, false))
-                {
-                    _commentNestingDepth++;
-                }
-            }
-            //previousWasEscapeCharacter = (c == fEscapeCharacter);
-        }
-        if (fBreaksOnEOF)
-        {
-            return true;
-        }
-        scanner.unread();
-        return false;
+    public NestedMultiLineRule(String startSequence, String endSequence, TPToken token) {
+        super(startSequence, endSequence, token, (char) 0, true);
     }
 
     @Override
-    protected TPToken doEvaluate(TPCharacterScanner scanner, boolean resume)
-    {
-        if (resume)
-        {
-            _commentNestingDepth = 0;
-            if (scanner instanceof TPPartitionScanner)
-            {
-                String scanned = ((TPPartitionScanner) scanner).getScannedPartitionString();
-                if (scanned != null && scanned.length() > 0)
-                {
-                    String startSequence = new String(fStartSequence);
-                    int index = 0;
-                    while ((index = scanned.indexOf(startSequence, index)) >= 0)
-                    {
-                        index++;
-                        _commentNestingDepth++;
-                    }
-                    //must be aware of the closing sequences
-                    String endSequence = new String(fEndSequence);
-                    index = 0;
-                    while ((index = scanned.indexOf(endSequence, index)) >= 0)
-                    {
-                        index++;
-                        _commentNestingDepth--;
+    public TPToken evaluate(TPCharacterScanner scanner) {
+        fNestingLevel = 1;
+        return super.evaluate(scanner);
+    }
+
+    @Override
+    protected boolean endSequenceDetected(TPCharacterScanner scanner) {
+        int currentIndex = 0;
+        int endSequenceIndex = 0;
+
+        while (true) {
+            final int ch = scanner.read();
+
+            if (fStartSequence.length > 0 && ch == fStartSequence[0]) {
+                if (sequenceDetected(scanner, fStartSequence, fBreaksOnEOF)) {
+                    fNestingLevel += 1;
+                }
+            } else if (fEndSequence.length > 0 && ch == fEndSequence[0]) {
+                if (sequenceDetected(scanner, fEndSequence, fBreaksOnEOF)) {
+                    fNestingLevel -= 1;
+                    if (fNestingLevel > 0 && fRollback) {
+                        // Update to last end sequence index at positive
+                        // nesting level (> 0) so we can rollback later
+                        endSequenceIndex = currentIndex;
                     }
                 }
-            }
-            if (endSequenceDetected(scanner))
-            {
-                return fToken;
-            }
-
-        }
-        else
-        {
-
-            int c = scanner.read();
-            if (c == fStartSequence[0])
-            {
-                if (sequenceDetected(scanner, fStartSequence, false))
-                {
-                    _commentNestingDepth = 1;
-                    if (endSequenceDetected(scanner))
-                    {
-                        return fToken;
+            } else if (ch == TPCharacterScanner.EOF) {
+                log.trace("Found unterminated start sequences after scanning");
+                if (fRollback) {
+                    // Rollback to last end index - at least this rule
+                    // won't be applied to the entire document
+                    for (; currentIndex > endSequenceIndex; currentIndex--) {
+                        scanner.unread();
                     }
                 }
+                return true;
             }
+
+            if (fNestingLevel <= 0) {
+                return true;
+            }
+
+            currentIndex += 1;
         }
+    }
 
-        scanner.unread();
-        return TPTokenAbstract.UNDEFINED;
+    public boolean isRollback() {
+        return fRollback;
+    }
 
+    public void setRollback(boolean rollback) {
+        fRollback = rollback;
     }
 }

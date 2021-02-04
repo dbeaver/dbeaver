@@ -54,6 +54,10 @@
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasourceOrigin id="local" label="Local configuration" class="org.jkiss.dbeaver.registry.DataSourceOriginProviderLocal"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="native"

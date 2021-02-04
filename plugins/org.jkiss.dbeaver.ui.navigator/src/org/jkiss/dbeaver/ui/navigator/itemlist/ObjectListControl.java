@@ -73,9 +73,11 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IClipboardSource {
     private static final Log log = Log.getLog(ObjectListControl.class);
 
+    private static final boolean IS_MACOS_BIG_SUR = GeneralUtils.isMacOS() && Objects.equals(System.getProperty("os.version"), "10.16");
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
+    private static final String EMPTY_STRING = "";
 
     private boolean isFitWidth;
 
@@ -108,7 +110,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         IContentProvider contentProvider)
     {
         super(parent, style);
-
 
         this.isFitWidth = false;
 
@@ -143,11 +144,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
             // We need measure item listener to prevent collapse/expand on double click
             // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
-            treeViewer.getControl().addListener(SWT.MeasureItem, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    // Just do nothing
-                }
+            treeViewer.getControl().addListener(SWT.MeasureItem, event -> {
+                // Just do nothing
             });
             tree.addTraverseListener(traverseListener);
         } else {
@@ -201,7 +199,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
             String status;
             if (selection.isEmpty()) {
-                status = ""; //$NON-NLS-1$
+                status = EMPTY_STRING; //$NON-NLS-1$
             } else if (selection.size() == 1) {
                 Object selectedNode = selection.getFirstElement();
                 status = ObjectViewerRenderer.getCellString(selectedNode, false);
@@ -527,6 +525,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
+        if (IS_MACOS_BIG_SUR) { //[#10162]
+            itemsControl.redraw();
+        }
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
@@ -798,7 +799,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             columnController.addColumn(
                 prop.getDisplayName(),
                 prop.getDescription(),
-                prop.isNumeric() ? SWT.RIGHT : SWT.NONE,
+                prop.isNumeric() ? SWT.RIGHT : (prop.isBoolean() ? SWT.CENTER : SWT.NONE),
                 prop.isViewable(),
                 prop.isNameProperty(),
                 prop.isNumeric(),
@@ -1041,35 +1042,44 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public String getText(Object element, boolean forUI) {
+            return getText(element, forUI, false);
+        }
+
+        public String getText(Object element, boolean forUI, boolean forTip) {
             Object cellValue = getCellValue(element, objectColumn, forUI);
             if (cellValue instanceof LazyValue) {
                 cellValue = ((LazyValue) cellValue).value;
             }
             if (forUI && !sampleItems && renderer.isHyperlink(cellValue)) {
-                return ""; //$NON-NLS-1$
+                return EMPTY_STRING; //$NON-NLS-1$
             }
             final Object objectValue = getObjectValue((OBJECT_TYPE) element);
             if (objectValue == null) {
                 // This may happen if list redraw happens during node dispose
-                return "";
+                return EMPTY_STRING;
             }
             final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
             if (prop != null) {
                 if (forUI && cellValue instanceof Boolean) {
-                    return "";
+                    return EMPTY_STRING;
+//                    BooleanRenderer.Style booleanStyle = BooleanRenderer.getDefaultStyle();
+//                    if (forTip || !booleanStyle.isText()) {
+//                        return EMPTY_STRING;
+//                    }
+//                    return booleanStyle.getText((Boolean) cellValue);
                 }
                 if (prop.isPassword() && cellValue instanceof String) {
-                    return  CommonUtils.isEmpty((String) cellValue) ? "" : "************";
+                    return  CommonUtils.isEmpty((String) cellValue) ? EMPTY_STRING : "************";
                 }
                 return ObjectViewerRenderer.getCellString(cellValue, prop.isNameProperty());
             } else {
-                return "";
+                return EMPTY_STRING;
             }
         }
 
         @Override
         public String getToolTipText(Object element) {
-            String text = getText(element, false);
+            String text = getText(element, true, true);
             if (CommonUtils.isEmpty(text)) {
                 return null;
             }

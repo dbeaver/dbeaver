@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -38,11 +39,13 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     private boolean grant;
     private PostgrePrivilege permission;
     private PostgrePrivilegeType[] privilege;
+    private DBSObject privilegeOwner;
 
-    public PostgreCommandGrantPrivilege(PostgrePrivilegeOwner user, boolean grant, PostgrePrivilege permission, PostgrePrivilegeType[] privilege)
+    public PostgreCommandGrantPrivilege(PostgrePrivilegeOwner user, boolean grant, DBSObject privilegeOwner, PostgrePrivilege permission, PostgrePrivilegeType[] privilege)
     {
         super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
+        this.privilegeOwner = privilegeOwner;
         this.permission = permission;
         this.privilege = privilege;
     }
@@ -75,7 +78,11 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         String objectName, roleName;
         if (object instanceof PostgreRole) {
             roleName = DBUtils.getQuotedIdentifier(object);
-            objectName = ((PostgreRolePrivilege)permission).getFullObjectName();
+            if (privilegeOwner instanceof PostgreProcedure) {
+                objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
+            } else {
+                objectName = ((PostgreRolePrivilege) permission).getFullObjectName();
+            }
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.permission;
             roleName = permission.getGrantee() == null ? null : DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee());
@@ -87,6 +94,11 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
         String objectType;
         if (permission instanceof PostgreRolePrivilege) {
+            if (privilegeOwner instanceof PostgreProcedure) {
+                if (((PostgreProcedure) privilegeOwner).getKind() == PostgreProcedureKind.p) {
+                    ((PostgreRolePrivilege) permission).setKind(PostgrePrivilegeGrant.Kind.PROCEDURE);
+                }
+            }
             objectType = ((PostgreRolePrivilege) permission).getKind().name();
         } else {
             objectType = PostgreUtils.getObjectTypeName(object);

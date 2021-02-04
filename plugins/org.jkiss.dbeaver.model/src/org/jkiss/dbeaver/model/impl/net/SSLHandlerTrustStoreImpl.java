@@ -41,6 +41,8 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
+    public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
+    public static final String PROP_SSL_METHOD = "ssl.method";
     public static final String CERT_TYPE = "ssl";
 
     /**
@@ -53,10 +55,21 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         final String clientCertProp = sslConfig.getStringProperty(PROP_SSL_CLIENT_CERT);
         final String clientCertKeyProp = sslConfig.getStringProperty(PROP_SSL_CLIENT_KEY);
         final String selfSignedCert = sslConfig.getStringProperty(PROP_SSL_SELF_SIGNED_CERT);
+        final String keyStore = sslConfig.getStringProperty(PROP_SSL_KEYSTORE);
+        final String password = sslConfig.getPassword();
+
+        final SSLConfigurationMethod method = CommonUtils.valueOf(
+            SSLConfigurationMethod.class,
+            sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD),
+            SSLConfigurationMethod.CERTIFICATES);
 
         {
-            // Trust keystore
-            if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
+            if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
+                monitor.subTask("Load keystore");
+                byte[] keyStoreData = IOUtils.readFileToBuffer(new File(keyStore));
+                char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? null : password.toCharArray();
+                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStoreData, keyStorePasswordData);
+            } else if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
                 monitor.subTask("Load certificates");
                 byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
                 byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
@@ -69,7 +82,6 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
                 securityManager.deleteCertificate(dataSource.getContainer(), CERT_TYPE);
             }
         }
-
     }
 
     public static void setGlobalTrustStore(DBPDataSource dataSource) {

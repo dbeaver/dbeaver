@@ -294,4 +294,9 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
         updatePageCompletion();
     }
 
+    @Override
+    public void deactivatePage() {
+        propsEditor.saveEditorValues();
+        super.deactivatePage();
+    }
 }

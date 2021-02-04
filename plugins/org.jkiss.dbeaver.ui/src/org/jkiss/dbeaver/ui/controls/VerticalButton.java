@@ -35,6 +35,8 @@ public class VerticalButton extends Canvas {
     public static final int BORDER_MARGIN = 2;
     public static final int VERT_INDENT = 8;
 
+    private static final Point EMPTY_SIZE = new Point(0, 0);
+
     private int mouse = 0;
     private boolean hit = false;
 
@@ -169,24 +171,21 @@ public class VerticalButton extends Canvas {
     }
 
     public Point computeSize(GC gc, int wHint, int hHint, boolean changed) {
-        Point textSize = gc.stringExtent(getText());
+        String text = getText();
+        Point textSize = CommonUtils.isEmpty(text) ? EMPTY_SIZE : gc.stringExtent(text);
 
-        Point iconSize = new Point(0, 0);
+        Point iconSize = EMPTY_SIZE;
         if (image != null) {
             Rectangle imageBounds = image.getBounds();
-            iconSize.x = imageBounds.width + BORDER_MARGIN;
-            iconSize.y = imageBounds.height + BORDER_MARGIN * 2;
+            iconSize = new Point(imageBounds.width + BORDER_MARGIN, imageBounds.height + BORDER_MARGIN * 2);
+            if (textSize == EMPTY_SIZE) {
+                return iconSize;
+            }
         }
 
-        if (CommonUtils.isEmpty(text)) {
-            return new Point(
-                iconSize.x,
-                iconSize.y);
-        } else {
-            return new Point(
-                Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
-                textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
-        }
+        return new Point(
+            Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
+            textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
     }
 
     public void paint(PaintEvent e) {

@@ -614,6 +614,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<TabbedFolderInfo> tabList)
     {
+        monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
             // Do not add children tabs
@@ -651,7 +652,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
-                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
+                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new TabbedFolderInfo(
                                     folder.getNodeName(),
@@ -676,7 +677,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(
@@ -695,6 +696,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         }
+        monitor.done();
     }
 
     @Override
@@ -740,7 +742,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void createPropertyRefreshAction(IContributionManager contributionManager) {
+    void createPropertyRefreshAction(IContributionManager contributionManager) {
         // Contribute "Read expensive props" - but only if object has expensive props
         DBSObject databaseObject = getDatabaseObject();
         if (!databaseObject.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES)) {

@@ -87,6 +87,10 @@ public class PatternRule implements TPPredicateRule {
      * Indicates whether end of file terminates the pattern
      */
     protected boolean fBreaksOnEOF;
+    /**
+     * Indicates whether line delimiter should be included into produced token
+     */
+    protected boolean fExcludeLineDelimiter;
 
     /**
      * Line delimiter comparator which orders according to decreasing delimiter length.
@@ -168,6 +172,35 @@ public class PatternRule implements TPPredicateRule {
     public PatternRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOL, boolean breaksOnEOF, boolean escapeContinuesLine) {
         this(startSequence, endSequence, token, escapeCharacter, breaksOnEOL, breaksOnEOF);
         fEscapeContinuesLine = escapeContinuesLine;
+    }
+
+    /**
+     * Creates a rule for the given starting and ending sequence.
+     * When these sequences are detected the rule will return the specified token.
+     * Alternatively, the sequence can also be ended by the end of the line or the end of the file.
+     * Any character which follows the given escapeCharacter will be ignored. An end of line
+     * immediately after the given <code>lineContinuationCharacter</code> will not cause the
+     * pattern to terminate even if <code>breakOnEOL</code> is set to true.
+     * If <code>breaksOnEOL</code> is set to <code>true</code> and this rule was terminated by
+     * reaching line delimiter, then that line delimiter will be included into produced token
+     * if <code>excludeLineDelimiter</code> flag is also set to <code>true</code>.
+     *
+     * @param startSequence         the pattern's start sequence
+     * @param endSequence           the pattern's end sequence, <code>null</code> is a legal value
+     * @param token                 the token which will be returned on success
+     * @param escapeCharacter       any character following this one will be ignored
+     * @param breaksOnEOL           indicates whether the end of the line also terminates the pattern
+     * @param breaksOnEOF           indicates whether the end of the file also terminates the pattern
+     * @param escapeContinuesLine   indicates whether the specified escape character is used for line
+     *                              continuation, so that an end of line immediately after the escape character does not
+     *                              terminate the pattern, even if <code>breakOnEOL</code> is set
+     * @param excludeLineDelimiter  indicates whether the line delimiter should be included into produced token or not
+     * @since 7.2.5
+     */
+    public PatternRule(String startSequence, String endSequence, TPToken token, char escapeCharacter, boolean breaksOnEOL, boolean breaksOnEOF, boolean escapeContinuesLine, boolean excludeLineDelimiter) {
+        this(startSequence, endSequence, token, escapeCharacter, breaksOnEOL, breaksOnEOF);
+        fEscapeContinuesLine = escapeContinuesLine;
+        fExcludeLineDelimiter = excludeLineDelimiter;
     }
 
     /**
@@ -277,8 +310,13 @@ public class PatternRule implements TPPredicateRule {
             } else if (fBreaksOnEOL) {
                 // Check for end of line since it can be used to terminate the pattern.
                 for (char[] fSortedLineDelimiter : fSortedLineDelimiters) {
-                    if (c == fSortedLineDelimiter[0] && sequenceDetected(scanner, fSortedLineDelimiter, fBreaksOnEOF))
+                    if (c == fSortedLineDelimiter[0] && sequenceDetected(scanner, fSortedLineDelimiter, fBreaksOnEOF)) {
+                        if (fExcludeLineDelimiter) {
+                            for (int i = 0; i < fSortedLineDelimiter.length; i++)
+                                scanner.unread();
+                        }
                         return true;
+                    }
                 }
             }
             readCount++;

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -135,10 +136,14 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, String name, String sqlText) {
+    public Object openSQLConsole(@NotNull DBPDataSourceContainer dataSourceContainer, DBCExecutionContext executionContext, DBSObject selectedObject, String name, String sqlText) {
+        SQLNavigatorContext navigatorContext = executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer);
+        if (selectedObject != null) {
+            navigatorContext.setSelectedObject(selectedObject);
+        }
         return SQLEditorHandlerOpenEditor.openSQLConsole(
             UIUtils.getActiveWorkbenchWindow(),
-            executionContext != null ? new SQLNavigatorContext(executionContext) : new SQLNavigatorContext(dataSourceContainer),
+            navigatorContext,
             name,
             sqlText);
     }
@@ -186,9 +191,14 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         if (panelObject instanceof TextViewer) {
             Object editor = ((TextViewer) panelObject).getData("editor");
             if (editor instanceof SQLEditorBase) {
-                ((SQLEditorBase) editor).setInput(
-                    new StringEditorInput("SQL", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
-                ((SQLEditorBase) editor).reloadSyntaxRules();
+                IDocument document = ((SQLEditorBase) editor).getDocument();
+                if (((SQLEditorBase) editor).getEditorInput() instanceof StringEditorInput && document != null) {
+                    document.set(sqlText);
+                } else {
+                    ((SQLEditorBase) editor).setInput(
+                        new StringEditorInput("SQL", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
+                    ((SQLEditorBase) editor).reloadSyntaxRules();
+                }
             }
         }
     }

@@ -84,7 +84,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         inputFileText = new TextWithOpenFile(inputGroup, PostgreMessages.wizard_restore_page_setting_label_choose_backup_file, new String[] {"*.backup","*.sql","*"});
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
-        //inputFileText.setText(wizard.getSettings().getInputFile());
+        inputFileText.setText(wizard.getSettings().getInputFile());
 
         createExtraArgsInput(inputGroup);
 

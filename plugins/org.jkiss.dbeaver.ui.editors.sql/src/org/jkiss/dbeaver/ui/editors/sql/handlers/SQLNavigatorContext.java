@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 public class SQLNavigatorContext implements DatabaseEditorContext {
 
     private DBPDataSourceContainer dataSourceContainer;
-    private final DBSObject selectedObject;
-    private final DBCExecutionContext executionContext;
+    private DBSObject selectedObject;
+    private DBCExecutionContext executionContext;
 
     SQLNavigatorContext(ExecutionEvent event) {
         this.selectedObject = AbstractDataSourceHandler.getActiveObject(event);
@@ -89,6 +89,10 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
     @Override
     public DBSObject getSelectedObject() {
         return selectedObject;
+    }
+
+    public void setSelectedObject(DBSObject selectedObject) {
+        this.selectedObject = selectedObject;
     }
 
     @Override

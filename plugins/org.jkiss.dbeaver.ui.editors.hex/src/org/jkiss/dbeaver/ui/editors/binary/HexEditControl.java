@@ -1544,7 +1544,7 @@ public class HexEditControl extends Composite {
         List<Long> changeRanges = new ArrayList<>();
         int actuallyRead;
         try {
-            actuallyRead = content.get(ByteBuffer.wrap(tmpRawBuffer, 0, linesShifted * bytesPerLine),
+            actuallyRead = content.get(ByteBuffer.wrap(tmpRawBuffer, 0, Math.min(tmpRawBuffer.length, linesShifted * bytesPerLine)),
                 changeRanges, newLinesStart);
         } catch (IOException e) {
             actuallyRead = 0;

@@ -91,6 +91,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.version = CommonUtils.trim(version);
 
         loadPOM(monitor);
+        this.version = evaluateString(this.version);
+
     }
 
     @NotNull

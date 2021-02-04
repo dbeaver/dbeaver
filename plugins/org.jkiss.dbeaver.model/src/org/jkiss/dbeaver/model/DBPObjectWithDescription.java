@@ -22,8 +22,7 @@ import org.jkiss.code.Nullable;
 /**
  * Object with description
  */
-public interface DBPObjectWithDescription extends DBPObject
-{
+public interface DBPObjectWithDescription extends DBPObject {
 
     /**
      * Object description

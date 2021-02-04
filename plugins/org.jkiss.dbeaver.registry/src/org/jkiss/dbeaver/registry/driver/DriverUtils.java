@@ -170,15 +170,7 @@ public class DriverUtils {
 
     public static void sortDriversByRating(List<DBPDataSourceContainer> allDataSources, List<DBPDriver> drivers) {
         try {
-            drivers.sort((o1, o2) -> {
-                int ub1 = getUsedBy(o1, allDataSources).size() + o1.getPromotedScore();
-                int ub2 = getUsedBy(o2, allDataSources).size() + o2.getPromotedScore();
-                if (ub1 == ub2) {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                } else {
-                    return ub2 - ub1;
-                }
-            });
+            drivers.sort(new DriverScoreComparator(allDataSources));
         } catch (Throwable e) {
             // ignore
         }
@@ -194,6 +186,33 @@ public class DriverUtils {
         allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
 
         return allDrivers;
+    }
+
+    public static class DriverNameComparator implements Comparator<DBPDriver> {
+
+        @Override
+        public int compare(DBPDriver o1, DBPDriver o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        }
+    }
+
+    public static class DriverScoreComparator extends DriverNameComparator {
+        private final List<DBPDataSourceContainer> dataSources;
+
+        public DriverScoreComparator(List<DBPDataSourceContainer> dataSources) {
+            this.dataSources = dataSources;
+        }
+
+        @Override
+        public int compare(DBPDriver o1, DBPDriver o2) {
+            int ub1 = getUsedBy(o1, dataSources).size() + o1.getPromotedScore();
+            int ub2 = getUsedBy(o2, dataSources).size() + o2.getPromotedScore();
+            if (ub1 == ub2) {
+                return super.compare(o1, o2);
+            } else {
+                return ub2 - ub1;
+            }
+        }
     }
 
 }

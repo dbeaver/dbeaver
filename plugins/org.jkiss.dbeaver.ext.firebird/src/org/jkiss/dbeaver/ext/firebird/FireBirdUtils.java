@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -38,9 +40,7 @@ import org.osgi.framework.Version;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,12 +122,34 @@ public class FireBirdUtils {
                     args.add(param);
                 }
             }
+            Map<String, String> domainNames = new HashMap<>();
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, procedure, "Load domains used in procedure")) {
+                try (JDBCPreparedStatement stmt = session.prepareStatement(
+                        "SELECT RDB$PARAMETER_NAME, RDB$FIELD_SOURCE " +
+                        "FROM RDB$PROCEDURE_PARAMETERS rpp " +
+                        "WHERE RDB$PROCEDURE_NAME = ? " +
+                        "AND LEFT(rpp.RDB$FIELD_SOURCE, 4) <> 'RDB$'")) {
+                    stmt.setString(1, procedure.getName());
+                    try (JDBCResultSet rs = stmt.executeQuery()) {
+                        while (rs.next()) {
+                            String paramName = rs.getString(1);
+                            String domainName = rs.getString(2);
+                            if (paramName != null && domainName != null) {
+                                domainNames.put(paramName.trim(), domainName.trim());
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBException("Unable to load domains used in procedure", e);
+                }
+                domainNames = Collections.unmodifiableMap(domainNames);
+            }
             if (!args.isEmpty()) {
                 sql.append("(");
                 for (int i = 0; i < args.size(); i++) {
                     GenericProcedureParameter param = args.get(i);
                     if (i > 0) sql.append(", ");
-                    printParam(sql, param);
+                    printParam(sql, param, domainNames);
                 }
                 sql.append(")\n");
             }
@@ -136,7 +158,7 @@ public class FireBirdUtils {
                 for (int i = 0; i < results.size(); i++) {
                     sql.append('\t');
                     GenericProcedureParameter param = results.get(i);
-                    printParam(sql, param);
+                    printParam(sql, param, domainNames);
                     if (i < results.size() - 1) sql.append(",");
                     sql.append('\n');
                 }
@@ -149,8 +171,15 @@ public class FireBirdUtils {
         return sql.toString();
     }
 
-    private static void printParam(StringBuilder sql, GenericProcedureParameter param) {
-        sql.append(DBUtils.getQuotedIdentifier(param)).append(" ").append(param.getTypeName());
+    private static void printParam(StringBuilder sql, GenericProcedureParameter param, Map<String, String> domainNames) {
+        String paramName = DBUtils.getQuotedIdentifier(param);
+        sql.append(paramName).append(" ");
+        String domainName = domainNames.get(paramName.trim());
+        if (domainName != null) {
+            sql.append(domainName);
+            return;
+        }
+        sql.append(param.getTypeName());
         String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
         if (typeModifiers != null) {
             sql.append(typeModifiers);
@@ -221,4 +250,27 @@ public class FireBirdUtils {
         return new Version(0, 0, 0);
     }
 
+    public static Map<String, String> readColumnDomainTypes(DBRProgressMonitor monitor, GenericTableBase table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read column domain type")) {
+            // Read metadata
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
+                dbStat.setString(1, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    Map<String, String> dtMap = new HashMap<>();
+                    while (dbResult.next()) {
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                        String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                        if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                            dtMap.put(columnName, domainTypeName);
+                        }
+                    }
+                    return dtMap;
+                }
+            }
+
+        } catch (SQLException ex) {
+            throw new DBException("Error reading column domain types for " + table.getName(), ex);
+        }
+
+    }
 }

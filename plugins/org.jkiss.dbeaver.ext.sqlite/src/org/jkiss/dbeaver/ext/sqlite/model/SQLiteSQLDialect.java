@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 public class SQLiteSQLDialect extends GenericSQLDialect {
 
     public SQLiteSQLDialect() {
-        super("SQLite");
+        super("SQLite", "sqlite");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

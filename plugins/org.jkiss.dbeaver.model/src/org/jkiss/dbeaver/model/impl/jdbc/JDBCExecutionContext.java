@@ -74,8 +74,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @NotNull
-    private Connection getConnection() {
-        return connection;
+    private Connection getConnection() throws DBCException {
+        Connection dbCon = this.connection;
+        if (dbCon == null) {
+            throw new DBCException("Disconnected");
+        }
+        return dbCon;
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException {
@@ -110,7 +114,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             if (txnLevel != null) {
                 try {
-                    this.connection.setTransactionIsolation(txnLevel);
+                    this.getConnection().setTransactionIsolation(txnLevel);
                     this.transactionIsolationLevel = txnLevel;
                 } catch (Throwable e) {
                     log.debug("Can't set transaction isolation level", e); //$NON-NLS-1$
@@ -340,8 +344,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         throws DBCException {
         monitor.subTask("Set JDBC connection auto-commit " + autoCommit);
         try {
-            connection.setAutoCommit(autoCommit);
-            this.autoCommit = connection.getAutoCommit();
+            Connection dbCon = getConnection();
+            dbCon.setAutoCommit(autoCommit);
+            this.autoCommit = dbCon.getAutoCommit();
         } catch (SQLException e) {
             throw new JDBCException(e, this);
         } finally {
@@ -354,10 +359,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         throws DBCException {
         Savepoint savepoint;
         try {
+            Connection dbCon = getConnection();
             if (name == null) {
-                savepoint = getConnection().setSavepoint();
+                savepoint = dbCon.setSavepoint();
             } else {
-                savepoint = getConnection().setSavepoint(name);
+                savepoint = dbCon.setSavepoint(name);
             }
         } catch (SQLException e) {
             throw new DBCException(e, this);
@@ -374,10 +380,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public void releaseSavepoint(@NotNull DBRProgressMonitor monitor, @NotNull DBCSavepoint savepoint)
         throws DBCException {
         try {
+            Connection dbCon = getConnection();
             if (savepoint instanceof JDBCSavepointImpl) {
-                getConnection().releaseSavepoint(((JDBCSavepointImpl) savepoint).getOriginal());
+                dbCon.releaseSavepoint(((JDBCSavepointImpl) savepoint).getOriginal());
             } else if (savepoint instanceof Savepoint) {
-                getConnection().releaseSavepoint((Savepoint) savepoint);
+                dbCon.releaseSavepoint((Savepoint) savepoint);
             } else {
                 throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
             }
@@ -404,16 +411,17 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public void rollback(@NotNull DBCSession session, DBCSavepoint savepoint)
         throws DBCException {
         try {
+            Connection dbCon = getConnection();
             if (savepoint != null) {
                 if (savepoint instanceof JDBCSavepointImpl) {
-                    getConnection().rollback(((JDBCSavepointImpl) savepoint).getOriginal());
+                    dbCon.rollback(((JDBCSavepointImpl) savepoint).getOriginal());
                 } else if (savepoint instanceof Savepoint) {
-                    getConnection().rollback((Savepoint) savepoint);
+                    dbCon.rollback((Savepoint) savepoint);
                 } else {
                     throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
                 }
             } else {
-                getConnection().rollback();
+                dbCon.rollback();
             }
         } catch (SQLException e) {
             throw new JDBCException(e, this);

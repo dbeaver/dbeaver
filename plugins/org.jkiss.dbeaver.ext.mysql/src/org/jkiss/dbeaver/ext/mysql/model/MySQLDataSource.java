@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,6 +82,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
+
+    private transient boolean inServerTimezoneHandle;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException {
@@ -123,6 +126,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+        if (CommonUtils.isEmpty(serverTZ) && inServerTimezoneHandle/*&& getContainer().getDriver().getId().equals(MySQLConstants.DRIVER_ID_MYSQL8)*/) {
+            serverTZ = "UTC";
+        }
         if (!CommonUtils.isEmpty(serverTZ)) {
             props.put("serverTimezone", serverTZ);
         }
@@ -166,9 +172,20 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
         }
 
-        final String caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
-        final String clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
-        final String clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
+        final String caCertProp;
+        final String clientCertProp;
+        final String clientCertKeyProp;
+
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
+            clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
+        } else {
+            caCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+            clientCertKeyProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+        }
 
         {
             // Trust keystore
@@ -384,7 +401,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException {
         return MySQLCatalog.class;
     }
@@ -397,7 +414,27 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        Connection mysqlConnection = super.openConnection(monitor, context, purpose);
+        Connection mysqlConnection;
+        try {
+            mysqlConnection = super.openConnection(monitor, context, purpose);
+        } catch (DBCException e) {
+            if (e.getCause() instanceof SQLException &&
+                SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
+                CommonUtils.isEmpty(getContainer().getActualConnectionConfiguration().getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE)))
+            {
+                // Workaround for nasty problem with MySQL 8 driver and serverTimezone error
+                log.debug("Error connecting without serverTimezone. Trying to set serverTimezone=UTC. Original error: " + e.getMessage());
+                inServerTimezoneHandle = true;
+                try {
+                    mysqlConnection = super.openConnection(monitor, context, purpose);
+                } catch (DBCException e2) {
+                    inServerTimezoneHandle = false;
+                    throw e2;
+                }
+            } else {
+                throw e;
+            }
+        }
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
