@@ -21,10 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -86,6 +83,12 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             });
         }
 
+        // Expand first page
+        Tree pagesTree = getPagesTree();
+        TreeItem[] items = pagesTree.getItems();
+        if (items.length > 0) {
+            items[0].setExpanded(true);
+        }
         return contents;
     }
 
