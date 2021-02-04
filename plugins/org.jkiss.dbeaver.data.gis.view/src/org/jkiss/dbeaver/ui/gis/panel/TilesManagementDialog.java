@@ -110,12 +110,12 @@ class TilesManagementDialog extends BaseDialog {
                     log.error("Can't find tiles to edit!");
                     return;
                 }
-                LeafletTilesDescriptor descriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
-                if (descriptor.isPredefined()) {
+                LeafletTilesDescriptor originalDescriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
+                if (originalDescriptor.isPredefined()) {
                     log.error("Can't edit predefined descriptor!");
                     return;
                 }
-                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), descriptor);
+                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), originalDescriptor);
                 int result = dialog.open();
                 if (result != IDialogConstants.OK_ID) {
                     return;
@@ -125,14 +125,14 @@ class TilesManagementDialog extends BaseDialog {
                     log.error("Edited descriptor is null despite that user clicked ok");
                     return;
                 }
-                if (isModelContainsDescriptorWithLabel(editedDescriptor.getLabel())) {
+                if (containsDescriptorWithLabel(predefinedTiles, editedDescriptor.getLabel()) || userDefinedTiles.stream().anyMatch(t -> t.getLabel().equals(editedDescriptor.getLabel()) && !t.equals(originalDescriptor))) {
                     DBWorkbench.getPlatformUI().showError(
                             GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_title,
                             GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_message
                     );
                     return;
                 }
-                replace(userDefinedTiles, descriptor, editedDescriptor);
+                replace(userDefinedTiles, originalDescriptor, editedDescriptor);
                 repopulateTree(editedDescriptor, true);
             }
         });
