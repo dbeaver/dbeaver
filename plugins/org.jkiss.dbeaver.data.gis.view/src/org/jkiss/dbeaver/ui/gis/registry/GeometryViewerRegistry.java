@@ -199,7 +199,7 @@ public class GeometryViewerRegistry {
             predefinedTiles.addAll(predefinedDescriptors);
             userDefinedTiles.clear();
             userDefinedTiles.addAll(userDefinedDescriptors);
-            if (!predefinedTiles.contains(defaultLeafletTiles) && !userDefinedTiles.contains(defaultLeafletTiles)) {
+            if (defaultLeafletTiles == null || (!predefinedTiles.contains(defaultLeafletTiles) && !userDefinedTiles.contains(defaultLeafletTiles))) {
                 autoAssignDefaultLeafletTiles();
             }
             flushConfig();
