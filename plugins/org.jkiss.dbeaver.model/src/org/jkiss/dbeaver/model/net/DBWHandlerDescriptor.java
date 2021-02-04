@@ -18,12 +18,16 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 
 /**
  * Network handler descriptor
  */
 public interface DBWHandlerDescriptor {
 
+    /**
+     * Unique ID
+     */
     @NotNull
     String getId();
 
@@ -34,9 +38,18 @@ public interface DBWHandlerDescriptor {
 
     String getDescription();
 
+    /**
+     * Handler type
+     */
     DBWHandlerType getType();
 
     boolean isSecured();
+
+    /**
+     * Handler properties.
+     * Can be used for DBWHandlerConfiguration.properties setup.
+     */
+    DBPPropertyDescriptor[] getHandlerProperties();
 
     <T extends DBWNetworkHandler> T createHandler(Class<T> impl) throws DBException;
 

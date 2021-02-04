@@ -387,4 +387,8 @@
         <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplicationPreferenceInitializer"/>
+    </extension>
+
 </plugin>

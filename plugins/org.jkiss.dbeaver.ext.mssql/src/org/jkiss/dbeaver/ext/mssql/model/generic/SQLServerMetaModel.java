@@ -316,7 +316,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean isSchemasOptional() {
-        return false;
+        return true;
     }
 
     @Override

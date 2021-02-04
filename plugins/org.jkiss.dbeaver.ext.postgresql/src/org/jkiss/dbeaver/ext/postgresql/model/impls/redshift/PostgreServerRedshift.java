@@ -17,18 +17,22 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -42,9 +46,10 @@ import java.util.regex.Pattern;
 /**
  * PostgreServerRedshift
  */
-public class PostgreServerRedshift extends PostgreServerExtensionBase {
+public class PostgreServerRedshift extends PostgreServerExtensionBase implements DBPErrorAssistant {
 
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
+    public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
 
     private Version redshiftVersion;
 
@@ -255,6 +260,21 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
         return new RedshiftSchemaCache();
+    }
+
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        int errorCode = SQLState.getCodeFromException(error);
+        if (errorCode == RS_ERROR_CODE_CHANNEL_CLOSE) {
+            return ErrorType.CONNECTION_LOST;
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
+        return null;
     }
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {

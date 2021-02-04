@@ -151,6 +151,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean supportsNestedComments() {
+        return true;
+    }
+
     public String[][] getIdentifierQuoteStrings() {
         if (dataSource == null || (!isSqlServer && !dataSource.isServerVersionAtLeast(12, 6))) {
             // Old Sybase doesn't support square brackets - #7755

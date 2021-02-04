@@ -399,6 +399,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsNestedComments() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return false;
     }

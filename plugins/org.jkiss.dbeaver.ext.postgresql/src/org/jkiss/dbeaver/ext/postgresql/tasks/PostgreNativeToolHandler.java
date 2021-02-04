@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
@@ -16,10 +17,10 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
     @Override
-    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+    protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
         String userPassword = settings.getToolUserPassword();
         if (CommonUtils.isEmpty(userPassword)) {
-            userPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
+            userPassword = getDataSourcePassword(monitor, settings);
         }
         if (!CommonUtils.isEmpty(userPassword)) {
             process.environment().put("PGPASSWORD", userPassword);

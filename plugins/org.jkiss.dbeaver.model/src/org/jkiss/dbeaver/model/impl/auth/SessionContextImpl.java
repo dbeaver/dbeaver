@@ -19,10 +19,14 @@ package org.jkiss.dbeaver.model.impl.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBASession;
 import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
 import org.jkiss.dbeaver.model.auth.DBAAuthToken;
 import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.DBASessionProviderService;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -32,6 +36,7 @@ import java.util.List;
  * Session context implementation
  */
 public class SessionContextImpl implements DBASessionContext {
+    private static final Log log = Log.getLog(SessionContextImpl.class);
 
     private final DBASessionContext parentContext;
     private final List<DBASession> sessions = new ArrayList<>();
@@ -42,13 +47,27 @@ public class SessionContextImpl implements DBASessionContext {
 
     @Nullable
     @Override
-    public DBASession getSpaceSession(DBAAuthSpace space) {
+    public DBASession getSpaceSession(DBAAuthSpace space) throws DBException {
         for (DBASession session : sessions) {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
                 return session;
             }
         }
-        return parentContext == null ? null : parentContext.getSpaceSession(space);
+        DBASession session = parentContext == null ? null : parentContext.getSpaceSession(space);
+        if (session == null) {
+            DBASessionProviderService sessionProviderService = DBWorkbench.getService(DBASessionProviderService.class);
+            if (sessionProviderService != null) {
+                try {
+                    session = sessionProviderService.acquireSession(space);
+                } catch (Exception e) {
+                    throw new DBException("Error acquiring session", e);
+                }
+            }
+            if (session != null) {
+                //sessions.add(session);
+            }
+        }
+        return session;
     }
 
     @Override

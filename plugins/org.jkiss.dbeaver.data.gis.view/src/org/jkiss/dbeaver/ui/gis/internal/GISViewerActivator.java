@@ -27,8 +27,6 @@ import java.io.InputStream;
  * The activator class controls the plug-in life cycle
  */
 public class GISViewerActivator extends Plugin {
-
-    // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.data.gis.view";
 
     // The shared instance
@@ -71,5 +69,4 @@ public class GISViewerActivator extends Plugin {
     public InputStream getResourceStream(String path) {
         return GISViewerActivator.class.getClassLoader().getResourceAsStream(path);
     }
-
 }

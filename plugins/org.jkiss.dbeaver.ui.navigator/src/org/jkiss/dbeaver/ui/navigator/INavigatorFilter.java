@@ -32,4 +32,5 @@ public interface INavigatorFilter extends IFilter
      */
     boolean isLeafObject(Object object);
 
+    boolean filterObjectByPattern(Object object);
 }

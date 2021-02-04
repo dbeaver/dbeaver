@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.gis;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
 
@@ -60,6 +60,12 @@ public class DBGeometry implements DBDValue {
     public DBGeometry(Object rawValue, int srid) {
         this.rawValue = rawValue;
         this.srid = srid;
+    }
+
+    public DBGeometry(Object rawValue, int srid, Map<String, Object> properties) {
+        this.rawValue = rawValue;
+        this.srid = srid;
+        this.properties = properties == null ? null : new LinkedHashMap<>(properties);
     }
 
     public Geometry getGeometry() {
@@ -101,6 +107,9 @@ public class DBGeometry implements DBDValue {
 
     public void setSRID(int srid) {
         this.srid = srid;
+        if (rawValue instanceof Geometry) {
+            ((Geometry) rawValue).setSRID(srid);
+        }
     }
 
     public DBGeometry flipCoordinates() throws DBException {
@@ -114,8 +123,8 @@ public class DBGeometry implements DBDValue {
         } else {
             jtsGeometry = jtsGeometry.copy();
         }
-        jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
-        return new DBGeometry(jtsGeometry, srid);
+        jtsGeometry.apply(InvertCoordinateFilter.INSTANCE);
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     @NotNull
@@ -131,11 +140,14 @@ public class DBGeometry implements DBDValue {
         for (Coordinate coordinate : jtsGeometry.getCoordinates()) {
             if (!Double.isNaN(coordinate.getZ())) {
                 jtsGeometry = jtsGeometry.copy();
-                jtsGeometry.apply(GeometryConverter.FORCE_2D_COORDINATE_FILTER);
+                jtsGeometry.apply(Force2DCoordinateFilter.INSTANCE);
                 break;
             }
         }
-        return new DBGeometry(jtsGeometry, srid);
+        if (jtsGeometry == getGeometry()) {
+            return this;
+        }
+        return new DBGeometry(jtsGeometry, srid, properties);
     }
 
     public Map<String, Object> getProperties() {
@@ -164,5 +176,25 @@ public class DBGeometry implements DBDValue {
             }
         }
         return true;
+    }
+
+    private static class InvertCoordinateFilter implements CoordinateFilter {
+        public static final InvertCoordinateFilter INSTANCE = new InvertCoordinateFilter();
+
+        @Override
+        public void filter(Coordinate coord) {
+            double oldX = coord.x;
+            coord.x = coord.y;
+            coord.y = oldX;
+        }
+    }
+
+    private static class Force2DCoordinateFilter implements CoordinateFilter {
+        public static final Force2DCoordinateFilter INSTANCE = new Force2DCoordinateFilter();
+
+        @Override
+        public void filter(Coordinate coord) {
+            coord.setZ(Double.NaN);
+        }
     }
 }

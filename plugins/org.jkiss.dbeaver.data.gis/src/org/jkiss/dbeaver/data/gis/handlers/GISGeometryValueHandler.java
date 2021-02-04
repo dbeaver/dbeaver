@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -24,9 +25,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.*;
 
 import java.sql.SQLException;
 
@@ -34,6 +37,8 @@ import java.sql.SQLException;
  * GIS geometry handler
  */
 public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
+
+    private static final Log log = Log.getLog(GISGeometryValueHandler.class);
 
     private int defaultSRID;
     private boolean invertCoordinates;
@@ -107,9 +112,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             }
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
-        } else if (object instanceof byte[]) {
+        } else if (object instanceof byte[] || object instanceof JDBCContentBytes) {
+            byte[] bytes;
+            if (object instanceof JDBCContentBytes) {
+                bytes = ((JDBCContentBytes) object).getRawValue();
+            } else {
+                bytes = (byte[]) object;
+            }
             try {
-                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, (byte[]) object);
+                Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, bytes);
 //            if (invertCoordinates) {
 //                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
 //            }
@@ -119,7 +130,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             }
         } else if (object instanceof String) {
             try {
-                Geometry jtsGeometry = GeometryConverter.getInstance().fromWKT((String) object);
+                Geometry jtsGeometry = new WKTReader().read((String) object);
                 geometry = new DBGeometry(jtsGeometry);
             } catch (Exception e) {
                 throw new DBCException("Error parsing geometry value from string", e);
@@ -134,11 +145,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
-        return GeometryConverter.getInstance().fromWKB(object);
+        try {
+            return new WKBReader().read(object);
+        } catch (ParseException e) {
+            throw new DBCException("Error reading geometry from binary data", e);
+        }
     }
 
     protected byte[] convertGeometryToBinaryFormat(DBCSession session, Geometry geometry) throws DBCException {
-        return GeometryConverter.getInstance().toWKB(geometry);
+        return new WKBWriter(2 /* default */, geometry.getSRID() > 0).write(geometry);
     }
 
     @NotNull
@@ -146,6 +161,16 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
             return "'" + value.toString() + "'";
+        } else if (value instanceof JDBCContentBytes) {
+            byte[] bytes = ((JDBCContentBytes) value).getRawValue();
+            if (bytes.length != 0) {
+                try {
+                    Geometry geometry = convertGeometryFromBinaryFormat(null, bytes);
+                    return geometry.toString();
+                } catch (DBCException e) {
+                    log.debug("Error parsing string geometry value from binary");
+                }
+            }
         }
         return super.getValueDisplayString(column, value, format);
     }

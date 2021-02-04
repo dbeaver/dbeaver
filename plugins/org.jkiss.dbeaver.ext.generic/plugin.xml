@@ -915,10 +915,30 @@
                         class="io.prestosql.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
-                        description="Community Presto (prestosql) JDBC driver"
+                        description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
                         webURL="https://prestosql.io/"
                         categories="sql,analytic,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
+                    <parameter name="krb5.show-service" value="true"/>
+                    <parameter name="krb5.show-ssl-jks" value="true"/>
+                </driver>
+
+                <!-- Trino, formerly PrestoSQL -->
+                <driver
+                    id="trino_jdbc"
+                    label="Trino"
+                    icon="icons/trino_icon.png"
+                    iconBig="icons/trino_icon_big.png"
+                    class="io.trino.jdbc.TrinoDriver"
+                    sampleURL="jdbc:trino://{host}:{port}[/{database}]"
+                    defaultPort="8080"
+                    description="Trino JDBC driver, newer replacement for PrestoSQL"
+                    webURL="https://trino.io/"
+                    categories="sql,analytic,bigdata,hadoop">
+                    <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
+                    <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
