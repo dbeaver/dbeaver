@@ -73,6 +73,7 @@ public class MySQLCatalog implements
     final CheckConstraintCache checkConstraintCache = new CheckConstraintCache(tableCache);
     final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
+    final SequenceCache sequenceCache = new SequenceCache();
 
     private final MySQLDataSource dataSource;
     private String name;
@@ -319,6 +320,10 @@ public class MySQLCatalog implements
         return eventCache;
     }
 
+    public SequenceCache getSequenceCache() {
+        return sequenceCache;
+    }
+
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
@@ -383,6 +388,13 @@ public class MySQLCatalog implements
     public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
                 eventCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
+    }
+
+    @Association
+    public Collection<MySQLSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                sequenceCache.getAllObjects(monitor, this) :
                 Collections.emptyList();
     }
 
@@ -500,6 +512,7 @@ public class MySQLCatalog implements
         proceduresCache.clearCache();
         triggerCache.clearCache();
         eventCache.clearCache();
+        sequenceCache.clearCache();
         return this;
     }
 
@@ -986,6 +999,25 @@ public class MySQLCatalog implements
             return new MySQLEvent(owner, dbResult);
         }
 
+    }
+
+    static class SequenceCache extends JDBCObjectCache<MySQLCatalog, MySQLSequence> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog) throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_TYPE = 'SEQUENCE'");
+            dbStat.setString(1, DBUtils.getQuotedIdentifier(mySQLCatalog));
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected MySQLSequence fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String sequenceName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
+            return new MySQLSequence(mySQLCatalog, sequenceName);
+        }
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLCatalog> {
