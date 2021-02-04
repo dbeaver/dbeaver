@@ -805,4 +805,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     public boolean supportsInformationSchema() {
         return isServerVersionAtLeast(5, 0);
     }
+
+    public boolean supportsSequences() {
+        if (this.isMariaDB()) {
+            return this.isServerVersionAtLeast(10, 3);
+        }
+        return false;
+    }
 }
