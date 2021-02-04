@@ -155,7 +155,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements ICo
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-            	Object defaultHost = driver.getDriverParameter("defaultHost");
+                Object defaultHost = driver.getDriverParameter("defaultHost");
                 hostText.setText(defaultHost != null ? defaultHost.toString() : PostgreConstants.DEFAULT_HOST);
             }
         }
