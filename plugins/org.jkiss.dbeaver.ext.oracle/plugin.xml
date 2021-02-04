@@ -333,6 +333,14 @@
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle" bundle="drivers.oracle"/>
+
+                    <provider-properties>
+                        <propertyGroup label="Misc">
+                            <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
+                            <property id="@dbeaver-oracle.logon-as@" label="Role" type="string" description="Connect as role" defaultValue="NORMAL" validValues="NORMAL,SYSDBA,SYSOPER"/>
+                        </propertyGroup>
+                    </provider-properties>
+
                 </driver>
             </drivers>
             <templates>
