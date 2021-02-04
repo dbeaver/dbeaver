@@ -49,7 +49,7 @@ class TilesManagementDialog extends BaseDialog {
     @Nullable
     private TreeItem userDefinedTilesRootItem;
     @Nullable
-    private TreeItem lastSelectedTreeItem;
+    private TreeItem lastSelectedTreeItem; //todo nullify on repopulate!
 
     TilesManagementDialog(Shell parentShell) {
         super(parentShell, GISMessages.panel_select_tiles_action_manage_dialog_title, null);
@@ -185,15 +185,22 @@ class TilesManagementDialog extends BaseDialog {
 
             private void reactOnCheck(@NotNull TreeItem item) {
                 if (isRootItem(item)) {
-                    Arrays.stream(item.getItems()).forEach(treeItem -> treeItem.setChecked(item.getChecked()));
                     List<LeafletTilesDescriptor> list = item.equals(userDefinedTilesRootItem) ? userDefinedTiles : predefinedTiles;
+                    LeafletTilesDescriptor lastSelectedDescriptor = null;
+                    if (lastSelectedTreeItem != null && lastSelectedTreeItem.getData() instanceof LeafletTilesDescriptor) {
+                        lastSelectedDescriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
+                    }
                     for (int i = 0; i < list.size(); i++) {
                         LeafletTilesDescriptor descriptor = list.get(i);
                         if (item.getChecked() != descriptor.isVisible()) {
-                            descriptor = descriptor.withFlippedVisibility();
+                            LeafletTilesDescriptor newDescriptor = descriptor.withFlippedVisibility();
+                            list.set(i, newDescriptor);
+                            if (lastSelectedDescriptor != null && lastSelectedDescriptor.getId().equals(newDescriptor.getId())) {
+                                lastSelectedDescriptor = newDescriptor;
+                            }
                         }
-                        list.set(i, descriptor);
                     }
+                    repopulateTree(lastSelectedDescriptor, true);
                     return;
                 }
                 LeafletTilesDescriptor descriptor = ((LeafletTilesDescriptor) item.getData());
