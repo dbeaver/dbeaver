@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -51,6 +52,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DriverDescriptor
@@ -149,7 +151,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
-    private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<>();
+    private final List<DBPPropertyDescriptor> providerPropertyDescriptors = new ArrayList<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
@@ -161,7 +163,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final Map<String, Object> defaultConnectionProperties = new HashMap<>();
     private final Map<String, Object> customConnectionProperties = new HashMap<>();
 
-    private Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
+    private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -246,7 +248,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     this.libraries.add(library);
                 }
             }
-            this.connectionPropertyDescriptors.addAll(copyFrom.connectionPropertyDescriptors);
+            this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
             this.customParameters.putAll(copyFrom.customParameters);
@@ -313,8 +315,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         {
             // OSes
-            IConfigurationElement[] osElements = config.getChildren(RegistryConstants.TAG_OS);
-            for (IConfigurationElement os : osElements) {
+            for (IConfigurationElement os : config.getChildren(RegistryConstants.TAG_OS)) {
                 supportedSystems.add(new OSDescriptor(
                         os.getAttribute(RegistryConstants.ATTR_NAME),
                         os.getAttribute(RegistryConstants.ATTR_ARCH)
@@ -323,10 +324,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         {
-            // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
-            for (IConfigurationElement prop : propElements) {
-                connectionPropertyDescriptors.addAll(PropertyDescriptor.extractProperties(prop));
+            IConfigurationElement[] pp = config.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES);
+            if (!ArrayUtils.isEmpty(pp)) {
+                this.providerPropertyDescriptors.addAll(
+                    Arrays.stream(pp[0].getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))
+                        .map(PropertyDescriptor::extractProperties)
+                        .flatMap(List<DBPPropertyDescriptor>::stream)
+                        .collect(Collectors.toList()));
             }
         }
 
@@ -888,8 +892,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public List<DBPPropertyDescriptor> getConnectionPropertyDescriptors() {
-        return connectionPropertyDescriptors;
+    public DBPPropertyDescriptor[] getProviderPropertyDescriptors() {
+        return providerPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+    }
+
+    public void addProviderPropertyDescriptors(Collection<DBPPropertyDescriptor> props) {
+        providerPropertyDescriptors.addAll(props);
     }
 
     @NotNull

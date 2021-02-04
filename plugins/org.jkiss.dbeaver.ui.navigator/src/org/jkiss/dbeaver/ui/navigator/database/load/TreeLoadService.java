@@ -29,11 +29,11 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class TreeLoadService extends DatabaseLoadService<Object[]> {
 
-    private DBNNode parentNode;
+    private final DBNNode parentNode;
 
-    public TreeLoadService(String serviceName, DBNDatabaseNode parentNode)
+    public TreeLoadService(String serviceName, DBNNode parentNode)
     {
-        super(serviceName, parentNode);
+        super(serviceName, (DBNDatabaseNode)(parentNode instanceof DBNDatabaseNode ? parentNode : null));
         this.parentNode = parentNode;
     }
 

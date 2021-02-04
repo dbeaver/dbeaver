@@ -48,6 +48,7 @@ public class SQLRuleManager {
 
     @NotNull
     private TPRule[] allRules = new TPRule[0];
+    private TPRule multiLineCommentRule;
     @NotNull
     private SQLSyntaxManager syntaxManager;
 
@@ -58,6 +59,11 @@ public class SQLRuleManager {
     @NotNull
     public TPRule[] getAllRules() {
         return allRules;
+    }
+
+    @Nullable
+    public TPRule getMultiLineCommentRule() {
+        return multiLineCommentRule;
     }
 
     public void loadRules(@Nullable DBPDataSource dataSource, boolean minimalRules) {
@@ -115,7 +121,7 @@ public class SQLRuleManager {
             }
         }
 
-        if (!minimalRules) {
+        {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
             String[][] identifierQuoteStrings = syntaxManager.getIdentifierQuoteStrings();
@@ -146,7 +152,10 @@ public class SQLRuleManager {
         // Add rules for multi-line comments
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         if (multiLineComments != null) {
-            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
+            multiLineCommentRule = dialect.supportsNestedComments()
+                ? new NestedMultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken)
+                : new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true);
+            rules.add(multiLineCommentRule);
         }
 
         if (!minimalRules) {

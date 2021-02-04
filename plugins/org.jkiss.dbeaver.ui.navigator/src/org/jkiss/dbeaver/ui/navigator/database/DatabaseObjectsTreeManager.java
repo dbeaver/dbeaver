@@ -44,10 +44,10 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     private final ViewerFilter[] filters;
 
     private static class CollectInfo {
-        DBNDatabaseNode rootElement;
+        DBNNode rootElement;
         boolean wasChecked;
-        final List<DBNDatabaseNode> targetChildren = new ArrayList<>();
-        final List<DBNDatabaseNode> targetContainers = new ArrayList<>();
+        final List<DBNNode> targetChildren = new ArrayList<>();
+        final List<DBNNode> targetContainers = new ArrayList<>();
     }
 
     public DatabaseObjectsTreeManager(DBRRunnableContext runnableContext, CheckboxTreeViewer viewer, Class<?>[] targetTypes) {
@@ -68,15 +68,16 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
 
     private void updateElementsCheck(final Object[] elements, final boolean checked, final boolean change) {
         checkedElements.clear();
+        boolean inWizard = UIUtils.isInWizard(viewer.getControl());
         try {
-            runnableContext.run(false, true, (monitor -> {
+            runnableContext.run(!inWizard, true, (monitor -> {
                 monitor.beginTask("Load sources tree", 100 * elements.length);
                 try {
                     for (Object element : elements) {
-                        if (!(element instanceof DBNDatabaseNode)) {
+                        if (!(element instanceof DBNNode)) {
                             continue;
                         }
-                        DBNDatabaseNode node = (DBNDatabaseNode)element;
+                        DBNNode node = (DBNNode)element;
                         monitor.subTask("Search in '" + node.getName() + "'");
                         CollectInfo collectInfo = new CollectInfo();
                         collectInfo.rootElement = node;
@@ -85,10 +86,8 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
 
                         if (change) {
                             // Update parent state
-                            for (DBNNode parent = ((DBNDatabaseNode) element).getParentNode(); parent != null; parent = parent.getParentNode()) {
-                                if (parent instanceof DBNDatabaseNode) {
-                                    updateElementHierarchy(monitor, (DBNDatabaseNode) parent, collectInfo, false);
-                                }
+                            for (DBNNode parent = ((DBNNode) element).getParentNode(); parent != null; parent = parent.getParentNode()) {
+                                updateElementHierarchy(monitor, parent, collectInfo, false);
                                 if (parent instanceof DBNDataSource) {
                                     break;
                                 }
@@ -114,7 +113,7 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         }
     }
 
-    private void updateElementHierarchy(final DBRProgressMonitor monitor, final DBNDatabaseNode element, final CollectInfo collectInfo, final boolean change) throws DBException {
+    private void updateElementHierarchy(final DBRProgressMonitor monitor, final DBNNode element, final CollectInfo collectInfo, final boolean change) throws DBException {
         try {
             collectChildren(monitor, element, collectInfo, !change);
         } catch (DBException e) {
@@ -124,16 +123,16 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         // Run ui
         UIUtils.syncExec(() -> {
             if (change) {
-                for (DBNDatabaseNode child : collectInfo.targetChildren) {
+                for (DBNNode child : collectInfo.targetChildren) {
                     viewer.setChecked(child, collectInfo.wasChecked);
                 }
             }
-            for (DBNDatabaseNode container : change ? collectInfo.targetContainers : Collections.singletonList(element)) {
+            for (DBNNode container : change ? collectInfo.targetContainers : Collections.singletonList(element)) {
                 try {
-                    DBNDatabaseNode[] directChildren = container.getChildren(monitor);
+                    DBNNode[] directChildren = container.getChildren(monitor);
                     if (directChildren != null) {
                         boolean missingOne = false, missingAll = true;
-                        for (DBNDatabaseNode node : directChildren) {
+                        for (DBNNode node : directChildren) {
                             if (!viewer.getChecked(node)) {
                                 missingOne = true;
                             } else {
@@ -151,7 +150,7 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         });
     }
 
-    private boolean collectChildren(DBRProgressMonitor monitor, DBNDatabaseNode element, final CollectInfo collectInfo, boolean onlyChecked) throws DBException {
+    private boolean collectChildren(DBRProgressMonitor monitor, DBNNode element, final CollectInfo collectInfo, boolean onlyChecked) throws DBException {
         if (monitor.isCanceled()) {
             return false;
         }
@@ -169,18 +168,27 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
         }
         if (!onlyChecked || isChecked) {
             for (Class<?> type : targetTypes) {
-                if (!type.isInstance(element.getObject())) {
-                    continue;
+                boolean filterObjects = !(DBNNode.class.isAssignableFrom(type));
+                if (filterObjects) {
+                    if (!(element instanceof DBNDatabaseNode) || !type.isInstance(((DBNDatabaseNode) element).getObject())) {
+                        continue;
+                    }
+                } else {
+                    if (!type.isInstance(element)) {
+                        continue;
+                    }
                 }
                 collectInfo.targetChildren.add(element);
                 return true;
             }
         }
-        element.initializeNode(monitor, null);
-        DBNDatabaseNode[] children = element.getChildren(monitor);
+        if (element instanceof DBNDatabaseNode) {
+            ((DBNDatabaseNode)element).initializeNode(monitor, null);
+        }
+        DBNNode[] children = element.getChildren(monitor);
         if (!ArrayUtils.isEmpty(children)) {
             boolean foundChild = false;
-            for (DBNDatabaseNode child : children) {
+            for (DBNNode child : children) {
                 if (onlyChecked) {
                     if (checkedElements.containsKey(child)) {
                         foundChild = true;
@@ -211,13 +219,11 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     }
 
     public void updateCheckStates() {
-        Set<DBNDatabaseNode> parentList = new LinkedHashSet<>();
+        Set<DBNNode> parentList = new LinkedHashSet<>();
         for (Object element : viewer.getCheckedElements()) {
-            for (DBNNode node = ((DBNDatabaseNode)element).getParentNode(); node != null; node = node.getParentNode()) {
-                if (node instanceof DBNDatabaseNode) {
-                    parentList.add((DBNDatabaseNode) node);
-                    viewer.setChecked(node, true);
-                }
+            for (DBNNode node = ((DBNNode)element).getParentNode(); node != null; node = node.getParentNode()) {
+                parentList.add(node);
+                viewer.setChecked(node, true);
             }
         }
         updateElementsCheck(parentList.toArray(), true, false);

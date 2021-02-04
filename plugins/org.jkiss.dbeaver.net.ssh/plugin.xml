@@ -14,7 +14,18 @@
                 description="%handler.ssh_tunnel.description"
                 secured="true"
                 order="1"
-                handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl"/>
+                handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">
+            <propertyGroup label="SSH Settings">
+                <property id="host" label="Host" type="string" description="SSH target host name or IP address"/>
+                <property id="port" label="Port" type="string" description="SSH target host port (22 by default)"/>
+
+                <property id="authType" label="Authentication type" type="string" description="SSH authentication type" validValues="PASSWORD,PUBLIC_KEY,AGENT"/>
+
+                <property id="user" label="User name" type="string" description="SSH target user name"/>
+                <property id="password" label="User password" type="string" description="SSH target user password"/>
+                <property id="keyPath" label="Private key path" type="file" description="SSH private key path"/>
+            </propertyGroup>
+        </handler>
     </extension>
 
 </plugin>

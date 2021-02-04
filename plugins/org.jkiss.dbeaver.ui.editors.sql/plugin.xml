@@ -43,6 +43,7 @@
         <target id="delphi" label="Delphi" description="%sql.convert.delphi.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
             <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>
             <property id="line-delimiter" label="%sql.convert.label.line.delimiter.name" type="string" description="%sql.convert.label.line.delimiter.delphi.discription" required="false" defaultValue="#13#10"/>
+            <property id="use-string-builder" label="%sql.convert.label.use.string.builder.name" type="boolean" description="%sql.convert.label.use.string.builder.description" required="false" defaultValue="false"/>
         </target>
         <target id="html"
                 label="HTML"
@@ -603,7 +604,7 @@
         <!-- SQL Editor -->
         <!--<key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>-->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.console" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Enter"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.console" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+Enter"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+."/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>

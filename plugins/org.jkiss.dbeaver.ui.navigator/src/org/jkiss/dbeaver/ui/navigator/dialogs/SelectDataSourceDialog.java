@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 
 /**
  * SelectDataSourceDialog
@@ -93,7 +94,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         }
 
-        INavigatorFilter dsFilter = new INavigatorFilter() {
+        INavigatorFilter dsFilter = new DatabaseNavigatorTreeFilter() {
             @Override
             public boolean filterFolders() {
                 return true;
@@ -106,7 +107,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
             @Override
             public boolean select(Object element) {
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
             }
         };
         DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter) {

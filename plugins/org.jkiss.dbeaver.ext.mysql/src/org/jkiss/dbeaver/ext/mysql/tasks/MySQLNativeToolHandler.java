@@ -53,12 +53,11 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     }
 
     @Override
-    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+    protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
         if (!isOverrideCredentials(settings)) {
             String toolUserPassword = settings.getToolUserPassword();
-
-            if (CommonUtils.isEmpty(settings.getToolUserName())) {
-                toolUserPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();
+            if (CommonUtils.isEmpty(toolUserPassword)) {
+                toolUserPassword = getDataSourcePassword(monitor, settings);
             }
 
             if (CommonUtils.isNotEmpty(toolUserPassword)) {

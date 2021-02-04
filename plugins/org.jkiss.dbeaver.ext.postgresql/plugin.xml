@@ -262,7 +262,10 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" label="%tree.avalextensions.node.name" icon="#extensions" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                 <items label="%tree.avalextension.node.name" path="extension" property="availableExtensions" icon="#extension"/>
-                        </folder>       
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting" label="%tree.settings.node.name" icon="#settings" description="Settings">
+                            <items label="%tree.setting.node.name" path="setting" property="settings" icon="#setting"/>
+                        </folder>
                     </folder>
 
                 </items>
@@ -447,7 +450,9 @@
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>
+<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
+<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-no-awssdk-1.2.51.1078.jar" bundle="!drivers.redshift"/>-->
+                        <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-1.2.51.1078.zip" bundle="!drivers.redshift"/>-->
 <!--                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE" bundle="!drivers.redshift"/>-->
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
@@ -504,6 +509,18 @@
                     <property name="connectTimeout" value="20"/>
                     <property name="socketFactory" value="com.google.cloud.sql.postgres.SocketFactory"/>
                 </driver>
+
+                <provider-properties drivers="*">
+                    <propertyGroup label="Database list">
+                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
+                        <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
+                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
+                    </propertyGroup>
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
+                    </propertyGroup>
+                </provider-properties>
+
             </drivers>
 
             <nativeClients>
@@ -560,6 +577,7 @@
                 label="%provider.data.type.postgresql.name">
 
             <datasource id="postgresql"/>
+            <datasource id="greenplum"/>
 
             <type name="*"/>
         </provider>

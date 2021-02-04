@@ -131,6 +131,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 if (session.getProgressMonitor().isCanceled()) {
                     break;
                 }
+                if (rowIndex > 0 && rowIndex % 100 == 0) {
+                    //session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
+                }
+
                 boolean reuse = reuseStatement;
                 if (reuse) {
                     for (int i = 0; i < rowValues.length; i++) {
@@ -192,9 +196,6 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 } finally {
                     if (!reuse) {
                         statement.close();
-                    }
-                    if (rowIndex > 0 && rowIndex % 100 == 0) {
-                        session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
                     }
                 }
             }

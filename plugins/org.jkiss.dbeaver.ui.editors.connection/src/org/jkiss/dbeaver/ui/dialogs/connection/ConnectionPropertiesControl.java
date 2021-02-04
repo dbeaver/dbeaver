@@ -136,7 +136,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     }
 
     private List<DBPPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
-        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<>(driver.getConnectionPropertyDescriptors());
+        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<>();
         if (driverProvidedProperties != null) {
             propertyDescriptors.addAll(driverProvidedProperties);
         }

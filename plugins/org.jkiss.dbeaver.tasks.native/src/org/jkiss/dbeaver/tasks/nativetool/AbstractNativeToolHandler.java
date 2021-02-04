@@ -4,12 +4,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -20,6 +25,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -142,7 +148,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     public abstract void fillProcessParameters(SETTINGS settings, PROCESS_ARG arg, List<String> cmd) throws IOException;
 
-    protected void setupProcessParameters(SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
+    protected void setupProcessParameters(DBRProgressMonitor monitor, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder process) {
     }
 
     protected boolean isLogInputStream() {
@@ -170,7 +176,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             if (this.isMergeProcessStreams()) {
                 processBuilder.redirectErrorStream(true);
             }
-            setupProcessParameters(settings, arg, processBuilder);
+            setupProcessParameters(monitor, settings, arg, processBuilder);
             Process process = processBuilder.start();
 
             startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
@@ -535,6 +541,31 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     protected String getOutputCharset() {
         return GeneralUtils.UTF8_ENCODING;
+    }
+
+    protected String getDataSourcePassword(DBRProgressMonitor monitor, SETTINGS settings) {
+        // Try to obtain password thru auth model (mnakes sense for IAM-like models)
+        String userPassword = null;
+        DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+        DBPConnectionConfiguration cfg = new DBPConnectionConfiguration(dataSourceContainer.getActualConnectionConfiguration());
+        DBAAuthModel authModel = cfg.getAuthModel();
+        if (authModel != AuthModelDatabaseNative.INSTANCE) {
+            DBAAuthCredentials credentials = authModel.loadCredentials(dataSourceContainer, cfg);
+            try {
+                Properties connProperties = new Properties();
+                authModel.initAuthentication(monitor, dataSourceContainer.getDataSource(), credentials, cfg, connProperties);
+                Object authPassword = connProperties.get(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
+                if (authPassword != null) {
+                    userPassword = CommonUtils.toString(authPassword);
+                }
+            } catch (DBException e) {
+                // ignore
+            }
+        }
+        if (CommonUtils.isEmpty(userPassword)) {
+            userPassword = dataSourceContainer.getActualConnectionConfiguration().getUserPassword();
+        }
+        return userPassword;
     }
 
 }
