@@ -286,6 +286,10 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         return node;
     }
 
+    public void cleanupNode() {
+        clearNode(true);
+    }
+
     @Override
     public String toString() {
         return dataSource.toString();
