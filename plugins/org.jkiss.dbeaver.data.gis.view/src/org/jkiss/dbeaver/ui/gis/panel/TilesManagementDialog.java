@@ -41,6 +41,10 @@ class TilesManagementDialog extends BaseDialog {
 
     private final List<LeafletTilesDescriptor> predefinedTiles;
     private final List<LeafletTilesDescriptor> userDefinedTiles;
+    @Nullable
+    private final LeafletTilesDescriptor oldSelectedTileLayer;
+    @Nullable
+    private LeafletTilesDescriptor currentSelectedTileLayer;
     private Tree tree;
     @Nullable
     private TreeItem predefinedTilesRootItem;
@@ -54,6 +58,8 @@ class TilesManagementDialog extends BaseDialog {
         super(parentShell, GISMessages.panel_select_tiles_action_manage_dialog_title, null);
         predefinedTiles = new ArrayList<>(GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles());
         userDefinedTiles = new ArrayList<>(GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles());
+        oldSelectedTileLayer = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+        currentSelectedTileLayer = oldSelectedTileLayer;
     }
 
     @Override
@@ -131,6 +137,9 @@ class TilesManagementDialog extends BaseDialog {
                 }
                 replace(userDefinedTiles, originalDescriptor, editedDescriptor);
                 repopulateTree(editedDescriptor, true);
+                if (originalDescriptor.equals(currentSelectedTileLayer)) {
+                    currentSelectedTileLayer = editedDescriptor;
+                }
             }
         });
         viewOrEditTilesItem.setEnabled(false);
@@ -164,6 +173,9 @@ class TilesManagementDialog extends BaseDialog {
                     repopulateTree(userDefinedTiles.get(i - 1), true);
                 } else {
                     repopulateTree(null, true);
+                }
+                if (descriptor.equals(currentSelectedTileLayer)) {
+                    currentSelectedTileLayer = null;
                 }
             }
         });
@@ -326,6 +338,9 @@ class TilesManagementDialog extends BaseDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
             GeometryViewerRegistry.getInstance().updateTiles(predefinedTiles, userDefinedTiles);
+            if (!Objects.equals(oldSelectedTileLayer, currentSelectedTileLayer)) {
+                GeometryViewerRegistry.getInstance().setDefaultLeafletTiles(currentSelectedTileLayer);
+            }
         }
         super.buttonPressed(buttonId);
     }
