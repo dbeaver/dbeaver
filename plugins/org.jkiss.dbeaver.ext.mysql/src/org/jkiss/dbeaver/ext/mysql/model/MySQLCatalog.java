@@ -539,6 +539,7 @@ public class MySQLCatalog implements
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder("SHOW ");
+            MySQLDataSource dataSource = owner.getDataSource();
             if (session.getMetaData().getDatabaseMajorVersion() > 4) {
                 sql.append("FULL ");
             }
@@ -549,11 +550,14 @@ public class MySQLCatalog implements
                     sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 }
             } else {
-                String tableNameCol = DBUtils.getQuotedIdentifier(owner.getDataSource(), "Tables_in_" + owner.getName());
+                String tableNameCol = DBUtils.getQuotedIdentifier(dataSource, "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+                    if (dataSource.supportsSequences()) {
+                        sql.append(" AND Table_type <> 'SEQUENCE'");
+                    }
                 } else {
-                    DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, true);
+                    DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(MySQLTable.class, owner, true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
                         if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
@@ -579,6 +583,8 @@ public class MySQLCatalog implements
                             }
                             sql.append(")");
                         }
+                    } else if (dataSource.supportsSequences()) {
+                        sql.append(" WHERE Table_type <> 'SEQUENCE'");
                     }
                 }
             }

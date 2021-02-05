@@ -223,9 +223,9 @@ public class MySQLSequence implements DBSSequence, MySQLSourceObject, DBPQualifi
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE SEQUENCE " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {
-                            String sequenseDDL = JDBCUtils.safeGetString(dbResult, "Create Table");
-                            if (!CommonUtils.isEmpty(sequenseDDL)) {
-                                body = sequenseDDL.replaceAll("CREATE SEQUENCE", "CREATE OR REPLACE SEQUENCE");
+                            String sequenceDDL = JDBCUtils.safeGetString(dbResult, "Create Table");
+                            if (!CommonUtils.isEmpty(sequenceDDL)) {
+                                body = sequenceDDL.replaceAll("CREATE SEQUENCE", "CREATE OR REPLACE SEQUENCE");
                             }
                         } else {
                             body = "-- Sequence definition not found in catalog";
