@@ -39,7 +39,11 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         String userName = configuration.getUserName();
         if (!CommonUtils.isEmpty(userName) && !userName.contains(" AS ")) {
-            final String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+            String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+            if (CommonUtils.isEmpty(role)) {
+                // Role can be also passed as provided property
+                role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+            }
             if (!CommonUtils.isEmpty(role)) {
                 userName += " AS " + role;
             }
