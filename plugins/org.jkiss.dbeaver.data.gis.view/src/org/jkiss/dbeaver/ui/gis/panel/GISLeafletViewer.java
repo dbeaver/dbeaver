@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
+import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -74,7 +75,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GISLeafletViewer implements IGeometryValueEditor {
-
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
@@ -349,7 +349,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     case "geomValues":
                         return geomValuesString;
                     case "geomTipValues":
-                        return String.valueOf(geomTipValuesString);
+                        return geomTipValuesString;
                     case "geomSRID":
                         return String.valueOf(defaultSRID);
                     case "showMap":
@@ -359,6 +359,10 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     case "geomCRS":
                         return geomCRS;
                     case "defaultTiles":
+                        LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+                        if (descriptor == null) {
+                            return null;
+                        }
                         return GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
                 }
                 return null;
@@ -576,5 +580,4 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             gc.dispose();
         }
     }
-
 }
