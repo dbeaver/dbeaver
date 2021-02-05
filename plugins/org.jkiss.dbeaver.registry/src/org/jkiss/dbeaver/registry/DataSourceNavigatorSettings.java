@@ -56,7 +56,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             return description;
         }
 
-        public DBNBrowseSettings getSettings() {
+        public DataSourceNavigatorSettings getSettings() {
             return settings;
         }
     }
