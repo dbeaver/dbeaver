@@ -48,8 +48,7 @@ class TilesManagementDialog extends BaseDialog {
     private TreeItem predefinedTilesRootItem;
     @Nullable
     private TreeItem userDefinedTilesRootItem;
-    @Nullable
-    private TreeItem lastSelectedTreeItem; //todo nullify on repopulate!
+    private TreeItem lastSelectedTreeItem;
 
     TilesManagementDialog(Shell parentShell) {
         super(parentShell, GISMessages.panel_select_tiles_action_manage_dialog_title, null);
@@ -173,7 +172,6 @@ class TilesManagementDialog extends BaseDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (!(e.item instanceof TreeItem)) {
-                    lastSelectedTreeItem = null;
                     return;
                 }
                 lastSelectedTreeItem = (TreeItem) e.item;
@@ -284,7 +282,7 @@ class TilesManagementDialog extends BaseDialog {
         tree.removeAll();
         predefinedTilesRootItem = null;
         userDefinedTilesRootItem = null;
-        TreeItem toSelect = null;
+        lastSelectedTreeItem = null;
         if (!predefinedTiles.isEmpty()) {
             predefinedTilesRootItem = new TreeItem(tree, SWT.NONE);
             predefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_predefined_tiles);
@@ -294,7 +292,7 @@ class TilesManagementDialog extends BaseDialog {
                 item.setText(tile.getLabel());
                 item.setChecked(tile.isVisible());
                 if (tile.equals(tilesToSelect)) {
-                    toSelect = item;
+                    lastSelectedTreeItem = item;
                 }
             }
             predefinedTilesRootItem.setChecked(predefinedTiles.stream().anyMatch(LeafletTilesDescriptor::isVisible));
@@ -309,16 +307,17 @@ class TilesManagementDialog extends BaseDialog {
                 item.setText(tile.getLabel());
                 item.setChecked(tile.isVisible());
                 if (tile.equals(tilesToSelect)) {
-                    toSelect = item;
+                    lastSelectedTreeItem = item;
                 }
             }
             userDefinedTilesRootItem.setChecked(userDefinedTiles.stream().anyMatch(LeafletTilesDescriptor::isVisible));
             userDefinedTilesRootItem.setExpanded(expandUserDefined);
         }
-        if (toSelect != null) {
-            tree.setSelection(toSelect);
+        if (lastSelectedTreeItem == null) {
+            lastSelectedTreeItem = predefinedTilesRootItem;
         }
-        changeToolbarState(toSelect);
+        tree.setSelection(lastSelectedTreeItem);
+        changeToolbarState(lastSelectedTreeItem);
         UIUtils.asyncExec(() -> UIUtils.packColumns(tree, true, new float[]{1.f}));
     }
 
