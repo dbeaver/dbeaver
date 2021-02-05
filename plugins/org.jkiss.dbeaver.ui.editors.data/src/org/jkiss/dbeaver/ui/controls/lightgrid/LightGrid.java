@@ -671,6 +671,9 @@ public abstract class LightGrid extends Canvas {
         if (pos.col < 0 || pos.row < 0) {
             return null;
         }
+        if (pos.col >= columnElements.length || pos.row >= rowElements.length) {
+            return null;
+        }
         return new GridCell(columnElements[pos.col], rowElements[pos.row]);
     }
 
@@ -4251,7 +4254,9 @@ public abstract class LightGrid extends Canvas {
         }
         List<GridCell> cells = new ArrayList<>(selectedCells.size());
         for (GridPos pos : selectedCells) {
-            cells.add(posToCell(pos));
+        	GridCell cell = posToCell(pos);
+        	if (cell != null)
+        		cells.add(cell);
         }
         return cells;
     }
