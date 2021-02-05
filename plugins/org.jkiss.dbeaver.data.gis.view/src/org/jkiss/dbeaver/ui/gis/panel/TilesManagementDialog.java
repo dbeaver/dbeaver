@@ -331,6 +331,8 @@ class TilesManagementDialog extends BaseDialog {
     }
 
     private static class TileLayerDefinitionDialog extends BaseDialog {
+        private static final String TILE_LAYER_DEFINITION_EXPLANATION = "https://github.com/dbeaver/dbeaver/wiki/Working-with-Spatial-GIS-data#defining-custom-tile-layer";
+
         @Nullable
         private final LeafletTilesDescriptor originalTilesDescriptor;
 
@@ -358,6 +360,9 @@ class TilesManagementDialog extends BaseDialog {
         @Override
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
+            Composite composite = UIUtils.createComposite(dialogArea, 1);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             Group group = UIUtils.createControlGroup(
                 dialogArea,
                 GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_tiles_properties_group,
@@ -385,7 +390,13 @@ class TilesManagementDialog extends BaseDialog {
             gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 60;
             layersDefinitionText.setLayoutData(gd);
 
-            //todo info label with link to wiki page
+            UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(TILE_LAYER_DEFINITION_EXPLANATION);
+                }
+            });
+
             return dialogArea;
         }
 
