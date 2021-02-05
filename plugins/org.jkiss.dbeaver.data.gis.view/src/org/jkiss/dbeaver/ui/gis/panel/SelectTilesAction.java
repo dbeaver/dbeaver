@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
 
-import java.util.Objects;
 import java.util.stream.Stream;
 
 class SelectTilesAction extends Action {
@@ -73,15 +72,9 @@ class SelectTilesAction extends Action {
                 menuManager.add(new Action(GISMessages.panel_select_tiles_action_manage_tiles_action) {
                     @Override
                     public void run() {
-                        LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
                         int result = new TilesManagementDialog(valueEditor.getEditorControl().getShell()).open();
-                        if (result == IDialogConstants.OK_ID && valueEditor instanceof GISLeafletViewer) {
-                            GISLeafletViewer leaflet = (GISLeafletViewer) valueEditor;
-                            leaflet.updateToolbar();
-                            LeafletTilesDescriptor newDescriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
-                            if (!Objects.equals(descriptor, newDescriptor)) {
-                                valueEditor.refresh();
-                            }
+                        if (result == IDialogConstants.OK_ID) {
+                            valueEditor.refresh();
                         }
                     }
                 });
