@@ -339,7 +339,7 @@
                     icon="icons/derby_icon.png"
                     iconBig="icons/derby_icon_big.png"
                     category="Derby"
-                    class="org.apache.derby.jdbc.ClientDriver"
+                    class="org.apache.derby.client.ClientAutoloadedDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
@@ -846,7 +846,7 @@
                     description="Yandex ClickHouse"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE" bundle="!drivers.clickhouse"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.5]" bundle="!drivers.clickhouse"/>
                     <file type="jar" path="drivers/clickhouse" bundle="drivers.clickhouse"/>
 
                     <parameter name="supports-references" value="false"/>
