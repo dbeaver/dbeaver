@@ -161,6 +161,8 @@ class TilesManagementDialog extends BaseDialog {
                 userDefinedTiles.remove(i);
                 if (i < userDefinedTiles.size()) {
                     repopulateTree(userDefinedTiles.get(i), true);
+                } else if (i == userDefinedTiles.size() && !userDefinedTiles.isEmpty()){
+                    repopulateTree(userDefinedTiles.get(i - 1), true);
                 } else {
                     repopulateTree(null, true);
                 }
@@ -405,8 +407,8 @@ class TilesManagementDialog extends BaseDialog {
         protected void buttonPressed(int buttonId) {
             if (buttonId == IDialogConstants.OK_ID) {
                 resultingTilesDescriptor = LeafletTilesDescriptor.createUserDefined(
-                    labelText.getText(),
-                    layersDefinitionText.getText(),
+                    labelText.getText().trim(),
+                    layersDefinitionText.getText().trim(),
                     originalTilesDescriptor == null || originalTilesDescriptor.isVisible()
                 );
             }
