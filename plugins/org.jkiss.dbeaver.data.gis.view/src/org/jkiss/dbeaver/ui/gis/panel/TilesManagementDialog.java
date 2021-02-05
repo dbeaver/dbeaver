@@ -41,14 +41,14 @@ class TilesManagementDialog extends BaseDialog {
 
     private final List<LeafletTilesDescriptor> predefinedTiles;
     private final List<LeafletTilesDescriptor> userDefinedTiles;
-    ToolItem editTilesItem;
-    ToolItem deleteTilesItem;
     private Tree tree;
     @Nullable
     private TreeItem predefinedTilesRootItem;
     @Nullable
     private TreeItem userDefinedTilesRootItem;
     private TreeItem lastSelectedTreeItem;
+    private ToolItem viewOrEditTilesItem;
+    private ToolItem deleteTilesItem;
 
     TilesManagementDialog(Shell parentShell) {
         super(parentShell, GISMessages.panel_select_tiles_action_manage_dialog_title, null);
@@ -77,10 +77,11 @@ class TilesManagementDialog extends BaseDialog {
 
         ToolBar toolBar = new ToolBar(group, SWT.VERTICAL);
         toolBar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
         ToolItem addNewTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_add_new_tiles, UIIcon.ADD, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), null);
+                TileLayerDefinitionDialog dialog = new TileLayerDefinitionDialog(getShell(), null);
                 int status = dialog.open();
                 if (status != IDialogConstants.OK_ID) {
                     return;
@@ -102,21 +103,18 @@ class TilesManagementDialog extends BaseDialog {
             }
         });
         addNewTilesItem.setEnabled(true);
-        editTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_edit_tiles, UIIcon.EDIT, new SelectionAdapter() {
+
+        viewOrEditTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_view_or_edit_tiles, UIIcon.TEXTFIELD, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (lastSelectedTreeItem == null || isRootItem(lastSelectedTreeItem)) {
+                if (isRootItem(lastSelectedTreeItem)) {
                     log.error("Can't find tiles to edit!");
                     return;
                 }
                 LeafletTilesDescriptor originalDescriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
-                if (originalDescriptor.isPredefined()) {
-                    log.error("Can't edit predefined descriptor!");
-                    return;
-                }
-                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), originalDescriptor);
+                TileLayerDefinitionDialog dialog = new TileLayerDefinitionDialog(getShell(), originalDescriptor);
                 int result = dialog.open();
-                if (result != IDialogConstants.OK_ID) {
+                if (result != IDialogConstants.OK_ID || originalDescriptor.isPredefined()) {
                     return;
                 }
                 LeafletTilesDescriptor editedDescriptor = dialog.getResultingTilesDescriptor();
@@ -135,7 +133,8 @@ class TilesManagementDialog extends BaseDialog {
                 repopulateTree(editedDescriptor, true);
             }
         });
-        editTilesItem.setEnabled(false);
+        viewOrEditTilesItem.setEnabled(false);
+
         deleteTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_delete_tiles, UIIcon.DELETE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -231,17 +230,17 @@ class TilesManagementDialog extends BaseDialog {
 
     private void changeToolbarState(@Nullable TreeItem item) {
         if (item == null) {
-            editTilesItem.setEnabled(false);
+            viewOrEditTilesItem.setEnabled(false);
             deleteTilesItem.setEnabled(false);
             return;
         }
         if (item.getData() == null) {
-            editTilesItem.setEnabled(false);
+            viewOrEditTilesItem.setEnabled(false);
             deleteTilesItem.setEnabled(item.equals(userDefinedTilesRootItem));
             return;
         }
+        viewOrEditTilesItem.setEnabled(true);
         LeafletTilesDescriptor descriptor = (LeafletTilesDescriptor) item.getData();
-        editTilesItem.setEnabled(!descriptor.isPredefined());
         deleteTilesItem.setEnabled(!descriptor.isPredefined());
     }
 
@@ -254,7 +253,7 @@ class TilesManagementDialog extends BaseDialog {
         }
     }
 
-    private boolean isRootItem(@NotNull Widget widget) {
+    private boolean isRootItem(Widget widget) {
         return (predefinedTilesRootItem != null && predefinedTilesRootItem.equals(widget)) || (userDefinedTilesRootItem != null && userDefinedTilesRootItem.equals(widget));
     }
 
@@ -331,7 +330,7 @@ class TilesManagementDialog extends BaseDialog {
         super.buttonPressed(buttonId);
     }
 
-    private static class AddOrEditTileDialog extends BaseDialog {
+    private static class TileLayerDefinitionDialog extends BaseDialog {
         @Nullable
         private final LeafletTilesDescriptor originalTilesDescriptor;
 
@@ -341,16 +340,19 @@ class TilesManagementDialog extends BaseDialog {
         private Text labelText;
         private Text layersDefinitionText;
 
-        AddOrEditTileDialog(Shell parentShell, @Nullable LeafletTilesDescriptor tilesDescriptor) {
+        TileLayerDefinitionDialog(Shell parentShell, @Nullable LeafletTilesDescriptor tilesDescriptor) {
             super(parentShell, getTitle(tilesDescriptor), null);
             this.originalTilesDescriptor = tilesDescriptor;
         }
 
         private static String getTitle(@Nullable LeafletTilesDescriptor tilesDescriptor) {
             if (tilesDescriptor == null) {
-                return GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_add_tiles_title;
+                return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_add_tiles_title;
             }
-            return GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_edit_tiles_title;
+            if (tilesDescriptor.isPredefined()) {
+                return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_view_tiles_title;
+            }
+            return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_edit_tiles_title;
         }
 
         @Override
@@ -358,34 +360,29 @@ class TilesManagementDialog extends BaseDialog {
             Composite dialogArea = super.createDialogArea(parent);
             Group group = UIUtils.createControlGroup(
                 dialogArea,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_tiles_properties_group,
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_tiles_properties_group,
                 2,
                 SWT.NONE,
                 0
             );
             group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            String label = "";
-            String layersDefinition = "";
-            if (originalTilesDescriptor != null) {
-                label = originalTilesDescriptor.getLabel();
-                layersDefinition = originalTilesDescriptor.getLayersDefinition();
-            }
+            int mutabilityStyle = originalTilesDescriptor != null && originalTilesDescriptor.isPredefined() ? SWT.READ_ONLY : SWT.NONE;
             labelText = UIUtils.createLabelText(
                 group,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_label,
-                label,
-                SWT.BORDER
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_text_label_label,
+                originalTilesDescriptor == null ? "" : originalTilesDescriptor.getLabel(),
+                SWT.BORDER | mutabilityStyle
             );
             layersDefinitionText = UIUtils.createLabelText(
                 group,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_layers_definition,
-                layersDefinition,
-                SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_text_label_layers_definition,
+                originalTilesDescriptor == null ? "" : originalTilesDescriptor.getLayersDefinition(),
+                SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | mutabilityStyle
             );
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = UIUtils.getFontHeight(layersDefinitionText) * 15;
-            gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 40;
+            gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 60;
             layersDefinitionText.setLayoutData(gd);
 
             //todo info label with link to wiki page
