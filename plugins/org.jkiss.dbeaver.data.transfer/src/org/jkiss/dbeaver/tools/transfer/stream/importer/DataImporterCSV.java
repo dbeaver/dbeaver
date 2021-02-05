@@ -54,11 +54,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
 
-    // Default length for new column. This is a "lower" bound, so sample data could be longer than this threshold
-    private static final int DEFAULT_COLUMN_LENGTH = 1024;
-    // Amount of sample rows used to determine approximate type and data length of the column
-    private static final int MAX_COLUMN_SAMPLES = 1000;
-
     public enum HeaderPosition {
         none,
         top,
@@ -73,6 +68,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
+
+        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 1000), 0);
+        final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
@@ -89,12 +87,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
                     }
-                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, DEFAULT_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, columnMinimalLength, DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
                     columnsInfo.add(columnInfo);
                 }
 
-                for (int sample = 0; sample < MAX_COLUMN_SAMPLES; sample++) {
+                for (int sample = 0; sample < columnSamplesCount; sample++) {
                     String[] line;
 
                     if (sample == 0 && headerPosition == HeaderPosition.none) {
