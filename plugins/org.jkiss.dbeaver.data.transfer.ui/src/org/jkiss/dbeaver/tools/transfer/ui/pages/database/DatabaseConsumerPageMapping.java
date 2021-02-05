@@ -28,6 +28,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -254,6 +255,36 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 });
             previewButton.setEnabled(false);
 
+            UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
+
+            Button upButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_up_label, UIIcon.ARROW_UP, DTMessages.data_transfer_db_consumer_up_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DataTransferPipe pipe = getPipeFromCurrentSelection();
+                    if (pipe == null) {
+                        return;
+                    }
+                    getWizard().getSettings().processPipeEarlier(pipe);
+                    loadAndUpdateColumnsModel();
+                    selectPipe(pipe);
+                }
+            });
+            upButton.setEnabled(false);
+
+            Button downButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_down_label, UIIcon.ARROW_DOWN, DTMessages.data_transfer_db_consumer_down_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DataTransferPipe pipe = getPipeFromCurrentSelection();
+                    if (pipe == null) {
+                        return;
+                    }
+                    getWizard().getSettings().processPipeLater(pipe);
+                    loadAndUpdateColumnsModel();
+                    selectPipe(pipe);
+                }
+            });
+            downButton.setEnabled(false);
+
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
@@ -320,6 +351,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 columnsButton.setEnabled(hasMappings);
                 ddlButton.setEnabled(hasMappings);
                 previewButton.setEnabled(hasMappings);
+                DataTransferPipe pipe = getPipeFromCurrentSelection();
+                List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+                int idx = pipes.indexOf(pipe);
+                upButton.setEnabled(idx > 0);
+                downButton.setEnabled(idx > -1 && idx < pipes.size() - 1);
             });
             mappingViewer.addDoubleClickListener(event -> {
                 DatabaseMappingObject selectedMapping = getSelectedMapping();
@@ -345,6 +381,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
 
         setControl(composite);
+    }
+
+    private void selectPipe(@NotNull DataTransferPipe pipe) {
+        if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
+            return;
+        }
+        DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
+        DatabaseMappingContainer mapping = getDatabaseConsumerSettings().getDataMapping(sourceDataContainer);
+        if (mapping == null) {
+            return;
+        }
+        mappingViewer.setSelection(new StructuredSelection(mapping), true);
     }
 
     private void selectNextColumn(TreeItem item) {
@@ -859,6 +907,21 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         previewDialog.open();
     }
 
+    @Nullable
+    private DataTransferPipe getPipeFromCurrentSelection() {
+        for (Object o: mappingViewer.getStructuredSelection()) {
+            if (!(o instanceof DatabaseMappingContainer)) {
+                continue;
+            }
+            DataTransferPipe pipe = getPipe((DatabaseMappingContainer) o);
+            if (pipe != null) {
+                return pipe;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     private DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
