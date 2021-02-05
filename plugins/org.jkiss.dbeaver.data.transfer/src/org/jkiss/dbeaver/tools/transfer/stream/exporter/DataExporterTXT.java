@@ -167,8 +167,8 @@ public class DataExporterTXT extends StreamExporterAbstract {
                 }
             }
 
-            if (index < length - 1 && delimBetween) {
-                sb.append('|');
+            if (index < length - 1) {
+                sb.append(delimBetween ? '|' : ' ');
             }
         }
 
