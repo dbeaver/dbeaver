@@ -39,6 +39,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     @NotNull
     String getImplClassName();
 
+    boolean isDefaultModel();
+
     boolean isApplicableTo(DBPDriver driver);
 
     @NotNull

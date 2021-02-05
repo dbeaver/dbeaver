@@ -337,7 +337,7 @@
                     <provider-properties>
                         <propertyGroup label="Misc">
                             <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
-                            <property id="@dbeaver-oracle.logon-as@" label="Role" type="string" description="Connect as role" defaultValue="NORMAL" validValues="NORMAL,SYSDBA,SYSOPER"/>
+                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="NORMAL" validValues="NORMAL,SYSDBA,SYSOPER"/>
                         </propertyGroup>
                     </provider-properties>
 
@@ -395,7 +395,8 @@
                 id="oracle_native"
                 label="Database Native"
                 description="Oracle native authentication (name/password)"
-                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative">
+                class="org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative"
+                default="true">
             <replace model="native"/>
             <datasource id="oracle"/>
         </authModel>
