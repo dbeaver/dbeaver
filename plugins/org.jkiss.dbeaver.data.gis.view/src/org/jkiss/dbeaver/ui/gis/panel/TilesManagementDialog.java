@@ -299,12 +299,12 @@ class TilesManagementDialog extends BaseDialog {
         if (!predefinedTiles.isEmpty()) {
             predefinedTilesRootItem = new TreeItem(tree, SWT.NONE);
             predefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_predefined_tiles);
-            for (LeafletTilesDescriptor tile: predefinedTiles) {
+            for (LeafletTilesDescriptor descriptor: predefinedTiles) {
                 TreeItem item = new TreeItem(predefinedTilesRootItem, SWT.NONE);
-                item.setData(tile);
-                item.setText(tile.getLabel());
-                item.setChecked(tile.isVisible());
-                if (tile.equals(tilesToSelect)) {
+                item.setData(descriptor);
+                item.setText(descriptor.getLabel());
+                item.setChecked(descriptor.isVisible());
+                if (descriptor.equals(tilesToSelect)) {
                     lastSelectedTreeItem = item;
                 }
             }
@@ -314,12 +314,12 @@ class TilesManagementDialog extends BaseDialog {
         if (!userDefinedTiles.isEmpty()) {
             userDefinedTilesRootItem = new TreeItem(tree, SWT.NONE);
             userDefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_user_defined_tiles);
-            for (LeafletTilesDescriptor tile: userDefinedTiles) {
+            for (LeafletTilesDescriptor descriptor: userDefinedTiles) {
                 TreeItem item = new TreeItem(userDefinedTilesRootItem, SWT.NONE);
-                item.setData(tile);
-                item.setText(tile.getLabel());
-                item.setChecked(tile.isVisible());
-                if (tile.equals(tilesToSelect)) {
+                item.setData(descriptor);
+                item.setText(descriptor.getLabel());
+                item.setChecked(descriptor.isVisible());
+                if (descriptor.equals(tilesToSelect)) {
                     lastSelectedTreeItem = item;
                 }
             }
