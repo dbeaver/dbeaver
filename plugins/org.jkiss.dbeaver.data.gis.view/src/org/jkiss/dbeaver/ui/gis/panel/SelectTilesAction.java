@@ -73,8 +73,8 @@ class SelectTilesAction extends Action {
                     @Override
                     public void run() {
                         int result = new TilesManagementDialog(valueEditor.getEditorControl().getShell()).open();
-                        if (result == IDialogConstants.OK_ID && valueEditor instanceof GISLeafletViewer) {
-                            ((GISLeafletViewer)valueEditor).updateToolbar();
+                        if (result == IDialogConstants.OK_ID) {
+                            valueEditor.refresh();
                         }
                     }
                 });

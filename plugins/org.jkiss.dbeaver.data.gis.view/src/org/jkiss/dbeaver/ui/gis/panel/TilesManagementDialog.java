@@ -41,20 +41,25 @@ class TilesManagementDialog extends BaseDialog {
 
     private final List<LeafletTilesDescriptor> predefinedTiles;
     private final List<LeafletTilesDescriptor> userDefinedTiles;
-    ToolItem editTilesItem;
-    ToolItem deleteTilesItem;
+    @Nullable
+    private final LeafletTilesDescriptor oldSelectedTileLayer;
+    @Nullable
+    private LeafletTilesDescriptor currentSelectedTileLayer;
     private Tree tree;
     @Nullable
     private TreeItem predefinedTilesRootItem;
     @Nullable
     private TreeItem userDefinedTilesRootItem;
-    @Nullable
     private TreeItem lastSelectedTreeItem;
+    private ToolItem viewOrEditTilesItem;
+    private ToolItem deleteTilesItem;
 
     TilesManagementDialog(Shell parentShell) {
         super(parentShell, GISMessages.panel_select_tiles_action_manage_dialog_title, null);
         predefinedTiles = new ArrayList<>(GeometryViewerRegistry.getInstance().getPredefinedLeafletTiles());
         userDefinedTiles = new ArrayList<>(GeometryViewerRegistry.getInstance().getUserDefinedLeafletTiles());
+        oldSelectedTileLayer = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+        currentSelectedTileLayer = oldSelectedTileLayer;
     }
 
     @Override
@@ -78,10 +83,11 @@ class TilesManagementDialog extends BaseDialog {
 
         ToolBar toolBar = new ToolBar(group, SWT.VERTICAL);
         toolBar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
         ToolItem addNewTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_add_new_tiles, UIIcon.ADD, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), null);
+                TileLayerDefinitionDialog dialog = new TileLayerDefinitionDialog(getShell(), null);
                 int status = dialog.open();
                 if (status != IDialogConstants.OK_ID) {
                     return;
@@ -103,21 +109,18 @@ class TilesManagementDialog extends BaseDialog {
             }
         });
         addNewTilesItem.setEnabled(true);
-        editTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_edit_tiles, UIIcon.EDIT, new SelectionAdapter() {
+
+        viewOrEditTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_view_or_edit_tiles, UIIcon.TEXTFIELD, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (lastSelectedTreeItem == null || isRootItem(lastSelectedTreeItem)) {
+                if (isRootItem(lastSelectedTreeItem)) {
                     log.error("Can't find tiles to edit!");
                     return;
                 }
-                LeafletTilesDescriptor descriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
-                if (descriptor.isPredefined()) {
-                    log.error("Can't edit predefined descriptor!");
-                    return;
-                }
-                AddOrEditTileDialog dialog = new AddOrEditTileDialog(getShell(), descriptor);
+                LeafletTilesDescriptor originalDescriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
+                TileLayerDefinitionDialog dialog = new TileLayerDefinitionDialog(getShell(), originalDescriptor);
                 int result = dialog.open();
-                if (result != IDialogConstants.OK_ID) {
+                if (result != IDialogConstants.OK_ID || originalDescriptor.isPredefined()) {
                     return;
                 }
                 LeafletTilesDescriptor editedDescriptor = dialog.getResultingTilesDescriptor();
@@ -125,18 +128,22 @@ class TilesManagementDialog extends BaseDialog {
                     log.error("Edited descriptor is null despite that user clicked ok");
                     return;
                 }
-                if (isModelContainsDescriptorWithLabel(editedDescriptor.getLabel())) {
+                if (containsDescriptorWithLabel(predefinedTiles, editedDescriptor.getLabel()) || userDefinedTiles.stream().anyMatch(t -> t.getLabel().equals(editedDescriptor.getLabel()) && !t.equals(originalDescriptor))) {
                     DBWorkbench.getPlatformUI().showError(
                             GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_title,
                             GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_message
                     );
                     return;
                 }
-                replace(userDefinedTiles, descriptor, editedDescriptor);
+                replace(userDefinedTiles, originalDescriptor, editedDescriptor);
                 repopulateTree(editedDescriptor, true);
+                if (originalDescriptor.equals(currentSelectedTileLayer)) {
+                    currentSelectedTileLayer = editedDescriptor;
+                }
             }
         });
-        editTilesItem.setEnabled(false);
+        viewOrEditTilesItem.setEnabled(false);
+
         deleteTilesItem = UIUtils.createToolItem(toolBar, GISMessages.panel_select_tiles_action_manage_dialog_toolbar_delete_tiles, UIIcon.DELETE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -162,8 +169,13 @@ class TilesManagementDialog extends BaseDialog {
                 userDefinedTiles.remove(i);
                 if (i < userDefinedTiles.size()) {
                     repopulateTree(userDefinedTiles.get(i), true);
+                } else if (i == userDefinedTiles.size() && !userDefinedTiles.isEmpty()){
+                    repopulateTree(userDefinedTiles.get(i - 1), true);
                 } else {
                     repopulateTree(null, true);
+                }
+                if (descriptor.equals(currentSelectedTileLayer)) {
+                    currentSelectedTileLayer = null;
                 }
             }
         });
@@ -173,7 +185,6 @@ class TilesManagementDialog extends BaseDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (!(e.item instanceof TreeItem)) {
-                    lastSelectedTreeItem = null;
                     return;
                 }
                 lastSelectedTreeItem = (TreeItem) e.item;
@@ -185,15 +196,22 @@ class TilesManagementDialog extends BaseDialog {
 
             private void reactOnCheck(@NotNull TreeItem item) {
                 if (isRootItem(item)) {
-                    Arrays.stream(item.getItems()).forEach(treeItem -> treeItem.setChecked(item.getChecked()));
                     List<LeafletTilesDescriptor> list = item.equals(userDefinedTilesRootItem) ? userDefinedTiles : predefinedTiles;
+                    LeafletTilesDescriptor lastSelectedDescriptor = null;
+                    if (lastSelectedTreeItem != null && lastSelectedTreeItem.getData() instanceof LeafletTilesDescriptor) {
+                        lastSelectedDescriptor = (LeafletTilesDescriptor) lastSelectedTreeItem.getData();
+                    }
                     for (int i = 0; i < list.size(); i++) {
                         LeafletTilesDescriptor descriptor = list.get(i);
                         if (item.getChecked() != descriptor.isVisible()) {
-                            descriptor = descriptor.withFlippedVisibility();
+                            LeafletTilesDescriptor newDescriptor = descriptor.withFlippedVisibility();
+                            list.set(i, newDescriptor);
+                            if (lastSelectedDescriptor != null && lastSelectedDescriptor.getId().equals(newDescriptor.getId())) {
+                                lastSelectedDescriptor = newDescriptor;
+                            }
                         }
-                        list.set(i, descriptor);
                     }
+                    repopulateTree(lastSelectedDescriptor, true);
                     return;
                 }
                 LeafletTilesDescriptor descriptor = ((LeafletTilesDescriptor) item.getData());
@@ -224,17 +242,17 @@ class TilesManagementDialog extends BaseDialog {
 
     private void changeToolbarState(@Nullable TreeItem item) {
         if (item == null) {
-            editTilesItem.setEnabled(false);
+            viewOrEditTilesItem.setEnabled(false);
             deleteTilesItem.setEnabled(false);
             return;
         }
         if (item.getData() == null) {
-            editTilesItem.setEnabled(false);
+            viewOrEditTilesItem.setEnabled(false);
             deleteTilesItem.setEnabled(item.equals(userDefinedTilesRootItem));
             return;
         }
+        viewOrEditTilesItem.setEnabled(true);
         LeafletTilesDescriptor descriptor = (LeafletTilesDescriptor) item.getData();
-        editTilesItem.setEnabled(!descriptor.isPredefined());
         deleteTilesItem.setEnabled(!descriptor.isPredefined());
     }
 
@@ -247,7 +265,7 @@ class TilesManagementDialog extends BaseDialog {
         }
     }
 
-    private boolean isRootItem(@NotNull Widget widget) {
+    private boolean isRootItem(Widget widget) {
         return (predefinedTilesRootItem != null && predefinedTilesRootItem.equals(widget)) || (userDefinedTilesRootItem != null && userDefinedTilesRootItem.equals(widget));
     }
 
@@ -277,17 +295,17 @@ class TilesManagementDialog extends BaseDialog {
         tree.removeAll();
         predefinedTilesRootItem = null;
         userDefinedTilesRootItem = null;
-        TreeItem toSelect = null;
+        lastSelectedTreeItem = null;
         if (!predefinedTiles.isEmpty()) {
             predefinedTilesRootItem = new TreeItem(tree, SWT.NONE);
             predefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_predefined_tiles);
-            for (LeafletTilesDescriptor tile: predefinedTiles) {
+            for (LeafletTilesDescriptor descriptor: predefinedTiles) {
                 TreeItem item = new TreeItem(predefinedTilesRootItem, SWT.NONE);
-                item.setData(tile);
-                item.setText(tile.getLabel());
-                item.setChecked(tile.isVisible());
-                if (tile.equals(tilesToSelect)) {
-                    toSelect = item;
+                item.setData(descriptor);
+                item.setText(descriptor.getLabel());
+                item.setChecked(descriptor.isVisible());
+                if (descriptor.equals(tilesToSelect)) {
+                    lastSelectedTreeItem = item;
                 }
             }
             predefinedTilesRootItem.setChecked(predefinedTiles.stream().anyMatch(LeafletTilesDescriptor::isVisible));
@@ -296,22 +314,23 @@ class TilesManagementDialog extends BaseDialog {
         if (!userDefinedTiles.isEmpty()) {
             userDefinedTilesRootItem = new TreeItem(tree, SWT.NONE);
             userDefinedTilesRootItem.setText(GISMessages.panel_select_tiles_action_manage_dialog_user_defined_tiles);
-            for (LeafletTilesDescriptor tile: userDefinedTiles) {
+            for (LeafletTilesDescriptor descriptor: userDefinedTiles) {
                 TreeItem item = new TreeItem(userDefinedTilesRootItem, SWT.NONE);
-                item.setData(tile);
-                item.setText(tile.getLabel());
-                item.setChecked(tile.isVisible());
-                if (tile.equals(tilesToSelect)) {
-                    toSelect = item;
+                item.setData(descriptor);
+                item.setText(descriptor.getLabel());
+                item.setChecked(descriptor.isVisible());
+                if (descriptor.equals(tilesToSelect)) {
+                    lastSelectedTreeItem = item;
                 }
             }
             userDefinedTilesRootItem.setChecked(userDefinedTiles.stream().anyMatch(LeafletTilesDescriptor::isVisible));
             userDefinedTilesRootItem.setExpanded(expandUserDefined);
         }
-        if (toSelect != null) {
-            tree.setSelection(toSelect);
+        if (lastSelectedTreeItem == null) {
+            lastSelectedTreeItem = predefinedTilesRootItem;
         }
-        changeToolbarState(toSelect);
+        tree.setSelection(lastSelectedTreeItem);
+        changeToolbarState(lastSelectedTreeItem);
         UIUtils.asyncExec(() -> UIUtils.packColumns(tree, true, new float[]{1.f}));
     }
 
@@ -319,11 +338,16 @@ class TilesManagementDialog extends BaseDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.OK_ID) {
             GeometryViewerRegistry.getInstance().updateTiles(predefinedTiles, userDefinedTiles);
+            if (!Objects.equals(oldSelectedTileLayer, currentSelectedTileLayer)) {
+                GeometryViewerRegistry.getInstance().setDefaultLeafletTiles(currentSelectedTileLayer);
+            }
         }
         super.buttonPressed(buttonId);
     }
 
-    private static class AddOrEditTileDialog extends BaseDialog {
+    private static class TileLayerDefinitionDialog extends BaseDialog {
+        private static final String TILE_LAYER_DEFINITION_EXPLANATION = "https://github.com/dbeaver/dbeaver/wiki/Working-with-Spatial-GIS-data#defining-custom-tile-layer";
+
         @Nullable
         private final LeafletTilesDescriptor originalTilesDescriptor;
 
@@ -333,54 +357,61 @@ class TilesManagementDialog extends BaseDialog {
         private Text labelText;
         private Text layersDefinitionText;
 
-        AddOrEditTileDialog(Shell parentShell, @Nullable LeafletTilesDescriptor tilesDescriptor) {
+        TileLayerDefinitionDialog(Shell parentShell, @Nullable LeafletTilesDescriptor tilesDescriptor) {
             super(parentShell, getTitle(tilesDescriptor), null);
             this.originalTilesDescriptor = tilesDescriptor;
         }
 
         private static String getTitle(@Nullable LeafletTilesDescriptor tilesDescriptor) {
             if (tilesDescriptor == null) {
-                return GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_add_tiles_title;
+                return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_add_tiles_title;
             }
-            return GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_edit_tiles_title;
+            if (tilesDescriptor.isPredefined()) {
+                return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_view_tiles_title;
+            }
+            return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_edit_tiles_title;
         }
 
         @Override
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
+            Composite composite = UIUtils.createComposite(dialogArea, 1);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             Group group = UIUtils.createControlGroup(
                 dialogArea,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_tiles_properties_group,
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_tiles_properties_group,
                 2,
                 SWT.NONE,
                 0
             );
             group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            String label = "";
-            String layersDefinition = "";
-            if (originalTilesDescriptor != null) {
-                label = originalTilesDescriptor.getLabel();
-                layersDefinition = originalTilesDescriptor.getLayersDefinition();
-            }
+            int mutabilityStyle = originalTilesDescriptor != null && originalTilesDescriptor.isPredefined() ? SWT.READ_ONLY : SWT.NONE;
             labelText = UIUtils.createLabelText(
                 group,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_label,
-                label,
-                SWT.BORDER
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_text_label_label,
+                originalTilesDescriptor == null ? "" : originalTilesDescriptor.getLabel(),
+                SWT.BORDER | mutabilityStyle
             );
             layersDefinitionText = UIUtils.createLabelText(
                 group,
-                GISMessages.panel_select_tiles_action_manage_dialog_add_or_edit_tiles_dialog_text_label_layers_definition,
-                layersDefinition,
-                SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP
+                GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_text_label_layers_definition,
+                originalTilesDescriptor == null ? "" : originalTilesDescriptor.getLayersDefinition(),
+                SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | mutabilityStyle
             );
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = UIUtils.getFontHeight(layersDefinitionText) * 15;
-            gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 40;
+            gd.widthHint = UIUtils.getFontHeight(layersDefinitionText) * 60;
             layersDefinitionText.setLayoutData(gd);
 
-            //todo info label with link to wiki page
+            UIUtils.createLink(dialogArea, GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_layers_definition_explanation_link_text, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(TILE_LAYER_DEFINITION_EXPLANATION);
+                }
+            });
+
             return dialogArea;
         }
 
@@ -399,8 +430,8 @@ class TilesManagementDialog extends BaseDialog {
         protected void buttonPressed(int buttonId) {
             if (buttonId == IDialogConstants.OK_ID) {
                 resultingTilesDescriptor = LeafletTilesDescriptor.createUserDefined(
-                    labelText.getText(),
-                    layersDefinitionText.getText(),
+                    labelText.getText().trim(),
+                    layersDefinitionText.getText().trim(),
                     originalTilesDescriptor == null || originalTilesDescriptor.isVisible()
                 );
             }
