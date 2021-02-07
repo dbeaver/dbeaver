@@ -43,13 +43,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreDatabase
@@ -86,6 +85,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long tablespaceId;
     private String description;
     private long dbTotalSize;
+    private boolean readAllDataTypes;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -98,6 +98,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
+    public Set<PostgreDataType> allDataTypes = new HashSet<>();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
@@ -501,6 +502,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
+        if (readAllDataTypes && !CommonUtils.isEmpty(allDataTypes)) {
+            return allDataTypes;
+        }
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
             return schema.getDataTypeCache().getCachedObjects();
@@ -586,9 +590,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (dataTypeCache.isEmpty() || forceRefresh) {
             dataTypeCache.clear();
             // Cache data types
+            readAllDataTypes = PostgreConstants.PROP_READ_ALL_DATA_TYPES;
             for (final PostgreSchema pgSchema : getSchemas(monitor)) {
-                if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(pgSchema.getName())) {
+                if (readAllDataTypes) {
                     pgSchema.getDataTypes(monitor);
+                } else {
+                    if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(pgSchema.getName())) {
+                        pgSchema.getDataTypes(monitor);
+                    }
                 }
             }
         }
@@ -791,6 +800,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
             return null;
         }
+    }
+
+    public void addDataTypes(List<PostgreDataType> dataTypes) {
+        allDataTypes.addAll(dataTypes);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////

@@ -456,7 +456,11 @@ public class PostgreSchema implements
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
+        List<PostgreDataType> dataTypes = dataTypeCache.getAllObjects(monitor, this);
+        if (!CommonUtils.isEmpty(dataTypes)) {
+            getDatabase().addDataTypes(dataTypes);
+        }
+        for (PostgreDataType dt : dataTypes) {
             if (dt.getParentObject() == this) {
                 types.add(dt);
             }
