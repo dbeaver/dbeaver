@@ -395,7 +395,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         public Object[] getPossibleValues(PostgreAttribute column)
         {
             Set<PostgreDataType> types = new TreeSet<>(Comparator.comparing(JDBCDataType::getTypeName));
-            types.addAll(column.getDataSource().getLocalDataTypes());
+            types.addAll(column.getDatabase().getLocalDataTypes());
             return types.toArray(new PostgreDataType[types.size()]);
         }
     }
