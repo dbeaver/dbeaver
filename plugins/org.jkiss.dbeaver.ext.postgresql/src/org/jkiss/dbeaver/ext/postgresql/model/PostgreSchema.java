@@ -455,7 +455,10 @@ public class PostgreSchema implements
         List<PostgreDataType> schemaTypes = new ArrayList<>();
         boolean areDataTypesCached = !CommonUtils.isEmpty(getDatabase().getAllDataTypes());
         if (areDataTypesCached) {
-            if (dataTypeCache.getCacheSize() == 0) {
+            if (!dataTypeCache.isFullyCached()) {
+                if (dataTypeCache.getCacheSize() != 0) {
+                    dataTypeCache.clearCache();
+                }
                 List<PostgreDataType> allDataTypes = getDatabase().getAllDataTypes();
                 if (!CommonUtils.isEmpty(allDataTypes)) {
                     for (PostgreDataType dataType : allDataTypes) {
