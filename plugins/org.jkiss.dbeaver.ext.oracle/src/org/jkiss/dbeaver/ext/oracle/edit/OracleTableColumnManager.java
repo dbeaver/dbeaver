@@ -68,7 +68,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     {
         OracleTableBase table = (OracleTableBase) container;
 
-        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar2"); //$NON-NLS-1$
+        DBSDataType columnType = findBestDataType(table, "varchar2"); //$NON-NLS-1$
 
         final OracleTableColumn column = new OracleTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
