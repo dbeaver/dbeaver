@@ -57,7 +57,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     @Override
     protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         GenericTableBase tableBase = (GenericTableBase) container;
-        DBSDataType columnType = findBestDataType(tableBase.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
+        DBSDataType columnType = findBestDataType(tableBase, DBConstants.DEFAULT_DATATYPE_NAMES);
 
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
         GenericTableColumn column = tableBase.getDataSource().getMetaModel().createTableColumnImpl(

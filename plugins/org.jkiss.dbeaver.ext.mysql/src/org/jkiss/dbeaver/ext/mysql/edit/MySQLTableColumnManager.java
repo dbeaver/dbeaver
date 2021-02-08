@@ -120,7 +120,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             column = new MySQLTableColumn(monitor, table, (DBSEntityAttribute)copyFrom);
         } else {
             column = new MySQLTableColumn(table);
-            DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+            DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
             column.setName(getNewColumnName(monitor, context, table));
             final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
             column.setTypeName(typeName); //$NON-NLS-1$
