@@ -650,15 +650,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 break;
             }
             case r: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 PostgreCollation collation = getCollationId(monitor);
-                appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
-                appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
-                // TODO: read data from pg_range
+                if (collation != null) {
+                    sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                    appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
+                    appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
+                    // TODO: read data from pg_range
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
 //                }
-                sql.append(");\n"); //$NON-NLS-1$
+                    sql.append(");\n"); //$NON-NLS-1$
+                }
                 break;
             }
             case b: {
