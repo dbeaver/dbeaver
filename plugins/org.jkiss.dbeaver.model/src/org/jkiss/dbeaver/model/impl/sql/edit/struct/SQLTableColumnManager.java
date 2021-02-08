@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
@@ -57,7 +58,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = (monitor, column, sql, command) -> {
         final String typeName = column.getTypeName();
         DBPDataKind dataKind = column.getDataKind();
-        final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+        final DBSDataType dataType = findDataType(column, typeName);
         sql.append(' ').append(typeName);
         if (dataType == null) {
             log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -247,18 +248,20 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
     }
 
-    private static DBSDataType findDataType(DBPDataSource dataSource, String typeName)
+    private static DBSDataType findDataType(DBSObject object, String typeName)
     {
-        if (dataSource instanceof DBPDataTypeProvider) {
-            return ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
+        DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, object);
+        if (dataTypeProvider != null) {
+            return dataTypeProvider.getLocalDataType(typeName);
         }
         return null;
     }
 
-    protected static DBSDataType findBestDataType(DBPDataSource dataSource, String ... typeNames)
+    protected static DBSDataType findBestDataType(DBSObject object, String ... typeNames)
     {
-        if (dataSource instanceof DBPDataTypeProvider) {
-            return DBUtils.findBestDataType(((DBPDataTypeProvider) dataSource).getLocalDataTypes(), typeNames);
+        DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, object);
+        if (dataTypeProvider != null) {
+            return DBUtils.findBestDataType(dataTypeProvider.getLocalDataTypes(), typeNames);
         }
         return null;
     }

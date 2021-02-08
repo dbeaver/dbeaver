@@ -112,7 +112,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     {
         SQLServerTable table = (SQLServerTable) container;
 
-        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+        DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
