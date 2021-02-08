@@ -47,6 +47,9 @@ public class PostgreConstants {
     public static final String PROP_DD_PLAIN_STRING = "postgresql.dd.plain.string";
     public static final String PROP_DD_TAG_STRING = "postgresql.dd.tag.string";
 
+    // If the need arises, this property will turn into a string and a new checkbox will appear in the PrefPagePostgreSQL
+    public static final boolean PROP_READ_ALL_DATA_TYPES = true;
+
     public static final String PROP_SSL = "ssl";
 
     /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CLIENT_CERT} instead */

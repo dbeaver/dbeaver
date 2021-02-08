@@ -784,7 +784,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.description = description;
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema ownerSchema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
         //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid"); //$NON-NLS-1$
@@ -994,9 +994,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return null;
         }
 
+        int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
+        PostgreSchema dataTypeSchema = ownerSchema.getDatabase().getSchema(session.getProgressMonitor(), schemaId);
+        if (dataTypeSchema == null) {
+            dataTypeSchema = ownerSchema;
+        }
+
         return new PostgreDataType(
             session,
-            schema,
+            dataTypeSchema,
             typeId,
             valueType,
             name,

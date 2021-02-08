@@ -182,11 +182,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "\nFROM pg_catalog.pg_type t" +
             "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-            "\nWHERE typnamespace=? " +
+            "\nWHERE t.typname IS NOT null" +
+            "\nAND c.relkind is null or c.relkind = 'c'" +
+            //"\nAND typnamespace=? " +
             "\nORDER by t.oid";
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        dbStat.setLong(1, owner.getObjectId());
-        return dbStat;
+        //dbStat.setLong(1, owner.getObjectId());
+        return session.prepareStatement(sql);
     }
 
     @Override

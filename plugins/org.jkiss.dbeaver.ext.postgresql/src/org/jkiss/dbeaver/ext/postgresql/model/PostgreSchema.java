@@ -48,10 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -455,14 +452,50 @@ public class PostgreSchema implements
     //@Property
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-        List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
-            if (dt.getParentObject() == this) {
-                types.add(dt);
+        List<PostgreDataType> schemaTypes = new ArrayList<>();
+        boolean areDataTypesCached = !CommonUtils.isEmpty(getDatabase().getAllDataTypes());
+        if (areDataTypesCached) {
+            if (dataTypeCache.getCacheSize() == 0) {
+                List<PostgreDataType> allDataTypes = getDatabase().getAllDataTypes();
+                if (!CommonUtils.isEmpty(allDataTypes)) {
+                    for (PostgreDataType dataType : allDataTypes) {
+                        if (dataType.getParentObject() == this) {
+                            schemaTypes.add(dataType);
+                        }
+                    }
+                    dataTypeCache.setCache(schemaTypes);
+                }
+            } else {
+                return dataTypeCache.getAllObjects(monitor, this);
+            }
+        } else {
+            for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
+                if (dt.getParentObject() == this) {
+                    schemaTypes.add(dt);
+                }
             }
         }
-        DBUtils.orderObjects(types);
-        return types;
+        DBUtils.orderObjects(schemaTypes);
+        return schemaTypes;
+    }
+
+    Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor, boolean readAllDataTypes) throws DBException {
+        if (readAllDataTypes) {
+            List<PostgreDataType> types = new ArrayList<>();
+            List<PostgreDataType> dataTypes = dataTypeCache.getAllObjects(monitor, this);
+            if (!CommonUtils.isEmpty(dataTypes)) {
+                getDatabase().addDataTypes(dataTypes);
+            }
+            for (PostgreDataType dt : dataTypes) {
+                if (dt.getParentObject() == this) {
+                    types.add(dt);
+                }
+            }
+            DBUtils.orderObjects(types);
+            return types;
+        } else {
+            return getDataTypes(monitor);
+        }
     }
 
     @Override
