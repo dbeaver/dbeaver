@@ -277,13 +277,13 @@ class ColumnsMappingDialog extends BaseDialog {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
 
                     Set<String> types = new TreeSet<>();
-                    DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
-                    if (dataSource instanceof DBPDataTypeProvider) {
-                        for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getLocalDataTypes()) {
+                    DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, settings.getContainer());
+                    if (dataTypeProvider != null) {
+                        for (DBSDataType type : dataTypeProvider.getLocalDataTypes()) {
                             types.add(type.getName());
                         }
                     }
-                    types.add(attrMapping.getTargetType(dataSource, true));
+                    types.add(attrMapping.getTargetType(settings.getTargetDataSource(attrMapping), true));
 
                     return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[0]), SWT.BORDER);
                 }
