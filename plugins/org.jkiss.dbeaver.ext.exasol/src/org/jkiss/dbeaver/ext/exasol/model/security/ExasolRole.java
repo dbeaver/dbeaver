@@ -97,6 +97,7 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
 		this.name = newName;
 	}
 	
+		
 
 }
 

@@ -80,8 +80,15 @@ public class ExasolSystemGrant implements DBAPrivilege {
 	@Property(hidden=true)
 	public String getName()
 	{
+		return grantee+"|"+sysPrivilege+"|"+adminOption.toString();
+	}
+
+	@Property(hidden=true)
+	public String getGrantee()
+	{
 		return grantee;
 	}
+	
 
 	@Override
 	public boolean isPersisted()

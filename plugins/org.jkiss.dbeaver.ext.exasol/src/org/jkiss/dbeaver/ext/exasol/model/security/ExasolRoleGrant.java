@@ -76,8 +76,14 @@ public class ExasolRoleGrant implements DBAPrivilege  {
 	@Override
 	public String getName()
 	{
-		return grantee;
+		return grantee + "|" + role;
 	}
+	
+	public String getGrantee()
+	{
+		return grantee;
+	}	
+	
 
 	@Override
 	public boolean isPersisted()
