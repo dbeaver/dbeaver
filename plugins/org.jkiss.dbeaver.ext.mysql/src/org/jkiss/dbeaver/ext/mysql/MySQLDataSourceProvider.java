@@ -263,7 +263,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Nullable
-    private static String getFullServerVersion(File path) {
+    public static String getFullServerVersion(File path) {
         File binPath = path;
         File binSubfolder = new File(binPath, "bin");
         if (binSubfolder.exists()) {
@@ -290,6 +290,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                         if (pos != -1) {
                             pos += 8;
                             int pos2 = line.indexOf(",", pos);
+                            return line.substring(pos, pos2);
+                        }
+                        pos = line.indexOf("Ver ");
+                        if (pos != -1) {
+                            pos += 4;
+                            int pos2 = line.indexOf(" for ", pos);
                             return line.substring(pos, pos2);
                         }
                     }
