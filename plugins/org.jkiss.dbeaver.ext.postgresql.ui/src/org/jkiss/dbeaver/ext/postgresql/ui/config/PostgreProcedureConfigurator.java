@@ -130,7 +130,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 languageCombo.setText("sql");
             }
             {
-                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getDataSource().getLocalDataTypes());
+                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getLocalDataTypes());
                 returnTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
                 for (PostgreDataType dt : dataTypes) {
                     returnTypeCombo.add(dt.getName());
@@ -139,7 +139,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 returnTypeCombo.addModifyListener(e -> {
                     String dtName = returnTypeCombo.getText();
                     if (!CommonUtils.isEmpty(dtName)) {
-                        returnType = parent.getDatabase().getDataSource().getLocalDataType(dtName);
+                        returnType = parent.getDatabase().getLocalDataType(dtName);
                     } else {
                         returnType = null;
                     }
