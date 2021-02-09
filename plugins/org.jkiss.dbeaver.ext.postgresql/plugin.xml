@@ -450,9 +450,10 @@
                         categories="sql,analytic,bigdata">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-<!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
+                    <!-- Drivers after 1.2.45 seems to be broken -->
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>
 <!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-no-awssdk-1.2.51.1078.jar" bundle="!drivers.redshift"/>-->
-                        <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-1.2.51.1078.zip" bundle="!drivers.redshift"/>-->
+<!--                        <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.51.1078/RedshiftJDBC42-1.2.51.1078.zip" bundle="!drivers.redshift"/>&ndash;&gt;-->
 <!--                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE" bundle="!drivers.redshift"/>-->
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
