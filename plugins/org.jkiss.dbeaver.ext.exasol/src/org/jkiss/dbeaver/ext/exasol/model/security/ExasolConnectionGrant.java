@@ -90,4 +90,8 @@ public class ExasolConnectionGrant
 		return isPersisted;
 	}
 
+	public Object getGrantee() {
+		return grantee+"|"+connection+"|"+adminOption.toString();
+	}
+
 }
