@@ -528,13 +528,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             @Override
             protected CellEditor getCellEditor(Object element) {
                 List<String> mappingTypes = new ArrayList<>();
-                mappingTypes.add(DatabaseMappingType.skip.name());
                 DatabaseMappingObject mapping = (DatabaseMappingObject) element;
-                if (mapping instanceof DatabaseMappingAttribute) {
-                    mappingTypes.add(((DatabaseMappingAttribute) mapping).getParent().getMappingType().name());
-                } else {
-                    mappingTypes.add(mapping.getMappingType().name());
+                DatabaseMappingType mappingType = mapping.getMappingType();
+                if (mappingType != DatabaseMappingType.skip) {
+                    mappingTypes.add(mappingType.name());
                 }
+                if (mapping instanceof DatabaseMappingAttribute) {
+                    DatabaseMappingType parentMapping = ((DatabaseMappingAttribute) mapping).getParent().getMappingType();
+                    if (mappingType != parentMapping && parentMapping == DatabaseMappingType.create) {
+                        mappingTypes.add(DatabaseMappingType.create.name());
+                    }
+                }
+                mappingTypes.add(DatabaseMappingType.skip.name());
                 return new CustomComboBoxCellEditor(
                     mappingViewer,
                     mappingViewer.getTree(),
