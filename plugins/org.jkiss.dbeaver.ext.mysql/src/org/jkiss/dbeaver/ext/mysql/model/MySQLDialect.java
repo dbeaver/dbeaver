@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
@@ -230,7 +231,7 @@ class MySQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
-        if (attribute.getTypeName().equalsIgnoreCase("json")) {
+        if (attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return '\'' + escapeString(strValue) + '\'';
         }
         return super.escapeScriptValue(attribute, value, strValue);
