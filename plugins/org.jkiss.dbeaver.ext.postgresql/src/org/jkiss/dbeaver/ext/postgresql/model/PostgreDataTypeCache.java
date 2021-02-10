@@ -40,7 +40,7 @@ import java.util.*;
 /**
  * PostgreDataTypeCache
  */
-public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, PostgreDataType>
+public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
     private static final Log log = Log.getLog(PostgreDataTypeCache.class);
 
@@ -56,13 +56,13 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
     }
 
     @Override
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreDatabase database) throws DBException {
-        super.loadObjects(monitor, database);
-        mapAliases(database);
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema schema) throws DBException {
+        super.loadObjects(monitor, schema);
+        mapAliases(schema);
 
     }
 
-    void loadDefaultTypes(PostgreDatabase database) {
+    void loadDefaultTypes(PostgreSchema schema) {
 
         List<PostgreDataType> types = new ArrayList<>();
         for (Field oidField : PostgreOid.class.getDeclaredFields()) {
@@ -74,12 +74,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
                 String fieldName = oidField.getName().toLowerCase(Locale.ENGLISH);
                 if (fieldName.endsWith("_array")) {
                     fieldName = fieldName.substring(0, fieldName.length() - 6) + "_";
-                    //PostgreDataType type = new PostgreDataType(database, CommonUtils.toInt(typeId), fieldName);
+                    //PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
                     //types.add(type);
                     // Ignore array types
                     continue;
                 } else {
-                    PostgreDataType type = new PostgreDataType(database, CommonUtils.toInt(typeId), fieldName);
+                    PostgreDataType type = new PostgreDataType(schema, CommonUtils.toInt(typeId), fieldName);
                     types.add(type);
                 }
             } catch (Exception e) {
@@ -88,15 +88,17 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
         }
         setCache(types);
         // Cache aliases
-        mapAliases(database);
+        mapAliases(schema);
     }
 
-    private void mapAliases(PostgreDatabase database) {
+    void mapAliases(PostgreSchema schema) {
         // Cache aliases
-        PostgreServerExtension serverType = database.getDataSource().getServerType();
-        mapDataTypeAliases(serverType.getDataTypeAliases(), false);
-        if (serverType.supportSerialTypes()) {
-            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
+        if (schema.isCatalogSchema()) {
+            PostgreServerExtension serverType = schema.getDataSource().getServerType();
+            mapDataTypeAliases(serverType.getDataTypeAliases(), false);
+            if (serverType.supportSerialTypes()) {
+                mapDataTypeAliases(PostgreConstants.SERIAL_TYPES, true);
+            }
         }
     }
 
@@ -163,7 +165,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
         }
     }
 
-    private static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
+    static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
         if (dataSource.isServerVersionAtLeast(7, 3)) {
             return "format_type(nullif(t.typbasetype, 0), t.typtypmod) as base_type_name";
         } else {
@@ -173,29 +175,32 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
         // Initially cache only base types (everything but composite and arrays)
+        boolean readAllTypes = owner.getDataSource().supportReadingAllDataTypes();
         String sql =
             "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
             "\nFROM pg_catalog.pg_type t" +
             "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
             "\nWHERE t.typname IS NOT null" +
-            "\nAND t.typcategory <> 'A'" + // Do not read array types
-            "\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
-            //"\nWHERE typnamespace=? " +
+            (readAllTypes ? "" : "\nAND t.typcategory <> 'A' AND c.relkind is null or c.relkind = 'c'") + // Do not read array types, unless the user has decided otherwise
+            //"\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
+            "\nAND typnamespace=? ";
             //"\nORDER by t.oid";
-        return session.prepareStatement(sql);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setLong(1, owner.getObjectId());
+        return dbStat;
     }
 
     @Override
-    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(session, owner, dbResult, true);
+        return PostgreDataType.readDataType(session, owner.getDatabase(), dbResult, true);
     }
 
     @Override
-    protected void invalidateObjects(DBRProgressMonitor monitor, PostgreDatabase database, Iterator<PostgreDataType> objectIter) {
+    protected void invalidateObjects(DBRProgressMonitor monitor, PostgreSchema schema, Iterator<PostgreDataType> objectIter) {
         // Resolve value type IDs (#3731)
         while (objectIter.hasNext()) {
             PostgreDataType dt = objectIter.next();

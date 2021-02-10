@@ -43,13 +43,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreDatabase
@@ -97,7 +96,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
     public final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
-    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
+    public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
@@ -159,7 +158,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.name = databaseName;
         this.initCaches();
         PostgreSchema sysSchema = new PostgreSchema(this, PostgreConstants.CATALOG_SCHEMA_NAME);
-        dataTypeCache.loadDefaultTypes(this);
+        sysSchema.getDataTypeCache().loadDefaultTypes(sysSchema);
         schemaCache.cacheObject(sysSchema);
     }
 
@@ -503,7 +502,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
-        return dataTypeCache.getCachedObjects();
+        if (!CommonUtils.isEmpty(dataTypeCache)) {
+            return dataTypeCache.values();
+        }
+        final PostgreSchema schema = getCatalogSchema();
+        if (schema != null) {
+            return schema.getDataTypeCache().getCachedObjects();
+        }
+        return null;
     }
 
     @Override
@@ -581,10 +587,45 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     void cacheDataTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
-        if (!dataTypeCache.isFullyCached() || forceRefresh) {
-            dataTypeCache.clearCache();
+        if (dataTypeCache.isEmpty() || forceRefresh) {
+            dataTypeCache.clear();
             // Cache data types
-            dataTypeCache.loadObjects(monitor, this);
+
+            boolean readAllTypes = getDataSource().supportReadingAllDataTypes();
+            String sql = "SELECT t.oid,t.*,c.relkind," + PostgreDataTypeCache.getBaseTypeNameClause(getDataSource()) +", d.description" +
+                            "\nFROM pg_catalog.pg_type t" +
+                            "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                            "\nWHERE t.typname IS NOT null" +
+                            (readAllTypes ? "" : "\nAND t.typcategory <> 'A' AND c.relkind is null or c.relkind = 'c'");
+
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        Set<PostgreSchema> schemaList = new HashSet<>();
+                        while (dbResult.next()) {
+                            PostgreDataType dataType = PostgreDataType.readDataType(session, this, dbResult, !readAllTypes);
+                            if (dataType != null) {
+                                PostgreSchema schema = dataType.getParentObject();
+                                schemaList.add(schema);
+                                schema.getDataTypeCache().cacheObject(dataType);
+                                dataTypeCache.put(dataType.getObjectId(), dataType);
+                            }
+                        }
+                        if (!schemaList.isEmpty()) {
+                            for (PostgreSchema schema : schemaList) {
+                                schema.getDataTypeCache().setFullCache(true);
+                            }
+                        }
+                        PostgreSchema catalogSchema = getCatalogSchema();
+                        if (catalogSchema != null) {
+                            catalogSchema.getDataTypeCache().mapAliases(catalogSchema);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
         }
     }
 
@@ -712,14 +753,22 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (typeId <= 0) {
             return null;
         }
-        PostgreDataType dataType = dataTypeCache.getDataType(typeId);
+        PostgreDataType dataType = dataTypeCache.get(typeId);
         if (dataType != null) {
             return dataType;
+        }
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
+            dataType = schema.getDataTypeCache().getDataType(typeId);
+            if (dataType != null) {
+                dataTypeCache.put(typeId, dataType);
+                return dataType;
+            }
         }
         // Type not found. Let's resolve it
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
-            dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
+            dataTypeCache.put(dataType.getObjectId(), dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -733,7 +782,33 @@ public class PostgreDatabase extends JDBCRemoteInstance
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
         }
         {
-            PostgreDataType dataType = dataTypeCache.getCachedObject(typeName);
+            // First check system catalog
+            final PostgreSchema schema = getCatalogSchema();
+            if (schema != null) {
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+
+        // Check schemas in search path
+        List<String> searchPath = getMetaContext().getSearchPath();
+        for (String schemaName : searchPath) {
+            final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
+            if (schema != null) {
+                final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+        // Check the rest
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
+            if (searchPath.contains(schema.getName())) {
+                continue;
+            }
+            final PostgreDataType dataType = schema.getDataTypeCache().getCachedObject(typeName);
             if (dataType != null) {
                 return dataType;
             }
@@ -746,7 +821,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         // Type not found. Let's resolve it
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
-            dataTypeCache.cacheObject(dataType);
+            dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
+            dataTypeCache.put(dataType.getObjectId(), dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
