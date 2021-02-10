@@ -1818,6 +1818,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery) {
+        if (resultsSash.getMaximizedControl() != null) {
+            toggleResultPanel();
+        }
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
 
         DBCPlanStyle planStyle = planner.getPlanStyle();
