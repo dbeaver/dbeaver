@@ -49,7 +49,7 @@ import java.util.*;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider
+public class PostgreDataType extends JDBCDataType<PostgreDatabase> implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider
 {
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -75,6 +75,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private final boolean alias;
 
     private long typeId;
+    private PostgreSchema typeSchema;
     private PostgreTypeType typeType;
     private PostgreTypeCategory typeCategory;
     private DBPDataKind dataKind;
@@ -110,10 +111,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private final AttributeCache attributeCache;
     private Object[] enumValues;
 
-    public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
+    public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, PostgreSchema schema, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
+        this.typeSchema = schema;
         this.alias = false;
-        if (owner.isCatalogSchema()) {
+        if (schema.isCatalogSchema()) {
             this.canonicalName = PostgreConstants.DATA_TYPE_CANONICAL_NAMES.get(name);
         }
         this.typeId = typeId;
@@ -208,6 +210,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         setName(aliasName);
         this.alias = true;
 
+        this.typeSchema = realType.getParentObject().getCatalogSchema();
+
         this.typeId = realType.typeId;
         this.typeType = realType.typeType;
         this.typeCategory = realType.typeCategory;
@@ -241,8 +245,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @ForTest
-    PostgreDataType(PostgreSchema schema, int valueType, String name) {
-        super(schema, valueType, name, null, false, false, -1, -1, -1);
+    PostgreDataType(PostgreDatabase database, int valueType, String name) {
+        super(database, valueType, name, null, false, false, -1, -1, -1);
+        this.typeSchema = database.getCatalogSchema();
         alias = false;
         ownerId = 0;
         attributeCache = null;
@@ -325,7 +330,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
-        return getParentObject().getDatabase();
+        return getParentObject();
     }
 
     @Override
@@ -580,14 +585,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return enumValues;
     }
 
+    public PostgreSchema getTypeSchema() {
+        return typeSchema;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        final PostgreSchema owner = getParentObject();
-        if (owner == null || owner.getName().equals(PostgreConstants.PUBLIC_SCHEMA_NAME) || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+        if (typeSchema == null || typeSchema.getName().equals(PostgreConstants.PUBLIC_SCHEMA_NAME) || typeSchema.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
         } else {
-            return DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(this);
+            return DBUtils.getQuotedIdentifier(typeSchema) + "." + DBUtils.getQuotedIdentifier(this);
         }
     }
 
@@ -650,15 +658,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 break;
             }
             case r: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 PostgreCollation collation = getCollationId(monitor);
-                appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
-                appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
-                // TODO: read data from pg_range
+                if (collation != null) {
+                    sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                    appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
+                    appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
+                    // TODO: read data from pg_range
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
 //                }
-                sql.append(");\n"); //$NON-NLS-1$
+                    sql.append(");\n"); //$NON-NLS-1$
+                }
                 break;
             }
             case b: {
@@ -784,7 +794,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.description = description;
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
         //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid"); //$NON-NLS-1$
@@ -994,9 +1004,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return null;
         }
 
+        int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
+        PostgreSchema dataTypeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+
         return new PostgreDataType(
             session,
-            schema,
+            database,
+            dataTypeSchema,
             typeId,
             valueType,
             name,
