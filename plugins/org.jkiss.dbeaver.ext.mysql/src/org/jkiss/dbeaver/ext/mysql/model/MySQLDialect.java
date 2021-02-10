@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -226,4 +227,12 @@ class MySQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @NotNull
+    @Override
+    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+        if (attribute.getTypeName().equalsIgnoreCase("json")) {
+            return '\'' + escapeString(strValue) + '\'';
+        }
+        return super.escapeScriptValue(attribute, value, strValue);
+    }
 }
