@@ -182,8 +182,8 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
             "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
             "\nWHERE t.typname IS NOT null" +
-            (readAllTypes ? "" : "\nAND t.typcategory <> 'A'") + // Do not read array types, unless the user has decided otherwise
-            "\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
+            (readAllTypes ? "" : "\nAND t.typcategory <> 'A' AND c.relkind is null or c.relkind = 'c'"); // Do not read array types, unless the user has decided otherwise
+            //"\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
             //"\nWHERE typnamespace=? " +
             //"\nORDER by t.oid";
         return session.prepareStatement(sql);
