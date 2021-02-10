@@ -796,14 +796,19 @@ public class PostgreDataType extends JDBCDataType<PostgreDatabase> implements Po
 
     public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
-        //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+        long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+        PostgreSchema dataTypeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+        if (dataTypeSchema == null) {
+            return null;
+        }
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid"); //$NON-NLS-1$
         String name = JDBCUtils.safeGetString(dbResult, "typname"); //$NON-NLS-1$
         if (CommonUtils.isEmpty(name)) {
             log.debug("Empty name for data type " + typeId);
             return null;
         }
-        if (skipTables) {
+        boolean readAllTypes = CommonUtils.toBoolean(database.getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        if (!readAllTypes && skipTables) {
             String relKind = JDBCUtils.safeGetString(dbResult, "relkind"); //$NON-NLS-1$
             if (relKind != null) {
                 try {
@@ -999,14 +1004,10 @@ public class PostgreDataType extends JDBCDataType<PostgreDatabase> implements Po
                 }
             }
         }
-        boolean readAllTypes = CommonUtils.toBoolean(database.getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
         if (!readAllTypes && skipTables && valueType == Types.ARRAY) {
             // Skip arrays as well
             return null;
         }
-
-        int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
-        PostgreSchema dataTypeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
 
         return new PostgreDataType(
             session,
