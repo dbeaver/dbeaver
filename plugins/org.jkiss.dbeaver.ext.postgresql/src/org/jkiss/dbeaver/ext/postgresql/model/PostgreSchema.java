@@ -88,7 +88,7 @@ public class PostgreSchema implements
     private final ConstraintCache constraintCache;
     private final ProceduresCache proceduresCache;
     private final IndexCache indexCache;
-    private final PostgreDataTypeCache dataTypeCache;
+    private List<PostgreDataType> dataTypeList;
     protected volatile boolean hasStatistics;
 
     PostgreSchema(PostgreDatabase database, String name) {
@@ -101,7 +101,7 @@ public class PostgreSchema implements
         constraintCache = createConstraintCache();
         indexCache = new IndexCache();
         proceduresCache = createProceduresCache();
-        dataTypeCache = new PostgreDataTypeCache();
+        dataTypeList = new ArrayList<>();
     }
 
     @NotNull
@@ -276,8 +276,8 @@ public class PostgreSchema implements
         return indexCache;
     }
 
-    public PostgreDataTypeCache getDataTypeCache() {
-        return dataTypeCache;
+    public List<PostgreDataType> getDataTypeList() {
+        return dataTypeList;
     }
 
     @Association
@@ -455,14 +455,16 @@ public class PostgreSchema implements
     //@Property
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-        List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
-            if (dt.getParentObject() == this) {
-                types.add(dt);
+        if (CommonUtils.isEmpty(dataTypeList)) {
+            Collection<PostgreDataType> allDatabaseTypes = getDatabase().getLocalDataTypes();
+            for (PostgreDataType dt : allDatabaseTypes) {
+                if (dt.getTypeSchema() == this) {
+                    dataTypeList.add(dt);
+                }
             }
+            DBUtils.orderObjects(dataTypeList);
         }
-        DBUtils.orderObjects(types);
-        return types;
+        return dataTypeList;
     }
 
     @Override

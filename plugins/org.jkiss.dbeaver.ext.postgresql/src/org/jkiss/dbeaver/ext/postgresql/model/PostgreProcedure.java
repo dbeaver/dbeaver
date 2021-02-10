@@ -611,7 +611,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     paramsSignature.append(param.getName()).append(' ');
                 }
                 final PostgreDataType dataType = param.getParameterType();
-                final PostgreSchema typeContainer = dataType.getParentObject();
+                final PostgreSchema typeContainer = dataType.getTypeSchema();
                 if (typeContainer == null ||
                     typeContainer.isPublicSchema() ||
                     typeContainer.isCatalogSchema())
