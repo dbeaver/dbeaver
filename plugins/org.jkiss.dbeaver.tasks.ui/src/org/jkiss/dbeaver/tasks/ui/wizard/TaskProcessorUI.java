@@ -75,7 +75,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     }
 
     @Override
-    public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
+    public void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error) {
         this.started = false;
 
         long elapsedTime = System.currentTimeMillis() - startTime;

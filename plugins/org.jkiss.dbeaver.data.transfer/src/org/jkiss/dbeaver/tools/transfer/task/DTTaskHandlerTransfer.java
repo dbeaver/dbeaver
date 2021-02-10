@@ -105,7 +105,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             }
             listener.subTaskFinished(error);
         }
-        listener.taskFinished(settings, error);
+        listener.taskFinished(settings, null, error);
     }
 
 }

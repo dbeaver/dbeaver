@@ -61,7 +61,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 } catch (Exception e) {
                     error = e;
                 } finally {
-                    listener.taskFinished(settings, error);
+                    listener.taskFinished(settings, null, error);
                     Log.setLogWriter(null);
 
                     monitor.worked(1);

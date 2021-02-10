@@ -157,8 +157,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
 
         @Override
-        public void taskFinished(@NotNull Object task, @Nullable Throwable error) {
-            parent.taskFinished(task, error);
+        public void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error) {
+            parent.taskFinished(task, result, error);
             elapsedTime = System.currentTimeMillis() - startTime;
             taskError = error;
         }
