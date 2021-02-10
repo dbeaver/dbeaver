@@ -269,7 +269,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             }
         });
         columnController.createColumns();
-        columnController.sortByColumn(1, SWT.UP);
+        columnController.sortByColumn(1, SWT.DOWN);
 
         scriptTree.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -339,6 +339,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     }
 
     public static void showTree(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext, IFolder rootFolder, List<ResourceInfo> scriptFiles) {
+//        List<ResourceInfo> sortedFiles = new ArrayList<>(scriptFiles);
+//        sortedFiles.sort((o1, o2) -> (int) (o2.getLocalFile().lastModified() - o1.getLocalFile().lastModified()));
         ScriptSelectorPanel selectorPanel = new ScriptSelectorPanel(workbenchWindow, editorContext, rootFolder, scriptFiles);
         selectorPanel.setModeless(true);
         selectorPanel.open();
