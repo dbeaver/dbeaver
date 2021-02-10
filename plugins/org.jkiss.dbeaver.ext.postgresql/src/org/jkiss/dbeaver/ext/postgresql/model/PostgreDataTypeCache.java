@@ -175,13 +175,14 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException {
         // Initially cache only base types (everything but composite and arrays)
+        boolean readAllTypes = CommonUtils.toBoolean(owner.getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
         String sql =
             "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
             "\nFROM pg_catalog.pg_type t" +
             "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
             "\nWHERE t.typname IS NOT null" +
-            "\nAND t.typcategory <> 'A'" + // Do not read array types
+            (readAllTypes ? "" : "\nAND t.typcategory <> 'A'") + // Do not read array types, unless the user has decided otherwise
             "\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
             //"\nWHERE typnamespace=? " +
             //"\nORDER by t.oid";

@@ -999,7 +999,8 @@ public class PostgreDataType extends JDBCDataType<PostgreDatabase> implements Po
                 }
             }
         }
-        if (skipTables && valueType == Types.ARRAY) {
+        boolean readAllTypes = CommonUtils.toBoolean(database.getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        if (!readAllTypes && skipTables && valueType == Types.ARRAY) {
             // Skip arrays as well
             return null;
         }

@@ -509,8 +509,9 @@ public class PostgreSchema implements
 */
             Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
             monitor.beginTask("Load data types", dataTypes.size());
+            boolean readAllTypes = CommonUtils.toBoolean(getDatabase().getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
             for (PostgreDataType dataType : dataTypes) {
-                if (dataType.hasAttributes() || dataType.isArray()) {
+                if (!readAllTypes && (dataType.hasAttributes() || dataType.isArray())) {
                     // Skipp table types and arrays
                     continue;
                 }
