@@ -22,7 +22,9 @@
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F5</b> to refresh the selected element.</tip>
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>Ctrl+Alt+Shift+D</b> to add the selected elements into your <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a>.</tip>
 	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
-	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/Managing-Charts">Charts</a> let you quickly and easily turn your SELECT queries' output into a colorized bar chart.</tip>
+	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/Managing-Charts">Charts</a> let you quickly and easily turn your SELECT queries' output into a colorized bar chart.
+		<br/>Note: this feature is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
+	</tip>
 	<tip>To see available <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Templates">templates</a> of SQL statements, use <b>Ctrl+Alt+Space</b> shortcut.</tip>
 	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, press <b>Ctrl+F</b> to search for data in the current table.</tip>
 	<tip>You can generate SQL statements (SELECT/INSERT/UPDATE/DELETE) based on selected rows. To generate SQL, right-click the selected rows ,then click Generate SQL and select one of the SQL commands you see.</tip>
@@ -49,8 +51,8 @@
 	<tip>You can view queries executed in DBeaver in <a href="view://org.jkiss.dbeaver.core.queryManager">Query Manager</a> view.<br/>All the internal queries DBeaver runs to read metadata can also be found there.</tip>
 	<tip>Any keyboard shortcut can be created for most of DBeaver commands. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a>.</tip>
 	<tip>You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter globally or for a particular database.</tip>
-	<tip>If you want to filter table rows by column value in<a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, use the following shortcut: <b>Ctrl+F11</b>. You cam also open open filter menu by pressing <b>F11</b>.</tip>
-	<tip>If you want to open foreign keys menu in<a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, use the following shortcut: <b>Ctrl+1</b>.</tip>
+	<tip>If you want to filter table rows by column value in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+F11</b>. You can also open filter menu by pressing <b>F11</b>.</tip>
+	<tip>If you want to open foreign keys menu in <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, use the following shortcut: <b>Ctrl+1</b>.</tip>
 	<tip>If your project requires advanced analytical tools or NoSQL database support, you can try <a href="https://dbeaver.com/">DBeaver Enterprise Edition</a>.</tip>
 	<tip>You can schedule your tasks to execute with specified recurrence, without needing to open DBeaver.
 		<br/>Note: <a href="https://github.com/dbeaver/dbeaver/wiki/Task-Scheduler">this feature</a> is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
@@ -62,7 +64,7 @@
 		<br/>Note: this feature is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
 	</tip>
 	<tip>DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a> is fully integrated with Git version control system. You can keep your project configuration, scripts, diagrams, bookmarks and other artifacts in a Git repository.</tip>
-	<tip>You change the current commit mode and the current transaction isolation mode in the toolbar, in the dropdown menu to the right of the Commit and Rollback buttons.</tip>
+	<tip>You can change the current commit mode and the current transaction isolation mode in the toolbar, in the dropdown menu to the right of the Commit and Rollback buttons.</tip>
 	<tip>DBeaver integrates the special data viewer designed specifically for work with spatial data. You can find out more about that in our <a href="https://github.com/dbeaver/dbeaver/wiki/Working-with-Spatial-GIS-data">wiki article</a>.</tip>
 	<tip>You can open SQL Console with the <b>Ctrl+Alt+Enter</b> shortcut. It's great for executing a query that you don't want to save in a file.</tip>
 	<tip>You can customize the representation of boolean values in Window -> Preferences -> Editors.</tip>
