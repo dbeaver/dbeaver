@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -131,6 +132,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
             }
             {
                 List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getLocalDataTypes());
+                dataTypes.sort(Comparator.comparing(PostgreDataType::getName));
                 returnTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
                 for (PostgreDataType dt : dataTypes) {
                     returnTypeCombo.add(dt.getName());
