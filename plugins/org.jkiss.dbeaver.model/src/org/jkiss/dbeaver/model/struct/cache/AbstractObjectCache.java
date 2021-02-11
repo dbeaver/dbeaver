@@ -168,6 +168,10 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         return this.fullCache;
     }
 
+    public void setFullCache(boolean fullCache) {
+        this.fullCache = fullCache;
+    }
+
     @Override
     public void clearCache()
     {
