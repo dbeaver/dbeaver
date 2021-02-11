@@ -180,7 +180,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>1.4</version>
+                        <version>3.0.0</version>
                         <configuration>
                             <keystore>${key.storage.path}/jar-sign.keystore</keystore>
                             <tsa>${tsa}</tsa>
