@@ -178,6 +178,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <!--
+                            Jar sign can be slow, especially if you need to sign hundreds of them.
+                            Performance hints:
+                                - Force SHA512withRSA algorithm (https://stackoverflow.com/questions/44003975/ev-code-signing-extremely-slow)
+                                - Install fast secure random generator (https://stackoverflow.com/questions/137212/how-to-deal-with-a-slow-securerandom-generator)
+                         -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
                         <version>3.0.0</version>
