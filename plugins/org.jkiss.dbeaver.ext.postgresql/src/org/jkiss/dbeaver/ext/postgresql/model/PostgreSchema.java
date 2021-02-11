@@ -88,7 +88,7 @@ public class PostgreSchema implements
     private final ConstraintCache constraintCache;
     private final ProceduresCache proceduresCache;
     private final IndexCache indexCache;
-    private List<PostgreDataType> dataTypeList;
+    private final PostgreDataTypeCache dataTypeCache;
     protected volatile boolean hasStatistics;
 
     PostgreSchema(PostgreDatabase database, String name) {
@@ -101,7 +101,7 @@ public class PostgreSchema implements
         constraintCache = createConstraintCache();
         indexCache = new IndexCache();
         proceduresCache = createProceduresCache();
-        dataTypeList = new ArrayList<>();
+        dataTypeCache = new PostgreDataTypeCache();
     }
 
     @NotNull
@@ -276,8 +276,8 @@ public class PostgreSchema implements
         return indexCache;
     }
 
-    public List<PostgreDataType> getDataTypeList() {
-        return dataTypeList;
+    public PostgreDataTypeCache getDataTypeCache() {
+        return dataTypeCache;
     }
 
     @Association
@@ -455,16 +455,14 @@ public class PostgreSchema implements
     //@Property
     @Association
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-        if (CommonUtils.isEmpty(dataTypeList)) {
-            Collection<PostgreDataType> allDatabaseTypes = getDatabase().getLocalDataTypes();
-            for (PostgreDataType dt : allDatabaseTypes) {
-                if (dt.getTypeSchema() == this) {
-                    dataTypeList.add(dt);
-                }
+        List<PostgreDataType> types = new ArrayList<>();
+        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
+            if (dt.getParentObject() == this) {
+                types.add(dt);
             }
-            DBUtils.orderObjects(dataTypeList);
         }
-        return dataTypeList;
+        DBUtils.orderObjects(types);
+        return types;
     }
 
     @Override
@@ -509,7 +507,7 @@ public class PostgreSchema implements
 */
             Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
             monitor.beginTask("Load data types", dataTypes.size());
-            boolean readAllTypes = CommonUtils.toBoolean(getDatabase().getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+            boolean readAllTypes = getDatabase().getDataSource().supportReadingAllDataTypes();
             for (PostgreDataType dataType : dataTypes) {
                 if (!readAllTypes && (dataType.hasAttributes() || dataType.isArray())) {
                     // Skipp table types and arrays
