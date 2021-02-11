@@ -205,6 +205,11 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         return (CallableStatement)original;
     }
 
+    @Override
+    public void close() {
+        super.close();
+    }
+
     ////////////////////////////////////////////////////////////////////
     // Procedure bindings
     ////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@ public class OracleRefCursorValueHandler extends JDBCStructValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         Object cursorValue = resultSet.getObject(index);
-        return new OracleRefCursor((JDBCSession) session, cursorValue);
+        return new OracleRefCursor((JDBCSession) session, resultSet.getSourceStatement(), cursorValue);
     }
 
     @Override
