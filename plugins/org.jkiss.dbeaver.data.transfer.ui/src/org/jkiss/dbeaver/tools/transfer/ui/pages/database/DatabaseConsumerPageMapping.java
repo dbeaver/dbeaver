@@ -698,6 +698,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     private void autoAssignMappings() {
+        getWizard().getSettings().sortDataPipes();
+        loadAndUpdateColumnsModel();
         for (TreeItem item : mappingViewer.getTree().getItems()) {
             Object element = item.getData();
             if (element instanceof DatabaseMappingContainer) {
@@ -711,8 +713,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 }
             }
         }
-        getWizard().getSettings().sortDataPipes();
-        loadAndUpdateColumnsModel();
         updateMappingsAndButtons();
         updatePageCompletion();
     }
