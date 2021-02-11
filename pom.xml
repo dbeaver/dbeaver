@@ -188,6 +188,10 @@
                             <storepass>dbeaver</storepass>
                             <alias>dbeaver</alias>
                             <keypass>dbeaver</keypass>
+                            <arguments>
+                                <argument>-sigalg</argument>
+                                <argument>SHA512withRSA</argument>
+                            </arguments>
                         </configuration>
                         <executions>
                             <execution>
