@@ -86,7 +86,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.application">
-        <application id="dbeaver-ce-standalone"
+        <application id="dbeaver-ce"
             name="%productName"
             description="%productSubTitle"/>
     </extension>
