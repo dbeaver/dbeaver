@@ -74,6 +74,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     private TreeViewer mappingViewer;
     private Button autoAssignButton;
     private ObjectContainerSelectorPanel containerPanel;
+    private boolean autoAssignedOnFirstActivation = false;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -975,6 +976,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
         }
         loadAndUpdateColumnsModel();
+        if (!autoAssignedOnFirstActivation) {
+            autoAssignedOnFirstActivation = true;
+            autoAssignMappings();
+        }
         updatePageCompletion();
     }
 
@@ -982,9 +987,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         // Load columns model. Update it only if mapping have different set of source columns
         // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        boolean newMappings = false;
         List<DatabaseMappingContainer> model = new ArrayList<>();
-
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
                 continue;
@@ -1014,17 +1017,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
             }
             model.add(mapping);
-            newMappings = mapping.getMappingType() == DatabaseMappingType.unspecified;
         }
 
         mappingViewer.setInput(model);
         if (!model.isEmpty()) {
             // Select first element
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));
-        }
-
-        if (newMappings) {
-            autoAssignMappings();
         }
 
         Tree table = mappingViewer.getTree();
