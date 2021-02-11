@@ -74,7 +74,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     private TreeViewer mappingViewer;
     private Button autoAssignButton;
     private ObjectContainerSelectorPanel containerPanel;
-    private boolean autoAssignedOnFirstActivation = false;
+    private boolean firstInit = true;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -976,9 +976,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
         }
         loadAndUpdateColumnsModel();
-        if (!autoAssignedOnFirstActivation) {
-            autoAssignedOnFirstActivation = true;
+        if (firstInit) {
+            firstInit = false;
             autoAssignMappings();
+            Tree table = mappingViewer.getTree();
+            int totalWidth = table.getClientArea().width;
+            TreeColumn[] columns = table.getColumns();
+            columns[0].setWidth(totalWidth * 40 / 100);
+            columns[1].setWidth(totalWidth * 40 / 100);
+            columns[2].setWidth(totalWidth * 20 / 100);
         }
         updatePageCompletion();
     }
@@ -1024,13 +1030,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             // Select first element
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));
         }
-
-        Tree table = mappingViewer.getTree();
-        int totalWidth = table.getClientArea().width;
-        TreeColumn[] columns = table.getColumns();
-        columns[0].setWidth(totalWidth * 40 / 100);
-        columns[1].setWidth(totalWidth * 40 / 100);
-        columns[2].setWidth(totalWidth * 20 / 100);
     }
 
     @Override
