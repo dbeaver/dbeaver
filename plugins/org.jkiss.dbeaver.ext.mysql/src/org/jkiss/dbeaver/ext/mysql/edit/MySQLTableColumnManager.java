@@ -54,8 +54,20 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     implements DBEObjectRenamer<MySQLTableColumn>, DBEObjectReorderer<MySQLTableColumn>
 {
 
-    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (monitor, column, sql, command) ->
-        sql.append(' ').append(column.getFullTypeName());
+    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (monitor, column, sql, command) -> {
+        sql.append(' ');
+        String fullTypeName = column.getFullTypeName();
+        String typeName = column.getTypeName();
+        if (!fullTypeName.contains("(") && (typeName.equalsIgnoreCase(MySQLConstants.TYPE_VARCHAR) || typeName.equalsIgnoreCase(MySQLConstants.TYPE_VARBINARY))) {
+            sql.append(typeName);
+            String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, column.getDataKind());
+            if (modifiers != null) {
+                sql.append(modifiers);
+            }
+        } else {
+            sql.append(fullTypeName);
+        }
+    };
 
     private final ColumnModifier<MySQLTableColumn> CharsetModifier = (monitor, column, sql, command) -> {
         if (column.getDataKind() == DBPDataKind.STRING && column.getCharset() != null) {
