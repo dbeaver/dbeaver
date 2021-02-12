@@ -4561,6 +4561,7 @@ public class ResultSetViewer extends Viewer
                         setNewState(dataContainer, useDataFilter);
                     }
 
+                    boolean panelUpdated = false;
                     final boolean metadataChanged = !scroll && model.isMetadataChanged();
                     if (error != null) {
                         String errorMessage = error.getMessage();
@@ -4601,6 +4602,7 @@ public class ResultSetViewer extends Viewer
                             }
                             if (getActivePresentation().getCurrentAttribute() == null) {
                                 getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
+                                panelUpdated = true; // Attribute viewer refreshed
                             }
                         }
                     }
@@ -4614,7 +4616,9 @@ public class ResultSetViewer extends Viewer
                             redrawData(visibilityChanged, false);
                         }
                     }
-                    updatePanelsContent(true);
+                    if (!panelUpdated) {
+                        updatePanelsContent(true);
+                    }
                     if (getStatistics() == null || !getStatistics().isEmpty()) {
                         if (error == null) {
                             // Update status (update execution statistics)
