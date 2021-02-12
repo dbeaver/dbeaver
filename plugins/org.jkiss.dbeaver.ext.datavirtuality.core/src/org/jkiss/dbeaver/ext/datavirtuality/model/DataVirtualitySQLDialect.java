@@ -32,7 +32,7 @@ import java.util.List;
 public class DataVirtualitySQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
     public DataVirtualitySQLDialect() {
-        super("DataVirtuality");
+        super("DataVirtuality", "datavirtuality");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {

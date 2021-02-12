@@ -18,7 +18,7 @@
                 parent="generic"
                 label="Data Virtuality"
                 icon="icons/datavirtuality_icon.png"
-                dialect="basic">
+                dialect="datavirtuality">
             <drivers managable="true">
 
                 <driver
@@ -33,15 +33,9 @@
                         defaultUser="admin"
                         defaultPassword="admin"
                         description="Data Virtuality JDBC driver"
-                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        webURL="https://https://datavirtuality.com/docs/"
                         categories="sql,analytic">
-                    <replace provider="generic" driver="datavirtuality_generic"/>
-                    <file type="jar" path="maven:/net.datavirtuality:datavirtuality-jdbc:RELEASE"/>
-
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
-                    <parameter name="query-set-active-db" value="USE DATABASE ?"/>
-                    <parameter name="active-entity-type" value="catalog"/>
+                    <file type="jar" path="C:\Users\admin\Downloads\datavirtuality-jdbc.jar"/>
                 </driver>
 
             </drivers>
