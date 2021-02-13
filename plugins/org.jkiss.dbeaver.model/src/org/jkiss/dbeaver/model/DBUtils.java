@@ -527,6 +527,7 @@ public final class DBUtils {
             return null;
         }
         for (DBSObject parent = object.getParentObject(); parent != null; parent = parent.getParentObject()) {
+            parent = DBUtils.getPublicObject(parent);
             if (type.isInstance(parent)) {
                 return type.cast(parent);
             } else if (parent instanceof DBPDataSource || parent instanceof DBPDataSourceContainer) {
