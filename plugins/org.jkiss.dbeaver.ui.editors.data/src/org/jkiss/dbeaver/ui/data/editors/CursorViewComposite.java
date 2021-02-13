@@ -57,7 +57,6 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
 
     private IValueController valueController;
     private DBDCursor value;
-    private DBCResultSet resultSet;
     private ResultSetViewer resultSetViewer;
     private CursorDataContainer dataContainer;
     private boolean fetched;
@@ -201,7 +200,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
         {
             DBCStatistics statistics = new DBCStatistics();
-            resultSet = value == null ? null : value.openResultSet(session);
+            DBCResultSet resultSet = value == null ? null : value.openResultSet(session);
             if (resultSet == null) {
                 return statistics;
             }
@@ -248,6 +247,12 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             }
             finally {
                 dataReceiver.close();
+
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
+                    log.debug(e);
+                }
             }
         }
 
