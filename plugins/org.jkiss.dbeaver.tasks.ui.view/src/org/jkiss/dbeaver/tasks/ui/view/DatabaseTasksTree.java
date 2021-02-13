@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -72,13 +72,13 @@ public class DatabaseTasksTree {
         
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
-            new NamedObjectPatternFilter(), TaskUIMessages.db_tasks_tree_text_tasks_type);
+            new NamedObjectPatternFilter(), TaskUIViewMessages.db_tasks_tree_text_tasks_type);
         Tree taskTree = taskViewer.getTree();
         taskTree.setHeaderVisible(true);
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        taskColumnController = new ViewerColumnController(TaskUIMessages.db_tasks_tree_column_controller_tasks, taskViewer);
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name, TaskUIMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {
+        taskColumnController = new ViewerColumnController(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBPProject) {
@@ -116,7 +116,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_created, TaskUIMessages.db_tasks_tree_column_controller_add_descr_create_time, SWT.LEFT, false, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_created, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_create_time, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -126,7 +126,7 @@ public class DatabaseTasksTree {
                 }
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_last_run, TaskUIMessages.db_tasks_tree_column_controller_add_descr_start_time, SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_last_run, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_start_time, SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -140,7 +140,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_last_duration, TaskUIMessages.db_tasks_tree_column_controller_add_descr_run_duration, SWT.LEFT, false, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_last_duration, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_run_duration, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -154,7 +154,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_last_result, TaskUIMessages.db_tasks_tree_column_controller_add_descr_last_result, SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_last_result, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_last_result, SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -163,7 +163,7 @@ public class DatabaseTasksTree {
                         return "N/A";
                     } else {
                         if (lastRun.isRunSuccess()) {
-                            return TaskUIMessages.db_tasks_tree_column_cell_text_success;
+                            return TaskUIViewMessages.db_tasks_tree_column_cell_text_success;
                         } else {
                             return CommonUtils.notEmpty(lastRun.getErrorMessage());
                         }
@@ -174,7 +174,7 @@ public class DatabaseTasksTree {
         });
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
-            taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_next_run, TaskUIMessages.db_tasks_tree_column_controller_add_descr_next_run, SWT.LEFT, true, false, new TaskLabelProvider() {
+            taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_next_run, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_next_run, SWT.LEFT, true, false, new TaskLabelProvider() {
                 @Override
                 protected String getCellText(Object element) {
                     if (element instanceof DBTTask) {
@@ -189,7 +189,7 @@ public class DatabaseTasksTree {
                 }
             });
         }
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_description, TaskUIMessages.db_tasks_tree_column_controller_add_descr_task_description, SWT.LEFT, false, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_description, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_task_description, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -198,7 +198,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_type, TaskUIMessages.db_tasks_tree_column_controller_add_descr_task_type, SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_type, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_task_type, SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -207,7 +207,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_category, TaskUIMessages.db_tasks_tree_column_controller_add_descr_category, SWT.LEFT, false, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_category, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_category, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
@@ -216,7 +216,7 @@ public class DatabaseTasksTree {
                 return null;
             }
         });
-        taskColumnController.addColumn(TaskUIMessages.db_tasks_tree_column_controller_add_name_project, TaskUIMessages.db_tasks_tree_column_controller_add_descr_project, SWT.LEFT, true, false, new TaskLabelProvider() {
+        taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_project, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_project, SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask) {
