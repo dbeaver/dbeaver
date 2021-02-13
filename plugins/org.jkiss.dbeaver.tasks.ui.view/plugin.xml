@@ -108,21 +108,7 @@
 
     <extension point="org.eclipse.ui.menus">
         <!-- Tools context menu -->
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-            <command commandId="org.jkiss.dbeaver.core.procedure.execute">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-
-            <separator name="compare" visible="true"/>
-            <separator name="export_import" visible="false"/>
-            <separator name="generate" visible="false"/>
-
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
             <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
                 <visibleWhen>
                     <with variable="activePart">
