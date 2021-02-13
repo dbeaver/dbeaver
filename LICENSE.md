@@ -201,9 +201,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
+---------------------------------------------------------------------------
+
 DBeaver includes a number of components and libraries with separate 
 copyright notices and license terms. Your use of those components are 
 subject to the terms and conditions of the following licenses. 
 
-Eclipse Platform (http://eclipse.org)
-    License: Eclipse Public License
+Eclipse Platform (http://eclipse.org) - Eclipse Public License (EPL)
+Apache Commons - Apache 2.0
+JSch - LGPL
+JFreeChart - Apache 2.0
+JTS - EPL
+CTS - LGPL
+JSQLParser - Apache 2.0
