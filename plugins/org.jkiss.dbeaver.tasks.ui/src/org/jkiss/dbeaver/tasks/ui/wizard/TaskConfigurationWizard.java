@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
-import org.jkiss.dbeaver.tasks.ui.view.DatabaseTasksView;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -322,7 +321,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
-                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(DatabaseTasksView.VIEW_ID);
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView("org.jkiss.dbeaver.tasks");
                     } catch (PartInitException e1) {
                         DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
                     }

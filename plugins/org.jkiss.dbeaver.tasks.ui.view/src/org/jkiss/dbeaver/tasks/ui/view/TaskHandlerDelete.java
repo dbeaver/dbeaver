@@ -26,7 +26,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -52,11 +52,11 @@ public class TaskHandlerDelete extends AbstractHandler {
 
         if (!tasksToDelete.isEmpty()) {
             if (tasksToDelete.size() == 1) {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIMessages.task_handler_delete_confirm_title_delete_task, NLS.bind(TaskUIMessages.task_handler_delete_confirm_question_delete_task, tasksToDelete.get(0).getName()))) {
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_task, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_task, tasksToDelete.get(0).getName()))) {
                     return null;
                 }
             } else {
-                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIMessages.task_handler_delete_confirm_question_delete_tasks, tasksToDelete.size()))) {
+                if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_delete_confirm_title_delete_tasks, NLS.bind(TaskUIViewMessages.task_handler_delete_confirm_question_delete_tasks, tasksToDelete.size()))) {
                     return null;
                 }
             }
@@ -65,8 +65,8 @@ public class TaskHandlerDelete extends AbstractHandler {
                     task.getProject().getTaskManager().deleteTaskConfiguration(task);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
-                            TaskUIMessages.task_handler_delete_error_deleting_task_from_scheduler_title,
-                            NLS.bind(TaskUIMessages.task_handler_delete_error_deleting_task_from_scheduler_message, task.getId()),
+                            TaskUIViewMessages.task_handler_delete_error_deleting_task_from_scheduler_title,
+                            NLS.bind(TaskUIViewMessages.task_handler_delete_error_deleting_task_from_scheduler_message, task.getId()),
                             e
                     );
                 }

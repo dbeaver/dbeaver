@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
+import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class DatabaseTasksSelectorDialog extends BaseDialog {
     private List<DBTTask> selectedTasks = new ArrayList<>();
 
     public DatabaseTasksSelectorDialog(Shell parentShell) {
-        super(parentShell, TaskUIMessages.db_tasks_selector_dialog, null);
+        super(parentShell, TaskUIViewMessages.db_tasks_selector_dialog, null);
     }
 
     @Override

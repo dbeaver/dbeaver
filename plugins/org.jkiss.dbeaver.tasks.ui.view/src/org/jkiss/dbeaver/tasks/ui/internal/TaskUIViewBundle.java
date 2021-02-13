@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.tasks.ui.internal;
 
-public class TaskUIBundle {
+public class TaskUIViewBundle {
 
-	public static final String BUDLE_ID = "org.jkiss.dbeaver.tasks.ui";
+	public static final String BUDLE_ID = "org.jkiss.dbeaver.tasks.ui.view";
 
 }
