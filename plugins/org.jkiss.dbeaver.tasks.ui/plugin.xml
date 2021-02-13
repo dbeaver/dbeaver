@@ -190,4 +190,19 @@
         <key commandId="org.jkiss.dbeaver.task.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="Enter"/>
     </extension>
 
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <view
+                    closeable="true"
+                    standalone="false"
+                    moveable="true"
+                    visible="false"
+                    showTitle="true"
+                    relationship="stack"
+                    relative="org.eclipse.ui.views.TaskList"
+                    id="org.jkiss.dbeaver.tasks"/>
+            <viewShortcut id="org.jkiss.dbeaver.tasks" />
+        </perspectiveExtension>
+    </extension>
+
 </plugin>

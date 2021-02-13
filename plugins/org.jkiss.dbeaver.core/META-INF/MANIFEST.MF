@@ -56,9 +56,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.hex;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport,
- org.jkiss.dbeaver.tasks.ui,
- org.jkiss.utils;visibility:=reexport,
- org.jkiss.dbeaver.cmp.simple.ui,
- org.jkiss.dbeaver.data.transfer
+ org.jkiss.utils;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.core
