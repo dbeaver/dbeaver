@@ -51,17 +51,7 @@
     <plugin id="org.jkiss.dbeaver.ui.navigator" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.search" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.erd.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.colortheme" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.tasks.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.tasks.native.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.tasks.sql.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- Compare -->
-    <plugin id="org.jkiss.dbeaver.cmp.simple.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Gis -->
     <plugin id="org.jkiss.dbeaver.data.gis.view" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -69,6 +59,5 @@
     <!-- Charts -->
     <plugin id="org.jkiss.bundle.jfreechart" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui.charts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ui.dashboard" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

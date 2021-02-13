@@ -27,6 +27,7 @@
             <modules>
                 <module>org.jkiss.dbeaver.rcp.feature</module>
                 <module>org.jkiss.dbeaver.ui.feature</module>
+                <module>org.jkiss.dbeaver.ui.extra.feature</module>
                 <module>org.jkiss.dbeaver.debug.feature</module>
 
                 <module>org.jkiss.dbeaver.db.ui.feature</module>
