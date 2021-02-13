@@ -671,6 +671,14 @@
                 </command>
             </menu>
         </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=object">
+            <command commandId="org.jkiss.dbeaver.core.procedure.execute">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
 
         <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.sql.open">
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
