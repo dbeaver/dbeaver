@@ -705,7 +705,7 @@ SELECT
             </query>
         </dashboard>
         <dashboard id="postgresql.blockIO" label="Block IO" group="Standard" defaultView="timeseries" updatePeriod="2000"
-            calc="delta" value="integer" fetch="columns" showByDefault="true" description="Shows blocking IO operations per second">
+            calc="delta" value="bytes" fetch="columns" showByDefault="true" description="Shows blocking IO operations per second">
             <datasource id="postgresql"/>
             <query>
 SELECT

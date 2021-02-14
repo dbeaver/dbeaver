@@ -197,7 +197,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
     }
 
     private void initConnection() {
-        useSeparateConnection = false;//viewConfiguration.isUseSeparateConnection();
+        useSeparateConnection = viewConfiguration.isUseSeparateConnection();
         if (viewConfiguration.isOpenConnectionOnActivate()) {
             if (!dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
