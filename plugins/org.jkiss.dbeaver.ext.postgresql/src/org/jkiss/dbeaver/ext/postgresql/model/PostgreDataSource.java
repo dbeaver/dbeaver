@@ -365,7 +365,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         JDBCRemoteInstance instance = context == null ? null : context.getOwnerInstance();
         Connection pgConnection;
         if (instance != null) {
-            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + conConfig.getDatabaseName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
         if (instance instanceof PostgreDatabase &&
             instance.getName() != null &&
@@ -376,7 +376,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             try {
                 // Patch URL with new database name
                 if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
-                    conConfig.setDatabaseName(instance.getName());
                     conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
                 } //else {
                     //String url = conConfig.getUrl();
