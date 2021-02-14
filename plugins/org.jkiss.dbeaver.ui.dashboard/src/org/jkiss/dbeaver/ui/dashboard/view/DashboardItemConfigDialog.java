@@ -176,7 +176,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
                         dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
                     }
                 });
-            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis_tooltip, dashboardConfig.isDomainTicksVisible(), 2)
+            UIUtils.createCheckbox(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_checkboxes_rangeaxis_tooltip, dashboardConfig.isRangeTicksVisible(), 2)
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
