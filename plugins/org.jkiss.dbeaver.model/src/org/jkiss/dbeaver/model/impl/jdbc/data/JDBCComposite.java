@@ -99,7 +99,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     @Override
     public void release()
     {
-        values = EMPTY_VALUES;
+        for (Object value : values) {
+            DBUtils.releaseValue(value);
+        }
     }
 
     @NotNull

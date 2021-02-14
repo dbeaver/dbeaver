@@ -942,15 +942,16 @@ public class ResultSetModel {
             dataFilter.addConstraints(newConstraints);
         }
 
+        // Construct new bindings from constraints. Exclude nested bindings
         List<DBDAttributeBinding> newBindings = new ArrayList<>();
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
             DBDAttributeBinding binding = getAttributeBinding(attr);
-            if (binding != null) {
+            if (binding != null && binding.getParentObject() == null) {
                 newBindings.add(binding);
             }
         }
-        if (!newBindings.equals(visibleAttributes)) {
+        if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
             visibleAttributes = newBindings;
             return true;
         }
