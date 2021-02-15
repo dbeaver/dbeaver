@@ -591,16 +591,24 @@ public class PostgreDatabase extends JDBCRemoteInstance
             dataTypeCache.clear();
             // Cache data types
 
-            boolean readAllTypes = getDataSource().supportReadingAllDataTypes();
-            String sql = "SELECT t.oid,t.*,c.relkind," + PostgreDataTypeCache.getBaseTypeNameClause(getDataSource()) +", d.description" +
-                            "\nFROM pg_catalog.pg_type t" +
-                            "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
-                            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-                            "\nWHERE t.typname IS NOT null" +
-                            (readAllTypes ? "" : "\nAND t.typcategory <> 'A' AND c.relkind is null or c.relkind = 'c'");
+            PostgreDataSource postgreDataSource = getDataSource();
+            boolean readAllTypes = postgreDataSource.supportReadingAllDataTypes();
+            boolean supportsTypeCategory = postgreDataSource.getServerType().supportsTypeCategory();
+            StringBuilder sql = new StringBuilder(256);
+            sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
+                    "\nFROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                    "\nWHERE t.typname IS NOT null");
+            if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+                if (supportsTypeCategory) {
+                    sql.append("\nAND t.typcategory <> 'A'");
+                }
+                sql.append("\nAND c.relkind is null or c.relkind = 'c'");
+            }
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         Set<PostgreSchema> schemaList = new HashSet<>();
                         while (dbResult.next()) {
@@ -624,7 +632,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBException(e, postgreDataSource);
             }
         }
     }
