@@ -604,7 +604,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 if (supportsTypeCategory) {
                     sql.append("\nAND t.typcategory <> 'A'");
                 }
-                sql.append("\nAND c.relkind is null or c.relkind = 'c'");
+                sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
             }
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
