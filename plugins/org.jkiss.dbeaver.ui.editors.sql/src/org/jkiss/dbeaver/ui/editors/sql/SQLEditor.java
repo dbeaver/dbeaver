@@ -1570,6 +1570,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
+            if (resultsSash.getMaximizedControl() != null) {
+                resultsSash.setMaximizedControl(null);
+            }
             setChecked(!isChecked());
             SQLEditorPresentationPanel panelInstance = extraPresentationPanels.get(panel);
             if (panelInstance != null && !isChecked()) {
