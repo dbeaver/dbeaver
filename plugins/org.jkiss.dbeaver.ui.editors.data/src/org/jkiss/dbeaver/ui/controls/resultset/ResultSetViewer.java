@@ -3637,7 +3637,7 @@ public class ResultSetViewer extends Viewer
         return result[0];
     }
 
-    private int getSegmentMaxRows()
+    public int getSegmentMaxRows()
     {
         if (getDataContainer() == null) {
             return 0;

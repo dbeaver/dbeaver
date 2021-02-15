@@ -88,7 +88,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         if (error != null) {
             log.error(error);
         }
-        listener.taskFinished(settings, error);
+        listener.taskFinished(settings, null, error);
 
         log.debug("SQL script execute completed");
     }
