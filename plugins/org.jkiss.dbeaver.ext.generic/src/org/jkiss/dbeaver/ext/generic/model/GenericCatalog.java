@@ -99,7 +99,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     @Override
     public DBSObject getParentObject()
     {
-        return getDataSource().getContainer();
+        return getDataSource();
     }
 
     @Override
