@@ -35,18 +35,24 @@ public class PostgreEscapeStringRule implements TPPredicateRule {
 
     @Override
     public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
-        int ch = scanner.read();
-        int chRead = 1;
+        int ch;
+        int chRead = 2;
 
-        if (ch != 'e' && ch != 'E') {
+        if (scanner.getColumn() > 0) {
+            scanner.unread();
+            if (Character.isLetterOrDigit(ch = scanner.read()) || ch == '_') {
+                // Previous character is a part of identifier, we
+                // don't want to take a bite of it by accident
+                return TPTokenAbstract.UNDEFINED;
+            }
+        }
+
+        if ((ch = scanner.read()) != 'e' && ch != 'E') {
             scanner.unread();
             return TPTokenAbstract.UNDEFINED;
         }
 
-        ch = scanner.read();
-        chRead++;
-
-        if (ch != '\'') {
+        if (scanner.read() != '\'') {
             scanner.unread();
             scanner.unread();
             return TPTokenAbstract.UNDEFINED;
@@ -56,9 +62,14 @@ public class PostgreEscapeStringRule implements TPPredicateRule {
             ch = scanner.read();
             chRead++;
 
-            if (ch == '\\' && (ch = scanner.read()) == '\'') {
-                // Don't care about other escape sequences
-                continue;
+            if (ch == '\\') {
+                ch = scanner.read();
+                chRead++;
+
+                if (ch == '\'') {
+                    // Don't care about other escape sequences
+                    continue;
+                }
             }
 
             if (ch == '\'') {
