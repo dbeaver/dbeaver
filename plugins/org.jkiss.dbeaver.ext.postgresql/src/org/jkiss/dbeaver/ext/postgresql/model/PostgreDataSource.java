@@ -664,7 +664,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     Object position = BeanUtils.readObjectProperty(serverErrorMessage, "position");
                     if (position instanceof Number) {
                         ErrorPosition pos = new ErrorPosition();
-                        pos.position = ((Number) position).intValue();
+                        pos.position = ((Number) position).intValue() - 1;
                         return new ErrorPosition[] {pos};
                     }
                 }
