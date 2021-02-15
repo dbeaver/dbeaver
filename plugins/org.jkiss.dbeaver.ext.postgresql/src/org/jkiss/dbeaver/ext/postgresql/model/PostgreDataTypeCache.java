@@ -177,18 +177,24 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
         // Initially cache only base types (everything but composite and arrays)
-        boolean readAllTypes = owner.getDataSource().supportReadingAllDataTypes();
-        String sql =
-            "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
-            "\nFROM pg_catalog.pg_type t" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
-            "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-            "\nWHERE t.typname IS NOT null" +
-            (readAllTypes ? "" : "\nAND t.typcategory <> 'A' AND c.relkind is null or c.relkind = 'c'") + // Do not read array types, unless the user has decided otherwise
-            //"\nAND c.relkind is null or c.relkind = 'c'"; // 'c' == custom types
-            "\nAND typnamespace=? ";
-            //"\nORDER by t.oid";
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        PostgreDataSource dataSource = owner.getDataSource();
+        boolean readAllTypes = dataSource.supportReadingAllDataTypes();
+        boolean supportsTypeCategory = dataSource.getServerType().supportsTypeCategory();
+        StringBuilder sql = new StringBuilder(256);
+        sql.append("SELECT t.oid,t.*,c.relkind,").append(getBaseTypeNameClause(dataSource)).append(", d.description" +
+                "\nFROM pg_catalog.pg_type t" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                "\nWHERE t.typname IS NOT null");
+        if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+            if (supportsTypeCategory) {
+                sql.append("\nAND t.typcategory <> 'A'");
+            }
+            sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+        }
+        sql.append("\nAND typnamespace=?");
+        //"\nORDER by t.oid";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
