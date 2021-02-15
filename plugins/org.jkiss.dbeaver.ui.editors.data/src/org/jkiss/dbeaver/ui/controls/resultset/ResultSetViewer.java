@@ -2490,7 +2490,8 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
-        if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_view_format,
                 null,
@@ -2500,7 +2501,7 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
-        {
+        if (dataSource != null && !dataSource.getContainer().getNavigatorSettings().isHideVirtualModel()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_logical_structure,
                 null,
