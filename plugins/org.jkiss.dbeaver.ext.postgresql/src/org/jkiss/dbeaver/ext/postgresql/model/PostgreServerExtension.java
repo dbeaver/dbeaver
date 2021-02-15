@@ -141,4 +141,6 @@ public interface PostgreServerExtension
     boolean supportSerialTypes();
 
     boolean supportsBackslashStringEscape();
+
+    boolean supportsTypeCategory();
 }
