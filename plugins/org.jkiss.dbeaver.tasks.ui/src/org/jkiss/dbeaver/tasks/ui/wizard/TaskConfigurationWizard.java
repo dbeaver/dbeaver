@@ -31,6 +31,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -53,6 +55,8 @@ import java.util.Map;
 public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> extends BaseWizard implements IWorkbenchWizard {
 
     private static final Log log = Log.getLog(TaskConfigurationWizard.class);
+
+    private static final String TASKS_VIEW_ID = "org.jkiss.dbeaver.tasks";
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
@@ -289,7 +293,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {
-        if (getContainer().isSelectorMode()) {
+
+        IViewDescriptor tasksViewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
+        if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
             // Do not create save buttons
             UIUtils.createEmptyLabel(parent, hSpan, 1);
         } else {
@@ -321,7 +327,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     try {
-                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView("org.jkiss.dbeaver.tasks");
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(TASKS_VIEW_ID);
                     } catch (PartInitException e1) {
                         DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
                     }
