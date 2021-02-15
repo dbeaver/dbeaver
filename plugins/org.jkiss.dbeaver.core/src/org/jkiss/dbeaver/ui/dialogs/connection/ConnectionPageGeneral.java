@@ -511,6 +511,9 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             // No changes anyway
             return;
         }
+        if (dataSource == null) {
+            return;
+        }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
         String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
