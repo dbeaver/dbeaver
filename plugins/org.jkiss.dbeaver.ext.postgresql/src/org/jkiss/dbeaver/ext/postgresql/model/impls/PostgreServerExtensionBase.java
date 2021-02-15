@@ -463,4 +463,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsBackslashStringEscape() {
         return false;
     }
+
+    @Override
+    public boolean supportsTypeCategory() {
+        return dataSource.isServerVersionAtLeast(8, 4);
+    }
 }
