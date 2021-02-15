@@ -433,7 +433,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         return dataPipes;
     }
 
-    public void sortDataPipes() {
+    public void sortDataPipes(DBRProgressMonitor monitor) {
         List<DBSEntity> entities = dataPipes.stream().sequential()
                 .filter(pipe -> pipe.getProducer() != null && pipe.getProducer().getDatabaseObject() instanceof DBSEntity)
                 .map(pipe -> (DBSEntity) pipe.getProducer().getDatabaseObject())
@@ -442,7 +442,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         List<DBSEntity> cyclicTables = new ArrayList<>();
         List<DBSEntity> views = new ArrayList<>();
         try {
-            DBStructUtils.sortTableList(new VoidProgressMonitor(), entities, simpleTables, cyclicTables, views);
+            DBStructUtils.sortTableList(monitor, entities, simpleTables, cyclicTables, views);
         } catch (DBException e) {
             log.warn("Unable to sort database entities!");
             return;
