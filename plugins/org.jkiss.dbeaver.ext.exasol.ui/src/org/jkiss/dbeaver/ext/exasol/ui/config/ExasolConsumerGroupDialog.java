@@ -74,9 +74,9 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
         final Text groupRamLimitText = UIUtils.createLabelText(group, ExasolMessages.dialog_consumer_group_group_limit, "");
         final Text sessionRamLimitText = UIUtils.createLabelText(group, ExasolMessages.dialog_consumer_group_session_limit, "");
         cpuWeightText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        userRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(userRamLimitText));
-        groupRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(groupRamLimitText));
-        sessionRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(sessionRamLimitText));
+        userRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(userRamLimitText));
+        groupRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(groupRamLimitText));
+        sessionRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(sessionRamLimitText));
         precedenceText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         
         Map<Text, BigDecimal> limits = new HashMap<Text, BigDecimal>();
