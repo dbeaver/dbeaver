@@ -190,7 +190,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
              if (supportsTypeCategory) {
                  sql.append("\nAND t.typcategory <> 'A'");
              }
-             sql.append("\nAND c.relkind is null or c.relkind = 'c'");
+             sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
         }
         sql.append("\nAND typnamespace=?");
             //"\nORDER by t.oid";
