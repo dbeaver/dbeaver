@@ -35,7 +35,7 @@ public abstract class MySQLInformation implements DBSObject, DBPSystemInfoObject
     @Override
     public DBSObject getParentObject()
     {
-        return getDataSource().getContainer();
+        return getDataSource();
     }
 
     @NotNull
