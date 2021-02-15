@@ -785,7 +785,7 @@
 
             <separator name="compare" visible="true"/>
             <separator name="export_import" visible="false"/>
-            <separator name="generate" visible="false"/>
+            <separator name="generate" visible="true"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">

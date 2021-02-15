@@ -671,7 +671,7 @@
                 </command>
             </menu>
         </menuContribution>
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=object">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
             <command commandId="org.jkiss.dbeaver.core.procedure.execute">
                 <visibleWhen checkEnabled="true"/>
             </command>
