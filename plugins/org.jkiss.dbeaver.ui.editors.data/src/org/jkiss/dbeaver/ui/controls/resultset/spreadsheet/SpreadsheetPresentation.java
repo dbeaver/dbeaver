@@ -1491,6 +1491,26 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return controller.isRecordMode();
     }
 
+    public Color getBackgroundAdded() {
+        return backgroundAdded;
+    }
+
+    public Color getBackgroundDeleted() {
+        return backgroundDeleted;
+    }
+
+    public Color getBackgroundModified() {
+        return backgroundModified;
+    }
+
+    public Color getBackgroundNormal() {
+        return backgroundNormal;
+    }
+
+    public Color getBackgroundOdd() {
+        return backgroundOdd;
+    }
+
     private class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
 
         @Nullable
