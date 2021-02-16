@@ -47,7 +47,7 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="155,265"/>
+            <property name="versionInfoCoord" value="155,260"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="100,100,100"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
