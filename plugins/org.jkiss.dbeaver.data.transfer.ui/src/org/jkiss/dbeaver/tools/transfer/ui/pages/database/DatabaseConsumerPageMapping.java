@@ -698,7 +698,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     private void autoAssignMappings() {
-        getWizard().getSettings().sortDataPipes();
+        try {
+            getWizard().getRunnableContext().run(true, true, (monitor ->  {
+                monitor.beginTask("Sorting data pipes", getWizard().getSettings().getDataPipes().size());
+                getWizard().getSettings().sortDataPipes(monitor);
+            }));
+        } catch (InvocationTargetException | InterruptedException e) {
+            //ignored
+        }
         loadAndUpdateColumnsModel();
         for (TreeItem item : mappingViewer.getTree().getItems()) {
             Object element = item.getData();
@@ -975,18 +982,21 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 setErrorMessage(e.getMessage());
             }
         }
+
         loadAndUpdateColumnsModel();
+        updatePageCompletion();
+
         if (firstInit) {
             firstInit = false;
-            autoAssignMappings();
             Tree table = mappingViewer.getTree();
             int totalWidth = table.getClientArea().width;
             TreeColumn[] columns = table.getColumns();
             columns[0].setWidth(totalWidth * 40 / 100);
             columns[1].setWidth(totalWidth * 40 / 100);
             columns[2].setWidth(totalWidth * 20 / 100);
+
+            UIUtils.asyncExec(this::autoAssignMappings);
         }
-        updatePageCompletion();
     }
 
     private void loadAndUpdateColumnsModel() {
