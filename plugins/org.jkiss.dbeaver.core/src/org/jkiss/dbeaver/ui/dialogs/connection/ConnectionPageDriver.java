@@ -21,9 +21,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -56,6 +58,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     private DataSourceNavigatorSettings.Preset navigatorPreset;
     private DriverSelectViewer driverSelectViewer;
     private ProjectSelectorPanel projectSelector;
+    private Control filterIndentLabel;
 
     ConnectionPageDriver(NewConnectionWizard wizard)
     {
@@ -87,11 +90,11 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         setControl(placeholder);
 
-        Composite controlsGroup = UIUtils.createComposite(placeholder, 5);
+        Composite controlsGroup = UIUtils.createComposite(placeholder, 4);
         controlsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         // Navigator view preset
-        {
+        if (false) {
             Composite presetComposite = new Composite(controlsGroup, SWT.NONE);
             presetComposite.setLayout(new RowLayout());
             new Label(presetComposite, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
@@ -118,56 +121,75 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
 
         {
-            // Spacer
-            createPanelDivider(controlsGroup);
-        }
-
-        {
-            // Sorter
-            Composite orderGroup = new Composite(controlsGroup, SWT.NONE);
-            orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-            orderGroup.setLayout(new RowLayout());
-            new Label(orderGroup, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SORT));
-            new Label(orderGroup, SWT.NONE).setText("Sort by: ");
-            DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
-
-            for (DriverSelectViewer.OrderBy ob : DriverSelectViewer.OrderBy.values()) {
-                Button obScoreButton = new Button(orderGroup, SWT.RADIO);
-                obScoreButton.setText(ob.getLabel());
-                obScoreButton.setToolTipText(ob.getDescription());
-                obScoreButton.setData(ob);
-                if (ob == defaultOrderBy) {
-                    obScoreButton.setSelection(true);
+            driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true, DriverSelectViewer.SelectorViewType.browser) {
+                @Override
+                protected void createExtraFilterControlsBefore(Composite filterGroup) {
+                    ((GridLayout)filterGroup.getLayout()).numColumns++;
+                    filterIndentLabel = UIUtils.createEmptyLabel(filterGroup, 1, 1);
+                    GridData gd = new GridData();
+                    gd.widthHint = 100;
+                    filterIndentLabel.setLayoutData(gd);
                 }
-                obScoreButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        driverSelectViewer.setOrderBy(
-                            (DriverSelectViewer.OrderBy) obScoreButton.getData());
-                    }
-                });
-            }
-        }
 
-        {
-            createPanelDivider(controlsGroup);
-        }
+                @Override
+                protected void createExtraFilterControlsAfter(Composite filterGroup) {
+                    ((GridLayout)filterGroup.getLayout()).numColumns++;
+                    Composite extraControlsComposite = UIUtils.createComposite(filterGroup, 1);
+                    extraControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        projectSelector = new ProjectSelectorPanel(controlsGroup, NavigatorUtils.getSelectedProject());
-        if (projectSelector.getSelectedProject() == null) {
-            setErrorMessage("You need to create a project first");
-        }
-
-        {
-            driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
+                    createSorterControl(extraControlsComposite);
+                }
+            };
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             driverSelectViewer.getControl().setLayoutData(gd);
+
+            ((GridData)filterIndentLabel.getLayoutData()).widthHint =
+                driverSelectViewer.getTabbedViewer().getFolderComposite().getTabsWidth() -
+                ((GridLayout)filterIndentLabel.getParent().getLayout()).horizontalSpacing - 1;
         }
 
+        {
+            Composite bottomPanel = new Composite(placeholder, SWT.NONE);
+            bottomPanel.setLayout(new GridLayout(2, false));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            bottomPanel.setLayoutData(gd);
+            UIUtils.createEmptyLabel(bottomPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE);
+            if (projectSelector.getSelectedProject() == null) {
+                setErrorMessage("You need to create a project first");
+            }
+        }
 
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
         UIUtils.asyncExec(() -> driverSelectViewer.getControl().setFocus());
+    }
+
+    public void createSorterControl(Composite controlsGroup) {
+        // Sorter
+        Composite orderGroup = new Composite(controlsGroup, SWT.NONE);
+        orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        orderGroup.setLayout(new RowLayout());
+        //new Label(orderGroup, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SORT));
+        new Label(orderGroup, SWT.NONE).setText("Sort by: ");
+        DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
+
+        for (DriverSelectViewer.OrderBy ob : DriverSelectViewer.OrderBy.values()) {
+            Button obScoreButton = new Button(orderGroup, SWT.RADIO);
+            obScoreButton.setText(ob.getLabel());
+            obScoreButton.setToolTipText(ob.getDescription());
+            obScoreButton.setData(ob);
+            if (ob == defaultOrderBy) {
+                obScoreButton.setSelection(true);
+            }
+            obScoreButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    driverSelectViewer.setOrderBy(
+                        (DriverSelectViewer.OrderBy) obScoreButton.getData());
+                }
+            });
+        }
     }
 
     public void createPanelDivider(Composite controlsGroup) {

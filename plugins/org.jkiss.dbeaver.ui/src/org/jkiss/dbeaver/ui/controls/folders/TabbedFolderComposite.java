@@ -260,6 +260,11 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         super.setBackground(color);
     }
 
+    public int getTabsWidth() {
+        FolderPane pane = getActiveFolderPane();
+        return pane == null ? 0 : pane.folderList.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+    }
+
     /**
      * @param objectId ID used to save/load folders state
      * @param folders  list of folders
