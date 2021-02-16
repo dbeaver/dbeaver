@@ -166,6 +166,9 @@ public final class DBStructUtils {
 
         // 1. Get tables without FKs
         for (Iterator<T> iterator = realTables.iterator(); iterator.hasNext(); ) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             T table = iterator.next();
             try {
                 if (CommonUtils.isEmpty(table.getAssociations(monitor))) {
@@ -181,8 +184,14 @@ public final class DBStructUtils {
         // 3. Repeat p.2 until something is found
         boolean refsFound = true;
         while (refsFound) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             refsFound = false;
             for (Iterator<T> iterator = realTables.iterator(); iterator.hasNext(); ) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 T table = iterator.next();
                 try {
                     boolean allGood = true;
