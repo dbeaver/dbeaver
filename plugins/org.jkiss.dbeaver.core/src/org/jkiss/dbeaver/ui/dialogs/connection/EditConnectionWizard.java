@@ -152,7 +152,7 @@ public class EditConnectionWizard extends ConnectionWizard
         }
 
         if (!embedded && pageSettings != null) {
-            PrefPageConnections pageClientSettings = new PrefPageConnections();
+            PrefPageConnectionClient pageClientSettings = new PrefPageConnectionClient();
             pageSettings.addSubPage(
                 createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
         }

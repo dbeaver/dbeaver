@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 /**
  * PrefPageConnections
  */
-public class PrefPageConnections extends TargetPrefPage
+public class PrefPageConnectionClient extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.client.connections"; //$NON-NLS-1$
 
@@ -69,7 +69,7 @@ public class PrefPageConnections extends TargetPrefPage
 
     private Button connUseEnvVariables;
 
-    public PrefPageConnections()
+    public PrefPageConnectionClient()
     {
         super();
     }

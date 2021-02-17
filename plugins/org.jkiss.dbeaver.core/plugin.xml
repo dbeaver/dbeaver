@@ -931,7 +931,7 @@
         <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
