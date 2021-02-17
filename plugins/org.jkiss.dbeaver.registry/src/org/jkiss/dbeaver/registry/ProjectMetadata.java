@@ -48,7 +48,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ProjectMetadata implements DBPProject {
-
     private static final Log log = Log.getLog(ProjectMetadata.class);
 
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
@@ -215,15 +214,19 @@ public class ProjectMetadata implements DBPProject {
         return getFormat() == ProjectFormat.MODERN;
     }
 
-    @NotNull
-    @Override
-    public DBPDataSourceRegistry getDataSourceRegistry() {
-        ensureOpen();
+    public void ensureDadaSourceRegistryLoaded() {
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
                 dataSourceRegistry = new DataSourceRegistry(workspace.getPlatform(), this);
             }
         }
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceRegistry getDataSourceRegistry() {
+        ensureOpen();
+        ensureDadaSourceRegistryLoaded();
         return dataSourceRegistry;
     }
 

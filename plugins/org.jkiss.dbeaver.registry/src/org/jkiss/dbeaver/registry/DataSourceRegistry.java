@@ -596,9 +596,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         List<DBPDataSourceContainer> result = new ArrayList<>();
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         for (DBPProject project : workspace.getProjects()) {
-            if (project.isOpen() && project.isRegistryLoaded()) {
-                result.addAll(project.getDataSourceRegistry().getDataSources());
-            }
+            project.ensureOpen();
+            project.ensureDadaSourceRegistryLoaded();
+            result.addAll(project.getDataSourceRegistry().getDataSources());
         }
         return result;
     }
@@ -905,5 +905,4 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             return Status.OK_STATUS;
         }
     }
-
 }

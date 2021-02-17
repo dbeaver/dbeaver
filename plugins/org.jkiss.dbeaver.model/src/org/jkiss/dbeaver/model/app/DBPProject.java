@@ -32,8 +32,7 @@ import java.util.UUID;
 /**
  * Project meta information.
  */
-public interface DBPProject extends DBPObject, DBAAuthSpace
-{
+public interface DBPProject extends DBPObject, DBAAuthSpace {
     String METADATA_FOLDER = ".dbeaver";
 
     String PROP_SECURE_PROJECT = "secureProject";
@@ -65,6 +64,8 @@ public interface DBPProject extends DBPObject, DBAAuthSpace
 
     void ensureOpen();
 
+    void ensureDadaSourceRegistryLoaded();
+
     boolean isRegistryLoaded();
 
     boolean isModernProject();
@@ -95,5 +96,4 @@ public interface DBPProject extends DBPObject, DBAAuthSpace
     Map<String, Map<String, Object>> getResourceProperties();
 
     void setResourceProperty(IResource resource, String propName, Object propValue);
-
 }
