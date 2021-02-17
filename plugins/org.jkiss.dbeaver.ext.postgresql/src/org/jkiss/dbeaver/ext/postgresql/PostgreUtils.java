@@ -483,7 +483,7 @@ public class PostgreUtils {
             String typeName = type.getTypeName();
             DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
             if (ownerInstance instanceof PostgreDatabase) {
-                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getLocalDataType(session.getProgressMonitor(), typeName);
+                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getDataType(session.getProgressMonitor(), typeName);
                 if (localDataType != null) {
                     return localDataType;
                 }

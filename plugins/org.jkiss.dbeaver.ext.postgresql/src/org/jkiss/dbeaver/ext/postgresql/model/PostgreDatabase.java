@@ -517,10 +517,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return getDataType(null, typeName);
     }
 
-    public PostgreDataType getLocalDataType(@NotNull DBRProgressMonitor monitor, String typeName) {
-        return getDataType(monitor, typeName);
-    }
-
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDataType(new VoidProgressMonitor(), typeID);
