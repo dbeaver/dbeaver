@@ -955,8 +955,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     	String errorMessage = error.getMessage();
 		if (errorMessage.contains("Feature not supported")) {
 			return ErrorType.FEATURE_UNSUPPORTED;
-		} else if (errorMessage.contains("GlobalTransactionRollback")) {
-			return ErrorType.TRANSACTION_ABORTED;
 		} else if (errorMessage.contains("insufficient privileges")) {
 			return ErrorType.PERMISSION_DENIED;
 		} else if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
