@@ -533,9 +533,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (horizontalBar == null) {
             return false;
         }
-        if (!GeneralUtils.isLinux()) {
-            return horizontalBar.isVisible();
+        if (GeneralUtils.isLinux()) {
+            return tree.getClientArea().width != horizontalBar.getMaximum();
         }
-        return tree.getClientArea().width != horizontalBar.getMaximum();
+        return horizontalBar.isVisible();
     }
 }
