@@ -20,15 +20,8 @@
       <linux icon="/icons/dbeaver.xpm"/>
       <macosx icon="/icons/dbeaver.icns"/>
       <solaris/>
-      <win useIco="false">
-         <bmp
-            winSmallHigh="/icons/dbeaver-16x16x32.bmp"
-            winSmallLow="/icons/dbeaver-16x16x8.bmp"
-            winMediumHigh="/icons/dbeaver-32x32x32.bmp"
-            winMediumLow="/icons/dbeaver-32x32x8.bmp"
-            winLargeHigh="/icons/dbeaver-48x48x32.bmp"
-            winLargeLow="/icons/dbeaver-48x48x8.bmp"
-            winExtraLargeHigh="/icons/dbeaver-256x256x32.bmp"/>
+      <win useIco="true">
+          <ico path="icons/dbeaver.ico"/>
       </win>
    </launcher>
 
