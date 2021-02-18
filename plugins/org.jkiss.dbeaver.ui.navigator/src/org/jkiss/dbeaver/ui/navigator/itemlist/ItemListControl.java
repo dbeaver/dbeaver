@@ -261,7 +261,8 @@ public class ItemListControl extends NodeListControl
                 DBPDataSourceContainer ds = getDataSourceContainer();
                 // If we in folder-less mode then filter children by meta
                 if (ds != null && ds.getNavigatorSettings().isHideFolders()) {
-                    children = Arrays.stream(children).filter(n -> n instanceof DBNDatabaseNode && ((DBNDatabaseNode) n).getMeta().getParent() == metaNode).toArray(DBNNode[]::new);
+                    children = Arrays.stream(children).filter(n -> n instanceof DBNDatabaseNode &&
+                            (((DBNDatabaseNode) n).getMeta().getParent() == metaNode || ((DBNDatabaseNode) n).getMeta() == metaNode)).toArray(DBNNode[]::new);
                 }
 
                 // Cache statistics
