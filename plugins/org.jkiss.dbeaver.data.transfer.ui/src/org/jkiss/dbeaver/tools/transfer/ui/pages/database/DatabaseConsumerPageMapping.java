@@ -266,8 +266,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         return;
                     }
                     getWizard().getSettings().processPipeEarlier(pipe);
+                    mappingViewer.getTree().setVisible(false);
                     loadAndUpdateColumnsModel();
                     selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(true);
                 }
             });
             upButton.setEnabled(false);
@@ -280,8 +282,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         return;
                     }
                     getWizard().getSettings().processPipeLater(pipe);
+                    mappingViewer.getTree().setVisible(false);
                     loadAndUpdateColumnsModel();
                     selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(true);
                 }
             });
             downButton.setEnabled(false);
