@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2490,7 +2490,8 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
-        if (getDataSource() != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_view_format,
                 null,
@@ -2500,7 +2501,7 @@ public class ResultSetViewer extends Viewer
             manager.add(viewMenu);
         }
 
-        {
+        if (dataSource != null && !dataSource.getContainer().getNavigatorSettings().isHideVirtualModel()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_logical_structure,
                 null,
@@ -3636,7 +3637,7 @@ public class ResultSetViewer extends Viewer
         return result[0];
     }
 
-    private int getSegmentMaxRows()
+    public int getSegmentMaxRows()
     {
         if (getDataContainer() == null) {
             return 0;
@@ -4561,6 +4562,7 @@ public class ResultSetViewer extends Viewer
                         setNewState(dataContainer, useDataFilter);
                     }
 
+                    boolean panelUpdated = false;
                     final boolean metadataChanged = !scroll && model.isMetadataChanged();
                     if (error != null) {
                         String errorMessage = error.getMessage();
@@ -4601,6 +4603,7 @@ public class ResultSetViewer extends Viewer
                             }
                             if (getActivePresentation().getCurrentAttribute() == null) {
                                 getActivePresentation().setCurrentAttribute(model.getVisibleAttribute(0));
+                                panelUpdated = true; // Attribute viewer refreshed
                             }
                         }
                     }
@@ -4614,7 +4617,9 @@ public class ResultSetViewer extends Viewer
                             redrawData(visibilityChanged, false);
                         }
                     }
-                    updatePanelsContent(true);
+                    if (!panelUpdated) {
+                        updatePanelsContent(true);
+                    }
                     if (getStatistics() == null || !getStatistics().isEmpty()) {
                         if (error == null) {
                             // Update status (update execution statistics)

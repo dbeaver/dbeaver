@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,18 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DBeaver application descriptor.
  */
 public class ApplicationDescriptor extends AbstractDescriptor {
 
-    private String id;
-    private String name;
-    private String description;
-    private String parentId;
+    private final String id;
+    private final String name;
+    private final String description;
+    private final String parentId;
+    private final String[] umbrellaProductIds;
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
@@ -37,6 +39,12 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         this.name = config.getAttribute("name");
         this.description = config.getAttribute("description");
         this.parentId = config.getAttribute("parent");
+        String umbrella = config.getAttribute("umbrella");
+        if (!CommonUtils.isEmptyTrimmed(umbrella)) {
+            this.umbrellaProductIds = umbrella.split(",");
+        } else {
+            this.umbrellaProductIds = new String[0];
+        }
     }
 
     public String getId() {
@@ -55,9 +63,13 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         return parent;
     }
 
-    public void setParent(ApplicationDescriptor parent) {
+    void setParent(ApplicationDescriptor parent) {
         this.parent = parent;
         this.parent.finalApplication = false;
+    }
+
+    public String[] getUmbrellaProductIds() {
+        return umbrellaProductIds;
     }
 
     boolean isFinalApplication() {

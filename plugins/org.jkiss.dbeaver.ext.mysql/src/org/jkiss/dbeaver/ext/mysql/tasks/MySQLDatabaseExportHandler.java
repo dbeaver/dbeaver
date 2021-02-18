@@ -80,7 +80,9 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 cmd.add("--single-transaction"); //$NON-NLS-1$
                 break;
         }
-
+        if (settings.isDisableColumnStatistics()) {
+            cmd.add("--column-statistics=0");
+        }
         if (settings.isNoCreateStatements()) {
             cmd.add("--no-create-info"); //$NON-NLS-1$
         } else {

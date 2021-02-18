@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)

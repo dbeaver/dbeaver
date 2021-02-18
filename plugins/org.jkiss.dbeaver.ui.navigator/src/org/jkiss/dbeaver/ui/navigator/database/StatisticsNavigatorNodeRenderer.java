@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,6 @@ import java.util.Map;
  * Draws item statistics in the right part.
  */
 public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRenderer {
-
     private static final Log log = Log.getLog(StatisticsNavigatorNodeRenderer.class);
     private static final int PERCENT_FILL_WIDTH = 50;
     //public static final String ITEM_WIDTH_ATTR = "item.width";
@@ -85,12 +84,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static final Map<DBSObject, StatReadJob> statReaders = new IdentityHashMap<>();
 
     private Font fontItalic;
-    private boolean isLinux, isMac;
 
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
-        this.isMac = GeneralUtils.isMacOS();
-        this.isLinux = !GeneralUtils.isWindows() && !isMac;
     }
 
     public INavigatorModelView getView() {
@@ -108,9 +104,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     public void paintNodeDetails(DBNNode node, Tree tree, GC gc, Event event) {
         super.paintNodeDetails(node, tree, gc, event);
 
-        ScrollBar hSB = tree.getHorizontalBar();
-        boolean scrollEnabled = (hSB != null && hSB.isVisible());
-
+        boolean scrollEnabled = isHorizontalScrollbarEnabled(tree);
         Object element = event.item.getData();
 
         if (element instanceof DBNDatabaseNode) {
@@ -192,8 +186,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, Tree tree, Event event) {
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-        ScrollBar horizontalScrollBar = tree.getHorizontalBar();
-        if (horizontalScrollBar != null && horizontalScrollBar.isVisible()) {
+        if (isHorizontalScrollbarEnabled(tree)) {
             return null;
         }
         int widthOccupied = 0;
@@ -245,7 +238,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             gc.setFont(hostNameFont);
             Point hostTextSize = gc.stringExtent(hostText);
 
-            int xOffset = isLinux ? 16 : 2;
+            int xOffset = GeneralUtils.isLinux() ? 16 : 2;
             ScrollBar hSB = tree.getHorizontalBar();
             boolean scrollEnabled = (hSB != null && hSB.isVisible());
 
@@ -535,4 +528,14 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return treeWidth - xShift;
     }
 
+    private static boolean isHorizontalScrollbarEnabled(Tree tree) {
+        ScrollBar horizontalBar = tree.getHorizontalBar();
+        if (horizontalBar == null) {
+            return false;
+        }
+        if (GeneralUtils.isLinux()) {
+            return tree.getClientArea().width != horizontalBar.getMaximum();
+        }
+        return horizontalBar.isVisible();
+    }
 }

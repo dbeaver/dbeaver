@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String name;
     private final String description;
     private DBPImage icon;
+    private boolean defaultModel;
     private List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
@@ -60,6 +62,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         if (this.icon == null) {
             this.icon = DBIcon.TREE_PACKAGE;
         }
+        this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
 
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             this.replaces.add(dsConfig.getAttribute("model"));
@@ -92,6 +95,11 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public String getImplClassName() {
         return implType.getImplName();
+    }
+
+    @Override
+    public boolean isDefaultModel() {
+        return defaultModel;
     }
 
     @Override

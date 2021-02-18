@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -271,7 +269,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             }
         });
         columnController.createColumns();
-        columnController.sortByColumn(1, SWT.UP);
+        columnController.sortByColumn(1, SWT.DOWN);
 
         scriptTree.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -341,6 +339,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     }
 
     public static void showTree(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext, IFolder rootFolder, List<ResourceInfo> scriptFiles) {
+//        List<ResourceInfo> sortedFiles = new ArrayList<>(scriptFiles);
+//        sortedFiles.sort((o1, o2) -> (int) (o2.getLocalFile().lastModified() - o1.getLocalFile().lastModified()));
         ScriptSelectorPanel selectorPanel = new ScriptSelectorPanel(workbenchWindow, editorContext, rootFolder, scriptFiles);
         selectorPanel.setModeless(true);
         selectorPanel.open();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -48,17 +49,28 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         final GenericTableColumn column = command.getObject();
         final GenericTableBase table = column.getTable();
 
+        final String tableName = DBUtils.getQuotedIdentifier(table);
+        final String tableColumns;
+        final String tableDDL;
+
         final List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
         if (CommonUtils.isEmpty(attributes)) {
-            throw new DBException("Table was deleted");
+            throw new DBException("Table has no attributes");
         }
-
-        final String tableColumns = attributes.stream()
-            .filter(x -> !x.getName().equals(column.getName()) && x.isPersisted())
-            .map(DBUtils::getQuotedIdentifier)
-            .collect(Collectors.joining(",\n  "));
-
-        final String tableName = DBUtils.getQuotedIdentifier(table);
+        try {
+            if (attributes.contains(column)) {
+                table.removeAttribute(column);
+            }
+            tableColumns = attributes.stream()
+                .filter(DBPPersistedObject::isPersisted)
+                .map(DBUtils::getQuotedIdentifier)
+                .collect(Collectors.joining(",\n  "));
+            tableDDL = DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false);
+        } finally {
+            if (attributes.contains(column)) {
+                table.addAttribute(column);
+            }
+        }
 
         actions.add(new SQLDatabasePersistActionComment(
             table.getDataSource(),
@@ -74,7 +86,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager
         ));
         actions.add(new SQLDatabasePersistAction(
             "Create new table",
-            DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false)
+            tableDDL
         ));
         actions.add(new SQLDatabasePersistAction(
             "Insert values from temporary table to new table",

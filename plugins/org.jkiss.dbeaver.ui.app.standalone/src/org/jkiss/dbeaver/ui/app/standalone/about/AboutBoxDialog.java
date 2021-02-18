@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,13 +36,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.text.DateFormat;
 
 /**
@@ -53,11 +58,14 @@ public class AboutBoxDialog extends InformationDialog
     public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
+
     private final Font NAME_FONT,TITLE_FONT;
+    private static final Log log = Log.getLog(AboutBoxDialog.class);
 
     private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(
         Platform.getProduct().getDefiningBundle().getSymbolicName(),
         "icons/dbeaver_about.png").createImage();
+    private Image splashImage;
 
     public AboutBoxDialog(Shell shell)
     {
@@ -75,6 +83,11 @@ public class AboutBoxDialog extends InformationDialog
     public boolean close() {
         NAME_FONT.dispose();
         TITLE_FONT.dispose();
+
+        if (splashImage != null) {
+            UIUtils.dispose(splashImage);
+            splashImage = null;
+        }
         return super.close();
     }
 
@@ -156,7 +169,34 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         gd.grabExcessHorizontalSpace = false;
         imageLabel.setLayoutData(gd);
-        imageLabel.setImage(ABOUT_IMAGE);
+
+        if (splashImage == null) {
+            try {
+                URL splashResource = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("splash.bmp");
+                if (splashResource != null) {
+                    try (InputStream is = splashResource.openStream()) {
+                        Image img = new Image(getShell().getDisplay(), is);
+
+                        splashImage = new Image(img.getDevice(), 400, 200);
+                        GC gc = new GC(splashImage);
+                        gc.setAntialias(SWT.ON);
+                        gc.setInterpolation(SWT.HIGH);
+                        gc.drawImage(img, 0, 0,
+                            img.getBounds().width, img.getBounds().height,
+                            0, 0, splashImage.getBounds().width, splashImage.getBounds().height);
+                        gc.dispose();
+                        img.dispose();
+                    }
+                }
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        if (splashImage != null) {
+            imageLabel.setImage(splashImage);
+        } else {
+            imageLabel.setImage(ABOUT_IMAGE);
+        }
 
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);

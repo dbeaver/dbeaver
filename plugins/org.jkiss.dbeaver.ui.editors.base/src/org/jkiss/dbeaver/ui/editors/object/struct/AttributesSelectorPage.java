@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * AttributesSelectorPage
@@ -104,6 +106,11 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     {
         super(NLS.bind(EditorsMessages.dialog_struct_columns_select_title, title, entity.getName()));
         this.entity = entity;
+    }
+
+    protected AttributesSelectorPage() {
+        super(null);
+        this.entity = null;
     }
 
     public Map<String, Object> getAttributeProperties(DBSEntityAttribute attr) {
@@ -241,8 +248,18 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         //item.setText(index, control.getText());
     }
 
+    protected void setEntity(DBSEntity entity) {
+        this.entity = entity;
+        this.attributes.clear();
+        this.columnsTable.removeAll();
+        fillAttributes(entity);
+    }
+
     private void fillAttributes(final DBSEntity entity)
     {
+        if (entity == null) {
+            return;
+        }
         final List<DBSEntityAttribute> attrList = new ArrayList<>();
         AbstractJob loadJob = new AbstractJob("Load entity attributes") {
             @Override
@@ -278,12 +295,9 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                         }
                         fillAttributeColumns(attribute, col, columnItem);
                         columnItem.setData(col);
-                        if (isColumnSelected(attribute)) {
-                            columnItem.setChecked(true);
-                            handleItemSelect(columnItem, false);
-                        }
                     }
                     UIUtils.packColumns(columnsTable);
+                    updateColumnSelection();
                     updateToggleButton();
                 });
             }
@@ -363,7 +377,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         }
     }
 
-    public Collection<DBSEntityAttribute> getSelectedAttributes()
+    @NotNull
+    public List<DBSEntityAttribute> getSelectedAttributes()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<>();
         Set<AttributeInfo> orderedAttributes = new TreeSet<>(new Comparator<AttributeInfo>() {
@@ -389,6 +404,23 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     protected void createContentsAfterColumns(Composite panel)
     {
 
+    }
+
+    public void updateColumnSelection(@NotNull Predicate<DBSEntityAttribute> predicate) {
+        for (TableItem item : columnsTable.getItems()) {
+            item.setChecked(false);
+            if (item.getData() instanceof AttributeInfo) {
+                DBSEntityAttribute attribute = ((AttributeInfo) item.getData()).getAttribute();
+                if (predicate.test(attribute)) {
+                    item.setChecked(true);
+                    handleItemSelect(item, false);
+                }
+            }
+        }
+    }
+
+    public void updateColumnSelection() {
+        updateColumnSelection(this::isColumnSelected);
     }
 
     public boolean isColumnSelected(DBSEntityAttribute attribute)

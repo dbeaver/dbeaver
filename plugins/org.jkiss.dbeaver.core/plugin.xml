@@ -3,7 +3,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,8 +133,6 @@
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
-
-        <command id="org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.edit.paste.special" name="%command.org.jkiss.dbeaver.core.edit.paste.special.name" description="%command.org.jkiss.dbeaver.core.edit.paste.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -907,7 +905,9 @@
 
     <extension point="org.eclipse.ui.bindings">
 
-        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+`"/>
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="ALT+`"/>
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="ALT+`"/>
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+V"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
@@ -931,7 +931,7 @@
         <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>

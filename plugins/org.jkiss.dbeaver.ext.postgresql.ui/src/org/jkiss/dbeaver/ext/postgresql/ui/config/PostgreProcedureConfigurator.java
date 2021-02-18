@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -130,7 +131,8 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 languageCombo.setText("sql");
             }
             {
-                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getDataSource().getLocalDataTypes());
+                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getLocalDataTypes());
+                dataTypes.sort(Comparator.comparing(PostgreDataType::getName));
                 returnTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
                 for (PostgreDataType dt : dataTypes) {
                     returnTypeCombo.add(dt.getName());
@@ -139,7 +141,7 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 returnTypeCombo.addModifyListener(e -> {
                     String dtName = returnTypeCombo.getText();
                     if (!CommonUtils.isEmpty(dtName)) {
-                        returnType = parent.getDatabase().getDataSource().getLocalDataType(dtName);
+                        returnType = parent.getDatabase().getLocalDataType(dtName);
                     } else {
                         returnType = null;
                     }

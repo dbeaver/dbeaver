@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.hive.model.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.hive.model.HiveIndex;
 import org.jkiss.dbeaver.ext.hive.model.HiveTable;
 import org.jkiss.dbeaver.ext.hive.model.HiveTableColumn;

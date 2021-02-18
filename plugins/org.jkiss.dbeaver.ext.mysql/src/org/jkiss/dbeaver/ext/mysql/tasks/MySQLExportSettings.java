@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -38,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject> implements MySQLNativeCredentialsSettings {
-
     private static final Log log = Log.getLog(MySQLExportSettings.class);
 
     public enum DumpMethod {
@@ -59,6 +59,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean noData;
     private boolean showViews;
     private boolean overrideCredentials;
+    private boolean disableColumnStatistics;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
@@ -304,4 +305,23 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         }
     }
 
+    @Override
+    public void setClientHome(DBPNativeClientLocation clientHome) {
+        super.setClientHome(clientHome);
+        String fullVersion = MySQLDataSourceProvider.getFullServerVersion(clientHome.getPath());
+        if (fullVersion == null) {
+            return;
+        }
+        int majorVersion;
+        try {
+            majorVersion = Integer.parseInt(fullVersion.split("\\.")[0]);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            return;
+        }
+        disableColumnStatistics = majorVersion == 8;
+    }
+
+    boolean isDisableColumnStatistics() {
+        return disableColumnStatistics;
+    }
 }

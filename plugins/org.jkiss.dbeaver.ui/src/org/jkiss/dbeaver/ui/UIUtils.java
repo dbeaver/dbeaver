@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,15 +86,14 @@ import java.util.SortedMap;
  * UI Utils
  */
 public class UIUtils {
-
     private static final Log log = Log.getLog(UIUtils.class);
 
-    public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
+    private static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
     private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
     private static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
-
-    private static SharedTextColors sharedTextColors = new SharedTextColors();
-    private static SharedFonts sharedFonts = new SharedFonts();
+    private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
+    private static final SharedFonts SHARED_FONTS = new SharedFonts();
+    private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
     {
@@ -129,23 +128,28 @@ public class UIUtils {
         };
     }
 
-    public static VerifyListener getLongVerifyListener(Text text) {
+    public static VerifyListener getUnsignedLongOrEmptyTextVerifyListener(Text text) {
         return e -> {
-
-            // get old text and create new text by using the VerifyEvent.text
-            final String oldS = text.getText();
-            String newS = oldS.substring(0, e.start) + e.text + oldS.substring(e.end);
-
-            boolean isLong = true;
-            try {
-                Long.parseLong(newS);
+            if (e.text.isEmpty()) {
+                e.doit = true;
+                return;
             }
-            catch(NumberFormatException ex) {
-                isLong = false;
+            for (int i = 0; i < e.text.length(); i++) {
+                if (!Character.isDigit(e.text.charAt(i))) {
+                    e.doit = false;
+                    return;
+                }
             }
-
-            if(!isLong)
+            String newText = text.getText().substring(0, e.start) + e.text + text.getText().substring(e.end);
+            if (newText.length() < MAX_LONG_STRING.length()) {
+                e.doit = true;
+                return;
+            }
+            if (newText.length() > MAX_LONG_STRING.length()) {
                 e.doit = false;
+                return;
+            }
+            e.doit = newText.compareTo(MAX_LONG_STRING) <= 0;
         };
     }
 
@@ -1541,11 +1545,11 @@ public class UIUtils {
     }
 
     public static SharedTextColors getSharedTextColors() {
-        return sharedTextColors;
+        return SHARED_TEXT_COLORS;
     }
 
     public static SharedFonts getSharedFonts() {
-        return sharedFonts;
+        return SHARED_FONTS;
     }
 
     public static void run(
@@ -1719,7 +1723,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return sharedTextColors.getColor(rgbString);
+        return SHARED_TEXT_COLORS.getColor(rgbString);
     }
 
     @Nullable
@@ -1727,7 +1731,7 @@ public class UIUtils {
         if (rgb == null) {
             return null;
         }
-        return sharedTextColors.getColor(rgb);
+        return SHARED_TEXT_COLORS.getColor(rgb);
     }
 
     public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
@@ -1756,9 +1760,9 @@ public class UIUtils {
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return sharedTextColors.getColor(rgb);
+            return SHARED_TEXT_COLORS.getColor(rgb);
         } else {
-            Color connectionColor = sharedTextColors.getColor(rgbStringOrId);
+            Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
             if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
                 // For white color return just null to avoid explicit color set.
                 // It is important for dark themes

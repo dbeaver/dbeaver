@@ -4,7 +4,8 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="derby" class="org.jkiss.dbeaver.ext.derby.model.DerbyMetaModel" driverClass="org.apache.derby.jdbc.ClientDriver,org.apache.derby.jdbc.EmbeddedDriver"/>
+        <meta id="derby" class="org.jkiss.dbeaver.ext.derby.model.DerbyMetaModel"
+              driverClass="org.apache.derby.jdbc.ClientDriver,org.apache.derby.jdbc.EmbeddedDriver,org.apache.derby.client.ClientAutoloadedDriver"/>
     </extension>
 
 </plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -261,7 +263,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Nullable
-    private static String getFullServerVersion(File path) {
+    public static String getFullServerVersion(File path) {
         File binPath = path;
         File binSubfolder = new File(binPath, "bin");
         if (binSubfolder.exists()) {
@@ -288,6 +290,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                         if (pos != -1) {
                             pos += 8;
                             int pos2 = line.indexOf(",", pos);
+                            return line.substring(pos, pos2);
+                        }
+                        pos = line.indexOf("Ver ");
+                        if (pos != -1) {
+                            pos += 4;
+                            int pos2 = line.indexOf(" for ", pos);
                             return line.substring(pos, pos2);
                         }
                     }

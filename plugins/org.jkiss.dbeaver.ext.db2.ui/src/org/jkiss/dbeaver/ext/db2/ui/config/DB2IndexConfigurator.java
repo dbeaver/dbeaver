@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
-import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
+import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

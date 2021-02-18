@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,14 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ApplicationRegistry
-{
+public class ApplicationRegistry {
     private static final Log log = Log.getLog(ApplicationRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.application"; //$NON-NLS-1$
 
     private static ApplicationRegistry instance = null;
 
-    public synchronized static ApplicationRegistry getInstance()
-    {
+    public synchronized static ApplicationRegistry getInstance() {
         if (instance == null) {
             instance = new ApplicationRegistry(Platform.getExtensionRegistry());
         }
@@ -45,8 +43,7 @@ public class ApplicationRegistry
     private final List<ApplicationDescriptor> applications = new ArrayList<>();
     private ApplicationDescriptor defaultApplication;
 
-    private ApplicationRegistry(IExtensionRegistry registry)
-    {
+    private ApplicationRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             ApplicationDescriptor app = new ApplicationDescriptor(ext);

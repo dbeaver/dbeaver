@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketException;
 import java.sql.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * JDBC data source
@@ -83,6 +80,8 @@ public abstract class JDBCDataSource
 
     private int databaseMajorVersion;
     private int databaseMinorVersion;
+
+    private final transient List<Connection> closingConnections = new ArrayList<>();
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
         throws DBException
@@ -278,6 +277,12 @@ public abstract class JDBCDataSource
     public boolean closeConnection(final Connection connection, String purpose, boolean doRollback)
     {
         if (connection != null) {
+            synchronized (closingConnections) {
+                if (closingConnections.contains(connection)) {
+                    return true;
+                }
+                closingConnections.add(connection);
+            }
             // Close datasource (in async task)
             return RuntimeUtils.runTask(monitor -> {
                 if (doRollback) {
@@ -299,6 +304,10 @@ public abstract class JDBCDataSource
                 catch (Throwable ex) {
                     log.debug("Error closing connection", ex);
                 }
+                synchronized (closingConnections) {
+                    closingConnections.remove(connection);
+                }
+
             }, "Close JDBC connection (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
         } else {

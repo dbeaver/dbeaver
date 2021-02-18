@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.gis.registry;
 
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -199,7 +201,7 @@ public class GeometryViewerRegistry {
             predefinedTiles.addAll(predefinedDescriptors);
             userDefinedTiles.clear();
             userDefinedTiles.addAll(userDefinedDescriptors);
-            if (!predefinedTiles.contains(defaultLeafletTiles) && !userDefinedTiles.contains(defaultLeafletTiles)) {
+            if (defaultLeafletTiles == null || (!predefinedTiles.contains(defaultLeafletTiles) && !userDefinedTiles.contains(defaultLeafletTiles))) {
                 autoAssignDefaultLeafletTiles();
             }
             flushConfig();

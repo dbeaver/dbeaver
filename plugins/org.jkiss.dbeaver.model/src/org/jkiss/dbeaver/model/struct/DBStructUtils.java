@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,6 +166,9 @@ public final class DBStructUtils {
 
         // 1. Get tables without FKs
         for (Iterator<T> iterator = realTables.iterator(); iterator.hasNext(); ) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             T table = iterator.next();
             try {
                 if (CommonUtils.isEmpty(table.getAssociations(monitor))) {
@@ -181,8 +184,14 @@ public final class DBStructUtils {
         // 3. Repeat p.2 until something is found
         boolean refsFound = true;
         while (refsFound) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             refsFound = false;
             for (Iterator<T> iterator = realTables.iterator(); iterator.hasNext(); ) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 T table = iterator.next();
                 try {
                     boolean allGood = true;
@@ -218,8 +227,8 @@ public final class DBStructUtils {
         String typeName = typedObject.getTypeName();
         String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = typedObject.getDataKind();
-        if (objectContainer instanceof DBPDataTypeProvider) {
-            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) objectContainer;
+        DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
+        if (dataTypeProvider != null) {
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType == null && typeNameLower.equals("double")) {
                 dataType = dataTypeProvider.getLocalDataType("DOUBLE PRECISION");

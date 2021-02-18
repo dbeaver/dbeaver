@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2019 Karl Griesser (fullref@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +26,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
+import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -74,9 +74,9 @@ public class ExasolConsumerGroupDialog extends BaseDialog {
         final Text groupRamLimitText = UIUtils.createLabelText(group, ExasolMessages.dialog_consumer_group_group_limit, "");
         final Text sessionRamLimitText = UIUtils.createLabelText(group, ExasolMessages.dialog_consumer_group_session_limit, "");
         cpuWeightText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        userRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(userRamLimitText));
-        groupRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(groupRamLimitText));
-        sessionRamLimitText.addVerifyListener(UIUtils.getLongVerifyListener(sessionRamLimitText));
+        userRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(userRamLimitText));
+        groupRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(groupRamLimitText));
+        sessionRamLimitText.addVerifyListener(UIUtils.getUnsignedLongOrEmptyTextVerifyListener(sessionRamLimitText));
         precedenceText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         
         Map<Text, BigDecimal> limits = new HashMap<Text, BigDecimal>();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +44,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     private Button showNonDefault;
     private Button showTemplates;
     private Button showUnavailable;
+    private Button readAllDataTypes;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -84,6 +85,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             });
             showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
             showUnavailable = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_not_available_for_conn, PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip, false, 2);
+            readAllDataTypes = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_read_all_data_types, PostgreMessages.dialog_setting_connection_read_all_data_types_tip, false, 2);
         }
 
         {
@@ -130,6 +132,9 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
             globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
         showUnavailable.setEnabled(showNonDefault.getSelection());
+        readAllDataTypes.setSelection(
+                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
+                        globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES)));
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
             connectionInfo.getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING),
@@ -147,6 +152,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
+        connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));

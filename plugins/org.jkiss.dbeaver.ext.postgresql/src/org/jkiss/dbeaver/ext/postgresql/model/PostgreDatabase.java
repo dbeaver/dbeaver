@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * PostgreDatabase
@@ -488,6 +487,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
     ///////////////////////////////////////////////
     // Data types
 
+
+
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int typeID) {
@@ -501,6 +502,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
+        if (!CommonUtils.isEmpty(dataTypeCache)) {
+            return dataTypeCache.values();
+        }
         final PostgreSchema schema = getCatalogSchema();
         if (schema != null) {
             return schema.getDataTypeCache().getCachedObjects();
@@ -586,10 +590,49 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (dataTypeCache.isEmpty() || forceRefresh) {
             dataTypeCache.clear();
             // Cache data types
-            for (final PostgreSchema pgSchema : getSchemas(monitor)) {
-                if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(pgSchema.getName())) {
-                    pgSchema.getDataTypes(monitor);
+
+            PostgreDataSource postgreDataSource = getDataSource();
+            boolean readAllTypes = postgreDataSource.supportReadingAllDataTypes();
+            boolean supportsTypeCategory = postgreDataSource.getServerType().supportsTypeCategory();
+            StringBuilder sql = new StringBuilder(256);
+            sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
+                    "\nFROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                    "\nWHERE t.typname IS NOT null");
+            if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+                if (supportsTypeCategory) {
+                    sql.append("\nAND t.typcategory <> 'A'");
                 }
+                sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+            }
+
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        Set<PostgreSchema> schemaList = new HashSet<>();
+                        while (dbResult.next()) {
+                            PostgreDataType dataType = PostgreDataType.readDataType(session, this, dbResult, !readAllTypes);
+                            if (dataType != null) {
+                                PostgreSchema schema = dataType.getParentObject();
+                                schemaList.add(schema);
+                                schema.getDataTypeCache().cacheObject(dataType);
+                                dataTypeCache.put(dataType.getObjectId(), dataType);
+                            }
+                        }
+                        if (!schemaList.isEmpty()) {
+                            for (PostgreSchema schema : schemaList) {
+                                schema.getDataTypeCache().setFullCache(true);
+                            }
+                        }
+                        PostgreSchema catalogSchema = getCatalogSchema();
+                        if (catalogSchema != null) {
+                            catalogSchema.getDataTypeCache().mapAliases(catalogSchema);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, postgreDataSource);
             }
         }
     }
@@ -733,6 +776,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
+            dataTypeCache.put(dataType.getObjectId(), dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type " + typeId, e);
@@ -757,7 +801,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         // Check schemas in search path
-        List<String> searchPath = getMetaContext().getSearchPath();
+        PostgreExecutionContext metaContext = getMetaContext();
+        List<String> searchPath = metaContext == null ? Collections.singletonList(PostgreConstants.CATALOG_SCHEMA_NAME) : metaContext.getSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {
@@ -786,6 +831,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         try {
             PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
             dataType.getParentObject().getDataTypeCache().cacheObject(dataType);
+            dataTypeCache.put(dataType.getObjectId(), dataType);
             return dataType;
         } catch (Exception e) {
             log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         mapAliases(schema);
     }
 
-    private void mapAliases(PostgreSchema schema) {
+    void mapAliases(PostgreSchema schema) {
         // Cache aliases
         if (schema.isCatalogSchema()) {
             PostgreServerExtension serverType = schema.getDataSource().getServerType();
@@ -165,7 +165,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         }
     }
 
-    private static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
+    static String getBaseTypeNameClause(@NotNull PostgreDataSource dataSource) {
         if (dataSource.isServerVersionAtLeast(7, 3)) {
             return "format_type(nullif(t.typbasetype, 0), t.typtypmod) as base_type_name";
         } else {
@@ -177,14 +177,24 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
         // Initially cache only base types (everything but composite and arrays)
-        String sql =
-            "SELECT t.oid,t.*,c.relkind," + getBaseTypeNameClause(owner.getDataSource()) +", d.description" +
+        PostgreDataSource dataSource = owner.getDataSource();
+        boolean readAllTypes = dataSource.supportReadingAllDataTypes();
+        boolean supportsTypeCategory = dataSource.getServerType().supportsTypeCategory();
+        StringBuilder sql = new StringBuilder(256);
+        sql.append("SELECT t.oid,t.*,c.relkind,").append(getBaseTypeNameClause(dataSource)).append(", d.description" +
             "\nFROM pg_catalog.pg_type t" +
             "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-            "\nWHERE typnamespace=? " +
-            "\nORDER by t.oid";
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            "\nWHERE t.typname IS NOT null");
+        if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+             if (supportsTypeCategory) {
+                 sql.append("\nAND t.typcategory <> 'A'");
+             }
+             sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+        }
+        sql.append("\nAND typnamespace=?");
+            //"\nORDER by t.oid";
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
@@ -192,11 +202,11 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(session, owner, dbResult, true);
+        return PostgreDataType.readDataType(session, owner.getDatabase(), dbResult, true);
     }
 
     @Override
-    protected void invalidateObjects(DBRProgressMonitor monitor, PostgreSchema postgreSchema, Iterator<PostgreDataType> objectIter) {
+    protected void invalidateObjects(DBRProgressMonitor monitor, PostgreSchema schema, Iterator<PostgreDataType> objectIter) {
         // Resolve value type IDs (#3731)
         while (objectIter.hasNext()) {
             PostgreDataType dt = objectIter.next();
@@ -224,7 +234,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + oid);
                         }
-                        PostgreDataType dataType = PostgreDataType.readDataType(session, schema, dbResult, false);
+                        PostgreDataType dataType = PostgreDataType.readDataType(session, database, dbResult, false);
                         if (dataType != null) {
                             return dataType;
                         }
@@ -251,10 +261,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + name);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult, false);
-                    } else {
-                        throw new DBException("Data type " + name + " not found in database " + database.getName());
+                        PostgreDataType dataType = PostgreDataType.readDataType(session, database, dbResult, false);
+                        if (dataType != null) {
+                            return dataType;
+                        }
                     }
+                    throw new DBException("Data type " + name + " not found in database " + database.getName());
                 }
             }
             //dbStat;

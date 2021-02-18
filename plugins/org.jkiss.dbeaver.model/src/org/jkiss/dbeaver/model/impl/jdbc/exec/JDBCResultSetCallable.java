@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -52,6 +54,25 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     @Override
     public void setMaxRows(long rsMaxRows) {
 
+    }
+
+    @Override
+    public Object getAttributeValue(int index) throws DBCException {
+        try {
+            return this.getObject(index + 1);
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
+    }
+
+    @Nullable
+    @Override
+    public Object getAttributeValue(String name) throws DBCException {
+        try {
+            return this.getObject(name + 1);
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
+        }
     }
 
     @Override

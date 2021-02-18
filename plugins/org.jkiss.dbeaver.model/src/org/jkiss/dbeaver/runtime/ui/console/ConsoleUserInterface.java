@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,12 +108,12 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @Override
     public DBPAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword) {
-        return null;
+        throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
-        return null;
+        throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
     }
 
     @Override

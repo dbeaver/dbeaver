@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class BooleanRenderer {
 
     public enum Style {
         CHECKBOX(true, "Checkboxes", "Unicode checkbox symbols", String.valueOf(CHAR_BOOL_NULL), String.valueOf(CHAR_BOOL_TRUE), String.valueOf(CHAR_BOOL_FALSE)),
-        TEXTBOX(true, "Textboxes", "ASCII checkbox symbols", DBConstants.NULL_VALUE_LABEL, "[X]", "[  ]"),
+        TEXTBOX(true, "Textboxes", "ASCII checkbox symbols", DBConstants.NULL_VALUE_LABEL, "[v]", "[  ]"),
         ICON("Icons", "Checkbox icons"),
         TRUE_FALSE(true, "True/False", "Textual representation", DBConstants.NULL_VALUE_LABEL, String.valueOf(true), String.valueOf(false)),
         YES_NO(true, "Yes/No", "Localized textual representation", DBConstants.NULL_VALUE_LABEL, "yes", "no");

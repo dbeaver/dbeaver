@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -105,6 +105,10 @@ public class DTMessages extends NLS {
 	public static String data_transfer_db_consumer_column_mappings;
 	public static String data_transfer_db_consumer_column_mappings_description;
 	public static String data_transfer_db_consumer_ddl;
+	public static String data_transfer_db_consumer_up_label;
+	public static String data_transfer_db_consumer_up_tooltip;
+	public static String data_transfer_db_consumer_down_label;
+	public static String data_transfer_db_consumer_down_tooltip;
 
 	public static String sql_script_task_title;
 	public static String sql_script_task_page_settings_title;

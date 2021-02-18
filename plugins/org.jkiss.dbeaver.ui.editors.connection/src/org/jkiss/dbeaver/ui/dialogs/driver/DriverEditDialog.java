@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,155 +188,16 @@ public class DriverEditDialog extends HelpEnabledDialog {
             getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
         }
 
-        boolean isReadOnly = !provider.isDriversManagable();
-        int advStyle = isReadOnly ? SWT.READ_ONLY : SWT.NONE;
-
         final Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
         {
-            Group propsGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_setting, 4, -1, -1);
-            propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            driverNameText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_driver_name, driver.getName(), SWT.BORDER | advStyle, gd);
-            driverNameText.setEnabled(driver == null || driver.isCustom());
-            driverNameText.addModifyListener(e -> onChangeProperty());
-
-            UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_type_label);
-            final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
-                @Override
-                public Image getImage(Object element) {
-                    return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
-                }
-
-                @Override
-                public String getText(Object element) {
-                    return ((DataSourceProviderDescriptor) element).getName();
-                }
-            });
-            providerCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (newDriver) {
-                for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                    if (provider.isDriversManagable()) {
-                        providerCombo.addItem(provider);
-                    }
-                }
-                providerCombo.select(provider);
-                providerCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        provider = providerCombo.getItem(providerCombo.getSelectionIndex());
-                        driver = provider.createDriver();
-                    }
-                });
-            } else {
-                providerCombo.addItem(provider);
-                providerCombo.select(provider);
-            }
-
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 3;
-            driverClassText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_class_name, CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
-            driverClassText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_class_name_tip);
-            driverClassText.addModifyListener(e -> onChangeProperty());
-
-            driverURLText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
-            driverURLText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_sample_url_tip);
-            driverURLText.addModifyListener(e -> onChangeProperty());
-            driverURLText.setEnabled(driver == null || driver.isUseURL());
-
-            driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, CommonUtils.notEmpty(driver.getDefaultPort()), SWT.BORDER | advStyle);
-            driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverPortText.addModifyListener(e -> onChangeProperty());
-
-            driverDatabaseText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_database, CommonUtils.notEmpty(driver.getDefaultDatabase()), SWT.BORDER | advStyle);
-            driverDatabaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverDatabaseText.addModifyListener(e -> onChangeProperty());
-
-            driverUserText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_user, CommonUtils.notEmpty(driver.getDefaultUser()), SWT.BORDER | advStyle);
-            driverUserText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverUserText.addModifyListener(e -> onChangeProperty());
-
-            UIUtils.createEmptyLabel(propsGroup, 2, 1);
-
-            Composite optionsPanel = new Composite(propsGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            optionsPanel.setLayoutData(gd);
-            optionsPanel.setLayout(new RowLayout());
-            embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
-            anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
-            allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
-            nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_label, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_tip, !driver.isInstantiable(), 1);
-
-            if (isReadOnly) {
-                embeddedDriverCheck.setEnabled(false);
-                anonymousDriverCheck.setEnabled(false);
-                allowsEmptyPasswordCheck.setEnabled(false);
-                nonInstantiableCheck.setEnabled(false);
-            }
-        }
-
-        {
-            Group infoGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
-            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, UIConnectionMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
-            driverCategoryCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            if (isReadOnly) {
-                driverCategoryCombo.setEnabled(false);
-            }
-            Set<String> categories = new TreeSet<>();
-            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                for (DBPDriver drv : provider.getEnabledDrivers()) {
-                    if (!CommonUtils.isEmpty(drv.getCategory())) {
-                        categories.add(drv.getCategory());
-                    }
-                }
-            }
-            for (String category : categories) {
-                driverCategoryCombo.add(category);
-            }
-            if (!CommonUtils.isEmpty(driver.getCategory())) {
-                driverCategoryCombo.setText(driver.getCategory());
-            } else if (!CommonUtils.isEmpty(defaultCategory)) {
-                driverCategoryCombo.setText(defaultCategory);
-            }
-
-            {
-                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-                Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
-                idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
-            }
-
-            driverDescText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 3;
-            driverDescText.setLayoutData(gd);
-
-            if (!CommonUtils.isEmpty(driver.getWebURL())) {
-                UIUtils.createControlLabel(infoGroup, UIConnectionMessages.dialog_edit_driver_label_website);
-                Link urlLabel = UIUtils.createLink(infoGroup, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.launchProgram(driver.getWebURL());
-                    }
-                });
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 3;
-                driverDescText.setLayoutData(gd);
-                urlLabel.setLayoutData(gd);
-            }
-        }
-
-        {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            createMainTab(tabFolder);
             createLibrariesTab(tabFolder);
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
@@ -362,6 +223,153 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverNameText.setFocus();
 
         return group;
+    }
+
+    private void createMainTab(TabFolder group) {
+        boolean isReadOnly = !provider.isDriversManagable();
+        int advStyle = isReadOnly ? SWT.READ_ONLY : SWT.NONE;
+
+        Composite propsGroup = new Composite(group, SWT.NONE);
+        propsGroup.setLayout(new GridLayout(4, false));
+        propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = UIUtils.getFontHeight(propsGroup) * 20;
+        driverNameText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_driver_name, driver.getName(), SWT.BORDER | advStyle, gd);
+        driverNameText.setEnabled(driver == null || driver.isCustom());
+        driverNameText.addModifyListener(e -> onChangeProperty());
+
+        Label typeLabel = UIUtils.createControlLabel(propsGroup, UIConnectionMessages.dialog_edit_driver_type_label);
+        ((GridData)typeLabel.getLayoutData()).horizontalAlignment = GridData.END;
+        final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
+            @Override
+            public Image getImage(Object element) {
+                return DBeaverIcons.getImage(((DataSourceProviderDescriptor) element).getIcon());
+            }
+
+            @Override
+            public String getText(Object element) {
+                return ((DataSourceProviderDescriptor) element).getName();
+            }
+        });
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = UIUtils.getFontHeight(propsGroup) * 20;
+        providerCombo.setLayoutData(gd);
+        if (newDriver) {
+            for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                if (provider.isDriversManagable()) {
+                    providerCombo.addItem(provider);
+                }
+            }
+            providerCombo.select(provider);
+            providerCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    provider = providerCombo.getItem(providerCombo.getSelectionIndex());
+                    driver = provider.createDriver();
+                }
+            });
+        } else {
+            providerCombo.addItem(provider);
+            providerCombo.select(provider);
+        }
+
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        driverClassText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_class_name, CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
+        driverClassText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_class_name_tip);
+        driverClassText.addModifyListener(e -> onChangeProperty());
+
+        driverURLText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
+        driverURLText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_sample_url_tip);
+        driverURLText.addModifyListener(e -> onChangeProperty());
+        driverURLText.setEnabled(driver == null || driver.isUseURL());
+
+        driverPortText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_port, CommonUtils.notEmpty(driver.getDefaultPort()), SWT.BORDER | advStyle);
+        driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        driverPortText.addModifyListener(e -> onChangeProperty());
+
+        driverDatabaseText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_database, CommonUtils.notEmpty(driver.getDefaultDatabase()), SWT.BORDER | advStyle);
+        driverDatabaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        driverDatabaseText.addModifyListener(e -> onChangeProperty());
+
+        driverUserText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_label_default_user, CommonUtils.notEmpty(driver.getDefaultUser()), SWT.BORDER | advStyle);
+        driverUserText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        driverUserText.addModifyListener(e -> onChangeProperty());
+
+        UIUtils.createEmptyLabel(propsGroup, 2, 1);
+
+        Composite optionsPanel = new Composite(propsGroup, SWT.NONE);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 4;
+        optionsPanel.setLayoutData(gd);
+        optionsPanel.setLayout(new RowLayout());
+        embeddedDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_embedded_label, UIConnectionMessages.dialog_edit_driver_embedded_tip, driver.isEmbedded(), 1);
+        anonymousDriverCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_anonymous_label, UIConnectionMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
+        allowsEmptyPasswordCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_allows_empty_password_label, UIConnectionMessages.dialog_edit_driver_allows_empty_password_tip, driver.isAnonymousAccess(), 1);
+        nonInstantiableCheck = UIUtils.createCheckbox(optionsPanel, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_label, UIConnectionMessages.dialog_edit_driver_use_legacy_instantiation_tip, !driver.isInstantiable(), 1);
+
+        if (isReadOnly) {
+            embeddedDriverCheck.setEnabled(false);
+            anonymousDriverCheck.setEnabled(false);
+            allowsEmptyPasswordCheck.setEnabled(false);
+            nonInstantiableCheck.setEnabled(false);
+        }
+
+        Group infoGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
+        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, UIConnectionMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
+        driverCategoryCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+        if (isReadOnly) {
+            driverCategoryCombo.setEnabled(false);
+        }
+        Set<String> categories = new TreeSet<>();
+        for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+            for (DBPDriver drv : provider.getEnabledDrivers()) {
+                if (!CommonUtils.isEmpty(drv.getCategory())) {
+                    categories.add(drv.getCategory());
+                }
+            }
+        }
+        for (String category : categories) {
+            driverCategoryCombo.add(category);
+        }
+        if (!CommonUtils.isEmpty(driver.getCategory())) {
+            driverCategoryCombo.setText(driver.getCategory());
+        } else if (!CommonUtils.isEmpty(defaultCategory)) {
+            driverCategoryCombo.setText(defaultCategory);
+        }
+
+        {
+            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
+            idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
+        }
+
+        driverDescText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        driverDescText.setLayoutData(gd);
+
+        if (!CommonUtils.isEmpty(driver.getWebURL())) {
+            UIUtils.createControlLabel(infoGroup, UIConnectionMessages.dialog_edit_driver_label_website);
+            Link urlLabel = UIUtils.createLink(infoGroup, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.launchProgram(driver.getWebURL());
+                }
+            });
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            driverDescText.setLayoutData(gd);
+            urlLabel.setLayoutData(gd);
+        }
+
+        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        paramsTab.setText(UIConnectionMessages.dialog_edit_driver_setting);
+        paramsTab.setControl(propsGroup);
     }
 
     private void createLibrariesTab(TabFolder group) {

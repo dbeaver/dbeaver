@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,10 @@ public class ExasolConnectionGrant
 	public boolean isPersisted()
 	{
 		return isPersisted;
+	}
+
+	public Object getGrantee() {
+		return grantee+"|"+connection+"|"+adminOption.toString();
 	}
 
 }

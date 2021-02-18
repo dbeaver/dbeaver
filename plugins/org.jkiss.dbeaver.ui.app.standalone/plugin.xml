@@ -4,7 +4,7 @@
 
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,9 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
-            <property name="versionInfoCoord" value="155,265"/>
+            <property name="versionInfoCoord" value="155,260"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="100,100,100"/>
+            <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
             <property name="startupProgressRect" value="323,255,242,10"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
@@ -73,7 +73,7 @@
             <property name="startupForegroundColor" value="000000"/>
             <property name="versionInfoCoord" value="155,265"/>
             <property name="versionInfoSize" value="12"/>
-            <property name="versionInfoColor" value="100,100,100"/>
+            <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="323,270,242,25"/>
             <property name="startupProgressRect" value="323,255,242,10"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
@@ -86,7 +86,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.application">
-        <application id="dbeaver-ce-standalone"
+        <application id="dbeaver-ce"
             name="%productName"
             description="%productSubTitle"/>
     </extension>
@@ -313,12 +313,12 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageGeneralConnections" name="%pref.page.name.connections">
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral" name="%pref.page.name.connections">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.database.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.client.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnections" name="%pref.page.name.client.connections">
+        <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.client.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%pref.page.name.client.connections">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%pref.page.name.transactions">

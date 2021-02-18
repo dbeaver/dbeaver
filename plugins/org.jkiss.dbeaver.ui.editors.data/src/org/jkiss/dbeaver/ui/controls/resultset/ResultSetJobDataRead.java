@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -175,29 +172,16 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
                 long cancelTimeout = controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
                 if (cancelTimeout > 0 && System.currentTimeMillis() - cancelTimestamp > cancelTimeout) {
                     // Job was canceled but didn't end.
+                    // Something went wrong but we don't want to block UI
+                    // Connection was canceled then lets just finish the pump job.
 
-                    // Let's ask user about cancel force
-                    if (UIUtils.confirmAction(
-                        getDisplay().getActiveShell(),
-                        "Database not responding",
-                        "Database driver is not responding.\nDo you want to cancel request and close connection?",
-                        SWT.ICON_WARNING))
-                    {
-                        // Run datasource invalidation
-                        DBPDataSource dataSource = dataContainer.getDataSource();
-                        if (dataSource != null) {
-                            new DisconnectJob(dataSource.getContainer()).schedule();
-                        }
+                    controller.removeDataPump(loadService);
+                    loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
 
-                        // So let's just ignore active job (remove from queue and stop visualizing)
-                        controller.removeDataPump(loadService);
-                        loadService.forceDataReadCancel(new DBCException("Cancel operation timed out"));
+                    visualizer.completeLoading(null);
+                    visualizer.visualizeLoading();
 
-                        visualizer.completeLoading(null);
-                        visualizer.visualizeLoading();
-
-                        return Status.OK_STATUS;
-                    }
+                    return Status.OK_STATUS;
                 }
             }
             if (!controller.getDataReceiver().isDataReceivePaused()) {

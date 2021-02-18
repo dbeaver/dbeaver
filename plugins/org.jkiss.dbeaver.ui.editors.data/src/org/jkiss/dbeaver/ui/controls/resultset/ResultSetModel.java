@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -525,7 +525,12 @@ public class ResultSetModel {
 
     void updateMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
         boolean update = false;
-        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
+        if (documentAttribute != null && newAttributes.length == 1 && newAttributes[0].getDataKind() == DBPDataKind.DOCUMENT &&
+            isSameSource(this.documentAttribute, newAttributes[0]))
+        {
+            // The same document source
+            update = false;
+        } else if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
             update = true;
         } else {
             for (int i = 0; i < this.attributes.length; i++) {
@@ -588,6 +593,21 @@ public class ResultSetModel {
                 }
             }
         }
+    }
+
+    private boolean isSameSource(DBDAttributeBinding attr1, DBDAttributeBinding attr2) {
+        if (attr1.getMetaAttribute() == null || attr2.getMetaAttribute() == null) {
+            return false;
+        }
+        DBCEntityMetaData ent1 = attr1.getMetaAttribute().getEntityMetaData();
+        DBCEntityMetaData ent2 = attr2.getMetaAttribute().getEntityMetaData();
+        if (ent1 == null || ent2 == null) {
+            return false;
+        }
+        return
+            CommonUtils.equalObjects(ent1.getCatalogName(), ent2.getCatalogName()) &&
+            CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
+            CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
     void updateDataFilter() {
@@ -922,15 +942,16 @@ public class ResultSetModel {
             dataFilter.addConstraints(newConstraints);
         }
 
+        // Construct new bindings from constraints. Exclude nested bindings
         List<DBDAttributeBinding> newBindings = new ArrayList<>();
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
             DBDAttributeBinding binding = getAttributeBinding(attr);
-            if (binding != null) {
+            if (binding != null && binding.getParentObject() == null) {
                 newBindings.add(binding);
             }
         }
-        if (!newBindings.equals(visibleAttributes)) {
+        if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
             visibleAttributes = newBindings;
             return true;
         }
