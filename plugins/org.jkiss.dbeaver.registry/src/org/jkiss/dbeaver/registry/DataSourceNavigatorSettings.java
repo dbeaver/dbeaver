@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,7 +59,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             return description;
         }
 
-        public DBNBrowseSettings getSettings() {
+        public DataSourceNavigatorSettings getSettings() {
             return settings;
         }
     }
@@ -170,6 +173,66 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
             this.hideFolders == source.hideFolders &&
             this.hideSchemas == source.hideSchemas &&
             this.hideVirtualModel == source.hideVirtualModel;
+    }
+
+    public static final String DEFAULT_NAVIGATOR_SETTINGS_PRESET = "navigator.settings.default.preset";
+    private static final String DEFAULT_SHOW_SYSTEM_OBJECTS = "navigator.settings.default.showSystemObjects";
+    private static final String DEFAULT_SHOW_UTILITY_OBJECTS = "navigator.settings.default.showUtilityObjects";
+    private static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
+    private static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
+    private static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
+    private static final String DEFAULT_HIDE_SCHEMAS = "navigator.settings.default.hideSchemas";
+    private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
+
+    public static DBNBrowseSettings getDefaultSettings() {
+        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+
+        String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
+        if (!CommonUtils.isEmpty(defPreset)) {
+            for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+                if (p.getId().equals(defPreset)) {
+                    return p.getSettings();
+                }
+            }
+        }
+        // Custom settings
+        DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings();
+        settings.setShowSystemObjects(preferences.getBoolean(DEFAULT_SHOW_SYSTEM_OBJECTS));
+        settings.setShowUtilityObjects(preferences.getBoolean(DEFAULT_SHOW_UTILITY_OBJECTS));
+        settings.setShowOnlyEntities(preferences.getBoolean(DEFAULT_SHOW_ONLY_ENTITIES));
+        settings.setMergeEntities(preferences.getBoolean(DEFAULT_MERGE_ENTITIES));
+        settings.setHideFolders(preferences.getBoolean(DEFAULT_HIDE_FOLDERS));
+        settings.setHideSchemas(preferences.getBoolean(DEFAULT_HIDE_SCHEMAS));
+        settings.setHideVirtualModel(preferences.getBoolean(DEFAULT_HIDE_VIRTUAL_MODEL));
+        return settings;
+    }
+
+    public static void setDefaultSettings(DBNBrowseSettings settings) {
+        // Save preset
+        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+
+        String presetId = null;
+        for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+            if (p.getSettings().equals(settings)) {
+                presetId = p.getId();
+                break;
+            }
+        }
+
+        if (CommonUtils.isEmptyTrimmed(presetId)) {
+            preferences.setValue(DEFAULT_NAVIGATOR_SETTINGS_PRESET, "");
+        } else {
+            preferences.setValue(DEFAULT_NAVIGATOR_SETTINGS_PRESET, presetId);
+        }
+
+        // Save custom settings
+        preferences.setValue(DEFAULT_SHOW_SYSTEM_OBJECTS, settings.isShowSystemObjects());
+        preferences.setValue(DEFAULT_SHOW_UTILITY_OBJECTS, settings.isShowUtilityObjects());
+        preferences.setValue(DEFAULT_SHOW_ONLY_ENTITIES, settings.isShowOnlyEntities());
+        preferences.setValue(DEFAULT_MERGE_ENTITIES, settings.isMergeEntities());
+        preferences.setValue(DEFAULT_HIDE_FOLDERS, settings.isHideFolders());
+        preferences.setValue(DEFAULT_HIDE_SCHEMAS, settings.isHideSchemas());
+        preferences.setValue(DEFAULT_HIDE_VIRTUAL_MODEL, settings.isHideVirtualModel());
     }
 
 }

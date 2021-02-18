@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class MySQLCatalog implements
     final CheckConstraintCache checkConstraintCache = new CheckConstraintCache(tableCache);
     final IndexCache indexCache = new IndexCache(tableCache);
     final EventCache eventCache = new EventCache();
+    final SequenceCache sequenceCache = new SequenceCache();
 
     private final MySQLDataSource dataSource;
     private String name;
@@ -319,6 +320,10 @@ public class MySQLCatalog implements
         return eventCache;
     }
 
+    public SequenceCache getSequenceCache() {
+        return sequenceCache;
+    }
+
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
@@ -383,6 +388,13 @@ public class MySQLCatalog implements
     public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor) throws DBException {
         return getDataSource().supportsInformationSchema() ?
                 eventCache.getAllObjects(monitor, this) :
+                Collections.emptyList();
+    }
+
+    @Association
+    public Collection<MySQLSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().supportsInformationSchema() ?
+                sequenceCache.getAllObjects(monitor, this) :
                 Collections.emptyList();
     }
 
@@ -500,6 +512,7 @@ public class MySQLCatalog implements
         proceduresCache.clearCache();
         triggerCache.clearCache();
         eventCache.clearCache();
+        sequenceCache.clearCache();
         return this;
     }
 
@@ -526,6 +539,7 @@ public class MySQLCatalog implements
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder("SHOW ");
+            MySQLDataSource dataSource = owner.getDataSource();
             if (session.getMetaData().getDatabaseMajorVersion() > 4) {
                 sql.append("FULL ");
             }
@@ -536,11 +550,14 @@ public class MySQLCatalog implements
                     sql.append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
                 }
             } else {
-                String tableNameCol = DBUtils.getQuotedIdentifier(owner.getDataSource(), "Tables_in_" + owner.getName());
+                String tableNameCol = DBUtils.getQuotedIdentifier(dataSource, "Tables_in_" + owner.getName());
                 if (object != null || objectName != null) {
                     sql.append(" WHERE ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+                    if (dataSource.supportsSequences()) {
+                        sql.append(" AND Table_type <> 'SEQUENCE'");
+                    }
                 } else {
-                    DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, true);
+                    DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(MySQLTable.class, owner, true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
                         if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
@@ -566,6 +583,8 @@ public class MySQLCatalog implements
                             }
                             sql.append(")");
                         }
+                    } else if (dataSource.supportsSequences()) {
+                        sql.append(" WHERE Table_type <> 'SEQUENCE'");
                     }
                 }
             }
@@ -986,6 +1005,25 @@ public class MySQLCatalog implements
             return new MySQLEvent(owner, dbResult);
         }
 
+    }
+
+    static class SequenceCache extends JDBCObjectCache<MySQLCatalog, MySQLSequence> {
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog) throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_TYPE = 'SEQUENCE'");
+            dbStat.setString(1, DBUtils.getQuotedIdentifier(mySQLCatalog));
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected MySQLSequence fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog mySQLCatalog, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String sequenceName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
+            return new MySQLSequence(mySQLCatalog, sequenceName);
+        }
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLCatalog> {

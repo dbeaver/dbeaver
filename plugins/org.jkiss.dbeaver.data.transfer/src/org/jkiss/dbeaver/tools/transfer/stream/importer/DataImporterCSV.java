@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
-    private static final int MAX_COLUMN_LENGTH = 1024;
-
-    private static final int MAX_DATA_TYPE_SAMPLES = 1000;
 
     public enum HeaderPosition {
         none,
@@ -72,6 +69,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
+        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 1000), 0);
+        final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
+
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 String[] header = getNextLine(csvReader);
@@ -87,12 +87,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
                     }
-                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, MAX_COLUMN_LENGTH, DBPDataKind.UNKNOWN);
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, columnMinimalLength, DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
                     columnsInfo.add(columnInfo);
                 }
 
-                for (int sample = 0; sample < MAX_DATA_TYPE_SAMPLES; sample++) {
+                for (int sample = 0; sample < columnSamplesCount; sample++) {
                     String[] line;
 
                     if (sample == 0 && headerPosition == HeaderPosition.none) {
@@ -113,6 +113,10 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             case STRING:
                                 columnInfo.setDataKind(dataType.getFirst());
                                 columnInfo.setTypeName(dataType.getSecond());
+                                int length = line[i].length();
+                                if (length > columnInfo.getMaxLength()) {
+                                    columnInfo.setMaxLength(length);
+                                }
                                 break;
                             case NUMERIC:
                             case BOOLEAN:

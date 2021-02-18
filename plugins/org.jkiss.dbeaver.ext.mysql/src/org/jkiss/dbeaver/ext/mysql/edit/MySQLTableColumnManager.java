@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,8 +54,20 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     implements DBEObjectRenamer<MySQLTableColumn>, DBEObjectReorderer<MySQLTableColumn>
 {
 
-    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (monitor, column, sql, command) ->
-        sql.append(' ').append(column.getFullTypeName());
+    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (monitor, column, sql, command) -> {
+        sql.append(' ');
+        String fullTypeName = column.getFullTypeName();
+        String typeName = column.getTypeName();
+        if (!fullTypeName.contains("(") && (typeName.equalsIgnoreCase(MySQLConstants.TYPE_VARCHAR) || typeName.equalsIgnoreCase(MySQLConstants.TYPE_VARBINARY))) {
+            sql.append(typeName);
+            String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, column.getDataKind());
+            if (modifiers != null) {
+                sql.append(modifiers);
+            }
+        } else {
+            sql.append(fullTypeName);
+        }
+    };
 
     private final ColumnModifier<MySQLTableColumn> CharsetModifier = (monitor, column, sql, command) -> {
         if (column.getDataKind() == DBPDataKind.STRING && column.getCharset() != null) {
@@ -120,7 +132,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             column = new MySQLTableColumn(monitor, table, (DBSEntityAttribute)copyFrom);
         } else {
             column = new MySQLTableColumn(table);
-            DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+            DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
             column.setName(getNewColumnName(monitor, context, table));
             final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
             column.setTypeName(typeName); //$NON-NLS-1$

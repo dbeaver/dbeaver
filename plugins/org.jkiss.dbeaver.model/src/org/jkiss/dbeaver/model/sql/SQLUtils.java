@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1194,5 +1194,22 @@ public final class SQLUtils {
             }
         }
         return true;
+    }
+
+    public static String removeQueryDelimiter(SQLDialect sqlDialect, String query) {
+        String delimiter = sqlDialect.getScriptDelimiter();
+        if (!delimiter.isEmpty() && query.contains(delimiter)) {
+            String queryWithoutDelimiter = query.substring(0, query.lastIndexOf(delimiter));
+            if (Character.isLetterOrDigit(delimiter.charAt(0))) {
+                if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
+                    if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
+                        return queryWithoutDelimiter;
+                    }
+                }
+            } else if (query.endsWith(delimiter)) {
+                return queryWithoutDelimiter;
+            }
+        }
+        return query;
     }
 }

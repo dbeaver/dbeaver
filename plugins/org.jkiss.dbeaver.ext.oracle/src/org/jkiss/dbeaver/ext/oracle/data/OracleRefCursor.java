@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 
 import java.sql.ResultSet;
@@ -38,10 +39,12 @@ public class OracleRefCursor implements DBDCursor {
     private static final Log log = Log.getLog(OracleRefCursor.class);
 
     private final JDBCSession session;
+    private final JDBCStatement sourceStatement;
     private final Object cursorValue;
 
-    public OracleRefCursor(JDBCSession session, @Nullable Object cursorValue) throws SQLException {
+    public OracleRefCursor(JDBCSession session, JDBCStatement sourceStatement, @Nullable Object cursorValue) throws SQLException {
         this.session = session;
+        this.sourceStatement = sourceStatement;
         this.cursorValue = cursorValue;
     }
 
@@ -75,7 +78,7 @@ public class OracleRefCursor implements DBDCursor {
     public DBCResultSet openResultSet(DBCSession session) throws DBCException {
         if (cursorValue instanceof ResultSet) {
             try {
-                return JDBCResultSetImpl.makeResultSet((JDBCSession) session, null, (ResultSet) cursorValue, null, false);
+                return JDBCResultSetImpl.makeResultSet((JDBCSession) session, sourceStatement, (ResultSet) cursorValue, null, false);
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
             }

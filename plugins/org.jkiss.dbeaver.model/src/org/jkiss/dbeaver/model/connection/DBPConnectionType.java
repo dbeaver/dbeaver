@@ -1,9 +1,11 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -202,4 +204,20 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     public int hashCode() {
         return id.hashCode();
     }
+
+    private static final String DEFAULT_CONNECTION_TYPE_PREF = "default.connection.type";
+
+    public static DBPConnectionType getDefaultConnectionType() {
+        String defTypeName = ModelPreferences.getPreferences().getString(DEFAULT_CONNECTION_TYPE_PREF);
+        if (CommonUtils.isEmpty(defTypeName)) {
+            defTypeName = DEV.getName();
+        }
+
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(defTypeName, DEV);
+    }
+
+    public static void setDefaultConnectionType(DBPConnectionType connectionType) {
+        ModelPreferences.getPreferences().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
+    }
+
 }

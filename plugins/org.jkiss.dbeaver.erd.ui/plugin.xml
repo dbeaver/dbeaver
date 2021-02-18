@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -432,7 +432,7 @@
 
     <extension point="org.eclipse.ui.menus">
         <!-- All Context menus -->
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=compare">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=object">
             <command commandId="org.jkiss.dbeaver.erd.diagram.view" label="%command.org.jkiss.dbeaver.erd.diagram.view.name">
                 <visibleWhen checkEnabled="true"/>
             </command>

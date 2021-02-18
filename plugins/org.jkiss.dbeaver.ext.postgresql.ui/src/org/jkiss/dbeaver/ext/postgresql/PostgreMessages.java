@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2017 Liu, Yuanyuan (liuyuanyuan@highgo.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,6 +108,7 @@ public class PostgreMessages extends NLS {
 
     /* PostgreConnectionPage */
     public static String dialog_setting_connection_host;
+    public static String dialog_setting_connection_cloud_instance;
     public static String dialog_setting_connection_port;
     public static String dialog_setting_connection_database;
     public static String dialog_setting_connection_user;
@@ -120,6 +121,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_show_templates_tip;
     public static String dialog_setting_connection_show_not_available_for_conn;
     public static String dialog_setting_connection_show_not_available_for_conn_tip;
+    public static String dialog_setting_connection_read_all_data_types;
+    public static String dialog_setting_connection_read_all_data_types_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;

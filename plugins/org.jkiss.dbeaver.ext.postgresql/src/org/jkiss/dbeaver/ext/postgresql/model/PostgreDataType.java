@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,10 +110,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private final AttributeCache attributeCache;
     private Object[] enumValues;
 
-    public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
-        super(owner, valueType, name, null, false, true, length, -1, -1);
+    public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
+        super(schema, valueType, name, null, false, true, length, -1, -1);
         this.alias = false;
-        if (owner.isCatalogSchema()) {
+        if (schema.isCatalogSchema()) {
             this.canonicalName = PostgreConstants.DATA_TYPE_CANONICAL_NAMES.get(name);
         }
         this.typeId = typeId;
@@ -650,15 +650,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 break;
             }
             case r: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 PostgreCollation collation = getCollationId(monitor);
-                appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
-                appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
-                // TODO: read data from pg_range
+                if (collation != null) {
+                    sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                    appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
+                    appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
+                    // TODO: read data from pg_range
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
 //                }
-                sql.append(");\n"); //$NON-NLS-1$
+                    sql.append(");\n"); //$NON-NLS-1$
+                }
                 break;
             }
             case b: {
@@ -784,16 +786,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.description = description;
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
-        //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+        long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+        PostgreSchema dataTypeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+        if (dataTypeSchema == null) {
+            return null;
+        }
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid"); //$NON-NLS-1$
         String name = JDBCUtils.safeGetString(dbResult, "typname"); //$NON-NLS-1$
         if (CommonUtils.isEmpty(name)) {
             log.debug("Empty name for data type " + typeId);
             return null;
         }
-        if (skipTables) {
+        boolean readAllTypes = database.getDataSource().supportReadingAllDataTypes();
+        if (!readAllTypes && skipTables) {
             String relKind = JDBCUtils.safeGetString(dbResult, "relkind"); //$NON-NLS-1$
             if (relKind != null) {
                 try {
@@ -989,14 +996,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 }
             }
         }
-        if (skipTables && valueType == Types.ARRAY) {
+        if (!readAllTypes && skipTables && valueType == Types.ARRAY) {
             // Skip arrays as well
             return null;
         }
 
         return new PostgreDataType(
             session,
-            schema,
+            dataTypeSchema,
             typeId,
             valueType,
             name,

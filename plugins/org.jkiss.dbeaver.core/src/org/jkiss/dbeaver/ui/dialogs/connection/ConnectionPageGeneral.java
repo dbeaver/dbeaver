@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -59,9 +57,19 @@ import java.util.StringTokenizer;
 /**
  * General connection page (common for all connection types)
  */
-class ConnectionPageGeneral extends ConnectionWizardPage {
+public class ConnectionPageGeneral extends ConnectionWizardPage implements NavigatorSettingsStorage {
 
     static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
+
+    @Override
+    public DBNBrowseSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+
+    @Override
+    public void setNavigatorSettings(DBNBrowseSettings settings) {
+        this.navigatorSettings = settings;
+    }
 
     private static class FilterInfo {
         final Class<?> type;
@@ -155,7 +163,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 connectionTypeCombo.select(conConfig.getConnectionType());
-                updateNavigatorSettingsPreset();
+                updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
 
@@ -169,7 +177,8 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             }
         } else {
             // Default settings
-            connectionTypeCombo.select(0);
+            connectionTypeCombo.select(DBPConnectionType.getDefaultConnectionType());
+            updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
             folderSelector.setFolder(curDataSourceFolder);
 
             readOnlyConnection.setSelection(false);
@@ -189,7 +198,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         filtersGroup.layout();
     }
 
-    private void updateNavigatorSettingsPreset() {
+    public static void updateNavigatorSettingsPreset(Combo navigatorSettingsCombo, DBNBrowseSettings navigatorSettings) {
         // Find first preset that matches current connection settings
         boolean isPreset = false;
         for (DataSourceNavigatorSettings.Preset nsEntry : DataSourceNavigatorSettings.PRESETS.values()) {
@@ -288,12 +297,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             });
 
             {
-                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_type);
-
-                Composite ctGroup = UIUtils.createComposite(miscGroup, 2);
-                connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
-                loadConnectionTypes();
-                connectionTypeCombo.select(0);
+                connectionTypeCombo = createConnectionTypeCombo(miscGroup);
                 connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -301,20 +305,19 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                         getWizard().firePropertyChangeEvent(ConnectionWizard.PROP_CONNECTION_TYPE, getActiveDataSource().getConnectionConfiguration().getConnectionType(), type);
                     }
                 });
-                final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.widthHint = UIUtils.getFontHeight(connectionTypeCombo) * 20;
-                connectionTypeCombo.setLayoutData(gd);
 
+                Composite ctGroup = connectionTypeCombo.getParent();
+                ((GridLayout)ctGroup.getLayout()).numColumns++;
                 UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_connection_types_edit, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
                         DataSourceDescriptor dataSource = getActiveDataSource();
                         UIUtils.showPreferencesFor(
-                            getControl().getShell(),
+                            ctGroup.getShell(),
                             dataSource.getConnectionConfiguration().getConnectionType(),
                             PrefPageConnectionTypes.PAGE_ID);
-                        loadConnectionTypes();
+                        loadConnectionTypes(connectionTypeCombo);
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
                             curConType = connectionTypeCombo.getItems().get(0);
                         }
@@ -325,38 +328,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             }
 
             {
-                UIUtils.createControlLabel(miscGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings);
-
-                Composite ctGroup = UIUtils.createComposite(miscGroup, 2);
-                navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.widthHint = UIUtils.getFontHeight(navigatorSettingsCombo) * 20;
-                navigatorSettingsCombo.setLayoutData(gd);
-                for (String ncPresetName : DataSourceNavigatorSettings.PRESETS.keySet()) {
-                    navigatorSettingsCombo.add(ncPresetName);
-                }
-                navigatorSettingsCombo.select(0);
-                navigatorSettingsCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
-                            // Custom - no changes
-                        } else {
-                            DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
-                            if (newSettings == null) {
-                                throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
-                            }
-                            ConnectionPageGeneral.this.navigatorSettings = newSettings.getSettings();
-                        }
-                    }
-                });
-
-                UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings_customize, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        editNavigatorSettings();
-                    }
-                });
+                navigatorSettingsCombo = createNavigatorSettingsCombo(miscGroup, this);
             }
 
             folderSelector = new ConnectionFolderSelector(miscGroup);
@@ -476,12 +448,64 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
-    private void editNavigatorSettings() {
-        EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(getShell(), this.navigatorSettings);
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            this.navigatorSettings = dialog.getNavigatorSettings();
-            updateNavigatorSettingsPreset();
+    public static Combo createNavigatorSettingsCombo(Composite composite, NavigatorSettingsStorage settingsStorage) {
+        UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_wizard_final_label_navigator_settings);
+
+        Composite ctGroup = UIUtils.createComposite(composite, 2);
+        Combo navigatorSettingsCombo = new Combo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = UIUtils.getFontHeight(navigatorSettingsCombo) * 20;
+        navigatorSettingsCombo.setLayoutData(gd);
+        for (String ncPresetName : DataSourceNavigatorSettings.PRESETS.keySet()) {
+            navigatorSettingsCombo.add(ncPresetName);
         }
+        navigatorSettingsCombo.select(0);
+        navigatorSettingsCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (navigatorSettingsCombo.getSelectionIndex() == navigatorSettingsCombo.getItemCount() - 1) {
+                    // Custom - no changes
+                } else {
+                    DataSourceNavigatorSettings.Preset newSettings = DataSourceNavigatorSettings.PRESETS.get(navigatorSettingsCombo.getText());
+                    if (newSettings == null) {
+                        throw new IllegalStateException("Invalid preset name: " + navigatorSettingsCombo.getText());
+                    }
+                    settingsStorage.setNavigatorSettings(newSettings.getSettings());
+                }
+            }
+        });
+
+        UIUtils.createDialogButton(ctGroup, CoreMessages.dialog_connection_wizard_final_label_navigator_settings_customize, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                settingsStorage.setNavigatorSettings(editNavigatorSettings(navigatorSettingsCombo, settingsStorage.getNavigatorSettings()));
+            }
+        });
+        return navigatorSettingsCombo;
+    }
+
+    public static CSmartCombo<DBPConnectionType> createConnectionTypeCombo(Composite composite) {
+        UIUtils.createControlLabel(composite, CoreMessages.dialog_connection_wizard_final_label_connection_type);
+
+        Composite ctGroup = UIUtils.createComposite(composite, 1);
+
+        CSmartCombo<DBPConnectionType> connectionTypeCombo = new CSmartCombo<>(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionTypeLabelProvider());
+        loadConnectionTypes(connectionTypeCombo);
+        connectionTypeCombo.select(DBPConnectionType.getDefaultConnectionType());
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = UIUtils.getFontHeight(connectionTypeCombo) * 20;
+        connectionTypeCombo.setLayoutData(gd);
+
+        return connectionTypeCombo;
+    }
+
+    private static DBNBrowseSettings editNavigatorSettings(Combo navigatorSettingsCombo, DBNBrowseSettings navigatorSettings) {
+        EditConnectionNavigatorSettingsDialog dialog = new EditConnectionNavigatorSettingsDialog(navigatorSettingsCombo.getShell(), navigatorSettings);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            navigatorSettings = dialog.getNavigatorSettings();
+            updateNavigatorSettingsPreset(navigatorSettingsCombo, navigatorSettings);
+        }
+        return navigatorSettings;
     }
 
     private void editPermissions() {
@@ -491,8 +515,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
     }
 
-    private void loadConnectionTypes()
-    {
+    public static void loadConnectionTypes(CSmartCombo <DBPConnectionType> connectionTypeCombo) {
         connectionTypeCombo.removeAll();
         for (DBPConnectionType ct : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
             connectionTypeCombo.addItem(ct);
@@ -511,6 +534,9 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             // No changes anyway
             return;
         }
+        if (dataSource == null) {
+            return;
+        }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
         String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
@@ -518,7 +544,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         dataSource.setFolder(folderSelector.getFolder());
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
-            confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));
+            confConfig.setConnectionType(connectionTypeCombo.getSelectedItem());
         }
 
         DataSourceDescriptor dsDescriptor = (DataSourceDescriptor) dataSource;
@@ -546,23 +572,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
     public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
         this.curDataSourceFolder = dataSourceFolder;
-    }
-
-    private static class ConnectionTypeLabelProvider extends LabelProvider implements IColorProvider {
-        @Override
-        public String getText(Object element) {
-            return ((DBPConnectionType)element).getName();
-        }
-
-        @Override
-        public Color getForeground(Object element) {
-            return null;
-        }
-
-        @Override
-        public Color getBackground(Object element) {
-            return UIUtils.getConnectionTypeColor((DBPConnectionType)element);
-        }
     }
 
 }

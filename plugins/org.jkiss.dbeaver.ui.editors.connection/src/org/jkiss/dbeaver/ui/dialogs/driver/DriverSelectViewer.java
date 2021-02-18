@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +73,7 @@ public class DriverSelectViewer extends Viewer {
 
     private ToolItem switchItem;
 
-    private enum SelectorViewType {
+    public enum SelectorViewType {
         tree,
         browser
     }
@@ -102,7 +102,7 @@ public class DriverSelectViewer extends Viewer {
     private final Object site;
     private final List<DBPDataSourceProviderDescriptor> providers;
     private final boolean expandRecent;
-    private final boolean forceClassic;
+    private final SelectorViewType forceViewType;
 
     private final Composite composite;
     private StructuredViewer selectorViewer;
@@ -142,14 +142,14 @@ public class DriverSelectViewer extends Viewer {
     }
 
     public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent) {
-        this(parent, site, providers, expandRecent, false);
+        this(parent, site, providers, expandRecent, null);
     }
 
-    DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
+    public DriverSelectViewer(Composite parent, Object site, List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent, SelectorViewType forceViewType) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;
-        this.forceClassic = forceClassic;
+        this.forceViewType = forceViewType;
         this.dataSources = DataSourceRegistry.getAllDataSources();
 
         OrderBy defOrderBy = getDefaultOrderBy();
@@ -164,7 +164,7 @@ public class DriverSelectViewer extends Viewer {
         layout.marginWidth = 0;
         composite.setLayout(layout);
 
-        createFilterControl();
+        createFilterControl(composite);
 
         selectorComposite = UIUtils.createComposite(composite, 1);
         selectorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -204,8 +204,14 @@ public class DriverSelectViewer extends Viewer {
         return selectorViewer.getControl();
     }
 
-    private void createFilterControl() {
-        Composite filterComposite = new Composite(composite, SWT.BORDER);
+    private void createFilterControl(Composite parent) {
+        Composite filterGroup = UIUtils.createComposite(parent, 1);
+        filterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        createExtraFilterControlsBefore(filterGroup);
+
+        Composite filterComposite = new Composite(filterGroup, SWT.BORDER);
+        filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         GridLayout filterLayout = new GridLayout(2, false);
         filterLayout.marginHeight = 0;
@@ -229,6 +235,16 @@ public class DriverSelectViewer extends Viewer {
         filterComposite.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
         createFilterToolbar(filterComposite);
+
+        createExtraFilterControlsAfter(filterGroup);
+    }
+
+    protected void createExtraFilterControlsBefore(Composite filterGroup) {
+
+    }
+
+    protected void createExtraFilterControlsAfter(Composite filterGroup) {
+
     }
 
     private void createFilterToolbar(Composite parent) {
@@ -254,7 +270,7 @@ public class DriverSelectViewer extends Viewer {
             activeImage.dispose();
         });
 
-        if (!forceClassic) {
+        if (forceViewType == null) {
             switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
             switchItem.setText("Switch view");
             switchItem.setWidth(UIUtils.getFontHeight(switcherToolbar) * 15);
@@ -289,8 +305,8 @@ public class DriverSelectViewer extends Viewer {
 
         selectorComposite.setRedraw(false);
         try {
-            if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
-                if (!forceClassic) {
+            if (forceViewType == SelectorViewType.tree || getCurrentSelectorViewType() == SelectorViewType.tree) {
+                if (forceViewType == null) {
                     switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
                     switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
                     switchItem.setSelection(true);
@@ -304,9 +320,11 @@ public class DriverSelectViewer extends Viewer {
                     }
                 });
             } else {
-                switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-                switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
-                switchItem.setSelection(false);
+                if (forceViewType == null) {
+                    switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+                    switchItem.setText(UIConnectionMessages.viewer_selector_control_text_classic);
+                    switchItem.setSelection(false);
+                }
 
                 selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE, dataSources, driverComparator);
                 selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -414,6 +432,10 @@ public class DriverSelectViewer extends Viewer {
 
     public StructuredViewer getSelectorViewer() {
         return selectorViewer;
+    }
+
+    public DriverTabbedViewer getTabbedViewer() {
+        return (DriverTabbedViewer) selectorViewer;
     }
 
     public Control getControl() {

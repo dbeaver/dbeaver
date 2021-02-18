@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -457,9 +457,7 @@ public class PostgreSchema implements
     public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
         for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
-            if (dt.getParentObject() == this) {
-                types.add(dt);
-            }
+            types.add(dt);
         }
         DBUtils.orderObjects(types);
         return types;
@@ -507,8 +505,9 @@ public class PostgreSchema implements
 */
             Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
             monitor.beginTask("Load data types", dataTypes.size());
+            boolean readAllTypes = getDatabase().getDataSource().supportReadingAllDataTypes();
             for (PostgreDataType dataType : dataTypes) {
-                if (dataType.hasAttributes() || dataType.isArray()) {
+                if (!readAllTypes && (dataType.hasAttributes() || dataType.isArray())) {
                     // Skipp table types and arrays
                     continue;
                 }

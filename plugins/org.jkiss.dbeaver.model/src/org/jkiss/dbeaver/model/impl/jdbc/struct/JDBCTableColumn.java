@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,9 +119,9 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     @Override
     public void setTypeName(String typeName) {
         super.setTypeName(typeName);
-        final DBPDataSource dataSource = getDataSource();
-        if (dataSource instanceof DBPDataTypeProvider) {
-            DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
+        final DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, this);
+        if (dataTypeProvider != null) {
+            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType != null) {
                 this.valueType = dataType.getTypeID();
                 if (this instanceof DBSTypedObjectExt4) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -664,7 +664,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     Object position = BeanUtils.readObjectProperty(serverErrorMessage, "position");
                     if (position instanceof Number) {
                         ErrorPosition pos = new ErrorPosition();
-                        pos.position = ((Number) position).intValue();
+                        pos.position = ((Number) position).intValue() - 1;
                         return new ErrorPosition[] {pos};
                     }
                 }
@@ -725,5 +725,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             return new QueryTransformerFetchAll();
         }
         return null;
+    }
+
+    public boolean supportReadingAllDataTypes() {
+        return CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
     }
 }

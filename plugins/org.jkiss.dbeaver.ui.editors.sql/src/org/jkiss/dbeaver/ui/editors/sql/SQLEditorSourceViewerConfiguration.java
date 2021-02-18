@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         final DBPPreferenceStore configStore = store;
 
-        final SQLContentAssistant assistant = new SQLContentAssistant();
+        final SQLContentAssistant assistant = new SQLContentAssistant(editor);
 
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
@@ -186,9 +186,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         }
 
         // Configure how content assist information will appear.
-        assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
-        assistant.setAutoActivationDelay(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
-        assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+        configureContentAssistant(store, assistant);
         assistant.setSorter(new SQLCompletionSorter());
 
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
@@ -225,6 +223,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             e -> configStore.removePropertyChangeListener(prefListener));
 
         return assistant;
+    }
+
+    private void configureContentAssistant(DBPPreferenceStore store, SQLContentAssistant assistant) {
+        assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+        assistant.setAutoActivationDelay(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+        assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
     }
 
     @Override

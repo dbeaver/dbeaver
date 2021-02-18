@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     {
         SQLServerTable table = (SQLServerTable) container;
 
-        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+        DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));

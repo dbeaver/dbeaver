@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -481,6 +481,13 @@ public class PostgreUtils {
             }
 
             String typeName = type.getTypeName();
+            DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
+            if (ownerInstance instanceof PostgreDatabase) {
+                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getDataType(session.getProgressMonitor(), typeName);
+                if (localDataType != null) {
+                    return localDataType;
+                }
+            }
             return dataSource.getLocalDataType(typeName);
         }
     }

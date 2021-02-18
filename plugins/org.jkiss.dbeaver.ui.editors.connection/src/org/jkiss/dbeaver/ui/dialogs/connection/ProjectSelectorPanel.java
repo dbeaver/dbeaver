@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ public class ProjectSelectorPanel {
 
     private DBPProject selectedProject;
 
-    public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject) {
+    public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style) {
         this.selectedProject = activeProject;
 
         final List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
@@ -53,9 +53,12 @@ public class ProjectSelectorPanel {
             }
         } else if (projects.size() > 1) {
 
-            Composite projectGroup = UIUtils.createComposite(parent, 3);
+            boolean showIcon = (style & SWT.ICON) != 0;
+            Composite projectGroup = UIUtils.createComposite(parent, showIcon ? 3 : 2);
             projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            new Label(projectGroup, SWT.NONE).setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
+            if (showIcon) {
+                new Label(projectGroup, SWT.NONE).setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
+            }
             UIUtils.createControlLabel(projectGroup, UIConnectionMessages.dialog_connection_driver_project);
 
             final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);

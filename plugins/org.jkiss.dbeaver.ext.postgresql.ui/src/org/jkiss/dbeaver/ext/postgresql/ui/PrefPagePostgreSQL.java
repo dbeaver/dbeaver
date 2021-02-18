@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +43,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showNonDefault;
     private Button showTemplates;
     private Button showUnavailable;
+    private Button readAllDataTypes;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -93,6 +94,11 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                     globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
                     2
             );
+            readAllDataTypes = UIUtils.createCheckbox(secureGroup,
+                    PostgreMessages.dialog_setting_connection_read_all_data_types,
+                    PostgreMessages.dialog_setting_connection_read_all_data_types_tip,
+                    globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
+                    2);
         }
 
         {
@@ -121,6 +127,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);

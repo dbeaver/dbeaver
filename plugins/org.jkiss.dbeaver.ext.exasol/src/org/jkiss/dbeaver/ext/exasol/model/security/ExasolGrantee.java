@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,14 +48,10 @@ public abstract class ExasolGrantee
 	public ExasolGrantee(ExasolDataSource dataSource, ResultSet resultSet)
 	{
 		this.dataSource = dataSource;
-		ExasolCurrentUserPrivileges userPriv = this.dataSource.getUserPriviliges();
 		if (resultSet != null) {
 			this.persisted = true;
 	        try {
-	        	if (userPriv.hasPriorityGroups())
-	        		this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
-	        	if (userPriv.hasConsumerGroups())
-	        		this.priority = dataSource.getConsumGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
+        		this.priority = dataSource.getPriorityGroup(new VoidProgressMonitor(), JDBCUtils.safeGetString(resultSet, "USER_PRIORITY"));
 			} catch (DBException e) {
 				this.priority = null;
 			}
@@ -96,7 +92,17 @@ public abstract class ExasolGrantee
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
-		return this;
+		dataSource.refreshObject(monitor);
+		for (ExasolGrantee grantee : dataSource.getAllGrantees(monitor))
+		{
+			if (this.getClass().getSimpleName().equals(grantee.getClass().getSimpleName())
+					&& this.getName().equals(grantee.getName())
+					) 
+			{
+				return grantee;
+			}
+		}
+		throw new DBException("Object disappeard after refresh");
 	}
 
 	@Override
@@ -111,7 +117,7 @@ public abstract class ExasolGrantee
 		
 		for(ExasolSystemGrant grant: dataSource.getSystemGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 				sysGrants.add(grant);
 		}
 		return sysGrants;
@@ -122,7 +128,7 @@ public abstract class ExasolGrantee
 		Collection<ExasolConnectionGrant> conGrants = new ArrayList<>(); 
 		for(ExasolConnectionGrant grant: this.dataSource.getConnectionGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 				conGrants.add(grant);
 		}
 		return conGrants;
@@ -136,7 +142,7 @@ public abstract class ExasolGrantee
 		Collection<ExasolRoleGrant> roleGrants = new ArrayList<>();
 		for (ExasolRoleGrant grant: this.dataSource.getRoleGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 				roleGrants.add(grant);
 				
 		}
@@ -154,7 +160,7 @@ public abstract class ExasolGrantee
 		
 		for(ExasolTableGrant grant: this.dataSource.getTableGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 			{
 				grants.add(grant);
 			}
@@ -169,7 +175,7 @@ public abstract class ExasolGrantee
 		
 		for(ExasolViewGrant grant: this.dataSource.getViewGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 			{
 				grants.add(grant);
 			}
@@ -184,7 +190,7 @@ public abstract class ExasolGrantee
 		
 		for(ExasolScriptGrant grant: this.dataSource.getScriptGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 			{
 				grants.add(grant);
 			}
@@ -199,7 +205,7 @@ public abstract class ExasolGrantee
 		
 		for(ExasolSchemaGrant grant: this.dataSource.getSchemaGrants(monitor))
 		{
-			if (grant.getName().equals(this.getName()))
+			if (grant.getGrantee().equals(this.getName()))
 			{
 				grants.add(grant);
 			}

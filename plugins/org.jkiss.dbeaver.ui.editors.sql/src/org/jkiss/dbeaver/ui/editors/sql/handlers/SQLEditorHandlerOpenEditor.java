@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,11 +115,15 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
 
     private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException, InterruptedException {
         SQLNavigatorContext editorContext = getCurrentContext(event);
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 
+        openEditor(workbenchWindow, editorContext);
+    }
+
+    private static void openEditor(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext) throws CoreException {
         DBPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
 
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
         final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(project, rootFolder, editorContext.getDataSourceContainer());
         if (scriptTree.isEmpty()) {
@@ -239,7 +244,16 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         checkProjectIsOpen(project);
         SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, editorContext);
         if (res != null) {
-            openResourceEditor(workbenchWindow, res, editorContext);
+            IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (res.getResource() != null &&
+                activeEditor != null &&
+                CommonUtils.equalObjects(res.getResource(), EditorUtils.getFileFromInput(activeEditor.getEditorInput())))
+            {
+                // It is already open and active. LEt's open script selector panel
+                openEditor(workbenchWindow, editorContext);
+            } else {
+                openResourceEditor(workbenchWindow, res, editorContext);
+            }
         } else {
             IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
             openResource(scriptFile, editorContext);

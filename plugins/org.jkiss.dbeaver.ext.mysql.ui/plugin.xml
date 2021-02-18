@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLPackage"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLSequence"/>
         </editor>
         <editor id="mysql.package.body.view" class="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLPackageBodyEditor"
                 label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
@@ -83,6 +84,9 @@
         </configurator>
         <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLEventConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mysql.ui.config.MySQLSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLSequence"/>
         </configurator>
     </extension>
 

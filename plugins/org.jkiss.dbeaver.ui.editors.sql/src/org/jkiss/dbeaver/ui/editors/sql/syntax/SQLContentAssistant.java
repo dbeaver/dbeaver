@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 /**
  * SQL Completion proposal
  */
 public class SQLContentAssistant extends ContentAssistant {
-    public SQLContentAssistant() {
+    private final SQLEditorBase editor;
+
+    public SQLContentAssistant(SQLEditorBase editor) {
         super(); // Sync. Maybe we should make it async
+        this.editor = editor;
         enableColoredLabels(true);
     }
 
@@ -35,6 +40,9 @@ public class SQLContentAssistant extends ContentAssistant {
     private class SQLAutoAssistListener extends AutoAssistListener {
         @Override
         protected void showAssist(int showStyle) {
+            if (showStyle == 1 && !editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
+                return;
+            }
             SQLCompletionProcessor.setSimpleMode(true);
             try {
                 super.showAssist(showStyle);

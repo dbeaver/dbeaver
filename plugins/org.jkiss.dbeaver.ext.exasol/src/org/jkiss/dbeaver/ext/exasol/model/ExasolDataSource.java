@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,12 +164,33 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 					.setCache(Collections.emptyList());
 		}
 
+		String priorityColUser = " USER_PRIORITY,\n";
+		String priorityColRole = " ROLE_PRIORITY AS USER_PRIORITY,\n";
+		if (exasolCurrentUserPrivileges.hasConsumerGroups())  {
+			priorityColUser = " USER_CONSUMER_GROUP as USER_PRIORITY,\n";
+			priorityColRole = " ROLE_CONSUMER_GROUP AS USER_PRIORITY,\n";
+		}
+			
 		this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
-					"/*snapshot execution*/ select * from SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.USER)  +"_USERS ORDER BY USER_NAME");
-		if (exasolCurrentUserPrivileges.hasConsumerGroups())
-			this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT ROLE_NAME,CREATED,ROLE_CONSUMER_GROUP AS USER_PRIORITY,ROLE_COMMENT FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
-		else
-			this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT ROLE_NAME,CREATED,ROLE_PRIORITY AS USER_PRIORITY,ROLE_COMMENT FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
+				"/*snapshot execution*/ SELECT\n"
+				+ "	USER_NAME,\n"
+				+ "	CREATED,\n"
+				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	DISTINGUISHED_NAME,\n" : "")
+				+ "	KERBEROS_PRINCIPAL,\n"
+				+ "	PASSWORD,\n"
+				+ priorityColUser
+				+ "	PASSWORD_STATE,\n"
+				+ "	PASSWORD_STATE_CHANGED,\n"
+				+ "	PASSWORD_EXPIRY,\n"
+				+ "	PASSWORD_EXPIRY_DAYS,\n"
+				+ "	PASSWORD_GRACE_DAYS,\n"
+				+ "	PASSWORD_EXPIRY_POLICY,\n"
+				+ "	FAILED_LOGIN_ATTEMPTS,\n"
+				+ "	USER_COMMENT\n"
+				+ "FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.USER)  +"_USERS ORDER BY USER_NAME");
+			
+			
+		this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT ROLE_NAME,CREATED,"+ priorityColRole + " ROLE_COMMENT FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
 		
 		this.connectionCache = new JDBCObjectSimpleCache<>(
 				ExasolConnection.class, "/*snapshot execution*/ SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
@@ -442,30 +463,15 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			throws DBException
 	{
 		super.refreshObject(monitor);
-
+		
 		this.schemaCache.clearCache();
-		if (this.userCache != null) 
-				this.userCache.clearCache();
 		this.dataTypeCache.clearCache();
-		
-		if (this.roleCache != null)
-			this.roleCache.clearCache();
-		if (this.connectionCache != null)
-			this.connectionCache.clearCache();
-
-		//caches for security
-		if (this.connectionGrantCache != null)
-			this.connectionGrantCache.clearCache();
-		
-		if (this.baseTableGrantCache != null)
-			this.baseTableGrantCache.clearCache();
-		
-		if (this.systemGrantCache != null)
-			this.systemGrantCache.clearCache();
-		
-		if (this.roleCache != null)
-			this.roleCache.clearCache();
-
+		this.connectionCache.clearCache();
+		this.userCache.clearCache();
+		this.roleCache.clearCache();
+		this.baseTableGrantCache.clearCache();
+		this.systemGrantCache.clearCache();
+		this.connectionGrantCache.clearCache();
 		this.initialize(monitor);
 
 		return this;
@@ -947,16 +953,14 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
     public ErrorType discoverErrorType(@NotNull Throwable error) {
     	// exasol has no sqlstates 
     	String errorMessage = error.getMessage();
-    	if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
-    	{
-    		return ErrorType.CONNECTION_LOST;
-    	} else if (errorMessage.contains("Feature not supported")) {
+		if (errorMessage.contains("Feature not supported")) {
 			return ErrorType.FEATURE_UNSUPPORTED;
-		} else if (errorMessage.contains("GlobalTransactionRollback")) {
-			return ErrorType.TRANSACTION_ABORTED;
 		} else if (errorMessage.contains("insufficient privileges")) {
 			return ErrorType.PERMISSION_DENIED;
-		}
+		} else if (errorMessage.contains("Connection lost") | errorMessage.contains("Connection was killed") | errorMessage.contains("Process does not exist") | errorMessage.contains("Successfully reconnected") | errorMessage.contains("Statement handle not found")  )
+    	{
+    		return ErrorType.CONNECTION_LOST;
+    	}
     	return super.discoverErrorType(error);
     }
 

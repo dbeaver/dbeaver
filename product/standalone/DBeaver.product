@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="7.3.4.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product" application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="7.3.5.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -39,7 +39,7 @@
         <url>https://dbeaver.io/about/</url>
         <text>
     DBeaver - Universal Database Manager
-    Copyright (C) 2010-2020 DBeaver Corp and others
+    Copyright (C) 2010-2021 DBeaver Corp and others
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

@@ -776,6 +776,18 @@
             </toolbar>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+
+            <separator name="object" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <separator name="compare" visible="true"/>
+            <separator name="export_import" visible="false"/>
+            <separator name="generate" visible="true"/>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen>

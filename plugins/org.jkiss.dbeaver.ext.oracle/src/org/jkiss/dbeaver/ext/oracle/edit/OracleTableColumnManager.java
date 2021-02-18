@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,7 +68,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     {
         OracleTableBase table = (OracleTableBase) container;
 
-        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar2"); //$NON-NLS-1$
+        DBSDataType columnType = findBestDataType(table, "varchar2"); //$NON-NLS-1$
 
         final OracleTableColumn column = new OracleTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));

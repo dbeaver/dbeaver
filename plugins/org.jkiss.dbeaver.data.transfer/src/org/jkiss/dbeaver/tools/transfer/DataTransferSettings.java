@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
+import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
@@ -41,12 +40,12 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DataTransferSettings
  */
 public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
-
     private static final Log log = Log.getLog(DataTransferSettings.class);
 
     public static final int DEFAULT_THREADS_NUM = 1;
@@ -434,6 +433,78 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         return dataPipes;
     }
 
+    public void sortDataPipes(DBRProgressMonitor monitor) {
+        List<DBSEntity> entities = dataPipes.stream().sequential()
+                .filter(pipe -> pipe.getProducer() != null && pipe.getProducer().getDatabaseObject() instanceof DBSEntity)
+                .map(pipe -> (DBSEntity) pipe.getProducer().getDatabaseObject())
+                .collect(Collectors.toList());
+        List<DBSEntity> simpleTables = new ArrayList<>();
+        List<DBSEntity> cyclicTables = new ArrayList<>();
+        List<DBSEntity> views = new ArrayList<>();
+        try {
+            DBStructUtils.sortTableList(monitor, entities, simpleTables, cyclicTables, views);
+        } catch (DBException e) {
+            log.warn("Unable to sort database entities!");
+            return;
+        }
+        dataPipes.sort((pipe1, pipe2) -> { //fixme rewrite
+            IDataTransferProducer<?> producer1 = pipe1.getProducer();
+            IDataTransferProducer<?> producer2 = pipe2.getProducer();
+            if (producer1 == null && producer2 == null) {
+                return 0;
+            } else if (producer1 == null) {
+                return 1;
+            } else if (producer2 == null) {
+                return -1;
+            }
+            DBSObject dbsObject1 = producer1.getDatabaseObject();
+            DBSObject dbsObject2 = producer2.getDatabaseObject();
+            if (dbsObject1 == null && dbsObject2 == null) {
+                return 0;
+            } else if (dbsObject1 == null) {
+                return 1;
+            } else if (dbsObject2 == null) {
+                return -1;
+            }
+            if (!(dbsObject1 instanceof DBSEntity) && !(dbsObject2 instanceof DBSEntity)) {
+                return 0;
+            } else if (!(dbsObject1 instanceof DBSEntity)) {
+                return 1;
+            } else if (!(dbsObject2 instanceof DBSEntity)) {
+                return -1;
+            }
+            DBSEntity entity1 = (DBSEntity) dbsObject1;
+            DBSEntity entity2 = (DBSEntity) dbsObject2;
+            int idx1 = views.indexOf(entity1);
+            int idx2 = views.indexOf(entity2);
+            if (idx1 != -1 || idx2 != -1) {
+                return idx1 - idx2;
+            }
+            idx1 = cyclicTables.indexOf(entity1);
+            idx2 = cyclicTables.indexOf(entity2);
+            if (idx1 != -1 || idx2 != -1) {
+                return idx1 - idx2;
+            }
+            return simpleTables.indexOf(entity1) - simpleTables.indexOf(entity2);
+        });
+    }
+
+    public void processPipeEarlier(@NotNull DataTransferPipe pipe) {
+        int idx = dataPipes.indexOf(pipe);
+        if (idx <= 0) {
+            return;
+        }
+        Collections.swap(dataPipes, idx - 1, idx);
+    }
+
+    public void processPipeLater(@NotNull DataTransferPipe pipe) {
+        int idx = dataPipes.indexOf(pipe);
+        if (idx == -1 || idx == dataPipes.size() - 1) {
+            return;
+        }
+        Collections.swap(dataPipes, idx, idx + 1);
+    }
+
     public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor) {
         if (curPipeNum >= dataPipes.size()) {
             // End of transfer
@@ -627,5 +698,4 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             }
         }
     }
-
 }
