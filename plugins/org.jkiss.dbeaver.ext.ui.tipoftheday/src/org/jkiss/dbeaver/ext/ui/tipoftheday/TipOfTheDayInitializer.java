@@ -1,12 +1,12 @@
 package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
+    private static final String PROP_NOT_FIRST_RUN = "tipOfTheDayInitializer.notFirstRun";
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
@@ -17,7 +17,8 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
     }
 
     private static boolean isTipsEnabled() {
-        if (DataSourceRegistry.getAllDataSources().isEmpty()) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_NOT_FIRST_RUN)) {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_NOT_FIRST_RUN, true);
             return false;
         }
         String tipsEnabledStr = DBWorkbench.getPlatform().getPreferenceStore().getString(ShowTipOfTheDayHandler.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
@@ -26,5 +27,4 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
         }
         return CommonUtils.toBoolean(tipsEnabledStr);
     }
-
 }
