@@ -266,8 +266,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         return;
                     }
                     getWizard().getSettings().processPipeEarlier(pipe);
+                    mappingViewer.getTree().setVisible(false);
                     loadAndUpdateColumnsModel();
                     selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(true);
                 }
             });
             upButton.setEnabled(false);
@@ -280,8 +282,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         return;
                     }
                     getWizard().getSettings().processPipeLater(pipe);
+                    mappingViewer.getTree().setVisible(false);
                     loadAndUpdateColumnsModel();
                     selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(true);
                 }
             });
             downButton.setEnabled(false);
@@ -699,10 +703,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void autoAssignMappings() {
         try {
-            getWizard().getRunnableContext().run(true, true, (monitor ->  {
-                monitor.beginTask("Sorting data pipes", getWizard().getSettings().getDataPipes().size());
-                getWizard().getSettings().sortDataPipes(monitor);
-            }));
+            getWizard().getRunnableContext().run(true, true, (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
         } catch (InvocationTargetException | InterruptedException e) {
             //ignored
         }
@@ -1035,7 +1036,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             model.add(mapping);
         }
 
+        mappingViewer.getTree().setVisible(false);
+        Object[] expandedElements = mappingViewer.getExpandedElements();
         mappingViewer.setInput(model);
+        mappingViewer.setExpandedElements(expandedElements);
+        mappingViewer.getTree().setVisible(true);
+
         if (!model.isEmpty()) {
             // Select first element
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));
