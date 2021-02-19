@@ -1039,7 +1039,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             model.add(mapping);
         }
 
+        mappingViewer.getTree().setVisible(false);
+        Object[] expandedElements = mappingViewer.getExpandedElements();
         mappingViewer.setInput(model);
+        mappingViewer.setExpandedElements(expandedElements);
+        mappingViewer.getTree().setVisible(true);
+
         if (!model.isEmpty()) {
             // Select first element
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));
