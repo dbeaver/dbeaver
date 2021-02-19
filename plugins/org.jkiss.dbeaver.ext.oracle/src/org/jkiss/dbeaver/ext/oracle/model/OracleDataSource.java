@@ -745,10 +745,15 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
             // Tablespace stats
             try (JDBCStatement dbStat = session.createStatement()) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT TS.TABLESPACE_NAME,SUM(F.BYTES) AVAILABLE_SPACE,SUM(S.BYTES) USED_SPACE \n" +
-                    "FROM SYS.DBA_TABLESPACES TS,DBA_DATA_FILES F,DBA_SEGMENTS S\n" +
-                    "WHERE F.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+)=TS.TABLESPACE_NAME\n" +
-                    "GROUP BY TS.TABLESPACE_NAME")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery(
+                    "SELECT\n" +
+                    "\tTS.TABLESPACE_NAME, F.AVAILABLE_SPACE, S.USED_SPACE\n" +
+                    "FROM\n" +
+                    "\tSYS.DBA_TABLESPACES TS,\n" +
+                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) AVAILABLE_SPACE FROM DBA_DATA_FILES GROUP BY TABLESPACE_NAME) F,\n" +
+                    "\t(SELECT TABLESPACE_NAME, SUM(BYTES) USED_SPACE FROM DBA_SEGMENTS GROUP BY TABLESPACE_NAME) S\n" +
+                    "WHERE\n" +
+                    "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
                     while (dbResult.next()) {
                         String tsName = dbResult.getString(1);
                         OracleTablespace tablespace = tablespaceCache.getObject(monitor, getDataSource(), tsName);
