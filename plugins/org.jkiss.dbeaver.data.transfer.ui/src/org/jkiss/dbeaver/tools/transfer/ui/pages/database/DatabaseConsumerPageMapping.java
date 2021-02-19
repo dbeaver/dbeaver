@@ -703,10 +703,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void autoAssignMappings() {
         try {
-            getWizard().getRunnableContext().run(true, true, (monitor ->  {
-                monitor.beginTask("Sorting data pipes", getWizard().getSettings().getDataPipes().size());
-                getWizard().getSettings().sortDataPipes(monitor);
-            }));
+            getWizard().getRunnableContext().run(true, true, (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
         } catch (InvocationTargetException | InterruptedException e) {
             //ignored
         }
