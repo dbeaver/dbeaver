@@ -17,7 +17,7 @@
    <launcher name="dbeaver">
        <macosx icon="/../standalone/icons/dbeaver.icns"/>
        <win useIco="true">
-           <ico path="icons/dbeaver.ico"/>
+           <ico path="/../standalone/icons/dbeaver.ico"/>
        </win>
    </launcher>
 
