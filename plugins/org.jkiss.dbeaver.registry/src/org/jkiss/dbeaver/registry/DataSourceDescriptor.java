@@ -1479,7 +1479,13 @@ public class DataSourceDescriptor
         final String user = networkHandler != null ? networkHandler.getUserName() : actualConfig.getUserName();
         final String password = networkHandler != null ? networkHandler.getPassword() : actualConfig.getUserPassword();
 
-        DBPAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+        DBPAuthInfo authInfo;
+        try {
+            authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+        } catch (Exception e) {
+            log.debug(e);
+            authInfo = new DBPAuthInfo(user, password, false);
+        }
         if (authInfo == null) {
             return false;
         }
