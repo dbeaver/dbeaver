@@ -15,17 +15,10 @@
    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
 
    <launcher name="dbeaver">
-      <macosx icon="/../standalone/icons/dbeaver.icns"/>
-      <win useIco="false">
-         <bmp
-            winSmallHigh="/../standalone/icons/dbeaver-16x16x32.bmp"
-            winSmallLow="/../standalone/icons/dbeaver-16x16x8.bmp"
-            winMediumHigh="/../standalone/icons/dbeaver-32x32x32.bmp"
-            winMediumLow="/../standalone/icons/dbeaver-32x32x8.bmp"
-            winLargeHigh="/../standalone/icons/dbeaver-48x48x32.bmp"
-            winLargeLow="/../standalone/icons/dbeaver-48x48x8.bmp"
-            winExtraLargeHigh="/../standalone/icons/dbeaver-256x256x32.bmp"/>
-      </win>
+       <macosx icon="/../standalone/icons/dbeaver.icns"/>
+       <win useIco="true">
+           <ico path="icons/dbeaver.ico"/>
+       </win>
    </launcher>
 
    <vm>
