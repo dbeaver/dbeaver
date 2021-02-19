@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.ext.netezza.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -36,6 +35,8 @@ import java.util.Map;
  */
 public class NetezzaMetaModel extends GenericMetaModel
 {
+    private static final Log log = Log.getLog(NetezzaMetaModel.class);
+
     public NetezzaMetaModel() {
         super();
     }
@@ -43,9 +44,17 @@ public class NetezzaMetaModel extends GenericMetaModel
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         GenericSchema schema = sourceObject.getSchema();
+        GenericCatalog catalog = sourceObject.getCatalog();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
+            // Set session catalog. View definition can't be accessed in cross-database mode
+            String curSessionCatalog = session.getCatalog();
+            if (catalog.getName() != null && !CommonUtils.equalObjects(curSessionCatalog, catalog.getName())) {
+                session.setCatalog(catalog.getName());
+            } else {
+                curSessionCatalog = null;
+            }
             String sql = "SELECT v.definition " +
-                    "FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".DEFINITION_SCHEMA._V_VIEW v " +
+                    "FROM " + DBUtils.getQuotedIdentifier(catalog) + ".DEFINITION_SCHEMA._V_VIEW v " +
                     "WHERE v.VIEWNAME=?" + (schema != null ? " AND v.SCHEMA=?" : "");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql))
             {
@@ -60,6 +69,14 @@ public class NetezzaMetaModel extends GenericMetaModel
                             dbResult.getString(1);
                     }
                     return "-- Netezza view definition not found";
+                }
+            } finally {
+                if (curSessionCatalog != null) {
+                    try {
+                        session.setCatalog(curSessionCatalog);
+                    } catch (Exception e) {
+                        log.debug("Can't set default catalog.", e);
+                    }
                 }
             }
         } catch (SQLException e) {
