@@ -298,7 +298,6 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     }
                     UIUtils.packColumns(columnsTable);
                     updateColumnSelection();
-                    updateToggleButton();
                 });
             }
         });
@@ -413,10 +412,11 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                 DBSEntityAttribute attribute = ((AttributeInfo) item.getData()).getAttribute();
                 if (predicate.test(attribute)) {
                     item.setChecked(true);
-                    handleItemSelect(item, false);
                 }
             }
+            handleItemSelect(item, false);
         }
+        updateToggleButton();
     }
 
     public void updateColumnSelection() {
