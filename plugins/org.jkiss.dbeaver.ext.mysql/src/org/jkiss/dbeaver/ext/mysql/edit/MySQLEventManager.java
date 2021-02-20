@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLExecutionContext;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -98,8 +99,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
 
     @Override
     protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        actions.add(new SQLDatabasePersistAction("Drop event", "DROP EVENT " + DBUtils.getQuotedIdentifier(command.getObject())));
-
+        actions.add(new SQLDatabasePersistAction("Drop event", "DROP EVENT " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
     }
 
 }

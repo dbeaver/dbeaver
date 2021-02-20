@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,7 +37,7 @@ import java.util.Map;
 /**
  * MySQLEvent
  */
-public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
+public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject, DBPQualifiedObject {
 
     private static final String CAT_DETAILS = "Details";
     private static final String CAT_STATS = "Statistics";
@@ -292,4 +290,11 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         return catalog;
     }
 
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+                catalog,
+                this);
+    }
 }
