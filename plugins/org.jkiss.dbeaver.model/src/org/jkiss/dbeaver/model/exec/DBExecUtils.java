@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -407,13 +406,16 @@ public class DBExecUtils {
                 new AbstractJob("Recover smart commit mode") {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
+                        if (!executionContext.isConnected()) {
+                            return Status.OK_STATUS;
+                        }
                         try {
                             monitor.beginTask("Switch to auto-commit mode", 1);
                             if (!transactionManager.isAutoCommit()) {
                                 transactionManager.setAutoCommit(monitor,true);
                             }
                         } catch (DBCException e) {
-                            return GeneralUtils.makeExceptionStatus(e);
+                            log.debug("Error recovering smart commit mode: " + e.getMessage());
                         }
                         finally {
                             monitor.done();
