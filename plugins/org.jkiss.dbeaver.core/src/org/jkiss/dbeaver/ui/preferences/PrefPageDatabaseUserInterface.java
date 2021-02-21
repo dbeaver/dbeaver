@@ -130,7 +130,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
             longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec, 0, 0, Integer.MAX_VALUE);
 
-            if (RuntimeUtils.isPlatformMacOS()) {
+            if (RuntimeUtils.isMacOS()) {
                 ControlEnableState.disable(agentGroup);
             }
         }
@@ -208,5 +208,4 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     public void setElement(IAdaptable element)
     {
     }
-
 }

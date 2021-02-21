@@ -1880,7 +1880,7 @@ public class UIUtils {
     public static void fixReadonlyTextBackground(Text textField) {
         // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
         if (false) {
-            if (GeneralUtils.isWindows()) {
+            if (RuntimeUtils.isWindows()) {
                 // On Windows everything is fine
                 return;
             }
