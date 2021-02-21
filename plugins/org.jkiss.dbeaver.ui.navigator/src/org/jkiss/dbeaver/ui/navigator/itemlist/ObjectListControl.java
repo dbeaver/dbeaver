@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -74,7 +73,6 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl implements IClipboardSource {
     private static final Log log = Log.getLog(ObjectListControl.class);
 
-    private static final boolean IS_MACOS_BIG_SUR = RuntimeUtils.isMacOS() && Objects.equals(System.getProperty("os.version"), "10.16");
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
@@ -526,9 +524,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
-        if (IS_MACOS_BIG_SUR) { //[#10162]
-            itemsControl.redraw();
-        }
     }
 
     public void appendListData(Collection<OBJECT_TYPE> items) {
@@ -1381,5 +1376,4 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         return buf.toString();
     }
-
 }
