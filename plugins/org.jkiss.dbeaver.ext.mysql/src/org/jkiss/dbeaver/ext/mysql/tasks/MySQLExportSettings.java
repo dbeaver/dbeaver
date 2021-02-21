@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
@@ -306,8 +307,11 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     }
 
     @Override
-    public void setClientHome(DBPNativeClientLocation clientHome) {
+    public void setClientHome(@Nullable DBPNativeClientLocation clientHome) {
         super.setClientHome(clientHome);
+        if (clientHome == null) {
+            return;
+        }
         String fullVersion = MySQLDataSourceProvider.getFullServerVersion(clientHome.getPath());
         if (fullVersion == null) {
             return;
