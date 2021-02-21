@@ -60,7 +60,11 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean noData;
     private boolean showViews;
     private boolean overrideCredentials;
-    private boolean disableColumnStatistics;
+
+    /**
+     * Major version of mysqldump, -1 if unknown
+     */
+    private int mysqlDumpMajorVersion = -1;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
@@ -310,22 +314,19 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     public void setClientHome(@Nullable DBPNativeClientLocation clientHome) {
         super.setClientHome(clientHome);
         if (clientHome == null) {
+            mysqlDumpMajorVersion = -1;
             return;
         }
-        String fullVersion = MySQLDataSourceProvider.getFullServerVersion(clientHome.getPath());
-        if (fullVersion == null) {
-            return;
-        }
-        int majorVersion;
-        try {
-            majorVersion = Integer.parseInt(fullVersion.split("\\.")[0]);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            return;
-        }
-        disableColumnStatistics = majorVersion == 8;
+        mysqlDumpMajorVersion = MySQLDataSourceProvider.getServerMajorVersion(clientHome.getPath());
     }
 
-    boolean isDisableColumnStatistics() {
-        return disableColumnStatistics;
+    /**
+     * Returns the major version of mysqldump.
+     * If the major version is unknown or client home is null, returns -1.
+     *
+     * @return major version of mysqldump, -1 if unknown
+     */
+    int getMysqlDumpMajorVersion() {
+        return mysqlDumpMajorVersion;
     }
 }
