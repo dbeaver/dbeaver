@@ -329,10 +329,6 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         if (subVersions.length == 0) {
             return -1;
         }
-        try {
-            return Integer.parseInt(subVersions[0]);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        return CommonUtils.toInt(subVersions[0], -1);
     }
 }
