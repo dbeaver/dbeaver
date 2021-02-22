@@ -490,19 +490,11 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     public void processPipeEarlier(@NotNull DataTransferPipe pipe) {
-        int idx = dataPipes.indexOf(pipe);
-        if (idx <= 0) {
-            return;
-        }
-        Collections.swap(dataPipes, idx - 1, idx);
+        CommonUtils.shiftLeft(dataPipes, pipe);
     }
 
     public void processPipeLater(@NotNull DataTransferPipe pipe) {
-        int idx = dataPipes.indexOf(pipe);
-        if (idx == -1 || idx == dataPipes.size() - 1) {
-            return;
-        }
-        Collections.swap(dataPipes, idx, idx + 1);
+        CommonUtils.shiftRight(dataPipes, pipe);
     }
 
     public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor) {

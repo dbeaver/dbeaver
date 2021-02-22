@@ -204,6 +204,38 @@ public class CommonUtils {
         }
     }
 
+    /**
+     * Swaps the element with its neighbor to the left in the specified list.
+     * If the element is not present in the list or it is the leftmost element in the list,
+     * the list remains unchanged.
+     *
+     * @param list list
+     * @param element element
+     * @param <T> type of the list
+     */
+    public static <T> void shiftLeft(@NotNull List<? super T> list, @NotNull T element) {
+        int idx = list.indexOf(element);
+        if (idx > 0) {
+            Collections.swap(list, idx - 1, idx);
+        }
+    }
+
+    /**
+     * Swaps the element with its neighbor to the right in the specified list.
+     * If the element is not present in the list or it is the rightmost element in the list,
+     * the list remains unchanged.
+     *
+     * @param list list
+     * @param element element
+     * @param <T> type of the list
+     */
+    public static <T> void shiftRight(@NotNull List<? super T> list, @NotNull T element) {
+        int idx = list.indexOf(element);
+        if (idx != -1 && idx != list.size() - 1) {
+            Collections.swap(list, idx, idx + 1);
+        }
+    }
+
     @NotNull
     public static String notEmpty(@Nullable String value) {
         return value == null ? "" : value;
