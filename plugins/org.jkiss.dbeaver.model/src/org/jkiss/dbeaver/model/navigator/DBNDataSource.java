@@ -255,7 +255,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                if (!((DBNDataSource) node).setFolder(folder)) {
+                if (!((DBNDataSource) node).moveToFolder(folder)) {
                     return;
                 }
             } else if (node instanceof DBNLocalFolder) {
@@ -265,7 +265,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
-    public boolean setFolder(DBPDataSourceFolder folder)
+    public boolean moveToFolder(DBPDataSourceFolder folder)
     {
         final DBPDataSourceFolder oldFolder = dataSource.getFolder();
         if (oldFolder == folder) {
