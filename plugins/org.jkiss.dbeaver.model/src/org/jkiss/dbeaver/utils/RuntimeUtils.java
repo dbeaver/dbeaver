@@ -50,7 +50,6 @@ public final class RuntimeUtils {
     private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
     private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
     private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
-    private static final boolean IS_AMD64 = Platform.getOSArch().equals(Platform.ARCH_X86_64);
 
     private RuntimeUtils() {
         //intentionally left blank
@@ -295,10 +294,6 @@ public final class RuntimeUtils {
 
     public static boolean isLinux() {
         return IS_LINUX;
-    }
-
-    public static boolean isAMD64() {
-        return IS_AMD64;
     }
 
     public static void setThreadName(String name) {
