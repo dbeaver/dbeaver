@@ -255,6 +255,10 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject, DBPQual
         sql.append(" EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n");
         if (intervalValue != null && intervalField != null) {
             sql.append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
+        } else if (executeAt != null) {
+            sql.append("ON SCHEDULE AT '").append(dateFormat.format(executeAt)).append("'\n");
+        } else {
+            sql.append("ON SCHEDULE AT CURRENT_TIMESTAMP\n");
         }
         if (starts != null) {
             sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
