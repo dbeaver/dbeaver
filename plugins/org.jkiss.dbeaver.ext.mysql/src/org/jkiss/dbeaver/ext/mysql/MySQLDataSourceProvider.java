@@ -42,7 +42,6 @@ import java.util.*;
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
-    private static final String REGISTRY_ROOT_MYSQL_32 = "SOFTWARE\\MySQL AB";
     private static final String REGISTRY_ROOT_MYSQL_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";
     private static final String REGISTRY_ROOT_MARIADB = "SOFTWARE\\Monty Program AB";
     private static final String SERER_LOCATION_KEY = "Location";
@@ -188,12 +187,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             try {
                 // Search MySQL entries
                 {
-                    final String registryRoot = RuntimeUtils.isAMD64() ? REGISTRY_ROOT_MYSQL_64 : REGISTRY_ROOT_MYSQL_32;
-                    if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, registryRoot)) {
-                        String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, registryRoot);
+                    if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64)) {
+                        String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64);
                         if (homeKeys != null) {
                             for (String homeKey : homeKeys) {
-                                Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, registryRoot + "\\" + homeKey);
+                                Map<String, Object> valuesMap = Advapi32Util.registryGetValues(WinReg.HKEY_LOCAL_MACHINE, REGISTRY_ROOT_MYSQL_64 + "\\" + homeKey);
                                 for (String key : valuesMap.keySet()) {
                                     if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
                                         String serverPath = CommonUtils.removeTrailingSlash(CommonUtils.toString(valuesMap.get(key)));
