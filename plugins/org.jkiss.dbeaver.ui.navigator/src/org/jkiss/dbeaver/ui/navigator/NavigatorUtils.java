@@ -481,7 +481,7 @@ public class NavigatorUtils {
                     } else if (curObject == null) {
                         for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
                             if (node instanceof DBNDataSource) {
-                                ((DBNDataSource) node).moveToFolder(null);
+                                ((DBNDataSource) node).moveToFolder(node.getOwnerProject(), null);
                             } else if (node instanceof DBNLocalFolder) {
                                 ((DBNLocalFolder) node).getFolder().setParent(null);
                             } else {
