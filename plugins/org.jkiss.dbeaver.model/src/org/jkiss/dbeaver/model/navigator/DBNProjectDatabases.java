@@ -178,7 +178,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                DBPDataSourceContainer oldContainer = ((DBNDataSource) node).getDataSourceContainer();
+                DBNDataSource dataSource = (DBNDataSource) node;
+                //dataSource.moveToFolder(getOwnerProject(), null);
+                DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
                 if (oldContainer.getRegistry() == dataSourceRegistry) {
                     // the same registry
                     continue;
