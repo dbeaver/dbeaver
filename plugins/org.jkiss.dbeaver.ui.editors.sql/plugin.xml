@@ -700,6 +700,11 @@
                  id="org.jkiss.dbeaver.menu.sql.open">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
             </command>
+<!--
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
+-->
         </menuContribution>
 
         <!-- SQL editor menu -->
@@ -1050,5 +1055,15 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
     </extension>
+
+<!--
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.open"/>
+            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.create"/>
+            <hiddenToolBarItem id="org.jkiss.dbeaver.core.sql.editor.console"/>
+        </perspectiveExtension>
+    </extension>
+-->
 
 </plugin>
