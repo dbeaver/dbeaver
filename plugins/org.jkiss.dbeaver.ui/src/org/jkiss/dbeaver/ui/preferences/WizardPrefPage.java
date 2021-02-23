@@ -23,7 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -36,7 +36,7 @@ import java.util.ResourceBundle;
 /**
  * Preference page adapter for wizard page
  */
-public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
+public class WizardPrefPage extends WizardPage implements IDialogPageProvider {
 
     private final IPreferencePage preferencePage;
     private final List<WizardPrefPage> subPages = new ArrayList<>();
@@ -140,7 +140,7 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
     }
 
     @Override
-    public WizardPrefPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+    public WizardPrefPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         if (subPages.isEmpty()) {
             return null;
         }

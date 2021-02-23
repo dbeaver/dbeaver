@@ -200,6 +200,11 @@ public class PropertyTreeViewer extends TreeViewer {
         loadProperties(null, null, propertySource);
     }
 
+    public void loadProperties(DBRProgressMonitor monitor, DBPPropertySource propertySource)
+    {
+        loadProperties(monitor, null, propertySource);
+    }
+
     protected void loadProperties(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
     {
         // Make tree model

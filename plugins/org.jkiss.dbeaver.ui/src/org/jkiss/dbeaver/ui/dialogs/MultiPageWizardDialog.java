@@ -40,8 +40,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
@@ -200,8 +200,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         item.setData(page);
 
         // Ad sub pages
-        if (page instanceof ICompositeDialogPage) {
-            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages(true, resizeHasOccurred);
+        if (page instanceof IDialogPageProvider) {
+            IDialogPage[] subPages = ((IDialogPageProvider) page).getDialogPages(true, resizeHasOccurred);
             if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);
@@ -311,7 +311,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 return;
             }
             if (item.getData() instanceof ICompositeDialogPageContainer) {
-                IDialogPage[] subPages = ((ICompositeDialogPageContainer) item.getData()).getSubPages(false, false);
+                IDialogPage[] subPages = ((ICompositeDialogPageContainer) item.getData()).getDialogPages(false, false);
                 if (!ArrayUtils.isEmpty(subPages)) {
                     for (IDialogPage subPage : subPages) {
                         if (subPage == page) {

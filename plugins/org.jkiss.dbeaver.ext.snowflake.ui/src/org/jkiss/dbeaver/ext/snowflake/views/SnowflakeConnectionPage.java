@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.ext.snowflake.SnowflakeUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -49,7 +49,7 @@ import java.util.Locale;
 /**
  * SnowflakeConnectionPage
  */
-public class SnowflakeConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage, IDataSourceConnectionTester
+public class SnowflakeConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester
 {
     private static final Log log = Log.getLog(SnowflakeConnectionPage.class);
 
@@ -317,7 +317,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)

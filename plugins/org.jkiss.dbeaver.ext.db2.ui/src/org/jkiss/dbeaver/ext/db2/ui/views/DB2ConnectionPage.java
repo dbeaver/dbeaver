@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -40,7 +40,7 @@ import java.util.Locale;
 /**
  * DB2ConnectionPage
  */
-public class DB2ConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
+public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -170,7 +170,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements ICompos
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[]{
             new DB2ConnectionTracePage(),
