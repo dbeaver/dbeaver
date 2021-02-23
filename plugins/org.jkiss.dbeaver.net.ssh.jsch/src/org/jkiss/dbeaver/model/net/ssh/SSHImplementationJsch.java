@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
  * SSH tunnel
  */
 public class SSHImplementationJsch extends SSHImplementationAbstract {
-
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
     private transient JSch jsch;
@@ -174,7 +173,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
             password = CommonUtils.notEmpty(password);
 
-            if (RuntimeUtils.isPlatformWindows()) {
+            if (RuntimeUtils.isWindows()) {
                 password = '"' + password + '"';
             }
 
@@ -302,5 +301,4 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
         }
     }
-
 }

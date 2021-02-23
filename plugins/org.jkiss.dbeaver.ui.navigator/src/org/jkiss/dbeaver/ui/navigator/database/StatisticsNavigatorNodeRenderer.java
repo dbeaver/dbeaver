@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -238,7 +238,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             gc.setFont(hostNameFont);
             Point hostTextSize = gc.stringExtent(hostText);
 
-            int xOffset = GeneralUtils.isLinux() ? 16 : 2;
+            int xOffset = RuntimeUtils.isLinux() ? 16 : 2;
             ScrollBar hSB = tree.getHorizontalBar();
             boolean scrollEnabled = (hSB != null && hSB.isVisible());
 
@@ -533,7 +533,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (horizontalBar == null) {
             return false;
         }
-        if (GeneralUtils.isLinux()) {
+        if (RuntimeUtils.isLinux()) {
             return tree.getClientArea().width != horizontalBar.getMaximum();
         }
         return horizontalBar.isVisible();
