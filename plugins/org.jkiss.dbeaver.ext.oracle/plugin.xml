@@ -310,6 +310,7 @@
                     defaultPort="1521"
                     defaultDatabase="ORCL"
                     defaultUser="system"
+                    customEndpoint="true"
                     webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
                     icon="icons/oracle_icon.png"
                     iconBig="icons/oracle_icon_big.png"

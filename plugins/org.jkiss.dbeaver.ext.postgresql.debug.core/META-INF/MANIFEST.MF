@@ -6,6 +6,7 @@ Bundle-Version: 1.0.81.qualifier
 Bundle-Release-Date: 20210301
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.core,

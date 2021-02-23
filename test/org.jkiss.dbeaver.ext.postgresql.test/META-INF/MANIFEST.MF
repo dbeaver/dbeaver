@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Fragment-Host: org.jkiss.dbeaver.ext.postgresql
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit,
