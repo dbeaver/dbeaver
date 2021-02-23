@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -729,9 +728,9 @@ public class GeneralUtils {
     public static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
         Object result;
         if (allowActivation) {
-            result = AdapterManager.getDefault().loadAdapter(sourceObject, adapterId);
+            result = Platform.getAdapterManager().loadAdapter(sourceObject, adapterId);
         } else {
-            result = AdapterManager.getDefault().getAdapter(sourceObject, adapterId);
+            result = Platform.getAdapterManager().getAdapter(sourceObject, adapterId);
         }
         return result;
     }
