@@ -444,8 +444,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void showSubPage(IDialogPage subPage) {
+        TabItem[] selection = tabFolder.getSelection();
         for (TabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
+                if (selection.length == 1 && selection[0].getData() != subPage && selection[0].getData() instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) selection[0].getData()).deactivatePage();
+                }
+                if (subPage instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) subPage).activatePage();
+                }
                 tabFolder.setSelection(pageTab);
                 break;
             }
