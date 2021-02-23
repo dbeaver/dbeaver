@@ -23,7 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -98,7 +98,7 @@ public class OCIUtils
     }
 
     private static boolean equalsFileName(String file1, String file2) {
-        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
+        if (RuntimeUtils.isWindows()) {
             return file1.equalsIgnoreCase(file2);
         }
         else {
@@ -165,7 +165,7 @@ public class OCIUtils
         }
 
         // find Oracle homes in Windows registry
-        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
+        if (RuntimeUtils.isWindows()) {
             try {
                 if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
                     String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
@@ -193,7 +193,7 @@ public class OCIUtils
     }
 
     public static String readWinRegistry(String oraHome, String name) {
-        if (DBWorkbench.getPlatform().getLocalSystem().isWindows()) {
+        if (RuntimeUtils.isWindows()) {
             try {
                 if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE)) {
                     String[] oracleKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
@@ -361,5 +361,4 @@ public class OCIUtils
         File bin = new File(System.mapLibraryName(CommonUtils.makeDirectoryName(oraHome) + "bin/" + "oci"));
         return root.exists() && !bin.exists();
     }
-
 }

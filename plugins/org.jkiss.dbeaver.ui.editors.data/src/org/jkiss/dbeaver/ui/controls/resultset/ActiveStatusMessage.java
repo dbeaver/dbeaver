@@ -48,7 +48,6 @@ import java.lang.reflect.InvocationTargetException;
  * Active status label
  */
 abstract class ActiveStatusMessage extends Composite {
-
     private static final Log log = Log.getLog(ActiveStatusMessage.class);
 
     private final ResultSetViewer viewer;
@@ -86,7 +85,7 @@ abstract class ActiveStatusMessage extends Composite {
         });
 
         messageText = new Text(this, SWT.READ_ONLY);
-        if (RuntimeUtils.isPlatformWindows()) {
+        if (RuntimeUtils.isWindows()) {
             messageText.setBackground(null);
         } else {
             messageText.setBackground(parent.getBackground());
@@ -135,6 +134,7 @@ abstract class ActiveStatusMessage extends Composite {
     }
 
     protected abstract boolean isActionEnabled();
+
     protected abstract ILoadService<String> createLoadService();
 
     private class LoadVisualizer implements ILoadVisualizer<String> {

@@ -55,10 +55,6 @@ import java.util.regex.Pattern;
 public class GeneralUtils {
     private static final Log log = Log.getLog(GeneralUtils.class);
 
-    private static final boolean IS_MACOS = Platform.getOS().contains("macos");
-    private static final boolean IS_WINDOWS = Platform.getOS().contains("win32");
-    private static final boolean IS_LINUX = Platform.getOS().contains("linux");
-
     public static final String UTF8_ENCODING = StandardCharsets.UTF_8.name();
     public static final String DEFAULT_ENCODING = UTF8_ENCODING;
 
@@ -660,18 +656,6 @@ public class GeneralUtils {
     @NotNull
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
         return new URI(path.replace(" ", "%20"));
-    }
-
-    public static boolean isWindows() {
-        return IS_WINDOWS;
-    }
-
-    public static boolean isMacOS() {
-        return IS_MACOS;
-    }
-
-    public static boolean isLinux() {
-        return IS_LINUX;
     }
 
     /////////////////////////////////////////////////////////////////////////
