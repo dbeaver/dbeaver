@@ -403,11 +403,13 @@ public class DataSourceUtils {
 
     @NotNull
     public static String getDataSourceAddressText(DBPDataSourceContainer dataSourceContainer) {
-        DBPDataSourceProvider dataSourceProvider = dataSourceContainer.getDriver().getDataSourceProvider();
-        if (dataSourceProvider instanceof DBPInformationProvider) {
-            String objectInformation = ((DBPInformationProvider) dataSourceProvider).getObjectInformation(dataSourceContainer, DBPInformationProvider.INFO_TARGET_ADDRESS);
-            if (!CommonUtils.isEmpty(objectInformation)) {
-                return objectInformation;
+        if (dataSourceContainer.getDriver().isCustomEndpointInformation()) {
+            DBPDataSourceProvider dataSourceProvider = dataSourceContainer.getDriver().getDataSourceProvider();
+            if (dataSourceProvider instanceof DBPInformationProvider) {
+                String objectInformation = ((DBPInformationProvider) dataSourceProvider).getObjectInformation(dataSourceContainer, DBPInformationProvider.INFO_TARGET_ADDRESS);
+                if (!CommonUtils.isEmpty(objectInformation)) {
+                    return objectInformation;
+                }
             }
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();

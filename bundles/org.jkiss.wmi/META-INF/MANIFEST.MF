@@ -6,5 +6,6 @@ Bundle-Version: 2.0.145.qualifier
 Bundle-Release-Date: 20210301
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
+Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.wmi.service
 Automatic-Module-Name: org.jkiss.wmi
