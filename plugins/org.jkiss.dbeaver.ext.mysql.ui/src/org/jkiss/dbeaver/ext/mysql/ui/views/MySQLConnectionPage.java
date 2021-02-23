@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -41,7 +41,7 @@ import java.util.TimeZone;
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
+public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
 {
     // disable Server time zone manage - it confuses users and makes very little sense
     // as now we use server timestamp format by default
@@ -220,7 +220,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IComp
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this),

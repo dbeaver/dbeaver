@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.hana.ui.internal.HANAEdition;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -47,7 +47,7 @@ import java.util.Map.Entry;
  *  so we do not have to add checkboxes here.
  *  
  */
-public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
+public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     final static String PROP_DATABASE_NAME = "databaseName";
     final static String PROV_PROP_INSTANCE_NUMBER = "instanceNumber";
@@ -221,7 +221,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements ICompo
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
     }
 

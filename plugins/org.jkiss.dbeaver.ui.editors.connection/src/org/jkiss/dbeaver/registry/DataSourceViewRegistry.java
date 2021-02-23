@@ -63,5 +63,18 @@ public class DataSourceViewRegistry
         }
         return null;
     }
-    
+
+    public List<DataSourceViewDescriptor> getViews(DBPDataSourceProviderDescriptor provider, String targetID)
+    {
+        List<DataSourceViewDescriptor> result = new ArrayList<>();
+        for (DBPDataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
+            for (DataSourceViewDescriptor view : views) {
+                if (view.getDataSources().contains(pd.getId()) && targetID.equals(view.getTargetID())) {
+                    result.add(view);
+                }
+            }
+        }
+        return result;
+    }
+
 }

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * AthenaConnectionPage
  */
-public class AthenaConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
+public class AthenaConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider {
 
     private Combo awsRegionCombo;
     private Text s3LocationText;
@@ -161,7 +161,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{
             driverPropsPage
         };
