@@ -795,6 +795,7 @@
 
         <!-- New connection menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.newConnection">
+            <separator name="additions" visible="false"/>
             <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>
         </menuContribution>
 
