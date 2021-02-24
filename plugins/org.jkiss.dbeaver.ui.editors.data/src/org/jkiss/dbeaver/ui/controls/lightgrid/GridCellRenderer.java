@@ -28,8 +28,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Grid cell renderer
  */
-class GridCellRenderer extends AbstractRenderer
-{
+class GridCellRenderer extends AbstractRenderer {
     private static final int LEFT_MARGIN = 6;
     private static final int RIGHT_MARGIN = 6;
     private static final int TOP_MARGIN = 0;
@@ -127,7 +126,8 @@ class GridCellRenderer extends AbstractRenderer
                         text,
                         bounds.x + (bounds.width - textSize.x) / 2,
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                        true);
+                        isTransparent
+                    );
                     break;
                 }
                 case IGridContentProvider.ALIGN_RIGHT: {
@@ -151,7 +151,8 @@ class GridCellRenderer extends AbstractRenderer
                         text,
                         bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                        true);
+                        isTransparent
+                    );
                     if (useClipping) {
                         gc.setClipping((Rectangle) null);
                     }
@@ -162,7 +163,8 @@ class GridCellRenderer extends AbstractRenderer
                         text,
                         bounds.x + x,
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                        true);
+                        isTransparent
+                    );
                     break;
                 }
             }

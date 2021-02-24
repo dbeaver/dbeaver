@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * Abstract grid renderer
  */
-abstract class AbstractRenderer
-{
+abstract class AbstractRenderer {
+    static final boolean isTransparent = !RuntimeUtils.isMacOS();
+
     protected final LightGrid grid;
 
     protected AbstractRenderer(LightGrid grid) {
@@ -38,5 +40,4 @@ abstract class AbstractRenderer
     {
         return grid.getDisplay();
     }
-
 }
