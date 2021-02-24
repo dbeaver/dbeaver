@@ -119,7 +119,8 @@ class GridRowRenderer extends AbstractRenderer {
             UITextUtils.getShortString(grid.fontMetrics, text, width),
             bounds.x + x + selectionOffset,
             y + selectionOffset,
-                isTransparent);
+            isTransparent
+        );
     }
 
     public int computeHeaderWidth(Object element, int level) {

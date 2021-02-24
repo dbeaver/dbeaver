@@ -126,7 +126,8 @@ class GridCellRenderer extends AbstractRenderer {
                         text,
                         bounds.x + (bounds.width - textSize.x) / 2,
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                            isTransparent);
+                        isTransparent
+                    );
                     break;
                 }
                 case IGridContentProvider.ALIGN_RIGHT: {
@@ -150,7 +151,8 @@ class GridCellRenderer extends AbstractRenderer {
                         text,
                         bounds.x + bounds.width - (textSize.x + RIGHT_MARGIN + imageMargin),
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                            isTransparent);
+                        isTransparent
+                    );
                     if (useClipping) {
                         gc.setClipping((Rectangle) null);
                     }
@@ -161,7 +163,8 @@ class GridCellRenderer extends AbstractRenderer {
                         text,
                         bounds.x + x,
                         bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                            isTransparent);
+                        isTransparent
+                    );
                     break;
                 }
             }
