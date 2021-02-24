@@ -300,10 +300,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     }
                     UIUtils.packColumns(columnsTable);
                     updateColumnSelection();
+                    onAttributesLoad();
                 });
             }
         });
         loadJob.schedule();
+    }
+
+    protected void onAttributesLoad() {
     }
 
     protected boolean isShowHiddenAttributes() {
