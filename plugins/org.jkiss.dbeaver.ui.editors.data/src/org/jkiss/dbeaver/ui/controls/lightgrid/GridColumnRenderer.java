@@ -31,8 +31,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Grid column renderer
  */
-class GridColumnRenderer extends AbstractRenderer
-{
+class GridColumnRenderer extends AbstractRenderer {
     public static final int LEFT_MARGIN = 6;
     public static final int RIGHT_MARGIN = 6;
     public static final int BOTTOM_MARGIN = 6;
@@ -47,8 +46,6 @@ class GridColumnRenderer extends AbstractRenderer
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
-    
-    
 
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
@@ -142,7 +139,7 @@ class GridColumnRenderer extends AbstractRenderer
 //            if (element == grid.getFocusColumnElement()) {
 //                gc.drawLine(bounds.x + x + pushedDrawingOffset, bounds.y + bounds.height - pushedDrawingOffset, bounds.x + bounds.width - RIGHT_MARGIN, bounds.y + bounds.height - BOTTOM_MARGIN);
 //            }
-            gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+            gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
         }
 
         if (sortOrder != SWT.NONE) {
@@ -171,7 +168,7 @@ class GridColumnRenderer extends AbstractRenderer
                 y += TOP_MARGIN + grid.fontMetrics.getHeight();
                 text = UITextUtils.getShortString(grid.fontMetrics, text, width);
                 gc.setFont(grid.normalFont);
-                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
             }
         }
 
