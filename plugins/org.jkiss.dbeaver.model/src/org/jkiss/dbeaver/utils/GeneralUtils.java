@@ -235,7 +235,7 @@ public class GeneralUtils {
                 return value;
             }
         } catch (RuntimeException e) {
-            log.error(e);
+            log.error("Error converting value", e);
             return value;
         }
     }
