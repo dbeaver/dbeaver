@@ -34,13 +34,13 @@
 	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Mock-Data-Generation-in-DBeaver">DBeaver Mock Data Generator</a> when you need to create a huge quantities of realistic sample data for testing purposes and want to avoid tedious and time-consuming work of entering test data by hand.
 		<br/>Note: this tool is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
 	</tip>
-	<tip>To customize the menu bar and the list of menu items displayed go to Window -> Customize Perspective ->Menu Visibility tab.</tip>
+	<tip>To customize the menu bar and the list of menu items displayed go to Window -> Customize Perspective -> Menu Visibility tab.</tip>
 	<tip>To customize the toolbar go to Window -> Customize Perspective -> Toolbar Visibility tab.</tip>
 	<tip>To execute the selected SQL expression and print the results use the following shortcut: <b>Ctrl+Alt+'</b>.</tip>
 	<tip>To see the execution plan for the current query, use the following shortcut: <b>Ctrl+Shift+E</b>.</tip>
 	<tip>To execute queries of current script simultaneously and display the results in separate tabs, use the following shortcut: <b>Ctrl+Alt+Shift+X</b>.</tip>
-	<tip>To jump to the previous query in the current SQL script,use the following shortcut: <b>Alt+Up</b>.</tip>
-	<tip>To jump to the next query in the current SQL script,use the following shortcut: <b>Alt+Down</b>.</tip>
+	<tip>To jump to the previous query in the current SQL script, use the following shortcut: <b>Alt+Up</b>.</tip>
+	<tip>To jump to the next query in the current SQL script, use the following shortcut: <b>Alt+Down</b>.</tip>
 	<tip>If you are not much familiar with SQL scripting, use <a href="https://github.com/dbeaver/dbeaver/wiki/Visual-Query-Builder">Visual Query Builder</a> tool.
 		<br/>Note: this tool is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
 	</tip>
