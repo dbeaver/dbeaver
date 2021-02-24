@@ -269,6 +269,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
                         if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
                             attrList.add(attr);
+                            // Preload node - required later to display its icon
+                            DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, attr, true);
                         }
                     }
                 } catch (DBException e) {
