@@ -29,6 +29,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -139,7 +140,11 @@ public class NavigatorUtils {
         addContextMenu(workbenchSite, viewer, viewer);
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, ISelectionProvider selectionProvider) {
+    public static void addContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull ISelectionProvider selectionProvider)
+    {
         MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
             ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
@@ -148,11 +153,19 @@ public class NavigatorUtils {
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener) {
+    public static MenuManager createContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final IMenuListener menuListener)
+    {
         return createContextMenu(workbenchSite, viewer, viewer, menuListener);
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final ISelectionProvider selectionProvider, final IMenuListener menuListener)
+    public static MenuManager createContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final ISelectionProvider selectionProvider,
+        @Nullable final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -212,7 +225,7 @@ public class NavigatorUtils {
         return menuMgr;
     }
 
-    public static void addStandardMenuItem(IWorkbenchSite workbenchSite, IMenuManager manager, ISelectionProvider selectionProvider) {
+    public static void addStandardMenuItem(@Nullable IWorkbenchSite workbenchSite, @NotNull IMenuManager manager, @NotNull ISelectionProvider selectionProvider) {
         final ISelection selection = selectionProvider.getSelection();
         final DBNNode selectedNode = getSelectedNode(selectionProvider);
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
