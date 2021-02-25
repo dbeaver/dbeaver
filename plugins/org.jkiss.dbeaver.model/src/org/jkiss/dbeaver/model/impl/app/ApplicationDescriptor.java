@@ -30,6 +30,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private final String description;
     private final String parentId;
     private final String[] umbrellaProductIds;
+    private boolean serverApplication;
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
@@ -45,6 +46,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         } else {
             this.umbrellaProductIds = new String[0];
         }
+        this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
     }
 
     public String getId() {
@@ -70,6 +72,10 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     public String[] getUmbrellaProductIds() {
         return umbrellaProductIds;
+    }
+
+    public boolean isServerApplication() {
+        return serverApplication;
     }
 
     boolean isFinalApplication() {
