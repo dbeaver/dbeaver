@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.navigator;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
@@ -34,4 +35,6 @@ public interface INavigatorItemRenderer {
     void showDetailsToolTip(DBNNode node, Tree tree, Event event);
 
     void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction);
+
+    void handleHover(DBNNode node, Tree tree, TreeItem item, Event event);
 }
