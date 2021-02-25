@@ -19,6 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
@@ -131,10 +132,12 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         this.entityVisuals.clear();
     }
 
+    @Nullable
     public NodeVisualInfo getVisualInfo(ERDNote erdObject) {
         return getVisualInfo(erdObject, false);
     }
 
+    @Nullable
     public NodeVisualInfo getVisualInfo(ERDNote erdObject, boolean create) {
         NodeVisualInfo visualInfo = noteVisuals.get(erdObject);
         if (visualInfo == null && create) {
@@ -144,10 +147,12 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         return visualInfo;
     }
 
+    @Nullable
     public NodeVisualInfo getVisualInfo(DBSEntity entity) {
         return getVisualInfo(entity, false);
     }
 
+    @Nullable
     @Override
     public NodeVisualInfo getVisualInfo(DBSEntity entity, boolean create) {
         NodeVisualInfo visualInfo = entityVisuals.get(entity);
@@ -191,5 +196,4 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         });
         return children;
     }
-
 }
