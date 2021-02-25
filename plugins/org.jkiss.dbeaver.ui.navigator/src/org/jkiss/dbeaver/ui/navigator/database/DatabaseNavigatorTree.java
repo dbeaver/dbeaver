@@ -239,12 +239,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (item != null) {
                 Object element = item.getData();
                 if (element instanceof DBNNode) {
-                    tree.setEnabled(false);
-                    try {
-                        itemRenderer.performAction((DBNNode) element, tree, event, defaultAction);
-                    } finally {
-                        tree.setEnabled(true);
-                    }
+                    itemRenderer.performAction((DBNNode) element, tree, event, defaultAction);
                 }
             }
         }
