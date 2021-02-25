@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -2668,18 +2669,24 @@ public abstract class LightGrid extends Canvas {
         EventSource eventSource)
     {
         boolean shift = (stateMask & SWT.MOD2) == SWT.MOD2;
-        boolean ctrl = (stateMask & SWT.MOD1) == SWT.MOD1;
+        boolean mod1 = (stateMask & SWT.MOD1) == SWT.MOD1;
         if (eventSource == EventSource.KEYBOARD) {
-            ctrl = false;
+            mod1 = false;
         }
-
         if (!shift) {
             shiftSelectionAnchorColumn = null;
             shiftSelectionAnchorItem = -1;
         }
 
         List<GridPos> oldSelection = null;
-        if (!shift && !ctrl) {
+        if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
+            if (selectedCells.containsAll(newCells)) {
+                return null;
+            }
+            oldSelection = new ArrayList<>(selectedCells);
+            selectedCells.clear();
+            selectedCells.addAll(newCells);
+        } else if (!shift && !mod1) {
             if (newCells.size() == 1 &&
                 newCells.size() == selectedCells.size() &&
                 newCells.get(0).equals(selectedCells.iterator().next()))
@@ -2704,7 +2711,7 @@ public abstract class LightGrid extends Canvas {
             shiftSelectionAnchorColumn = getColumn(newCell.col);
             shiftSelectionAnchorItem = newCell.row;
 
-            if (ctrl) {
+            if (mod1) {
                 selectedCells.clear();
                 selectedCells.addAll(selectedCellsBeforeRangeSelect);
             } else {
