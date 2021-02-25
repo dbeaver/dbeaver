@@ -59,13 +59,17 @@ public interface ERDContainerDecorated extends ERDContainer {
         public NodeVisualInfo(EntityPart part) {
             init(part);
             NodeVisualInfo visualInfo = part.getDiagram().getVisualInfo(part.getEntity().getObject());
-            this.zOrder = visualInfo.zOrder;
+            if (visualInfo != null) {
+                this.zOrder = visualInfo.zOrder;
+            }
         }
 
         public NodeVisualInfo(NotePart part) {
             init(part);
             NodeVisualInfo visualInfo = part.getDiagram().getVisualInfo(part.getNote());
-            this.zOrder = visualInfo.zOrder;
+            if (visualInfo != null) {
+                this.zOrder = visualInfo.zOrder;
+            }
         }
     }
 
