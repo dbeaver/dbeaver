@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -73,15 +72,15 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         value = (DBDCursor) valueController.getValue();
 
         if (value != null) {
-            DBPPreferenceStore globalPreferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-            if (!globalPreferenceStore.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN)) {
+            DBPPreferenceStore preferenceStore = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore();
+            if (!preferenceStore.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                         getShell(),
                         ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID)
                 {
-                    globalPreferenceStore.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, true);
+                    preferenceStore.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, true);
                     if (valueController.getValueSite().getPart() instanceof IResultSetContainer) {
                         IResultSetController rsv = ((IResultSetContainer) valueController.getValueSite().getPart()).getResultSetController();
                         if (rsv != null) {
