@@ -2161,6 +2161,10 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        if (curQueryProcessor == null) {
+            createQueryProcessor(true, true);
+        }
+
         return curQueryProcessor.processQueries(
             scriptContext,
             queries,
