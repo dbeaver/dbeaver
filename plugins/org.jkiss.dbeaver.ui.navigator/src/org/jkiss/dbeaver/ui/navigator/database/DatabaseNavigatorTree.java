@@ -162,6 +162,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 tree.addListener(SWT.MouseEnter, mouseListener);
                 tree.addListener(SWT.MouseExit, mouseListener);
             }
+            {
+                Listener mouseListener = e -> {
+                    TreeItem item = tree.getItem(new Point(e.x, e.y));
+                    if (item != null) {
+                        Object element = item.getData();
+                        if (element instanceof DBNNode) {
+                            itemRenderer.handleHover((DBNNode) element, tree, item, e);
+                        }
+                    }
+                };
+                tree.addListener(SWT.MouseHover, mouseListener);
+                tree.addListener(SWT.MouseMove, mouseListener);
+                tree.addListener(SWT.MouseEnter, mouseListener);
+                tree.addListener(SWT.MouseExit, mouseListener);
+            }
             tree.addListener(SWT.MouseDown, event -> onItemMouseDown(tree, event, false));
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
@@ -224,7 +239,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (item != null) {
                 Object element = item.getData();
                 if (element instanceof DBNNode) {
-                    itemRenderer.performAction((DBNNode) element, tree, event, defaultAction);
+                    tree.setEnabled(false);
+                    try {
+                        itemRenderer.performAction((DBNNode) element, tree, event, defaultAction);
+                    } finally {
+                        tree.setEnabled(true);
+                    }
                 }
             }
         }
