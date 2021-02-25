@@ -884,7 +884,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null && commandContext.isDirty()) {
                 // Just clear command context. Do not undo because object state was already refreshed
-                commandContext.resetChanges(true);
+                commandContext.resetChanges(false);
             }
         }
 
