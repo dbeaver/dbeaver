@@ -224,9 +224,11 @@ public final class DBStructUtils {
     }
 
     public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
-        if (typedObject instanceof DBSObject) {
+        if (typedObject instanceof DBSObject && objectContainer != null) {
             // If source and target datasources have the same type then just return the same type name
-            if (((DBSObject) typedObject).getDataSource().getClass() == objectContainer.getDataSource().getClass() && addModifiers) {
+            DBPDataSource srcDataSource = ((DBSObject) typedObject).getDataSource();
+            DBPDataSource tgtDataSource = objectContainer.getDataSource();
+            if (srcDataSource != null && tgtDataSource != null && srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
                 return typedObject.getFullTypeName();
             }
         }
@@ -310,8 +312,8 @@ public final class DBStructUtils {
         }
 
         // Get type modifiers from target datasource
-        if (addModifiers && objectContainer instanceof DBPDataSource) {
-            SQLDialect dialect = ((DBPDataSource) objectContainer).getSQLDialect();
+        if (addModifiers && objectContainer != null) {
+            SQLDialect dialect = objectContainer.getDataSource().getSQLDialect();
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, typedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
