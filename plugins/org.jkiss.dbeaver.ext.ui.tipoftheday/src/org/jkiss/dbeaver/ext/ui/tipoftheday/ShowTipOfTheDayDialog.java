@@ -43,15 +43,16 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ShowTipOfTheDayDialog extends BaseDialog {
-
     private static final Log log = Log.getLog(ShowTipOfTheDayDialog.class);
 
     private static final String DIALOG_ID = "DBeaver." + ShowTipOfTheDayDialog.class.getSimpleName();
 
-    private java.util.List<String> tips = new ArrayList<>();
+    private final List<String> tips = new ArrayList<>();
+    private Composite tipArea;
     private boolean displayShowOnStartup;
     private boolean showOnStartup;
     private FormText formText;
@@ -73,8 +74,9 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
 
     @Override
     protected Control createContents(Composite parent) {
-        Composite contents = (Composite) super.createContents(parent);
-
+        //[dbeaver/dbeaver#11526]
+        Control contents = super.createContents(parent);
+        UIUtils.asyncExec(() -> tipArea.layout());
         return contents;
     }
 
@@ -101,7 +103,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
 
         Composite dialogArea = super.createDialogArea(parent);
 
-        Composite tipArea = new Composite(dialogArea, SWT.BORDER);
+        tipArea = new Composite(dialogArea, SWT.BORDER);
         tipArea.setLayoutData(new GridData(GridData.FILL_BOTH));
         GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
@@ -233,5 +235,4 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     public void setShowOnStartup(boolean showOnStartup) {
         this.showOnStartup = showOnStartup;
     }
-
 }
