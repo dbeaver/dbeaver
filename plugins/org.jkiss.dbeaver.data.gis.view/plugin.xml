@@ -34,12 +34,6 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.leaflet.tiles">
-        <tiles id="mapbox" label="MapBox" layersDefinition="'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-            maxZoom: 18,
-            attribution: 'Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/&quot; target=&quot;_new&quot;>OpenStreetMap&lt;/a> contributors ' +
-            '&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0/&quot; target=&quot;_new&quot;>CC-BY-SA&lt;/a>, ' +
-            'Imagery &lt;a href=&quot;https://www.mapbox.com/&quot; target=&quot;_new&quot;>Mapbox&lt;/a>',
-            id: 'mapbox/streets-v11'}"/>
         <tiles id="osm" label="OpenStreetMap" layersDefinition="'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors',
@@ -49,6 +43,12 @@
             attribution: 'Map data: &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap&lt;/a> contributors,' +
                 ' &lt;a href=&quot;http://viewfinderpanoramas.org&quot;>SRTM&lt;/a> | Map style: &amp;copy; &lt;a href=&quot;https://opentopomap.org&quot;>OpenTopoMap&lt;/a> (&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/3.0/&quot;>CC-BY-SA&lt;/a>)',
             id: 'opentopomap.main'}"/>
+        <tiles id="mapbox" label="MapBox" layersDefinition="'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 18,
+            attribution: 'Map data &amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/&quot; target=&quot;_new&quot;>OpenStreetMap&lt;/a> contributors ' +
+            '&lt;a href=&quot;https://creativecommons.org/licenses/by-sa/2.0/&quot; target=&quot;_new&quot;>CC-BY-SA&lt;/a>, ' +
+            'Imagery &lt;a href=&quot;https://www.mapbox.com/&quot; target=&quot;_new&quot;>Mapbox&lt;/a>',
+            id: 'mapbox/streets-v11'}"/>
         <tiles id="arcgis.sat" label="ArcGis cosmo" layersDefinition="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 			attribution: 'Tiles &amp;copy; Esri &amp;mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
             id: 'arcgis.sat'}"/>
