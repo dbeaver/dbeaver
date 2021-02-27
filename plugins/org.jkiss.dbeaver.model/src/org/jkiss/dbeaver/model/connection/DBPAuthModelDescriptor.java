@@ -45,7 +45,7 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     // Auth model which replaced this one. Usually null
     @Nullable
-    DBPAuthModelDescriptor getReplacedBy();
+    DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver);
 
     @NotNull
     DBAAuthModel<?> getInstance();
