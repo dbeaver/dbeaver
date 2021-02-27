@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverLibraryAbstract;
-import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
+import org.jkiss.dbeaver.registry.driver.*;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -436,8 +433,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             libTable.getControl().addListener(SWT.Selection, event -> changeLibSelection());
             libTable.addDoubleClickListener(event -> {
-                if (getSelectedLibrary() instanceof DriverLibraryMavenArtifact) {
+                final DriverLibraryAbstract selectedLibrary = getSelectedLibrary();
+                if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
                     editMavenArtifact();
+                } else if (selectedLibrary instanceof DriverLibraryLocal) {
+                    File localFile = selectedLibrary.getLocalFile();
+                    if (!localFile.isDirectory()) {
+                        localFile = localFile.getParentFile();
+                    }
+                    UIUtils.launchProgram(localFile.getAbsolutePath());
                 }
             });
 

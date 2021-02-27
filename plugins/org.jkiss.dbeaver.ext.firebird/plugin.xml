@@ -40,7 +40,7 @@
                     <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[4.0.0.java8]" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/jaybird"/>
+                    <file type="jar" path="drivers/jaybird" bundle="drivers.firebird"/>
 
                     <property name="encoding" value="UTF8"/>
 
