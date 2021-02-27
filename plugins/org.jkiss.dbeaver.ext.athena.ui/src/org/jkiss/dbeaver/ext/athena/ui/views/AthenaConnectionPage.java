@@ -114,7 +114,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         if (s3LocationText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = "s3://"; //$NON-NLS-1$
+                databaseName = "s3://athena/output"; //$NON-NLS-1$
             }
             s3LocationText.setText(databaseName);
         }
