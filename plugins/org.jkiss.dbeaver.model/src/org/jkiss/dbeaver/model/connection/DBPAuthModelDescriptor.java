@@ -43,8 +43,12 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
 
     boolean isApplicableTo(DBPDriver driver);
 
+    // Auth model which replaced this one. Usually null
+    @Nullable
+    DBPAuthModelDescriptor getReplacedBy();
+
     @NotNull
-    DBAAuthModel getInstance();
+    DBAAuthModel<?> getInstance();
 
     @NotNull
     DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource, @Nullable DBPConnectionConfiguration configuration);
