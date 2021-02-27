@@ -43,10 +43,9 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
     private Combo awsRegionCombo;
     private Text s3LocationText;
-    private Text accessKeyText;
 
-    private static ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
-    private DriverPropertiesDialogPage driverPropsPage;
+    private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
+    private final DriverPropertiesDialogPage driverPropsPage;
 
     public AthenaConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
