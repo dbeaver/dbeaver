@@ -124,14 +124,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
 
-        DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
+        DatabaseNavigatorLabelProvider labelProvider = createLabelProvider(this);
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
-
-        if (false) {
-            // We don't need it
-            tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
-        }
+        treeViewer.setContentProvider(createContentProvider(showRoot));
 
         if (rootNode != null) {
             setInput(rootNode);
@@ -181,6 +176,16 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
         }
+    }
+
+    @NotNull
+    protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
+        return new DatabaseNavigatorContentProvider(this, showRoot);
+    }
+
+    @NotNull
+    protected DatabaseNavigatorLabelProvider createLabelProvider(DatabaseNavigatorTree tree) {
+        return new DatabaseNavigatorLabelProvider(tree.treeViewer);
     }
 
     public boolean isFilterShowConnected() {
