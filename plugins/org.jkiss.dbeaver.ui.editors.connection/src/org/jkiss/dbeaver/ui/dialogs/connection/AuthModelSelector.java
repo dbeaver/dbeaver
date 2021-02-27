@@ -102,12 +102,14 @@ public class AuthModelSelector extends Composite {
             for (DBPAuthModelDescriptor amd : allAuthModels) {
                 if (amd.getId().equals(defaultAuthModelId)) {
                     selectedAuthModel = amd;
+                    dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
                     break;
                 }
             }
             if (selectedAuthModel == null) {
                 // First one
                 selectedAuthModel = allAuthModels.get(0);
+                dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
 
@@ -142,6 +144,7 @@ public class AuthModelSelector extends Composite {
                         return;
                     }
                     selectedAuthModel = newAuthModel;
+                    activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
                     showAuthModelSettings();
                 }
                 modelConfigPlaceholder.setFocus();
