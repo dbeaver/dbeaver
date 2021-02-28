@@ -126,29 +126,6 @@
                 </configuration>
             </plugin>
 
-<!--
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArgs>
-                        <arg>-XDignore.symbol.file=true</arg>
-                    </compilerArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>compiletests</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
--->
-
         </plugins>
 
     </build>
@@ -167,6 +144,47 @@
                 <module>product/standalone</module>
                 <module>product/repositories</module>
             </modules>
+        </profile>
+
+        <!-- Enables build for all platforms including ARM -->
+        <profile>
+            <id>all-platforms</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments>
+                                <environment>
+                                    <os>win32</os>
+                                    <ws>win32</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                                <environment>
+                                    <os>linux</os>
+                                    <ws>gtk</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                                <environment>
+                                    <os>linux</os>
+                                    <ws>gtk</ws>
+                                    <arch>aarch64</arch>
+                                </environment>
+                                <environment>
+                                    <os>macosx</os>
+                                    <ws>cocoa</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
         <!-- Profile for jars sign -->
