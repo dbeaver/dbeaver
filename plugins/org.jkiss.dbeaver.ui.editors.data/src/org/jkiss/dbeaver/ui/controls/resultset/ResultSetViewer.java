@@ -2352,8 +2352,13 @@ public class ResultSetViewer extends Viewer
             DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
             DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
             if (constraint != null) {
-                constraint.setOperator(DBCLogicalOperator.IN);
-                constraint.setValue(value);
+                if (!ArrayUtils.isEmpty((Object[]) value)) {
+                    constraint.setOperator(DBCLogicalOperator.IN);
+                    constraint.setValue(value);
+                } else {
+                    constraint.setOperator(null);
+                    constraint.setValue(null);
+                }
                 setDataFilter(filter, true);
             }
         }
