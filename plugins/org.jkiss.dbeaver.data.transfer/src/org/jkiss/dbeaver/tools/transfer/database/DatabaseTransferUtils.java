@@ -345,7 +345,7 @@ public class DatabaseTransferUtils {
             return DATA_TYPE_UNKNOWN;
         }
         try {
-            Integer.parseInt(value);
+            Long.parseLong(value);
             return DATA_TYPE_INTEGER;
         } catch (NumberFormatException ignored) {
         }

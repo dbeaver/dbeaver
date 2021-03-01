@@ -272,18 +272,28 @@ public final class DBStructUtils {
                             }
                         }
                         if (targetType == null) {
-                            if (typeNameLower.contains("float")
-                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6)) {
+                            if (typeNameLower.contains("float") ||
+                                typeNameLower.contains("real") ||
+                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6))
+                            {
                                 for (String psn : possibleTypes.keySet()) {
-                                    if (psn.contains("float")) {
+                                    if (psn.contains("float") || psn.contains("real")) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
                                 }
-                            } else if (typeNameLower.contains("double")
-                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15)) {
+                            } else if (typeNameLower.contains("double") ||
+                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15))
+                            {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("double")) {
+                                        targetType = possibleTypes.get(psn);
+                                        break;
+                                    }
+                                }
+                            } else if (typeNameLower.contains("int")) {
+                                for (String psn : possibleTypes.keySet()) {
+                                    if (psn.contains("int")) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
