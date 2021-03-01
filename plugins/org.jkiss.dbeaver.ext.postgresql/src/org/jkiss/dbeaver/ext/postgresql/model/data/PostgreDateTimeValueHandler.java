@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -34,17 +35,28 @@ import java.sql.Types;
  * PostgreDateTimeValueHandler.
  */
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
-
-
     public PostgreDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
     }
 
     @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
-        Object value = super.fetchValueObject(session, resultSet, type, index);
-        //if (value instanceof )
-        return value;
+        if (formatSettings.isUseNativeDateTimeFormat() || !(resultSet instanceof JDBCResultSet)) {
+            return super.fetchValueObject(session, resultSet, type, index);
+        }
+        try {
+            JDBCResultSet jdbcResultSet = (JDBCResultSet) resultSet;
+            String str = jdbcResultSet.getString(index + 1);
+            if (str.equals("infinity")) {
+                return "+Infinity";
+            }
+            if (str.equals("-infinity")) {
+                return "-Infinity";
+            }
+        } catch (SQLException e) {
+            //ignore
+        }
+        return super.fetchValueObject(session, resultSet, type, index);
     }
 
     @Override
@@ -60,5 +72,4 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         super.bindValueObject(session, statement, type, index, value);
     }
-
 }
