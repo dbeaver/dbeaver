@@ -40,12 +40,10 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ResourceBundle;
 
 /**
@@ -114,8 +112,9 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
 
             final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-            IOUtils.writeFileFromString(localFile, diagramState);
-
+            try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(localFile), GeneralUtils.UTF8_CHARSET)) {
+                osw.write(diagramState);
+            }
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save diagram", null, e);
@@ -183,8 +182,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         entityDiagram.setLayoutManualDesired(true);
         diagramPart.setModel(entityDiagram);
 
-        try (final InputStream fileContent = new FileInputStream(localFile)) {
-            DiagramLoader.load(progressMonitor, project, diagramPart, fileContent);
+        try (final InputStreamReader isr = new InputStreamReader(new FileInputStream(localFile), GeneralUtils.UTF8_CHARSET)) {
+            DiagramLoader.load(progressMonitor, project, diagramPart, isr);
         } catch (Exception e) {
             log.error("Error loading ER diagram from '" + localFile.getName() + "'", e);
         }
