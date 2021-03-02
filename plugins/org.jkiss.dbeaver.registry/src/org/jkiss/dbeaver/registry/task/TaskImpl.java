@@ -235,8 +235,13 @@ public class TaskImpl implements DBTTask, DBPNamedObject2, DBPObjectWithDescript
             return new RunStatistics();
         }
         try (FileReader reader = new FileReader(metaFile)) {
-            return gson.fromJson(reader, RunStatistics.class);
-        } catch (IOException e) {
+            RunStatistics statistics = gson.fromJson(reader, RunStatistics.class);
+            if (statistics == null) {
+                log.error("Null task run statistics returned");
+                return new RunStatistics();
+            }
+            return statistics;
+        } catch (Exception e) {
             log.error("Error reading task run statistics", e);
             return new RunStatistics();
         }
