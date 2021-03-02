@@ -447,7 +447,7 @@
                         description="AWS Redshift JDBC driver"
                         webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
-                        categories="sql,analytic,bigdata">
+                        categories="sql,analytic,bigdata,aws">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
                     <!-- Drivers after 1.2.45 seems to be broken -->
