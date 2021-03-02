@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -79,26 +80,26 @@ public class DBNUtils {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
-        List<DBNNode> filtered = null;
+        DBNNode[] result;
         if (forTree) {
+            List<DBNNode> filtered = new ArrayList<>();
             for (int i = 0; i < children.length; i++) {
                 DBNNode node = children[i];
+                if (node instanceof DBPHiddenObject && ((DBPHiddenObject) node).isHidden()) {
+                    continue;
+                }
                 if (node instanceof DBNDatabaseNode) {
                     DBNDatabaseNode dbNode = (DBNDatabaseNode) node;
                     if (dbNode.getMeta() != null && !dbNode.getMeta().isNavigable()) {
-                        if (filtered == null) {
-                            filtered = new ArrayList<>(children.length);
-                            for (int k = 0; k < i; k++) {
-                                filtered.add(children[k]);
-                            }
-                        }
+                        continue;
                     }
-                } else if (filtered != null) {
-                    filtered.add(node);
                 }
+                filtered.add(node);
             }
+            result = filtered.toArray(new DBNNode[0]);
+        } else {
+            result = children;
         }
-        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[0]);
         sortNodes(result);
         return result;
     }
