@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -149,6 +151,10 @@ public class ERDUtils
             if (entities != null) {
                 Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
                 DBSObjectFilter objectFilter = objectContainer.getDataSource().getContainer().getObjectFilter(childType, objectContainer, true);
+                boolean showSystemObjects = true;
+                if (root instanceof DBPDataSource) {
+                    showSystemObjects = ((DBPDataSource) root).getContainer().getNavigatorSettings().isShowSystemObjects();
+                }
 
                 for (DBSObject entity : entities) {
                     if (entity instanceof DBSEntity) {
@@ -157,6 +163,10 @@ public class ERDUtils
                         }
 
                         final DBSEntity entity1 = (DBSEntity) entity;
+
+                        if (!showSystemObjects && entity1 instanceof DBPSystemObject && ((DBPSystemObject) entity1).isSystem()) {
+                            continue;
+                        }
 
                         if (entity1.getEntityType() == DBSEntityType.TABLE ||
                             entity1.getEntityType() == DBSEntityType.CLASS ||
