@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -157,6 +158,11 @@ public class ERDUtils
                         }
 
                         final DBSEntity entity1 = (DBSEntity) entity;
+
+                        boolean showSystemObjects = entity1.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
+                        if (!showSystemObjects && entity1 instanceof DBPSystemObject && ((DBPSystemObject) entity1).isSystem()) {
+                            continue;
+                        }
 
                         if (entity1.getEntityType() == DBSEntityType.TABLE ||
                             entity1.getEntityType() == DBSEntityType.CLASS ||
