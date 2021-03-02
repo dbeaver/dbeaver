@@ -149,8 +149,8 @@
         </handler>
         <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPrint">
             <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
                 </with>
             </activeWhen>
         </handler>
