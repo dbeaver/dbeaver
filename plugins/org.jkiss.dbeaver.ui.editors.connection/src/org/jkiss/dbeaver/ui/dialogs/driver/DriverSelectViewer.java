@@ -305,7 +305,7 @@ public class DriverSelectViewer extends Viewer {
 
         selectorComposite.setRedraw(false);
         try {
-            if (forceViewType == SelectorViewType.tree || getCurrentSelectorViewType() == SelectorViewType.tree) {
+            if (forceViewType == SelectorViewType.tree || (forceViewType == null && getCurrentSelectorViewType() == SelectorViewType.tree)) {
                 if (forceViewType == null) {
                     switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
                     switchItem.setText(UIConnectionMessages.viewer_selector_control_text_gallery);
