@@ -35,6 +35,8 @@ import java.util.Properties;
  */
 public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative {
 
+    public static final String ID = "oracle_native";
+
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         String userName = configuration.getUserName();
