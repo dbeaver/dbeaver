@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
  * MySQL constants
  */
 public class MySQLConstants {
-
     public static final int DEFAULT_PORT = 3306;
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_USER = "root";
@@ -217,6 +216,8 @@ public class MySQLConstants {
 
     public static final String BIN_FOLDER = "bin";
     public static final String ENV_VAR_MYSQL_PWD = "MYSQL_PWD";
+
+    public static final String FLAG_VERSION = "-V";
 
     public static final String EXTRA_INFO_VIRTUAL_GENERATED = "VIRTUAL GENERATED";
 }

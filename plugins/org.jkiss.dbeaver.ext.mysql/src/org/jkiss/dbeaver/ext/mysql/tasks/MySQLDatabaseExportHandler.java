@@ -4,7 +4,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -220,7 +219,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     private static boolean supportsColumnStatistics(@NotNull String mysqldumpPath) {
         String fullVersion;
         try {
-            fullVersion = RuntimeUtils.executeProcess(mysqldumpPath, MySQLUtils.getVersionFlag());
+            fullVersion = RuntimeUtils.executeProcess(mysqldumpPath, MySQLConstants.FLAG_VERSION);
         } catch (DBException e) {
             return false;
         }
