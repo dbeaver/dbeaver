@@ -61,4 +61,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
         final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         return setting != null && "off".equals(setting.getValue());
     }
+
+    @Override
+    public boolean needToTurnOffPreparedStatements() {
+        return true;
+    }
 }
