@@ -4,6 +4,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -25,6 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExportSettings, DBSObject, MySQLDatabaseExportInfo> {
+    private static final String DISTRIB = "Distrib ";
+    private static final String VER = "Ver ";
+
     @Override
     public Collection<MySQLDatabaseExportInfo> getRunInfo(MySQLExportSettings settings) {
         return settings.getExportObjects();
@@ -84,7 +88,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 cmd.add("--single-transaction"); //$NON-NLS-1$
                 break;
         }
-        if (settings.getMysqlDumpMajorVersion() >= 8 && !arg.getDatabase().getDataSource().supportsColumnStatistics()) {
+        if (supportsColumnStatistics(dumpPath) && !arg.getDatabase().getDataSource().supportsColumnStatistics()) {
             cmd.add("--column-statistics=0");
         }
         if (settings.isNoCreateStatements()) {
@@ -211,5 +215,30 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         private String filterLine(@NotNull String line) {
             return line;
         }
+    }
+
+    private static boolean supportsColumnStatistics(@NotNull String mysqldumpPath) {
+        String fullVersion;
+        try {
+            fullVersion = RuntimeUtils.executeProcess(mysqldumpPath, MySQLUtils.getVersionFlag());
+        } catch (DBException e) {
+            return false;
+        }
+        if (fullVersion == null || fullVersion.contains("MariaDB")) {
+            return false;
+        }
+        int fromIdx = fullVersion.indexOf(DISTRIB);
+        if (fromIdx == -1) {
+            fromIdx = fullVersion.indexOf(VER);
+            if (fromIdx == -1) {
+                return false;
+            }
+            fromIdx += VER.length();
+        } else {
+            fromIdx += DISTRIB.length();
+        }
+        int toIdx = fullVersion.indexOf(".", fromIdx);
+        int majorVersion = CommonUtils.toInt(fullVersion.substring(fromIdx, toIdx));
+        return majorVersion >= 8;
     }
 }
