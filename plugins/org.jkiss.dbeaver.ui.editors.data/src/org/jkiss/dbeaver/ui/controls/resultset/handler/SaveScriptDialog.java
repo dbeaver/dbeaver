@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveReport;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -57,7 +58,7 @@ class SaveScriptDialog extends BaseDialog {
     private String scriptText;
 
     SaveScriptDialog(ResultSetViewer viewer, ResultSetSaveReport saveReport) {
-        super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
+        super(viewer.getControl().getShell(), ResultSetMessages.dialog_save_script_title, UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
         this.saveSettings = new ResultSetSaveSettings();
@@ -120,25 +121,28 @@ class SaveScriptDialog extends BaseDialog {
         gd.grabExcessHorizontalSpace = true;
         settingsComposite.setLayoutData(gd);
 
-        Button useFQNamesCheck = UIUtils.createCheckbox(settingsComposite, "Use fully qualified names", "", settings.isUseFullyQualifiedNames(), 1);
-        Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
-            "Delete rows from all tables referencing this table by foreign keys", settings.isDeleteCascade(), 1);
-        Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
-            "Delete cascade recursively (deep references)", settings.isDeepCascade(), 1);
+        Button useFQNamesCheck = UIUtils.createCheckbox(settingsComposite,
+            ResultSetMessages.dialog_save_script_button_use_qualified_names,
+            ResultSetMessages.dialog_save_script_button_use_qualified_names_tip, settings.isUseFullyQualifiedNames(), 1);
+        useFQNamesCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                settings.setUseFullyQualifiedNames(useFQNamesCheck.getSelection());
+                settingsRefreshHandler.run();
+            }
+        });
+
+        Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite,
+            ResultSetMessages.dialog_save_script_button_delete_cascade,
+            ResultSetMessages.dialog_save_script_button_delete_cascade_tip, settings.isDeleteCascade(), 1);
+        Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite,
+            ResultSetMessages.dialog_save_script_button_delete_deep_cascade,
+            ResultSetMessages.dialog_save_script_button_delete_deep_cascade_tip, settings.isDeepCascade(), 1);
 
         if (!enableControls) {
-            useFQNamesCheck.setEnabled(false);
             deleteCascadeCheck.setEnabled(false);
             deleteDeepCascadeCheck.setEnabled(false);
         } else {
-            useFQNamesCheck.setEnabled(true);
-            useFQNamesCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setUseFullyQualifiedNames(useFQNamesCheck.getSelection());
-                    settingsRefreshHandler.run();
-                }
-            });
             deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -183,7 +187,7 @@ class SaveScriptDialog extends BaseDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        Button persistButton = createButton(parent, IDialogConstants.OK_ID, "Persist", false);
+        Button persistButton = createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_persist, false);
         ((GridData) persistButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
 
         Label spacer = new Label(parent, SWT.NONE);
@@ -194,7 +198,7 @@ class SaveScriptDialog extends BaseDialog {
         ((GridLayout) parent.getLayout()).numColumns++;
         ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
 
-        createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+        createButton(parent, IDialogConstants.DETAILS_ID, ResultSetMessages.dialog_save_script_button_bar_button_copy, false);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, true);
     }
 
