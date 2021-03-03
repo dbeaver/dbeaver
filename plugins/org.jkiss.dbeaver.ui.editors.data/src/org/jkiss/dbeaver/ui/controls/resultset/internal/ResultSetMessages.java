@@ -205,6 +205,16 @@ public class ResultSetMessages extends NLS {
     public static String dialog_data_format_profiles_error_title;
     public static String dialog_data_format_profiles_title;
 
+    public static String dialog_save_script_title;
+    public static String dialog_save_script_button_use_qualified_names;
+    public static String dialog_save_script_button_use_qualified_names_tip;
+    public static String dialog_save_script_button_delete_cascade;
+    public static String dialog_save_script_button_delete_cascade_tip;
+    public static String dialog_save_script_button_delete_deep_cascade;
+    public static String dialog_save_script_button_delete_deep_cascade_tip;
+    public static String dialog_save_script_button_bar_button_persist;
+    public static String dialog_save_script_button_bar_button_copy;
+
     //Preference/Properties
     // ResultSetsMain
     public static String pref_page_database_resultsets_label_filter_force_subselect;
