@@ -133,4 +133,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsPartitions() {
         return true;
     }
+
+    @Override
+    public boolean needToTurnOffPreparedStatements() {
+        return true;
+    }
 }
