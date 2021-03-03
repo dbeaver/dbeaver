@@ -63,16 +63,15 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                 throw new DBException("Can't serializeDiagram empty diagram");
             }
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
-                Rectangle r = figure.getBounds();
                 GC gc = null;
                 Graphics graphics = null;
                 try {
-                    Image image = new Image(null, contentBounds.width + MARGIN_X * 4, contentBounds.height + MARGIN_Y * 4);
+                    Image image = new Image(null, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                     try {
                         gc = new GC(image);
                         //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                         graphics = new SWTGraphics(gc);
-                        graphics.translate(r.x * -1 + MARGIN_X, r.y * -1 + MARGIN_Y);
+                        graphics.translate(contentBounds.x * -1 + MARGIN_X, contentBounds.y * -1 + MARGIN_Y);
                         figure.paint(graphics);
                         ImageLoader imageLoader = new ImageLoader();
                         imageLoader.data = new ImageData[1];
