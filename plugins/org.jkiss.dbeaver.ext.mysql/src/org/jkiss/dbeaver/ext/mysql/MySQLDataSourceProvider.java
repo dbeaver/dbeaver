@@ -271,12 +271,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
 
         try {
-            Process p;
-            if (RuntimeUtils.isWindows()) {
-                p = Runtime.getRuntime().exec(new String[] {cmd, "-V"});
-            } else {
-                p = Runtime.getRuntime().exec(new String[] {cmd, "--version"});
-            }
+            Process p = Runtime.getRuntime().exec(new String[]{cmd, MySQLUtils.getVersionFlag()});
             try {
                 BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 try {
@@ -306,25 +301,5 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             log.warn("Error reading MySQL server version from " + cmd, ex);
         }
         return null;
-    }
-
-    /**
-     * Returns the major version of the server installed in the specified path.
-     * If no server is found, or a major version can not be obtained for any other reason, returns -1.
-     *
-     * @param pathToServer path to server
-     * @return major version of the server, or -1 on failure
-     *
-     */
-    public static int getServerMajorVersion(File pathToServer) {
-        String fullVersion = getFullServerVersion(pathToServer);
-        if (fullVersion == null) {
-            return -1;
-        }
-        String[] subVersions = fullVersion.split("\\.");
-        if (subVersions.length == 0) {
-            return -1;
-        }
-        return CommonUtils.toInt(subVersions[0], -1);
     }
 }
