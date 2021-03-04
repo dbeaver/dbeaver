@@ -156,4 +156,9 @@ public class FireBirdDataSource extends GenericDataSource
         return (List<FireBirdTable>) super.getTables(monitor);
     }
 
+    @Override
+    public List<FireBirdProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        return (List<FireBirdProcedure>) super.getProcedures(monitor);
+    }
+
 }
