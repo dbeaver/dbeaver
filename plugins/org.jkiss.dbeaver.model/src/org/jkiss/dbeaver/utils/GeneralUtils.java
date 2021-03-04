@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
@@ -373,6 +374,34 @@ public class GeneralUtils {
         calendar.set(Calendar.MONTH, 0);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         return calendar.getTime();
+    }
+
+    @Nullable
+    public static Date getProductBuildTime() {
+        Bundle definingBundle = null;
+        ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+        if (application != null) {
+            definingBundle = application.getContributorBundle();
+        } else {
+            final IProduct product = Platform.getProduct();
+            if (product != null) {
+                definingBundle = product.getDefiningBundle();
+            }
+        }
+        if (definingBundle == null) {
+            return null;
+        }
+
+        final Dictionary<String, String> headers = definingBundle.getHeaders();
+        final String buildTime = headers.get("Build-Time");
+        if (buildTime != null) {
+            try {
+                return new SimpleDateFormat(DEFAULT_TIMESTAMP_PATTERN).parse(buildTime);
+            } catch (ParseException e) {
+                log.debug(e);
+            }
+        }
+        return null;
     }
 
     public static String getExpressionParseMessage(Exception e) {
