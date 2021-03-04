@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
@@ -25,7 +24,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -60,11 +58,6 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean noData;
     private boolean showViews;
     private boolean overrideCredentials;
-
-    /**
-     * Major version of mysqldump, -1 if unknown
-     */
-    private int mysqlDumpMajorVersion = -1;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
@@ -308,25 +301,5 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
             ((DBPPreferenceMap) store).getPropertyMap().put("exportObjects", objectList);
         }
-    }
-
-    @Override
-    public void setClientHome(@Nullable DBPNativeClientLocation clientHome) {
-        super.setClientHome(clientHome);
-        if (clientHome == null) {
-            mysqlDumpMajorVersion = -1;
-            return;
-        }
-        mysqlDumpMajorVersion = MySQLDataSourceProvider.getServerMajorVersion(clientHome.getPath());
-    }
-
-    /**
-     * Returns the major version of mysqldump.
-     * If the major version is unknown or client home is null, returns -1.
-     *
-     * @return major version of mysqldump, -1 if unknown
-     */
-    int getMysqlDumpMajorVersion() {
-        return mysqlDumpMajorVersion;
     }
 }
