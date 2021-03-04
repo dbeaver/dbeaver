@@ -28,8 +28,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +48,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     private Button showTemplates;
     private Button showUnavailable;
     private Button readAllDataTypes;
+    private Button usePreparedStatements;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -102,6 +106,18 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
         }
 
+        final DBPDriver driver = site.getDriver();
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+
+        if (serverType.turnOffPreparedStatements())
+        {
+            Group performanceGroup = new Group(cfgGroup, SWT.NONE);
+            performanceGroup.setText(PostgreMessages.dialog_setting_group_performance);
+            performanceGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            performanceGroup.setLayout(new GridLayout(2, false));
+            usePreparedStatements = UIUtils.createCheckbox(performanceGroup, PostgreMessages.dialog_setting_connection_use_prepared_statements, PostgreMessages.dialog_setting_connection_use_prepared_statements_tip, false, 2);
+        }
+
         setControl(cfgGroup);
 
         loadSettings();
@@ -135,6 +151,10 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         readAllDataTypes.setSelection(
                 CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
                         globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES)));
+        if (usePreparedStatements != null) {
+            usePreparedStatements.setSelection(
+                    CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS), false));
+        }
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
             connectionInfo.getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING),
@@ -153,6 +173,9 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
+        if (usePreparedStatements != null) {
+            connectionCfg.setProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS, String.valueOf(usePreparedStatements.getSelection()));
+        }
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));

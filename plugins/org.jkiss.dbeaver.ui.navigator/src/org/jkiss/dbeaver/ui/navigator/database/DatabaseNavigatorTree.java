@@ -95,14 +95,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot) {
-        this(parent, rootNode, style, showRoot, null);
+        this(parent, rootNode, style, showRoot, null, null);
     }
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter)
-    {
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter) {
+        this(parent, rootNode, style, showRoot, navigatorFilter, null);
+    }
+
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter, String filterPlaceholderText) {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
+        if (filterPlaceholderText != null) {
+            this.filterPlaceholderText = filterPlaceholderText;
+        }
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
@@ -872,10 +878,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     protected String getFilterPlaceholderText() {
         return filterPlaceholderText;
-    }
-
-    public void setFilterPlaceholderText(String filterPlaceholderText) {
-        this.filterPlaceholderText = filterPlaceholderText;
     }
 
     // Called by filtering job

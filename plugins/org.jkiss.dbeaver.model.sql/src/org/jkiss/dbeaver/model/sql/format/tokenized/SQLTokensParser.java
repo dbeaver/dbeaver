@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -132,13 +133,22 @@ class SQLTokensParser {
             return new FormatterToken(TokenType.SYMBOL, ";", start_pos);
         } else if (isDigit(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isDigit(fChar) || fChar == '.' || fChar == 'e' || fChar == 'E') {
-                // if (ch == '.') type = Token.REAL;
+            int radix = NumberRule.RADIX_DECIMAL;
+            while (CommonUtils.isDigit(fChar, radix) || (radix == NumberRule.RADIX_DECIMAL && (fChar == '.' || fChar == 'e' || fChar == 'E'))) {
                 s.append(fChar);
                 fPos++;
 
                 if (fPos >= fBefore.length()) {
                     break;
+                }
+
+                if (fChar == '0' && fPos + 1 < fBefore.length()) {
+                    fChar = fBefore.charAt(fPos);
+                    if (fChar == 'x' || fChar == 'X') {
+                        radix = NumberRule.RADIX_HEXADECIMAL;
+                        s.append(fChar);
+                        fPos++;
+                    }
                 }
 
                 fChar = fBefore.charAt(fPos);
