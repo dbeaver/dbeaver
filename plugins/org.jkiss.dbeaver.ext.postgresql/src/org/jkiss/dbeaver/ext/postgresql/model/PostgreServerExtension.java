@@ -143,7 +143,4 @@ public interface PostgreServerExtension
     boolean supportsBackslashStringEscape();
 
     boolean supportsTypeCategory();
-
-    boolean needToTurnOffPreparedStatements(); // PGBouncer Problems WorkAround
-
 }
