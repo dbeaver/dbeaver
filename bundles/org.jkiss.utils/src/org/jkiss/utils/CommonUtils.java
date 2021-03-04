@@ -844,4 +844,25 @@ public class CommonUtils {
         }
         return s.substring(1, s.length() - 1).replace("'\\''", "'");
     }
+
+    /**
+     * Checks whether the supplied <code>ch</code> is within
+     * the range of the specified <code>radix</code> value.
+     *
+     * @param ch    character codepoint to be checked
+     * @param radix desired radix
+     * @return <code>true</code> if the character fits
+     * into the radix, <code>false</code> otherwise
+     */
+    public static boolean isDigit(int ch, int radix) {
+        if (radix <= 0 || radix > 36)
+            return false;
+        if (ch >= '0' && ch <= '9')
+            return radix > ch - '0';
+        if (ch >= 'a' && ch <= 'z')
+            return radix > ch - 'a' + 10;
+        if (ch >= 'A' && ch <= 'Z')
+            return radix > ch - 'A' + 10;
+        return false;
+    }
 }
