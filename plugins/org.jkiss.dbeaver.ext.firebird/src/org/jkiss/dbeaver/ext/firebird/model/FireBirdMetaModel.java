@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -75,6 +76,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         return FireBirdUtils.getProcedureSource(monitor, sourceObject);
+    }
+
+    @Override
+    public GenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+        return new FireBirdProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }
 
     @Override
