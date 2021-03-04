@@ -86,22 +86,22 @@ public class TeradataTrigger extends GenericTrigger {
         this.definition = JDBCUtils.safeGetString(dbResult, "definition");
     }
 
-    @Property(order = 3)
+    @Property(viewable = true, order = 3)
     public DBSActionTiming getActionTime() {
         return actionTime;
     }
 
-    @Property(order = 4)
+    @Property(viewable = true, order = 4)
     public DBSManipulationType getEventType() {
         return eventType;
     }
 
-    @Property(order = 5)
+    @Property(viewable = true, order = 5)
     public String getEnabledStatus() {
         return enabledStatus;
     }
 
-    @Property(order = 6)
+    @Property(viewable = true, order = 6)
     public String getTriggerType() {
         return triggerType;
     }
