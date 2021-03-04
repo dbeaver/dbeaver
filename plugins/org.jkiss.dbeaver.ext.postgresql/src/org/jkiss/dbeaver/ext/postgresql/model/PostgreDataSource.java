@@ -208,6 +208,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else {
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
+        PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        if (serverType != null && serverType.turnOffPreparedStatements()
+            && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
+            // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
+            props.put("prepareThreshold", "0");
+        }
         return props;
     }
 

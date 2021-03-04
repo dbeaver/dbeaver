@@ -7,7 +7,7 @@
                     name="Greenplum"
                     class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum"
                     logo="icons/greenplum_logo.png"
-                    customURL="true"/>
+                    customURL="true" turnOffPreparedStatements="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
