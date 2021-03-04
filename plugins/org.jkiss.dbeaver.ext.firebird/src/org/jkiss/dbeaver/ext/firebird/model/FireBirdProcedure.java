@@ -35,19 +35,16 @@ import java.util.Map;
 
 public class FireBirdProcedure extends GenericProcedure implements DBSObjectWithScript {
 
-    @Property(hidden = true)
     @Override
     public GenericCatalog getCatalog() {
         return super.getCatalog();
     }
 
-    @Property(hidden = true)
     @Override
     public GenericSchema getSchema() {
         return super.getSchema();
     }
 
-    @Property(hidden = true)
     @Override
     public GenericPackage getPackage() {
         return super.getPackage();
@@ -67,78 +64,66 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
     public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             String sql;
-            if (getProcedureType() == DBSProcedureType.FUNCTION && getDataSource().isServerVersionAtLeast(3, 0)) {
+            boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
+            if (!isProcedure && getDataSource().isServerVersionAtLeast(3, 0)) {
                 sql = "SELECT\n" +
-                        "COALESCE(FUNA.RDB$ARGUMENT_NAME,\n" +
-                        "\t'PARAM_' || FUNA.RDB$ARGUMENT_POSITION) AS COLUMN_NAME,\n" +
-                        "\tCOALESCE(FUNA.RDB$FIELD_TYPE,\n" +
-                        "\tF.RDB$FIELD_TYPE) AS DATA_TYPE,\n" +
-                        "\tCOALESCE(FUNA.RDB$FIELD_SUB_TYPE,\n" +
-                        "\tF.RDB$FIELD_SUB_TYPE) AS FIELD_SUB_TYPE,\n" +
-                        "\tCOALESCE(FUNA.RDB$FIELD_PRECISION,\n" +
-                        "\tF.RDB$FIELD_PRECISION) AS \"PRECISION\",\n" +
-                        "\tCOALESCE(FUNA.RDB$FIELD_SCALE,\n" +
-                        "\tF.RDB$FIELD_SCALE) AS \"SCALE\",\n" +
-                        "\tCOALESCE(FUNA.RDB$FIELD_LENGTH,\n" +
-                        "\tF.RDB$FIELD_LENGTH) AS \"LENGTH\",\n" +
-                        "\tCOALESCE(FUNA.RDB$CHARACTER_LENGTH,\n" +
-                        "\tF.RDB$CHARACTER_LENGTH) AS CHAR_LEN,\n" +
-                        "\tCOALESCE(FUNA.RDB$DEFAULT_SOURCE,\n" +
-                        "\tF.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE,\n" +
-                        "\tCOALESCE(FUNA.RDB$CHARACTER_SET_ID,\n" +
-                        "\tF.RDB$CHARACTER_SET_ID) AS CHARACTER_SET_ID,\n" +
-                        "\tCASE\n" +
-                        "\tWHEN FUN.RDB$RETURN_ARGUMENT = FUNA.RDB$ARGUMENT_POSITION THEN 0\n" +
-                        "\tELSE FUNA.RDB$ARGUMENT_POSITION\n" +
-                        "\tEND AS ORDINAL_POSITION,\n" +
-                        "\tCASE\n" +
-                        "\tWHEN COALESCE(FUNA.RDB$NULL_FLAG,\n" +
-                        "\tF.RDB$NULL_FLAG) = 1 THEN TRUE\n" +
-                        "\tWHEN FUNA.RDB$MECHANISM = 0 THEN TRUE\n" +
-                        "\tWHEN FUNA.RDB$MECHANISM = 1 THEN TRUE\n" +
-                        "\tELSE FALSE\n" +
-                        "\tEND AS NOT_NULL\n" +
+                        "COALESCE(FUNA.RDB$ARGUMENT_NAME, 'PARAM_' || FUNA.RDB$ARGUMENT_POSITION) AS COLUMN_NAME,\n" +
+                        "COALESCE(FUNA.RDB$FIELD_TYPE, F.RDB$FIELD_TYPE) AS DATA_TYPE,\n" +
+                        "COALESCE(FUNA.RDB$FIELD_SUB_TYPE, F.RDB$FIELD_SUB_TYPE) AS FIELD_SUB_TYPE,\n" +
+                        "COALESCE(FUNA.RDB$FIELD_PRECISION, F.RDB$FIELD_PRECISION) AS \"PRECISION\",\n" +
+                        "COALESCE(FUNA.RDB$FIELD_SCALE, F.RDB$FIELD_SCALE) AS \"SCALE\",\n" +
+                        "COALESCE(FUNA.RDB$FIELD_LENGTH, F.RDB$FIELD_LENGTH) AS \"LENGTH\",\n" +
+                        "COALESCE(FUNA.RDB$CHARACTER_LENGTH, F.RDB$CHARACTER_LENGTH) AS CHAR_LEN,\n" +
+                        "COALESCE(FUNA.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE,\n" +
+                        "COALESCE(FUNA.RDB$CHARACTER_SET_ID, F.RDB$CHARACTER_SET_ID) AS CHARACTER_SET_ID,\n" +
+                        "CASE\n" +
+                        "   WHEN FUN.RDB$RETURN_ARGUMENT = FUNA.RDB$ARGUMENT_POSITION THEN 0\n" +
+                        "   ELSE FUNA.RDB$ARGUMENT_POSITION\n" +
+                        "END AS ORDINAL_POSITION,\n" +
+                        "CASE\n" +
+                        "   WHEN COALESCE(FUNA.RDB$NULL_FLAG, F.RDB$NULL_FLAG) = 1 THEN TRUE\n" +
+                        "   WHEN FUNA.RDB$MECHANISM = 0 THEN TRUE\n" +
+                        "   WHEN FUNA.RDB$MECHANISM = 1 THEN TRUE\n" +
+                        "   ELSE FALSE\n" +
+                        "END AS NOT_NULL\n" +
                         "FROM\n" +
-                        "\tRDB$FUNCTIONS FUN\n" +
+                        "   RDB$FUNCTIONS FUN\n" +
                         "INNER JOIN RDB$FUNCTION_ARGUMENTS FUNA ON\n" +
-                        "\tFUNA.RDB$FUNCTION_NAME = FUN.RDB$FUNCTION_NAME\n" +
-                        "\tAND FUNA.RDB$PACKAGE_NAME IS NOT DISTINCT\n" +
+                        "   FUNA.RDB$FUNCTION_NAME = FUN.RDB$FUNCTION_NAME\n" +
+                        "   AND FUNA.RDB$PACKAGE_NAME IS NOT DISTINCT\n" +
                         "FROM\n" +
-                        "\tFUN.RDB$PACKAGE_NAME\n" +
+                        "   FUN.RDB$PACKAGE_NAME\n" +
                         "LEFT JOIN RDB$FIELDS F ON\n" +
-                        "\tF.RDB$FIELD_NAME = FUNA.RDB$FIELD_SOURCE\n" +
+                        "   F.RDB$FIELD_NAME = FUNA.RDB$FIELD_SOURCE\n" +
                         "WHERE\n" +
-                        "\tFUN.RDB$FUNCTION_NAME=?";
+                        "   FUN.RDB$FUNCTION_NAME=?";
             } else {
                 sql = "SELECT\n" +
-                        "\tCAST(PP.RDB$PARAMETER_NAME AS varchar(63)) AS COLUMN_NAME,\n" +
-                        "\tPP.RDB$PARAMETER_TYPE AS COLUMN_TYPE,\n" +
-                        "\tF.RDB$FIELD_TYPE AS DATA_TYPE,\n" +
-                        "\tF.RDB$FIELD_SUB_TYPE AS TYPE_NAME,\n" +
-                        "\tF.RDB$FIELD_PRECISION AS \"PRECISION\",\n" +
-                        "\tF.RDB$FIELD_SCALE AS \"SCALE\",\n" +
-                        "\tF.RDB$FIELD_LENGTH AS \"LENGTH\",\n" +
-                        "\tPP.RDB$NULL_FLAG AS NOT_NULL,\n" +
-                        "\tPP.RDB$DESCRIPTION AS REMARKS,\n" +
-                        "\tF.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
-                        "\tPP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
-                        "\tF.RDB$CHARACTER_SET_ID,\n" +
-                        "\tF.RDB$DEFAULT_SOURCE AS DEFAULT_VALUE\n" +
+                        "CAST(PP.RDB$PARAMETER_NAME AS varchar(63)) AS COLUMN_NAME,\n" +
+                        "PP.RDB$PARAMETER_TYPE AS COLUMN_TYPE,\n" +
+                        "F.RDB$FIELD_TYPE AS DATA_TYPE,\n" +
+                        "F.RDB$FIELD_SUB_TYPE AS TYPE_NAME,\n" +
+                        "F.RDB$FIELD_PRECISION AS \"PRECISION\",\n" +
+                        "F.RDB$FIELD_SCALE AS \"SCALE\",\n" +
+                        "F.RDB$FIELD_LENGTH AS \"LENGTH\",\n" +
+                        "PP.RDB$NULL_FLAG AS NOT_NULL,\n" +
+                        "PP.RDB$DESCRIPTION AS REMARKS,\n" +
+                        "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
+                        "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
+                        "F.RDB$CHARACTER_SET_ID,\n" +
+                        "F.RDB$DEFAULT_SOURCE AS DEFAULT_VALUE\n" +
                         "FROM\n" +
-                        "\tRDB$PROCEDURE_PARAMETERS PP,\n" +
-                        "\tRDB$FIELDS F\n" +
+                        "   RDB$PROCEDURE_PARAMETERS PP,\n" +
+                        "   RDB$FIELDS F\n" +
                         "WHERE\n" +
-                        "\tPP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
-                        "\tAND PP.RDB$PROCEDURE_NAME=?\n" +
+                        "   PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
+                        "   AND PP.RDB$PROCEDURE_NAME=?\n" +
                         "ORDER BY\n" +
-                        "\tPP.RDB$PROCEDURE_NAME,\n" +
-                        "\tPP.RDB$PARAMETER_TYPE DESC,\n" +
-                        "\tPP.RDB$PARAMETER_NUMBER";
+                        "   PP.RDB$PARAMETER_NUMBER";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
                     while (dbResult.next()) {
                         String parameterName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
                         int dataType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
