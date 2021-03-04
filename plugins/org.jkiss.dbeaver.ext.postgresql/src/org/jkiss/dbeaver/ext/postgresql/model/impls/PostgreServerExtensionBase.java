@@ -469,8 +469,4 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(8, 4);
     }
 
-    @Override
-    public boolean needToTurnOffPreparedStatements() {
-        return false;
-    }
 }

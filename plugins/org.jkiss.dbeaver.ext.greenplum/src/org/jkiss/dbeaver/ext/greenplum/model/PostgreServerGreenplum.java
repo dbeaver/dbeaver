@@ -134,8 +134,4 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return true;
     }
 
-    @Override
-    public boolean needToTurnOffPreparedStatements() {
-        return true;
-    }
 }
