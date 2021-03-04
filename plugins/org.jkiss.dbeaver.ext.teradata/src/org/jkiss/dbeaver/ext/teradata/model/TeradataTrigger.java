@@ -57,6 +57,7 @@ public class TeradataTrigger extends GenericTrigger {
                     break;
                 default:
                     actionTime = DBSActionTiming.UNKNOWN;
+                    break;
             }
         }
 
@@ -74,6 +75,7 @@ public class TeradataTrigger extends GenericTrigger {
                     break;
                 default:
                     eventType = DBSManipulationType.UNKNOWN;
+                    break;
             }
         }
 
@@ -84,31 +86,31 @@ public class TeradataTrigger extends GenericTrigger {
         this.definition = JDBCUtils.safeGetString(dbResult, "definition");
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(order = 3)
     public DBSActionTiming getActionTime() {
         return actionTime;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(order = 4)
     public DBSManipulationType getEventType() {
         return eventType;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(order = 5)
     public String getEnabledStatus() {
         return enabledStatus;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(order = 6)
     public String getTriggerType() {
         return triggerType;
     }
 
-    @Property(viewable = true, order = 7)
+    @Property(order = 7)
     public Date getCreateDate() {
         return createDate;
     }
-    
+
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return definition;
