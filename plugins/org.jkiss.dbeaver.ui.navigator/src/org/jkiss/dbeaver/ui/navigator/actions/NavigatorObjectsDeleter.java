@@ -106,7 +106,7 @@ class NavigatorObjectsDeleter {
                 continue;
             }
             final DBNDatabaseNode node = (DBNDatabaseNode) obj;
-            final DBPDataSource currentDatasource = node.getDataSource();
+            final DBPDataSource currentDatasource = node instanceof DBNDataSource ? null : node.getDataSource();
             if (dataSource == null) {
                 dataSource = currentDatasource;
             } else if (!dataSource.equals(currentDatasource)) {
