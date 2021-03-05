@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -40,16 +41,12 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPObjectStatistics, DBPImageProvider
-{
+public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(OracleTable.class);
 
     private OracleDataType tableType;
@@ -432,4 +429,27 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     }
 
+    @Override
+    public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        Collection<OracleTableForeignKey> foreignKeys = getAssociations(monitor);
+        if (foreignKeys == null || foreignKeys.isEmpty()) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Changing referential integrity")) {
+            String prefix = "ALTER TABLE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY CONSTRAINT ";
+            String suffix;
+            if (enable) {
+                suffix = " ENABLE";
+            } else {
+                suffix = " DISABLE";
+            }
+            try (JDBCStatement statement = session.createStatement()) {
+                for (OracleTableForeignKey fk: foreignKeys) {
+                    statement.execute(prefix + fk.getName() + suffix);
+                }
+            } catch (SQLException e) {
+                throw new DBException("Unable to change referential integrity", e);
+            }
+        }
+    }
 }

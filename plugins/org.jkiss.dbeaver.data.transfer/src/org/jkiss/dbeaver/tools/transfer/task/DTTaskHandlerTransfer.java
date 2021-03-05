@@ -23,16 +23,15 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.tools.transfer.DataTransferJob;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.DataTransferState;
+import org.jkiss.dbeaver.tools.transfer.*;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * DTTaskHandlerTransfer
@@ -66,6 +65,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         listener.taskStarted(settings);
 
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        int[] lastPreTransferredPipeIndex = new int[1];
         try {
             runnableContext.run(true, false, monitor -> {
                 monitor.beginTask("Initialize pipes", dataPipes.size());
@@ -73,7 +73,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                     for (int i = 0; i < dataPipes.size(); i++) {
                         DataTransferPipe pipe = dataPipes.get(i);
                         pipe.initPipe(settings, i, dataPipes.size());
-                        pipe.getConsumer().startTransfer(monitor);
+                        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+                        consumer.startTransfer(monitor);
+                        if (consumer instanceof IDataTransferConsumerExtension) {
+                            ((IDataTransferConsumerExtension) consumer).preTransfer(monitor);
+                            lastPreTransferredPipeIndex[0] = i;
+                        }
                         monitor.worked(1);
                     }
                 } catch (DBException e) {
@@ -83,8 +88,14 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                 }
             });
         } catch (InvocationTargetException e) {
+            try {
+                executePostTransfer(runnableContext, dataPipes.subList(0, lastPreTransferredPipeIndex[0] + 1));
+            } catch (DBException postTransferException) {
+                throw new DBException("Error starting data transfer and cleaning up after unsuccessful start!");
+            }
             throw new DBException("Error starting data transfer", e.getTargetException());
         } catch (InterruptedException e) {
+            executePostTransfer(runnableContext, dataPipes);
             return;
         }
 
@@ -93,9 +104,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         if (totalJobs > settings.getMaxJobCount()) {
             totalJobs = settings.getMaxJobCount();
         }
+        CountDownLatch countDownLatch = new CountDownLatch(totalJobs);
         Throwable error = null;
         for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener);
+            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener, countDownLatch);
             try {
                 runnableContext.run(true, true, job);
             } catch (InvocationTargetException e) {
@@ -106,6 +118,45 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             listener.subTaskFinished(error);
         }
         listener.taskFinished(settings, null, error);
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            //ignore
+        } finally {
+            executePostTransfer(runnableContext, dataPipes);
+        }
     }
 
+    private void executePostTransfer(@NotNull DBRRunnableContext runnableContext, @NotNull Collection<DataTransferPipe> pipes) throws DBException {
+        try {
+            runnableContext.run(true, false, monitor -> {
+                StringBuilder errorMessages = new StringBuilder();
+                monitor.beginTask("Post transfer work", pipes.size());
+                try {
+                    for (DataTransferPipe pipe: pipes) {
+                        if (pipe.getConsumer() instanceof IDataTransferConsumerExtension) {
+                            try {
+                                ((IDataTransferConsumerExtension) pipe.getConsumer()).postTransfer(monitor);
+                            } catch (DBException e) {
+                                if (errorMessages.length() != 0) {
+                                    errorMessages.append("\n\n");
+                                }
+                                errorMessages.append(e.getMessage());
+                            }
+                        }
+                        monitor.worked(1);
+                    }
+                } finally {
+                    monitor.done();
+                }
+                if (errorMessages.length() != 0) {
+                    throw new InvocationTargetException(new DBException("Possible data integrity problems! Unable to execute post transfer due to the following errors: \n" + errorMessages.toString()));
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new DBException("Unable to finish post transfer properly. It means possible data integrity problems!");
+        } catch (InvocationTargetException e) {
+            throw (DBException) e.getCause();
+        }
+    }
 }
