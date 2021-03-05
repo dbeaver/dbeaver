@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumerExtension;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -51,8 +52,7 @@ import java.util.*;
  * Stream transfer consumer
  */
 @DBSerializable("databaseTransferConsumer")
-public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>, IDataTransferNodePrimary {
-
+public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>, IDataTransferNodePrimary, IDataTransferConsumerExtension {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
     private DatabaseConsumerSettings settings;
@@ -701,6 +701,31 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public boolean equals(Object obj) {
         return obj instanceof DatabaseTransferConsumer &&
             CommonUtils.equalObjects(getTargetObject(), ((DatabaseTransferConsumer) obj).getTargetObject());
+    }
+
+    private void trySetReferentialIntegrity(@NotNull DBRProgressMonitor monitor, @Nullable DBSObject dbsObject, boolean enable) throws DBException {
+        if (settings.isDisableReferentialIntegrity() && dbsObject instanceof DBPReferentialIntegrityController) {
+            ((DBPReferentialIntegrityController) dbsObject).setReferentialIntegrity(monitor, enable);
+        }
+    }
+
+    @Override
+    public void preTransfer(@NotNull DBRProgressMonitor monitor) throws DBException {
+        trySetReferentialIntegrity(monitor, checkTargetContainer(monitor), false);
+    }
+
+    @Override
+    public void postTransfer(@NotNull DBRProgressMonitor monitor) throws DBException {
+        trySetReferentialIntegrity(monitor, checkTargetContainer(monitor), true);
+    }
+
+    @Override
+    public boolean supportsDisablingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
+        try {
+            return checkTargetContainer(monitor) instanceof DBPReferentialIntegrityController;
+        } catch (DBException e) {
+            return false;
+        }
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {

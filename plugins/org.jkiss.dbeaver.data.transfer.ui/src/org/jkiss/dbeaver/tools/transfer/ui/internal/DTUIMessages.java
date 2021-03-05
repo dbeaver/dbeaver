@@ -42,6 +42,8 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_transfer_checkbox_tooltip;
 	public static String database_consumer_wizard_truncate_checkbox_label;
 	public static String database_consumer_wizard_truncate_checkbox_description;
+	public static String database_consumer_wizard_disable_referential_integrity_label;
+	public static String database_consumer_wizard_disable_referential_integrity_tip;
 	public static String database_consumer_wizard_performance_group_label;
 	public static String database_consumer_wizard_transactions_checkbox_label;
 	public static String database_consumer_wizard_commit_spinner_label;
