@@ -120,11 +120,16 @@ public class DiagramObjectCollector {
                     continue;
                 }
                 if (entity instanceof DBSEntity) {
-                    if ((entity instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView((DBSEntity) entity) && !showViews)) {
+                    DBSEntity entity1 = (DBSEntity) entity;
+                    if ((entity instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView(entity1) && !showViews)) {
                         continue;
                     }
 
-                    tables.add((DBSEntity) entity);
+                    if (ERDUtils.skipSystemEntity(entity1)) {
+                        continue;
+                    }
+
+                    tables.add(entity1);
                 } else if (entity instanceof DBSObjectContainer) {
                     collectTables(monitor, (DBSObjectContainer) entity, tables, showViews, showPartitions);
                 }
