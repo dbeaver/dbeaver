@@ -57,7 +57,11 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
 
     @Override
     public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
-        return new TeradataTable(container, tableName, tableType, dbResult);
+        if (tableType != null && isView(tableType)) {
+            return new GenericView(container, tableName, tableType, dbResult);
+        } else {
+            return new TeradataTable(container, tableName, tableType, dbResult);
+        }
     }
 
     @Override
