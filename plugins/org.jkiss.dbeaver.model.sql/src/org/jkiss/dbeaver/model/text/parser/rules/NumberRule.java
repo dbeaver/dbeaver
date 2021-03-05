@@ -16,66 +16,112 @@
  */
 package org.jkiss.dbeaver.model.text.parser.rules;
 
-import org.eclipse.core.runtime.Assert;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
+import org.jkiss.utils.CommonUtils;
 
 
 /**
- * An implementation of <code>IRule</code> detecting a numerical value.
+ * An implementation of <code>IRule</code> detecting a numerical value
+ * with optional decimal part, scientific notation (<code>10e-3</code>)
+ * and support for the hexadecimal base (16).
  */
 public class NumberRule implements TPRule {
 
-	/** Internal setting for the un-initialized column constraint */
-	protected static final int UNDEFINED= -1;
-	/** The token to be returned when this rule is successful */
-	protected TPToken fToken;
-	/** The column constraint */
-	protected int fColumn= UNDEFINED;
+    public static final int RADIX_DECIMAL = 10;
+    public static final int RADIX_HEXADECIMAL = 16;
 
-	/**
-	 * Creates a rule which will return the specified
-	 * token when a numerical sequence is detected.
-	 *
-	 * @param token the token to be returned
-	 */
-	public NumberRule(TPToken token) {
-		Assert.isNotNull(token);
-		fToken= token;
-	}
+    /**
+     * The token to be returned when this rule is successful
+     */
+    protected TPToken fToken;
 
-	/**
-	 * Sets a column constraint for this rule. If set, the rule's token
-	 * will only be returned if the pattern is detected starting at the
-	 * specified column. If the column is smaller then 0, the column
-	 * constraint is considered removed.
-	 *
-	 * @param column the column in which the pattern starts
-	 */
-	public void setColumnConstraint(int column) {
-		if (column < 0)
-			column= UNDEFINED;
-		fColumn= column;
-	}
+    /**
+     * Creates a rule which will return the specified
+     * token when a numerical sequence is detected.
+     *
+     * @param token the token to be returned
+     */
+    public NumberRule(@NotNull TPToken token) {
+        fToken = token;
+    }
 
-	@Override
-	public TPToken evaluate(TPCharacterScanner scanner) {
-		int c= scanner.read();
-		if (Character.isDigit((char)c)) {
-			if (fColumn == UNDEFINED || (fColumn == scanner.getColumn() - 1)) {
-				int charNum = 0;
-				do {
-					c = scanner.read();
-					charNum++;
-				} while (Character.isDigit((char) c) || (charNum > 0 && Character.toLowerCase(c) == 'e'));
-				scanner.unread();
-				return fToken;
-			}
-		}
+    @Override
+    public TPToken evaluate(TPCharacterScanner scanner) {
+        int ch = scanner.read();
+        int chCount = 1;
 
-		scanner.unread();
-		return TPTokenAbstract.UNDEFINED;
-	}
+        if (!Character.isDigit(ch)) {
+            return undefined(scanner, 1);
+        }
+
+        boolean seenDecimalSeparator = false;
+        boolean seenScientificNotation = false;
+        int radix = RADIX_DECIMAL;
+
+        if (ch == '0') {
+            int ch1 = scanner.read();
+            if (ch1 == 'x' || ch1 == 'X') {
+                ch1 = scanner.read();
+                if (CommonUtils.isDigit(ch1, 16)) {
+                    radix = RADIX_HEXADECIMAL;
+                } else {
+                    return undefined(scanner, 3);
+                }
+            } else {
+                scanner.unread();
+            }
+        }
+
+        while (true) {
+            if (radix == RADIX_DECIMAL && ch == '.') {
+                if (seenDecimalSeparator) {
+                    return undefined(scanner, chCount);
+                }
+                ch = scanner.read();
+                chCount++;
+                if (ch < '0' || ch > '9') {
+                    return undefined(scanner, chCount);
+                }
+                seenDecimalSeparator = true;
+                continue;
+            }
+
+            if (radix == RADIX_DECIMAL && (ch == 'e' || ch == 'E')) {
+                if (seenScientificNotation) {
+                    return undefined(scanner, chCount);
+                }
+                ch = scanner.read();
+                chCount++;
+                if (ch == '+' || ch == '-') {
+                    ch = scanner.read();
+                    chCount++;
+                }
+                if (ch < '0' || ch > '9') {
+                    return undefined(scanner, chCount);
+                }
+                seenScientificNotation = true;
+                continue;
+            }
+
+            if (!CommonUtils.isDigit(ch, radix)) {
+                scanner.unread();
+                return fToken;
+            }
+
+            ch = scanner.read();
+            chCount++;
+        }
+    }
+
+    private static TPToken undefined(TPCharacterScanner scanner, int readCount) {
+        while (readCount > 0) {
+            readCount--;
+            scanner.unread();
+        }
+        return TPTokenAbstract.UNDEFINED;
+    }
 }
