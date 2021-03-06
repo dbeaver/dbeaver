@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -493,7 +494,14 @@ public class NavigatorUtils {
                         } else if (curObject == null) {
                             for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
                                 if (node instanceof DBNDataSource) {
-                                    ((DBNDataSource) node).moveToFolder(node.getOwnerProject(), null);
+                                    // Drop datasource on a view
+                                    // We need target project
+                                    if (viewer.getInput() instanceof DatabaseNavigatorContent) {
+                                        DBNNode rootNode = ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
+                                        if (rootNode != null && rootNode.getOwnerProject() != null) {
+                                            ((DBNDataSource) node).moveToFolder(rootNode.getOwnerProject(), null);
+                                        }
+                                    }
                                 } else if (node instanceof DBNLocalFolder) {
                                     ((DBNLocalFolder) node).getFolder().setParent(null);
                                 } else {

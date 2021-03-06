@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
@@ -283,13 +284,24 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public DBPAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly, boolean showSavePassword) {
+        return promptUserCredentials(prompt,
+            UIConnectionMessages.dialog_connection_auth_label_username,
+            userName,
+            UIConnectionMessages.dialog_connection_auth_label_password,
+            userPassword,
+            passwordOnly,
+            showSavePassword);
+    }
 
-        // Ask user
+    @Override
+    public DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword) {
         return new UITask<DBPAuthInfo>() {
             @Override
             public DBPAuthInfo runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
+                authDialog.setUserNameLabel(userNameLabel);
+                authDialog.setPasswordLabel(passwordLabel);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }
