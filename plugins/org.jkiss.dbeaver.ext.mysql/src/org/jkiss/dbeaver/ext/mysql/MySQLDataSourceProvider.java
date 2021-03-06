@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -103,6 +104,13 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         System.setProperty("javax.net.ssl.trustStore", trustStorePath);
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
 */
+
+        if (driver.isUseURL()) {
+            String url = JDBCURL.generateUrlByTemplate(driver, connectionInfo);
+            log.warn("Using URL: " + url);
+            return url;
+        }
+        log.warn("Not using URL...");
 
         StringBuilder url = new StringBuilder();
         url.append("jdbc:mysql://")

@@ -47,20 +47,26 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     // as now we use server timestamp format by default
     private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
+    private Label hostLabel;
     private Text hostText;
+    private Label portLabel;
     private Text portText;
     private Text dbText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
+    private boolean hostIsCloudInstance = false;
+    private boolean needsPort = true;
 
     private Combo serverTimezoneCombo;
 
     private final Image LOGO_MYSQL;
     private final Image LOGO_MARIADB;
+    private final Image LOGO_GCLOUD;
 
     public MySQLConnectionPage() {
         LOGO_MYSQL = createImage("icons/mysql_logo.png");
         LOGO_MARIADB = createImage("icons/mariadb_logo.png");
+        LOGO_GCLOUD = createImage("icons/google_cloud_sql_logo.png");
     }
 
     @Override
@@ -69,14 +75,19 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         super.dispose();
         UIUtils.dispose(LOGO_MYSQL);
         UIUtils.dispose(LOGO_MARIADB);
+        UIUtils.dispose(LOGO_GCLOUD);
     }
 
     @Override
     public Image getImage() {
         // We set image only once at activation
         // There is a bug in Eclipse which leads to SWTException after wizard image change
-        if (getSite().getDriver().getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+    	String id = getSite().getDriver().getId();
+        if (id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
             return LOGO_MARIADB;
+        } else if (id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_GCLOUD_MYSQL8)
+        		|| id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_GCLOUD_MYSQL5)) {
+        	return LOGO_GCLOUD;
         } else {
             return LOGO_MYSQL;
         }
@@ -85,6 +96,10 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     @Override
     public void createControl(Composite composite)
     {
+        DBPDriver driver = getSite().getDriver();
+        hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
+        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
+        
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
         ModifyListener textListener = e -> {
@@ -101,15 +116,18 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         Group serverGroup = UIUtils.createControlGroup(addrGroup, "Server", 2, GridData.FILL_HORIZONTAL, 0);
 
-        Label hostLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_host);
+        hostLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_host);
         Composite hostComposite = UIUtils.createComposite(serverGroup, 3);
         hostComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         hostText = new Text(hostComposite, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
-
-        portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+	    
+        portLabel = UIUtils.createControlLabel(hostComposite, MySQLUIMessages.dialog_connection_port);
+        // portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        portText = new Text(hostComposite, SWT.BORDER);
+        portText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
@@ -147,35 +165,49 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         return super.isComplete() &&
             hostText != null && portText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
-            !CommonUtils.isEmpty(portText.getText());
+            !(needsPort && CommonUtils.isEmpty(portText.getText()));
     }
 
     @Override
     public void loadSettings() {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         DBPDriver driver = getSite().getDriver();
+        hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
+        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         super.loadSettings();
-
+        
         // Load values from new connection info
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
+            } else if (driver.getDriverParameter("defaultHost") != null) {
+            	hostText.setText(driver.getDriverParameter("defaultHost").toString());
             } else {
                 hostText.setText(MySQLConstants.DEFAULT_HOST);
             }
+	        String hostOrCloudInstance;
+	        if (hostIsCloudInstance) {
+	        	hostOrCloudInstance = MySQLUIMessages.dialog_connection_cloud_instance;
+	        } else {
+	        	hostOrCloudInstance = MySQLUIMessages.dialog_connection_host;
+	        }
+	        hostLabel.setText(hostOrCloudInstance);
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(connectionInfo.getHostPort());
-            } else if (site.getDriver().getDefaultPort() != null) {
-                portText.setText(site.getDriver().getDefaultPort());
+            } else if (driver.getDefaultPort() != null) {
+                portText.setText(driver.getDefaultPort());
             } else {
                 portText.setText("");
             }
+            UIUtils.setControlVisible(portLabel, needsPort);
+            UIUtils.setControlVisible(portText, needsPort);
         }
+
         if (dbText != null) {
-            dbText.setText(CommonUtils.toString(connectionInfo.getDatabaseName(), CommonUtils.notEmpty(site.getDriver().getDefaultDatabase())));
+            dbText.setText(CommonUtils.toString(connectionInfo.getDatabaseName(), CommonUtils.notEmpty(driver.getDefaultDatabase())));
         }
         if (serverTimezoneCombo != null) {
             String tzProp = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
@@ -186,7 +218,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             }
         }
 
-        homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
         activated = true;
     }
