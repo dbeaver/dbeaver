@@ -96,10 +96,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     @Override
     public void createControl(Composite composite)
     {
-        DBPDriver driver = getSite().getDriver();
-        hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
-        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
-        
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
         ModifyListener textListener = e -> {
@@ -125,7 +121,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         hostText.addModifyListener(textListener);
 	    
         portLabel = UIUtils.createControlLabel(hostComposite, MySQLUIMessages.dialog_connection_port);
-        // portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         portText = new Text(hostComposite, SWT.BORDER);
         portText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
@@ -182,15 +177,15 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else if (driver.getDriverParameter("defaultHost") != null) {
-            	hostText.setText(driver.getDriverParameter("defaultHost").toString());
+                hostText.setText(driver.getDriverParameter("defaultHost").toString());
             } else {
                 hostText.setText(MySQLConstants.DEFAULT_HOST);
             }
 	        String hostOrCloudInstance;
 	        if (hostIsCloudInstance) {
-	        	hostOrCloudInstance = MySQLUIMessages.dialog_connection_cloud_instance;
+	            hostOrCloudInstance = MySQLUIMessages.dialog_connection_cloud_instance;
 	        } else {
-	        	hostOrCloudInstance = MySQLUIMessages.dialog_connection_host;
+	            hostOrCloudInstance = MySQLUIMessages.dialog_connection_host;
 	        }
 	        hostLabel.setText(hostOrCloudInstance);
         }
