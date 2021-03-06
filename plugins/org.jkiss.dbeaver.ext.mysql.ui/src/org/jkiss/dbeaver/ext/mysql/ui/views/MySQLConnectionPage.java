@@ -54,7 +54,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     private Text dbText;
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
-    private boolean hostIsCloudInstance = false;
     private boolean needsPort = true;
 
     private Combo serverTimezoneCombo;
@@ -167,7 +166,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public void loadSettings() {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         DBPDriver driver = getSite().getDriver();
-        hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
+        boolean hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
         needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         super.loadSettings();
