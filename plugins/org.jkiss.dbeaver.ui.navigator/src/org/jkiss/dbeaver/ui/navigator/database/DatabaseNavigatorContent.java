@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 /**
  * Tree content
  */
-class DatabaseNavigatorContent {
+public class DatabaseNavigatorContent {
 
     private final DBNNode rootNode;
 
