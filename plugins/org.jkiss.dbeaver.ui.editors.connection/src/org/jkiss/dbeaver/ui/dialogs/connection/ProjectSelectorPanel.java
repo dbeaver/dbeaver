@@ -69,11 +69,12 @@ public class ProjectSelectorPanel {
             }
 
             if (selectedProject == null) {
-                projectCombo.select(0);
-                selectedProject = projects.get(0);
-            } else {
-                projectCombo.setText(selectedProject.getName());
+                selectedProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                if (!projects.contains(selectedProject)) {
+                    selectedProject = projects.get(0);
+                }
             }
+            projectCombo.setText(selectedProject.getName());
             projectCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
