@@ -159,8 +159,7 @@ public class ERDUtils
 
                         final DBSEntity entity1 = (DBSEntity) entity;
 
-                        boolean showSystemObjects = entity1.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
-                        if (!showSystemObjects && entity1 instanceof DBPSystemObject && ((DBPSystemObject) entity1).isSystem()) {
+                        if (skipSystemEntity(entity1)) {
                             continue;
                         }
 
@@ -245,5 +244,10 @@ public class ERDUtils
         }
 
         return result;
+    }
+
+    public static boolean skipSystemEntity(DBSEntity entity) {
+        boolean showSystemObjects = entity.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
+        return !showSystemObjects && entity instanceof DBPSystemObject && ((DBPSystemObject) entity).isSystem();
     }
 }

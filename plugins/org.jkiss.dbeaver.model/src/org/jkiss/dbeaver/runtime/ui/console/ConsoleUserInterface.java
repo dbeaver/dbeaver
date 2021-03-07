@@ -112,6 +112,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+        throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
+    }
+
+    @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
         throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
     }
