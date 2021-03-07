@@ -190,6 +190,29 @@
                     <file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE[1.6.0]" optional="true" />
                 </driver>
 
+                <driver
+                        id="gcloud-mssql"
+                        label="Google Cloud SQL - SQL Server"
+                        icon="icons/google_cloud_sql_icon.png"
+                        iconBig="icons/google_cloud_sql_icon_big.png"
+                        category="Google Cloud SQL"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://localhost;socketFactoryClass=com.google.cloud.sql.sqlserver.SocketFactory;socketFactoryConstructorArg={host}[;databaseName={database}]"
+                        useURL="true"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/blob/main/docs/jdbc-sqlserver.md"
+                        promoted="1"
+                        categories="sql">
+
+                    <file type="jar" path="maven:/com.google.cloud.sql:cloud-sql-connector-jdbc-sqlserver:RELEASE"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" optional="true" bundle="drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+                    <parameter name="defaultHost" value="project:region:instance"/>
+                </driver>
+
                 <!-- jTDS driver - deprecated -->
                 <driver
                         id="jtds"

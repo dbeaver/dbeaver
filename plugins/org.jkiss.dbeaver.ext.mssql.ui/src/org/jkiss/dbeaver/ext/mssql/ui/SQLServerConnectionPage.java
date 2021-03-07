@@ -59,12 +59,13 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private final Image LOGO_AZURE;
     private final Image LOGO_SQLSERVER;
     private final Image LOGO_SYBASE;
+    private final Image LOGO_GCLOUD;
 
     public SQLServerConnectionPage() {
         LOGO_AZURE = createImage("icons/azure_logo.png");
         LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
         LOGO_SYBASE = createImage("icons/sybase_logo.png");
-
+        LOGO_GCLOUD = createImage("icons/google_cloud_sql_logo.png");
     }
 
     @Override
@@ -74,6 +75,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         UIUtils.dispose(LOGO_AZURE);
         UIUtils.dispose(LOGO_SQLSERVER);
         UIUtils.dispose(LOGO_SYBASE);
+        UIUtils.dispose(LOGO_GCLOUD);
     }
 
     @Override
@@ -81,6 +83,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     {
         boolean isSqlServer = isSqlServer();
         boolean isDriverAzure = isSqlServer && isDriverAzure();
+        boolean isDriverGoogleCloud = isDriverGoogleCloud();
 
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
@@ -92,7 +95,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
-            hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
+            hostLabel.setText(
+                isDriverGoogleCloud
+                    ? SQLServerUIMessages.dialog_connection_cloud_instance_label
+                    : SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(settingsGroup, SWT.BORDER);
@@ -100,8 +106,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
 
-            if (isDriverAzure) {
-                // no port number for Azure
+            if (isDriverAzure || isDriverGoogleCloud) {
+                // no port number for Azure or Google Cloud
                 gd.horizontalSpan = 3;
             } else {
                 Label portLabel = new Label(settingsGroup, SWT.NONE);
@@ -219,12 +225,17 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     public Image getImage() {
         boolean isSqlServer = isSqlServer();
         boolean isDriverAzure = isSqlServer && isDriverAzure();
+        boolean isDriverGoogleCloud = isDriverGoogleCloud();
 
-        return isSqlServer ?
-            (isDriverAzure ?
-                LOGO_AZURE :
-                LOGO_SQLSERVER) :
-            LOGO_SYBASE;
+        if (isDriverAzure) {
+            return LOGO_AZURE;
+        } else if (isDriverGoogleCloud) {
+            return LOGO_GCLOUD;
+        } else if (isSqlServer) {
+            return LOGO_SQLSERVER;
+        } else {
+            return LOGO_SYBASE;
+        }
     }
 
     private boolean isDriverAzure() {
@@ -233,6 +244,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
     private boolean isSqlServer() {
         return SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+    }
+
+    private boolean isDriverGoogleCloud() {
+        return SQLServerUtils.isDriverGoogleCloud(getSite().getDriver());
     }
 
     @Override
@@ -247,6 +262,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
+            } else if (getSite().getDriver().getDriverParameter("defaultHost") != null) {
+                hostText.setText(getSite().getDriver().getDriverParameter("defaultHost").toString());
             } else {
                 hostText.setText(isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST);
             }

@@ -29,6 +29,7 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_connection_adp_authentication_button;
     public static String dialog_connection_database_schema_label;
     public static String dialog_connection_host_label;
+    public static String dialog_connection_cloud_instance_label;
     public static String dialog_connection_password_label;
     public static String dialog_connection_port_label;
     public static String dialog_connection_user_name_label;

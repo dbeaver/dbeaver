@@ -63,6 +63,10 @@ public class SQLServerUtils {
         return driver.getId().contains("azure");
     }
 
+    public static boolean isDriverGoogleCloud(DBPDriver driver) {
+        return driver.getId().contains("gcloud");
+    }
+
     public static boolean isDriverJtds(DBPDriver driver) {
         return driver.getSampleURL().startsWith("jdbc:jtds");
     }
