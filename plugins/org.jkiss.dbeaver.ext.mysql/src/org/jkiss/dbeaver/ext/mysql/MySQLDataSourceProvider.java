@@ -106,8 +106,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 */
 
         if (driver.isUseURL()) {
-            String url = JDBCURL.generateUrlByTemplate(driver, connectionInfo);
-            return url;
+            return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
         }
 
         StringBuilder url = new StringBuilder();

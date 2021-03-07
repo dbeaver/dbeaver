@@ -47,9 +47,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     // as now we use server timestamp format by default
     private static final boolean MANAGE_SERVER_TIME_ZONE = true;
 
-    private Label hostLabel;
     private Text hostText;
-    private Label portLabel;
     private Text portText;
     private Text dbText;
     private ClientHomesSelector homesSelector;
@@ -85,8 +83,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
             return LOGO_MARIADB;
         } else if (id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_GCLOUD_MYSQL8)
-        		|| id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_GCLOUD_MYSQL5)) {
-        	return LOGO_GCLOUD;
+                || id.equalsIgnoreCase(MySQLConstants.DRIVER_ID_GCLOUD_MYSQL5)) {
+            return LOGO_GCLOUD;
         } else {
             return LOGO_MYSQL;
         }
@@ -103,6 +101,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             }
         };
         final int fontHeight = UIUtils.getFontHeight(composite);
+        DBPDriver driver = getSite().getDriver();
+        boolean hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
+        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         Composite addrGroup = new Composite(composite, SWT.NONE);
         addrGroup.setLayout(new GridLayout(1, false));
@@ -111,20 +112,26 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         Group serverGroup = UIUtils.createControlGroup(addrGroup, "Server", 2, GridData.FILL_HORIZONTAL, 0);
 
-        hostLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_host);
-        Composite hostComposite = UIUtils.createComposite(serverGroup, 3);
+        String hostOrCloudInstance;
+        if (hostIsCloudInstance) {
+            hostOrCloudInstance = MySQLUIMessages.dialog_connection_cloud_instance;
+        } else {
+            hostOrCloudInstance = MySQLUIMessages.dialog_connection_host;
+        }
+        UIUtils.createControlLabel(serverGroup, hostOrCloudInstance);
+        Composite hostComposite = UIUtils.createComposite(serverGroup, needsPort ? 3 : 2);
         hostComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         hostText = new Text(hostComposite, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 	    
-        portLabel = UIUtils.createControlLabel(hostComposite, MySQLUIMessages.dialog_connection_port);
-        portText = new Text(hostComposite, SWT.BORDER);
-        portText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        portText.addModifyListener(textListener);
+        if (needsPort) {
+            portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
+        }
 
         dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
         dbText.addModifyListener(textListener);
@@ -166,11 +173,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     public void loadSettings() {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         DBPDriver driver = getSite().getDriver();
-        boolean hostIsCloudInstance = CommonUtils.getBoolean(driver.getDriverParameter("hostIsCloudInstance"), false);
-        needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
         super.loadSettings();
-        
+
         // Load values from new connection info
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
@@ -180,13 +185,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             } else {
                 hostText.setText(MySQLConstants.DEFAULT_HOST);
             }
-	        String hostOrCloudInstance;
-	        if (hostIsCloudInstance) {
-	            hostOrCloudInstance = MySQLUIMessages.dialog_connection_cloud_instance;
-	        } else {
-	            hostOrCloudInstance = MySQLUIMessages.dialog_connection_host;
-	        }
-	        hostLabel.setText(hostOrCloudInstance);
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
@@ -196,8 +194,6 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             } else {
                 portText.setText("");
             }
-            UIUtils.setControlVisible(portLabel, needsPort);
-            UIUtils.setControlVisible(portText, needsPort);
         }
 
         if (dbText != null) {
