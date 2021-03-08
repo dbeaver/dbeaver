@@ -34,6 +34,7 @@ public class PostgreServerType extends AbstractDescriptor {
     private final boolean needsPort;
 
     private final boolean supportsCustomConnectionURL;
+    private final boolean turnOffPreparedStatements;
 
     PostgreServerType(IConfigurationElement config) {
         super(config);
@@ -45,6 +46,7 @@ public class PostgreServerType extends AbstractDescriptor {
         supportsCustomConnectionURL = CommonUtils.getBoolean(config.getAttribute("customURL"), false);
         hostIsCloudInstance = CommonUtils.getBoolean(config.getAttribute("hostIsCloudInstance"), false);
         needsPort = CommonUtils.getBoolean(config.getAttribute("needsPort"), true);
+        turnOffPreparedStatements = CommonUtils.getBoolean(config.getAttribute("turnOffPreparedStatements"), false);
     }
 
     public String getId() {
@@ -77,5 +79,9 @@ public class PostgreServerType extends AbstractDescriptor {
     
     public boolean needsPort() {
 	return needsPort;
+    }
+
+    public boolean turnOffPreparedStatements() {
+        return turnOffPreparedStatements;
     }
 }

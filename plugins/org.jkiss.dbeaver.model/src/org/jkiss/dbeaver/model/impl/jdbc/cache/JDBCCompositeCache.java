@@ -294,10 +294,10 @@ public abstract class JDBCCompositeCache<
                             forParent.getName() :
                             (parentColumnName instanceof Number ?
                                 JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
-                                JDBCUtils.safeGetString(dbResult, parentColumnName.toString()));
+                                JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
                         String objectName = objectColumnName instanceof Number ?
                             JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
-                            JDBCUtils.safeGetString(dbResult, objectColumnName.toString());
+                            JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
 
                         if (CommonUtils.isEmpty(objectName)) {
                             // Use default name

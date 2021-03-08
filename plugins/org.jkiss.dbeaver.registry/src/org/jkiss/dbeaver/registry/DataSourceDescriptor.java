@@ -919,7 +919,7 @@ public class DataSourceDescriptor
             }
             return true;
         } catch (Exception e) {
-            log.debug("Connection failed (" + getId() + ")");
+            log.debug("Connection failed (" + getId() + ")", e);
             if (tunnelHandler != null) {
                 try {
                     tunnelHandler.closeTunnel(monitor);
