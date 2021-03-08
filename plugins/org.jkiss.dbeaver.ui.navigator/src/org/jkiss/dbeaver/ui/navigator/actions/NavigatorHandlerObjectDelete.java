@@ -55,14 +55,18 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             return null;
         }
         final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        @SuppressWarnings("unchecked")
-        final List<Object> selectedObjects = ((IStructuredSelection) selection).toList();
-        final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
-        makeDeletionAttempt(window, selectedObjects, deleter);
+        tryDeleteObjects(window, (IStructuredSelection) selection);
         return null;
     }
 
-    private void makeDeletionAttempt(final IWorkbenchWindow window, final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
+    public static boolean tryDeleteObjects(IWorkbenchWindow window, IStructuredSelection selection) {
+        @SuppressWarnings("unchecked")
+        final List<Object> selectedObjects = selection.toList();
+        final NavigatorObjectsDeleter deleter = NavigatorObjectsDeleter.of(selectedObjects, window);
+        return makeDeletionAttempt(window, selectedObjects, deleter);
+    }
+
+    private static boolean makeDeletionAttempt(final IWorkbenchWindow window, final List<Object> selectedObjects, final NavigatorObjectsDeleter deleter) {
         if (deleter.hasNodesFromDifferentDataSources()) {
             // attempt to delete database nodes from different databases
             DBWorkbench.getPlatformUI().
@@ -70,7 +74,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                             UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_title,
                             UINavigatorMessages.error_deleting_multiple_objects_from_different_datasources_message
                     );
-            return;
+            return false;
         }
         final ConfirmationDialog dialog = ConfirmationDialog.of(
                 window.getShell(),
@@ -79,13 +83,17 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         final int result = dialog.open();
         if (result == IDialogConstants.YES_ID) {
             deleter.delete();
+            return true;
         } else if (result == IDialogConstants.DETAILS_ID) {
             final boolean persistCheck = deleter.showScriptWindow();
             if (persistCheck) {
                 deleter.delete();
+                return true;
             } else {
-                makeDeletionAttempt(window, selectedObjects, deleter);
+                return makeDeletionAttempt(window, selectedObjects, deleter);
             }
+        } else {
+            return false;
         }
     }
 
