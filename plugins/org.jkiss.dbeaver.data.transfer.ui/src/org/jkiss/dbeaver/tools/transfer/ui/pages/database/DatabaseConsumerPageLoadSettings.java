@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
@@ -221,10 +222,13 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         if (caveats.isEmpty() || caveats.size() == 1 && caveats.contains("")) {
             return DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
         }
-        StringBuilder tooltip = new StringBuilder(DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats);
-        tooltip.append("\n");
+        StringJoiner tooltip = new StringJoiner(
+            "\n",
+            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n\n",
+            ""
+        );
         for (String caveat: caveats) {
-            tooltip.append(caveat);
+            tooltip.add(caveat);
         }
         return tooltip.toString();
     }
