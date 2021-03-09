@@ -53,7 +53,7 @@ public class DataVirtualityDataSourceProvider extends JDBCDataSourceProvider {
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:DataVirtuality:");
+        url.append("jdbc:datavirtuality:");
 
         url.append(connectionInfo.getDatabaseName());
         url.append("@");
@@ -64,11 +64,13 @@ public class DataVirtualityDataSourceProvider extends JDBCDataSourceProvider {
             url.append("mm");
         }
 
-        url.append("//");
+        url.append("://");
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }
+
+        log.debug("getConnectionURL" + url.toString());
 
         return url.toString();
     }

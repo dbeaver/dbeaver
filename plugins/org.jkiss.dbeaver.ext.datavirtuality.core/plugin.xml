@@ -18,7 +18,7 @@
                 parent="generic"
                 label="Data Virtuality"
                 icon="icons/datavirtuality_icon.png"
-                dialect="datavirtuality">
+                dialect="basic">
             <drivers managable="true">
 
                 <driver
@@ -27,7 +27,7 @@
                         class="com.datavirtuality.dv.jdbc.Driver"
                         icon="icons/datavirtuality_icon.png"
                         iconBig="icons/datavirtuality_icon_big.png"
-                        sampleURL="jdbc:datavirtuality:{database}@mm//{host}:{port}"
+                        sampleURL="jdbc:datavirtuality:{database}@mm://{host}:{port}"
                         defaultPort="31000"
                         defaultDatabase="datavirtuality"
                         defaultUser="admin"
@@ -44,7 +44,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="datavirtuality" parent="generic" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualitySQLDialect" label="DataVirtuality" description="Data Virtuality SQL dialect." icon="icons/datavirtuality_icon.png">
+        <dialect id="datavirtuality" parent="generic" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualitySQLDialect" label="Data Virtuality" description="Data Virtuality SQL dialect." icon="icons/datavirtuality_icon.png">
         </dialect>
     </extension>
 

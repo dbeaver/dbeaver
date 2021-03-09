@@ -52,7 +52,12 @@ public class DataVirtualityMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+        return false;
+    }
+
+    @Override
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DataVirtuality object DDL")) {
@@ -77,21 +82,14 @@ public class DataVirtualityMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
-        return false;
-    }
-
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        return getTableDDL(monitor, sourceObject, options);
-    }
-
-    @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
+
         boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DataVirtuality object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT definition FROM SYSADMIN.ProcDefinitions WHERE name ='" + sourceObject.getProcedureSignature(monitor, false) + "'"))
+                "SELECT definition FROM SYSADMIN.ProcDefinitions WHERE name ='" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'"))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
