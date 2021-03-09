@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -52,8 +52,8 @@ import java.util.Locale;
 /**
  * DataVirtualityConnectionPage
  */
-public class DataVirtualityConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage, IDataSourceConnectionTester
-{
+public class DataVirtualityConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider, IDataSourceConnectionTester {
+
     private static final Log log = Log.getLog(DataVirtualityConnectionPage.class);
 
     private Text hostText;
@@ -69,14 +69,12 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     private static ImageDescriptor logoImage = DataVirtualityUIActivator.getImageDescriptor("icons/datavirtuality_logo.png"); //$NON-NLS-1$
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
         setImageDescriptor(logoImage);
 
         Composite control = new Composite(composite, SWT.NONE);
@@ -166,15 +164,13 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return hostText != null &&
-            !CommonUtils.isEmpty(hostText.getText());
+                !CommonUtils.isEmpty(hostText.getText());
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         // Load values from new connection info
@@ -204,7 +200,7 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
         }
         // TODO: need to fix for checkbox
         if (sslCheckbox != null) {
-            sslCheckbox.setSelection(CommonUtils.notEmpty(connectionInfo.getProviderProperty(DataVirtualityConstants.PROP_SSL))=="mms" ? true : false);
+            sslCheckbox.setSelection(CommonUtils.notEmpty(connectionInfo.getProviderProperty(DataVirtualityConstants.PROP_SSL)).equals("mms") ? true : false);
         }
         if (usernameText != null) {
             usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
@@ -215,8 +211,7 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -280,10 +275,10 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this)
+                new DriverPropertiesDialogPage(this)
         };
     }
 
