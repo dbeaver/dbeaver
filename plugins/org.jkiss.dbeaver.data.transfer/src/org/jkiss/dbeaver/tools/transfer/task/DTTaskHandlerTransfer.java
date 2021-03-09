@@ -20,13 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 import java.io.PrintStream;
@@ -101,12 +103,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                     pipe.initPipe(settings, i, dataPipes.size());
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
                     consumer.startTransfer(monitor);
-                    if (consumer instanceof DBPReferentialIntegrityController) {
-                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
-                        if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                            controller.setReferentialIntegrity(monitor, false);
-                            indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
-                        }
+                    if (enableReferentialIntegrity(consumer, monitor, false)) {
+                        indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
                     }
                     monitor.worked(1);
                 }
@@ -155,15 +153,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                 try {
                     monitor.beginTask("Post transfer work", affectedPipes.size());
                     for (DataTransferPipe pipe: affectedPipes) {
-                        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
-                        if (!(consumer instanceof DBPReferentialIntegrityController)) {
-                            continue;
-                        }
-                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
                         try {
-                            if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                                controller.setReferentialIntegrity(monitor, true);
-                            }
+                            enableReferentialIntegrity(pipe.getConsumer(), monitor, true);
                         } catch (DBException e) {
                             dbExceptionWasThrown[0] = true;
                         }
@@ -185,5 +176,19 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         if (dbExceptionWasThrown[0]) {
             throw new DBException("Unable to restore referential integrity properly");
         }
+    }
+
+    private static boolean enableReferentialIntegrity(@NotNull IDataTransferConsumer<?, ?> consumer,
+                                                   @NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        if (!(consumer instanceof DatabaseTransferConsumer)) {
+            return false;
+        }
+        DatabaseTransferConsumer databaseTransferConsumer = (DatabaseTransferConsumer) consumer;
+        DatabaseConsumerSettings settings = databaseTransferConsumer.getSettings();
+        if (settings.isDisableReferentialIntegrity() && databaseTransferConsumer.supportsChangingReferentialIntegrity(monitor)) {
+            databaseTransferConsumer.setReferentialIntegrity(monitor, enable);
+            return true;
+        }
+        return false;
     }
 }
