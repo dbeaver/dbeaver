@@ -705,14 +705,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return settings.isDisableReferentialIntegrity() && checkTargetContainer(monitor) instanceof DBPReferentialIntegrityController;
+        return checkTargetContainer(monitor) instanceof DBPReferentialIntegrityController;
     }
 
     @Override
     public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
-        if (settings.isDisableReferentialIntegrity()) {
-            throw new DBException("Changing referential integrity is unsupported!");
-        }
         DBSObject dbsObject = checkTargetContainer(monitor);
         if (!(dbsObject instanceof DBPReferentialIntegrityController)) {
             throw new DBException("Changing referential integrity is unsupported!");
@@ -729,6 +726,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             return ((DBPReferentialIntegrityController) dbsObject).getCaveatsDescription(monitor);
         }
         return "";
+    }
+
+    public DatabaseConsumerSettings getSettings() {
+        return settings;
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
