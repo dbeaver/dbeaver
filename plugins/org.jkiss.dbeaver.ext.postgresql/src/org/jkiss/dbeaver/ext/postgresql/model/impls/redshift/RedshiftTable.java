@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreForkTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -29,7 +29,7 @@ import java.sql.SQLException;
 /**
  * RedshiftTable base
  */
-public class RedshiftTable extends PostgreForkTable {
+public class RedshiftTable extends PostgreTableRegular {
     private static final Log log = Log.getLog(RedshiftTable.class);
 
     public RedshiftTable(PostgreSchema catalog) {

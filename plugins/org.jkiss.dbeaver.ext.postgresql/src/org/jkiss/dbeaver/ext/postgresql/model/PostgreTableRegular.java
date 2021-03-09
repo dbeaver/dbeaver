@@ -47,11 +47,15 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
 
     @Override
     public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
-        return true;
+        return getDataSource().getServerType().supportsDisablingAllTriggers();
     }
 
     @Override
     public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        if (!supportsChangingReferentialIntegrity(monitor)) {
+            throw new DBException("Changing referential integrity is not supported");
+        }
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Disabling referential integrity")) {
             try (JDBCStatement statement = session.createStatement()) {
                 StringBuilder sql = new StringBuilder("ALTER TABLE ");
@@ -72,6 +76,9 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
     @NotNull
     @Override
     public String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) {
-        return "PostgreSQL tables: all triggers will be either enabled or disabled";
+        if (supportsChangingReferentialIntegrity(monitor)) {
+            return "PostgreSQL tables: all triggers will be either enabled or disabled";
+        }
+        return "";
     }
 }
