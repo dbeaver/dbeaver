@@ -2054,17 +2054,21 @@ public final class DBUtils {
             return ((Comparable) cell1).compareTo(cell2);
         } else {
             if (cell1 instanceof Number) {
-                Number num2 = (Number) GeneralUtils.convertString(String.valueOf(cell2), cell1.getClass());
+                Object num2 = GeneralUtils.convertString(String.valueOf(cell2), cell1.getClass());
                 if (num2 == null) {
                     return -1;
                 }
-                return CommonUtils.compareNumbers((Number) cell1, num2);
+                if (num2 instanceof Number) {
+                    return CommonUtils.compareNumbers((Number) cell1, (Number) num2);
+                }
             } else if (cell2 instanceof Number) {
-                Number num1 = (Number) GeneralUtils.convertString(String.valueOf(cell1), cell2.getClass());
+                Object num1 = GeneralUtils.convertString(String.valueOf(cell1), cell2.getClass());
                 if (num1 == null) {
                     return 1;
                 }
-                return CommonUtils.compareNumbers(num1, (Number) cell2);
+                if (num1 instanceof Number) {
+                    return CommonUtils.compareNumbers((Number) num1, (Number) cell2);
+                }
             }
             String str1 = String.valueOf(cell1);
             String str2 = String.valueOf(cell2);

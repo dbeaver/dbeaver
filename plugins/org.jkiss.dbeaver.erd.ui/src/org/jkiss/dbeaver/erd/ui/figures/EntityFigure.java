@@ -176,9 +176,9 @@ public class EntityFigure extends Figure {
     private void changeHeaderColor(ColorRegistry colorRegistry) {
         DBSObjectContainer container = DBUtils.getParentOfType(DBSObjectContainer.class, part.getEntity().getObject());
         if (container != null) {
-            DBPDataSourceContainer dataSource = DBUtils.getParentOfType(DBPDataSourceContainer.class, part.getEntity().getObject());
-            if (dataSource != null) {
-                int containerIndex = part.getDiagram().getContainerIndex(dataSource, container);
+            DBPDataSourceContainer dataSourceContainer = container.getDataSource().getContainer();
+            if (dataSourceContainer != null) {
+                int containerIndex = part.getDiagram().getContainerIndex(dataSourceContainer, container);
                 if (containerIndex == 0) {
                     setBackgroundColor(colorRegistry.get(ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
                 } else {

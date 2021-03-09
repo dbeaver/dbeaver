@@ -110,6 +110,8 @@ public interface DBPDriver extends DBPNamedObject
     boolean isLicenseRequired();
     boolean isCustomDriverLoader();
     boolean isUseURL();
+    boolean isCustomEndpointInformation();
+
     // Can be created
     boolean isInstantiable();
     // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries. Basically it is ODBC driver.

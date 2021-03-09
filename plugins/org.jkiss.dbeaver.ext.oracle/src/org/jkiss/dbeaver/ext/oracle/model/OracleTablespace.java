@@ -310,7 +310,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     @Override
     public long getStatObjectSize() {
-        return usedSize;
+        return usedSize == null ? 0 : usedSize;
     }
 
     @Nullable

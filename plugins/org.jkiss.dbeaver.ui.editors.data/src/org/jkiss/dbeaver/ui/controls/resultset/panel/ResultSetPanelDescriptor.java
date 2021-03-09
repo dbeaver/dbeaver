@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContext;
@@ -118,7 +119,7 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
             if (dataSource == null) {
                 return false;
             }
-            if (!supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderId())) {
+            if (!supportsAnyProvider(dataSource)) {
                 return false;
             }
         }
@@ -135,6 +136,18 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
         return
             (presentationId != null && supportedPresentations.contains(presentationId)) ||
             (presentationType != null && supportedPresentationTypes.contains(presentationType));
+    }
+
+    private boolean supportsAnyProvider(DBPDataSource dataSource) {
+        for (DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor();
+            provider != null;
+            provider = provider.getParentProvider())
+        {
+            if (supportedDataSources.contains(provider.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public IResultSetPanel createInstance() throws DBException {

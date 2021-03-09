@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -155,6 +156,7 @@ public final class DBStructUtils {
     }
 
     public static <T extends DBSEntity> void sortTableList(DBRProgressMonitor monitor, Collection<T> input, List<T> simpleTables, List<T> cyclicTables, List<T> views) throws DBException {
+        monitor.beginTask("Sorting table list", input.size());
         List<T> realTables = new ArrayList<>();
         for (T entity : input) {
             if (entity instanceof DBSView || (entity instanceof DBSTable && ((DBSTable) entity).isView())) {
@@ -163,6 +165,7 @@ public final class DBStructUtils {
                 realTables.add(entity);
             }
         }
+        DBRProgressMonitor proxyMonitor = new SubTaskProgressMonitor(monitor);
 
         // 1. Get tables without FKs
         for (Iterator<T> iterator = realTables.iterator(); iterator.hasNext(); ) {
@@ -171,13 +174,14 @@ public final class DBStructUtils {
             }
             T table = iterator.next();
             try {
-                if (CommonUtils.isEmpty(table.getAssociations(monitor))) {
+                if (CommonUtils.isEmpty(table.getAssociations(proxyMonitor))) {
                     simpleTables.add(table);
                     iterator.remove();
                 }
             } catch (DBException e) {
                 log.debug(e);
             }
+            monitor.worked(1);
         }
 
         // 2. Get tables referring tables from p.1 only
@@ -195,7 +199,8 @@ public final class DBStructUtils {
                 T table = iterator.next();
                 try {
                     boolean allGood = true;
-                    for (DBSEntityAssociation ref : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                    for (DBSEntityAssociation ref : CommonUtils.safeCollection(table.getAssociations(proxyMonitor))) {
+                        monitor.worked(1);
                         DBSEntity refEntity = ref.getAssociatedEntity();
                         if (refEntity == null || (!simpleTables.contains(refEntity) && refEntity != table)) {
                             allGood = false;
@@ -215,12 +220,15 @@ public final class DBStructUtils {
 
         // 4. The rest is cycled tables
         cyclicTables.addAll(realTables);
+        monitor.done();
     }
 
     public static String mapTargetDataType(DBSObject objectContainer, DBSTypedObject typedObject, boolean addModifiers) {
-        if (typedObject instanceof DBSObject) {
+        if (typedObject instanceof DBSObject && objectContainer != null) {
             // If source and target datasources have the same type then just return the same type name
-            if (((DBSObject) typedObject).getDataSource().getClass() == objectContainer.getDataSource().getClass() && addModifiers) {
+            DBPDataSource srcDataSource = ((DBSObject) typedObject).getDataSource();
+            DBPDataSource tgtDataSource = objectContainer.getDataSource();
+            if (srcDataSource != null && tgtDataSource != null && srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
                 return typedObject.getFullTypeName();
             }
         }
@@ -264,18 +272,28 @@ public final class DBStructUtils {
                             }
                         }
                         if (targetType == null) {
-                            if (typeNameLower.contains("float")
-                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6)) {
+                            if (typeNameLower.contains("float") ||
+                                typeNameLower.contains("real") ||
+                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 6))
+                            {
                                 for (String psn : possibleTypes.keySet()) {
-                                    if (psn.contains("float")) {
+                                    if (psn.contains("float") || psn.contains("real")) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
                                 }
-                            } else if (typeNameLower.contains("double")
-                                    || (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15)) {
+                            } else if (typeNameLower.contains("double") ||
+                                (typedObject.getScale() != null && typedObject.getScale() > 0 && typedObject.getScale() <= 15))
+                            {
                                 for (String psn : possibleTypes.keySet()) {
                                     if (psn.contains("double")) {
+                                        targetType = possibleTypes.get(psn);
+                                        break;
+                                    }
+                                }
+                            } else if (typeNameLower.contains("int")) {
+                                for (String psn : possibleTypes.keySet()) {
+                                    if (psn.contains("int")) {
                                         targetType = possibleTypes.get(psn);
                                         break;
                                     }
@@ -304,8 +322,8 @@ public final class DBStructUtils {
         }
 
         // Get type modifiers from target datasource
-        if (addModifiers && objectContainer instanceof DBPDataSource) {
-            SQLDialect dialect = ((DBPDataSource) objectContainer).getSQLDialect();
+        if (addModifiers && objectContainer != null) {
+            SQLDialect dialect = objectContainer.getDataSource().getSQLDialect();
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, typedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;

@@ -33,14 +33,11 @@ import java.io.File;
 import java.util.Arrays;
 
 public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer {
-
     public DBeaverPreferencesInitializer() {
     }
 
     @Override
     public void initializeDefaultPreferences() {
-        boolean isWindows = RuntimeUtils.isPlatformWindows();
-
         // Init default preferences
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
@@ -49,7 +46,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         // Agent
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, isWindows);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, RuntimeUtils.isWindows());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE, true);
@@ -79,5 +76,4 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.LOGS_DEBUG_LOCATION,
             "${" + SystemVariablesResolver.VAR_WORKSPACE + "}" + File.separator + ".metadata" + File.separator + DBConstants.DEBUG_LOG_FILE_NAME);
     }
-
 }

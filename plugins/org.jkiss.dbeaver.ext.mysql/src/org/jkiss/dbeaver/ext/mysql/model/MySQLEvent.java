@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,7 +37,7 @@ import java.util.Map;
 /**
  * MySQLEvent
  */
-public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
+public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject, DBPQualifiedObject {
 
     private static final String CAT_DETAILS = "Details";
     private static final String CAT_STATS = "Statistics";
@@ -257,6 +255,10 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         sql.append(" EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n");
         if (intervalValue != null && intervalField != null) {
             sql.append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
+        } else if (executeAt != null) {
+            sql.append("ON SCHEDULE AT '").append(dateFormat.format(executeAt)).append("'\n");
+        } else {
+            sql.append("ON SCHEDULE AT CURRENT_TIMESTAMP\n");
         }
         if (starts != null) {
             sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
@@ -292,4 +294,11 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         return catalog;
     }
 
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+                catalog,
+                this);
+    }
 }

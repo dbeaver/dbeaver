@@ -213,7 +213,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     public void dropNodes(Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
-                ((DBNDataSource) node).setFolder(folder);
+                ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
             } else if (node instanceof DBNLocalFolder) {
                 ((DBNLocalFolder) node).getFolder().setParent(this.getFolder());
             }

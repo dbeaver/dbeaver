@@ -22,14 +22,15 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDContainer;
+import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 /**
  * ERD object container (diagram)
  */
 public interface ERDContainerDecorated extends ERDContainer {
-
     class NodeVisualInfo {
         public Rectangle initBounds;
         public boolean transparent;
@@ -44,7 +45,7 @@ public interface ERDContainerDecorated extends ERDContainer {
         public NodeVisualInfo() {
         }
 
-        public NodeVisualInfo(NodePart part) {
+        private void init(NodePart part) {
             this.initBounds = part.getBounds();
             IFigure figure = part.getFigure();
             if (figure != null) {
@@ -54,6 +55,22 @@ public interface ERDContainerDecorated extends ERDContainer {
                 this.font = figure.getFont();
             }
         }
+
+        public NodeVisualInfo(EntityPart part) {
+            init(part);
+            NodeVisualInfo visualInfo = part.getDiagram().getVisualInfo(part.getEntity().getObject());
+            if (visualInfo != null) {
+                this.zOrder = visualInfo.zOrder;
+            }
+        }
+
+        public NodeVisualInfo(NotePart part) {
+            init(part);
+            NodeVisualInfo visualInfo = part.getDiagram().getVisualInfo(part.getNote());
+            if (visualInfo != null) {
+                this.zOrder = visualInfo.zOrder;
+            }
+        }
     }
 
     ERDDecorator getDecorator();
@@ -61,5 +78,4 @@ public interface ERDContainerDecorated extends ERDContainer {
     ERDAttributeVisibility getAttributeVisibility();
 
     NodeVisualInfo getVisualInfo(DBSEntity entity, boolean create);
-
 }

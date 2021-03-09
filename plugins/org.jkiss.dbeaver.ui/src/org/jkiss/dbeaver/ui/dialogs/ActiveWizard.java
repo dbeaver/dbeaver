@@ -77,7 +77,7 @@ public abstract class ActiveWizard extends BaseWizard
         for (WizardPrefPage prefPage : pages) {
             savePageSettings(prefPage);
 
-            WizardPrefPage[] subPages = prefPage.getSubPages(false, true);
+            WizardPrefPage[] subPages = prefPage.getDialogPages(false, true);
             if (subPages != null) {
                 savePrefPageSettings(subPages);
             }

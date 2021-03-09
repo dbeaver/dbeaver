@@ -6,5 +6,6 @@ Bundle-SymbolicName: org.jkiss.dbeaver.intro;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20170101
 Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.intro

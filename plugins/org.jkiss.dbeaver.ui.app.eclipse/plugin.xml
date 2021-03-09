@@ -23,6 +23,7 @@
 
     <extension point="org.jkiss.dbeaver.application">
         <application id="dbeaver-ce-eclipse"
+            family="DB"
             name="%productName"
             description="%productSubTitle"/>
     </extension>

@@ -95,4 +95,9 @@ public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
 
     }
 
+    @Override
+    public void handleHover(DBNNode node, Tree tree, TreeItem item, Event event) {
+
+    }
+
 }

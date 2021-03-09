@@ -1158,7 +1158,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         for (ERDEntity newEntity : newDiagram.getEntities()) {
             NodePart oldEntity = oldDiagram.getChildByObject(newEntity.getObject());
             if (oldEntity instanceof EntityPart) {
-                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(oldEntity);
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((EntityPart) oldEntity);
                 newDiagram.addVisualInfo(newEntity.getObject(), vi);
                 hasChanges = true;
             }
@@ -1167,7 +1167,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         for (ERDNote newNote : newDiagram.getNotes()) {
             NodePart oldNotePart = oldDiagram.getChildByObject(newNote.getObject());
             if (oldNotePart instanceof NotePart) {
-                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(oldNotePart);
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((NotePart) oldNotePart);
                 vi.initBounds = oldNotePart.getBounds();
                 newDiagram.addVisualInfo(newNote, vi);
                 hasChanges = true;
@@ -1236,6 +1236,4 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         protected abstract void finishLoading();
     }
-
-
 }

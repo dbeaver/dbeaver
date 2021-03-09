@@ -106,11 +106,26 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
 
             @Override
+            public boolean filterObjectByPattern(Object object) {
+                return object instanceof DBNDataSource;
+            }
+
+            @Override
             public boolean select(Object element) {
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+                return element instanceof DBNProject ||
+                    element instanceof DBNProjectDatabases ||
+                    element instanceof DBNLocalFolder ||
+                    element instanceof DBNDataSource;
             }
         };
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter) {
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(
+            group,
+            getTreeRootNode(),
+            SWT.SINGLE | SWT.BORDER,
+            false,
+            dsFilter,
+            "Enter a part of connection name here")
+        {
             @Override
             protected void onTreeRefresh() {
                 DBNNode treeRootNode = getTreeRootNode();

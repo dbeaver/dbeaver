@@ -40,8 +40,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -219,8 +219,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
                 ((IDataSourceConnectionTester) page).testConnection(session);
             }
         }
-        if (page instanceof ICompositeDialogPage && isPageActive(page)) {
-            for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages(false, false))) {
+        if (page instanceof IDialogPageProvider && isPageActive(page)) {
+            for (IDialogPage subPage : ArrayUtils.safeArray(((IDialogPageProvider) page).getDialogPages(false, false))) {
                 testInPage(session, subPage);
             }
         }

@@ -262,6 +262,8 @@ public class DataSourceHandler
     public static void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
         monitor.beginTask("Close active transaction", 1);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction")) {
+            // Disable logging to avoid commit mode recovery and other UI callbacks
+            session.enableLogging(false);
             monitor.subTask("End active transaction");
             EndTransactionTask task = new EndTransactionTask(session, commitTxn);
             RuntimeUtils.runTask(task, "Close active transactions", END_TRANSACTION_WAIT_TIME);

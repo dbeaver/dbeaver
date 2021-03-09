@@ -63,7 +63,6 @@ import java.util.Locale;
  * Script selector panel (shell)
  */
 public class ScriptSelectorPanel extends AbstractPopupPanel {
-
     private static final Log log = Log.getLog(ScriptSelectorPanel.class);
 
     private static final String DIALOG_ID = "DBeaver.ScriptSelectorPopup";
@@ -323,6 +322,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
         final Tree tree = scriptViewer.getTree();
         final TreeColumn[] columns = tree.getColumns();
+        tree.setHeaderVisible(true);
         columns[0].pack();
         columns[0].setWidth(columns[0].getWidth() + 10);
         columns[1].pack();

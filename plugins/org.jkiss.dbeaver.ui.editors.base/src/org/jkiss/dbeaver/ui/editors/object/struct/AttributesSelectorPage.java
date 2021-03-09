@@ -269,6 +269,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
                         if (isShowHiddenAttributes() || !DBUtils.isHiddenObject(attr) || DBUtils.isRowIdAttribute(attr)) {
                             attrList.add(attr);
+                            // Preload node - required later to display its icon
+                            DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, attr, true);
                         }
                     }
                 } catch (DBException e) {
@@ -298,11 +300,14 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                     }
                     UIUtils.packColumns(columnsTable);
                     updateColumnSelection();
-                    updateToggleButton();
+                    onAttributesLoad();
                 });
             }
         });
         loadJob.schedule();
+    }
+
+    protected void onAttributesLoad() {
     }
 
     protected boolean isShowHiddenAttributes() {
@@ -413,10 +418,11 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
                 DBSEntityAttribute attribute = ((AttributeInfo) item.getData()).getAttribute();
                 if (predicate.test(attribute)) {
                     item.setChecked(true);
-                    handleItemSelect(item, false);
                 }
             }
+            handleItemSelect(item, false);
         }
+        updateToggleButton();
     }
 
     public void updateColumnSelection() {

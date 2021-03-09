@@ -245,12 +245,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     private void closeContext(boolean removeContext) {
-        disconnect();
-
+        // We remove context before it is actually closed.
+        // Because disconnect may (potentially) hang in socket forever
         if (removeContext) {
             // Remove self from context list
             this.instance.removeContext(this);
         }
+
+        disconnect();
     }
 
     //////////////////////////////////////////////////////////////

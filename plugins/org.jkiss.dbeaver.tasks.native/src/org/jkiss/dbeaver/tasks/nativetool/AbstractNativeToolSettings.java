@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -45,6 +46,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
 
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
+    @Nullable
     private DBPNativeClientLocation clientHome;
     private PrintStream logWriter = System.out;
 
@@ -97,11 +99,12 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         return clientHomeName;
     }
 
+    @Nullable
     public DBPNativeClientLocation getClientHome() {
         return clientHome;
     }
 
-    public void setClientHome(DBPNativeClientLocation clientHome) {
+    public void setClientHome(@Nullable DBPNativeClientLocation clientHome) {
         this.clientHome = clientHome;
         this.clientHomeName = clientHome == null ? null : clientHome.getName();
     }
@@ -252,5 +255,4 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
     }
-
 }

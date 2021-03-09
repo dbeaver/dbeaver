@@ -44,10 +44,17 @@ import java.util.Locale;
 /**
  * RuntimeUtils
  */
-public class RuntimeUtils {
+public final class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
-    @SuppressWarnings("unchecked")
+    private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
+    private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
+    private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
+
+    private RuntimeUtils() {
+        //intentionally left blank
+    }
+
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType) {
         return Platform.getAdapterManager().getAdapter(adapter, objectType);
     }
@@ -108,7 +115,7 @@ public class RuntimeUtils {
     }
 
     public static String getNativeBinaryName(String binName) {
-        return GeneralUtils.isWindows() ? binName + ".exe" : binName;
+        return isWindows() ? binName + ".exe" : binName;
     }
 
     public static File getNativeClientBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException {
@@ -150,7 +157,7 @@ public class RuntimeUtils {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-            log.warn("Sleep interrupted", e);
+            log.debug("Sleep interrupted", e);
         }
     }
 
@@ -277,12 +284,16 @@ public class RuntimeUtils {
         }
     }
 
-    public static boolean isPlatformMacOS() {
-        return Platform.getOS().toLowerCase().contains("macos");
+    public static boolean isWindows() {
+        return IS_WINDOWS;
     }
 
-    public static boolean isPlatformWindows() {
-        return Platform.getOS().toLowerCase().contains("win32");
+    public static boolean isMacOS() {
+        return IS_MACOS;
+    }
+
+    public static boolean isLinux() {
+        return IS_LINUX;
     }
 
     public static void setThreadName(String name) {
@@ -312,5 +323,4 @@ public class RuntimeUtils {
             }
         }
     }
-
 }

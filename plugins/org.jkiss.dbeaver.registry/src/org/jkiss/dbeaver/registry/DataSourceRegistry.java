@@ -200,7 +200,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public DataSourceDescriptor findDataSourceByName(String name) {
         synchronized (dataSources) {
             for (DataSourceDescriptor dsd : dataSources.values()) {
-                if (dsd.getName().equals(name)) {
+                if (!dsd.isHidden() && dsd.getName().equals(name)) {
                     return dsd;
                 }
             }

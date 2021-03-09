@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,75 +25,73 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * TabbedFolderPageProperties
  */
 public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart, ICustomActionsProvider {
 
-    private static final Log log = Log.getLog(TabbedFolderPageForm.class);
+    private IWorkbenchPart part;
+    private IDatabaseEditorInput input;
 
-    private static final String VALUE_KEY = "form.data.value";
-    private static final String LIST_VALUE_KEY = "form.data.list.value";
-
-    protected IWorkbenchPart part;
-    protected ObjectEditorPageControl ownerControl;
-    protected IDatabaseEditorInput input;
+    private ObjectEditorPageControl ownerControl;
     private Font boldFont;
     private Composite propertiesGroup;
     private DBPPropertySource curPropertySource;
-    private final Map<DBPPropertyDescriptor, Control> editorMap = new HashMap<>();
+
     private boolean activated;
     private Button saveButton;
     private Button scriptButton;
     private Button revertButton;
-    private Composite curButtonsContainer;
 
-    private transient volatile boolean isLoading;
+    private CustomFormEditor formEditor;
 
-    public TabbedFolderPageForm(IWorkbenchPart part, ObjectEditorPageControl ownerControl, IDatabaseEditorInput input) {
+    TabbedFolderPageForm(IWorkbenchPart part, ObjectEditorPageControl ownerControl, IDatabaseEditorInput input) {
         this.part = part;
         this.ownerControl = ownerControl;
         this.input = input;
+        this.formEditor = new CustomFormEditor(input.getDatabaseObject(), input.getCommandContext(), input.getPropertySource()) {
+
+            @Override
+            protected void openObjectLink(Object linkData) {
+                if (linkData instanceof DBSObject) {
+                    NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) linkData);
+                }
+            }
+        };
     }
 
     @Override
@@ -122,7 +119,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                             // Simple value compare on update is not enough because value can be transformed (e.g. uppercased)
                             // and it will differ from the value in edit control
                             Object propId = ((DBECommandProperty<?>) command).getHandler().getId();
-                            updateOtherPropertyValues(propId);
+                            formEditor.updateOtherPropertyValues(propId);
                         }
                     });
                 }
@@ -177,16 +174,16 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             return;
         }
         curPropertySource = input.getPropertySource();
-        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getProperties());
+        List<DBPPropertyDescriptor> allProps = formEditor.filterProperties(curPropertySource.getProperties());
 
-        boolean firstInit = editorMap.isEmpty();
+        boolean firstInit = !formEditor.hasEditors();
         if (firstInit) {
             // Prepare property lists
             List<DBPPropertyDescriptor> primaryProps = new ArrayList<>();
             List<DBPPropertyDescriptor> secondaryProps = new ArrayList<>();
             List<DBPPropertyDescriptor> specificProps = new ArrayList<>();
 
-            if (isEditableObject()) {
+            if (formEditor.isEditableObject()) {
                 for (DBPPropertyDescriptor prop : allProps) {
                     if (prop.getId().equals(DBConstants.PROP_ID_NAME) ||
                         prop.getId().equals(DBConstants.PROP_ID_DESCRIPTION) ||
@@ -305,24 +302,18 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
 
             // Create edit forms
-            try {
-                isLoading = true;
-
-                for (DBPPropertyDescriptor primaryProp : primaryProps) {
-                    createPropertyEditor(primaryGroup, primaryProp);
+            for (DBPPropertyDescriptor primaryProp : primaryProps) {
+                formEditor.createPropertyEditor(primaryGroup, primaryProp);
+            }
+            if (secondaryGroup != null) {
+                for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
+                    formEditor.createPropertyEditor(secondaryGroup, secondaryProp);
                 }
-                if (secondaryGroup != null) {
-                    for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
-                        createPropertyEditor(secondaryGroup, secondaryProp);
-                    }
+            }
+            if (specificGroup != null) {
+                for (DBPPropertyDescriptor specProps : specificProps) {
+                    formEditor.createPropertyEditor(specificGroup, specProps);
                 }
-                if (specificGroup != null) {
-                    for (DBPPropertyDescriptor specProps : specificProps) {
-                        createPropertyEditor(specificGroup, specProps);
-                    }
-                }
-            } finally {
-                isLoading = false;
             }
         }
 
@@ -378,363 +369,13 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 },
                 ownerControl.createDefaultLoadVisualizer(editorValues -> {
-                    loadEditorValues(editorValues);
+                    formEditor.loadEditorValues(editorValues);
                     if (blockEnableState != null) {
                         blockEnableState.restore();
                     }
                 })
             )
         );
-    }
-
-    private void updateOtherPropertyValues(Object excludePropId) {
-        List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getProperties());
-
-        Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
-        for (DBPPropertyDescriptor prop : allProps) {
-            if (excludePropId != null && excludePropId.equals(prop.getId())) {
-                continue;
-            }
-            Object value = curPropertySource.getPropertyValue(null, prop.getId());
-            propValues.put(prop, value);
-        }
-        loadEditorValues(propValues);
-    }
-
-    private boolean isEditableObject() {
-        for (DBPPropertyDescriptor prop : curPropertySource.getProperties()) {
-            if (prop.isEditable(curPropertySource.getEditableValue()) ||
-                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean supportsObjectRename() {
-        return DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
-            curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class) != null;
-    }
-
-    private void createPropertyEditor(Composite group, DBPPropertyDescriptor prop) {
-        DBSObject databaseObject = input.getDatabaseObject();
-        boolean isReadOnlyCon = databaseObject == null || DBUtils.isReadOnly(databaseObject);
-        if (prop == null) {
-            UIUtils.createEmptyLabel(group, 2, 1);
-        } else {
-            boolean editable = !isReadOnlyCon && (prop.isEditable(curPropertySource.getEditableValue()) ||
-                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()));
-            Class<?> propType = prop.getDataType();
-            Object propertyValue = curPropertySource.getPropertyValue(null, prop.getId());
-            if (propertyValue == null && prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isOptional()) {
-                // Do not create editor for null optional properties
-                return;
-            }
-            Control editControl = createEditorControl(
-                group,
-                curPropertySource.getEditableValue(),
-                prop,
-                propertyValue,
-                !editable);
-            String propDescription = prop.getDescription();
-            if (!CommonUtils.isEmpty(propDescription)) {
-                editControl.setToolTipText(propDescription);
-            }
-            if (editControl instanceof Button) {
-                // nothing
-            } else {
-                //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
-                GridData gd = (GridData) editControl.getLayoutData();
-                if (gd == null) {
-                    gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
-                    editControl.setLayoutData(gd);
-                }
-                if (editControl instanceof Text || editControl instanceof Combo) {
-                    gd.widthHint = Math.max(
-                        UIUtils.getFontHeight(group) * 15,
-                        editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
-                }
-            }
-
-            editorMap.put(prop, editControl);
-
-            Control finalEditControl = editControl;
-
-            if (finalEditControl instanceof Combo) {
-                if ((finalEditControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-                    ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
-                        }
-                    });
-                } else {
-                    ((Combo) finalEditControl).addModifyListener(e -> {
-                        try {
-                            updatePropertyValue(prop, ((Combo) finalEditControl).getText());
-                        } catch (Exception ex) {
-                            log.debug("Error setting value from combo: " + ex.getMessage());
-                        }
-                    });
-                }
-            } else if (finalEditControl instanceof Text) {
-                ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
-            } else if (finalEditControl instanceof Button) {
-                ((Button) finalEditControl).addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updatePropertyValue(prop, ((Button) finalEditControl).getSelection());
-                    }
-                });
-            }
-        }
-    }
-
-    private void updatePropertyValue(DBPPropertyDescriptor prop, Object value) {
-        if (!isLoading) {
-            DBSObject databaseObject = input.getDatabaseObject();
-            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
-                DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
-                if (renamer != null) {
-                    try {
-                        renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(UIUtils.normalizePropertyValue(value)));
-                    } catch (Throwable e) {
-                        log.error("Error renaming object", e);
-                    }
-                }
-            } else {
-                Class<?> dataType = prop.getDataType();
-                if (value instanceof String) {
-                    value = GeneralUtils.convertString((String) UIUtils.normalizePropertyValue(value), dataType);
-                }
-                Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
-                curPropertySource.setPropertyValue(null, prop.getId(), value);
-            }
-        }
-    }
-
-    /**
-     * Supported editors:
-     * Combo (lists)
-     * Text (strings, numbers, dates)
-     * Button (booleans)
-     */
-    public Control createEditorControl(Composite parent, Object object, DBPPropertyDescriptor property, Object value, boolean readOnly)
-    {
-        // List
-        if (!readOnly && property instanceof IPropertyValueListProvider) {
-            final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
-            Object[] items = listProvider.getPossibleValues(object);
-            if (items == null && property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).hasListValueProvider()) {
-                // It is a list provider but it seems to be lazy and not yet initialized
-                items = new Object[0];
-            }
-            if (items != null) {
-                final String[] strings = new String[items.length];
-                for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                    strings[i] = objectValueToString(items[i]);
-                }
-                Combo combo = UIUtils.createLabelCombo(
-                    parent,
-                    property.getDisplayName(),
-                    SWT.BORDER | SWT.DROP_DOWN |
-                        (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
-                        (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                combo.setItems(strings);
-                combo.setText(objectValueToString(value));
-                combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-
-                if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
-                    StringContentProposalProvider proposalProvider = new StringContentProposalProvider(strings);
-                    ContentAssistUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider);
-                }
-
-                return combo;
-            }
-        }
-        Class<?> propType = property.getDataType();
-        if (isTextPropertyType(propType)) {
-            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
-                Label label = UIUtils.createControlLabel(parent, property.getDisplayName());
-                label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-
-                editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_BOTH);
-                // Make multline editor at least two lines height
-                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
-                editor.setLayoutData(gd);
-                return editor;
-            } else {
-                Text text = UIUtils.createLabelText(
-                    parent,
-                    property.getDisplayName(),
-                    objectValueToString(value),
-                    SWT.BORDER |
-                        (readOnly ? SWT.READ_ONLY : SWT.NONE) |
-                        (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
-                text.setLayoutData(new GridData((BeanUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
-                return text;
-            }
-        } else if (BeanUtils.isBooleanType(propType)) {
-            if (curButtonsContainer == null) {
-                UIUtils.createEmptyLabel(parent, 1, 1);
-                curButtonsContainer = new Composite(parent, SWT.NONE);
-                RowLayout layout = new RowLayout(SWT.HORIZONTAL);
-                curButtonsContainer.setLayout(layout);
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                curButtonsContainer.setLayoutData(gd);
-            }
-            Button editor = UIUtils.createCheckbox(curButtonsContainer, property.getDisplayName(), "", CommonUtils.toBoolean(value), 1);
-            if (readOnly) {
-                editor.setEnabled(false);
-            }
-            return editor;
-        } else if (!readOnly && propType.isEnum()) {
-            final Object[] enumConstants = propType.getEnumConstants();
-            final String[] strings = new String[enumConstants.length];
-            for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
-                strings[i] = ((Enum)enumConstants[i]).name();
-            }
-            Combo combo = UIUtils.createLabelCombo(
-                parent,
-                property.getDisplayName(),
-                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-            combo.setItems(strings);
-            combo.setText(objectValueToString(value));
-            combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-            return combo;
-        } else if (DBSObject.class.isAssignableFrom(propType) || (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor)property).isLinkPossible())) {
-            UIUtils.createControlLabel(
-                parent,
-                property.getDisplayName());
-            Composite linkPH = new Composite(parent, SWT.NONE);
-            {
-                linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            }
-            GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 1;
-            linkPH.setLayout(layout);
-            Link link = new Link(linkPH, SWT.NONE);
-            link.setText(getLinktitle(value));
-            link.setData(value);
-            link.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBSObject object = (DBSObject) link.getData();
-                    if (object != null) {
-                        NavigatorHandlerObjectOpen.openEntityEditor(object);
-                    }
-                }
-            });
-            link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            return link;
-        } else {
-            return UIUtils.createLabelText(
-                parent,
-                property.getDisplayName(),
-                objectValueToString(value),
-                SWT.BORDER | SWT.READ_ONLY);
-        }
-    }
-
-    private String getLinktitle(Object value) {
-        return value == null ? "N/A" : "<a>" + objectValueToString(value) + "</a>";
-    }
-
-    private void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
-        try {
-            isLoading = true;
-            if (curPropertySource != null) {
-                Object object = curPropertySource.getEditableValue();
-                for (Map.Entry<DBPPropertyDescriptor, Object> prop : editorValues.entrySet()) {
-                    setEditorValue(object, prop.getKey(), prop.getValue());
-                }
-            }
-        } finally {
-            isLoading = false;
-        }
-    }
-
-    public void setEditorValue(Object object, DBPPropertyDescriptor property, Object value)
-    {
-        Control editorControl = editorMap.get(property);
-        Class<?> propertyType = property.getDataType();
-        // List
-        String stringValue = objectValueToString(value);
-        if (editorControl instanceof Combo) {
-            Combo combo = (Combo) editorControl;
-            if (property instanceof IPropertyValueListProvider) {
-                final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
-                final Object[] items = listProvider.getPossibleValues(object);
-                final Object[] oldItems = (Object[]) combo.getData(LIST_VALUE_KEY);
-                combo.setData(LIST_VALUE_KEY, items);
-                if (items != null) {
-                    if (oldItems == null || !Arrays.equals(items, oldItems)) {
-                        final String[] strings = new String[items.length];
-                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                            strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject) items[i]).getName() : CommonUtils.toString(items[i]);
-                        }
-                        combo.setItems(strings);
-                    }
-                    combo.setText(stringValue);
-                }
-            } else if (propertyType.isEnum()) {
-                if (combo.getItemCount() == 0) {
-                    // Do not refresh enum values - they are static
-                    final Object[] enumConstants = propertyType.getEnumConstants();
-                    final String[] strings = new String[enumConstants.length];
-                    for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
-                        strings[i] = ((Enum<?>) enumConstants[i]).name();
-                    }
-                    combo.setItems(strings);
-                }
-                combo.setText(stringValue);
-            }
-        } else {
-            if (editorControl instanceof Text) {
-                Text text = (Text) editorControl;
-                if (!CommonUtils.equalObjects(text.getText(), stringValue)) {
-                    text.setText(stringValue);
-                }
-            } else if (editorControl instanceof Button) {
-                ((Button) editorControl).setSelection(CommonUtils.toBoolean(value));
-            } else if (editorControl instanceof Link) {
-                Link link = (Link)editorControl;
-                link.setData(value);
-                link.setText(getLinktitle(value));
-            }
-        }
-    }
-
-    private static String objectValueToString(Object value) {
-        if (value instanceof DBPNamedObject) {
-            return ((DBPNamedObject) value).getName();
-        } else if (value instanceof Enum) {
-            return ((Enum<?>) value).name();
-        } else {
-            return DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT);
-        }
-    }
-
-    private static boolean isTextPropertyType(Class<?> propertyType) {
-        return propertyType == null || CharSequence.class.isAssignableFrom(propertyType) ||
-                (propertyType.getComponentType() != null && CharSequence.class.isAssignableFrom(propertyType.getComponentType())) ||
-                BeanUtils.isNumericType(propertyType);
-    }
-
-    private List<DBPPropertyDescriptor> filterProperties(DBPPropertyDescriptor[] props) {
-        List<DBPPropertyDescriptor> result = new ArrayList<>();
-        for (DBPPropertyDescriptor prop : props) {
-            String category = prop.getCategory();
-            if (!CommonUtils.isEmpty(category)) {
-                // Keep only basic properties
-                continue;
-            }
-            result.add(prop);
-        }
-        return result;
     }
 
     @Override

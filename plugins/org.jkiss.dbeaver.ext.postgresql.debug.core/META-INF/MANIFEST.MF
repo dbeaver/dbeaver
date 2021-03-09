@@ -2,10 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql.debug.core;singleton:=true
-Bundle-Version: 1.0.80.qualifier
-Bundle-Release-Date: 20210215
+Bundle-Version: 1.0.81.qualifier
+Bundle-Release-Date: 20210301
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.core,

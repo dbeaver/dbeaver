@@ -91,6 +91,11 @@ public class AthenaMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return null;
     }
 
+    @Override
+    public boolean isSchemasOptional() {
+        return false;
+    }
+
     private String getObjectDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options, String ddlStatement) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Athena object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

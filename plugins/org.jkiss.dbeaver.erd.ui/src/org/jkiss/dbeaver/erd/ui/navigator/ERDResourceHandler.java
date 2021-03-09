@@ -25,6 +25,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.erd.model.ERDPersistedState;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
@@ -179,7 +180,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource.getResource() instanceof IFile) {
             try {
-                return DiagramLoader.extractContainers((IFile)resource.getResource());
+                return ERDPersistedState.extractContainers((IFile)resource.getResource());
             } catch (Exception e) {
                 log.error(e);
                 return null;
