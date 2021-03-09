@@ -10,11 +10,11 @@
                 dataSource="datavirtuality"
                 label="%datavirtuality.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.datavirtuality.views.DataVirtualityConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.datavirtuality.core/icons/datavirtuality_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.datavirtuality/icons/datavirtuality_icon.png">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.datavirtuality.views.DataVirtualityConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.datavirtuality.core/datavirtuality_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.datavirtuality/datavirtuality_icon.png"
                 id="org.jkiss.dbeaver.ext.datavirtuality.dataSourceEditorView"
                 dataSource="datavirtuality"
                 label="%datavirtuality.dialog.connection.header"
