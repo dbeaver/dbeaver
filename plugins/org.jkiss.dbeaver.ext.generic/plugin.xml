@@ -1389,10 +1389,10 @@
 				<!-- DataVirtuality -->
                 <driver
                         id="datavirtuality_generic"
-                        label="DatatVirtuality"
+                        label="DataVirtuality"
                         class="com.datavirtuality.dv.jdbc.Driver"
-                        sampleURL="jdbc:datavirtuality:{database}@mm//{host}:{port}"
-                        defaultPort=""
+                        sampleURL="jdbc:datavirtuality:{database}@mm://{host}:{port}"
+                        defaultPort="31000"
                         description="DataVirtuality JDBC driver"
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
                     <file type="jar" path="maven:/com.datavirtuality.dv.jdbc.Driver-jdbc:RELEASE"/>
