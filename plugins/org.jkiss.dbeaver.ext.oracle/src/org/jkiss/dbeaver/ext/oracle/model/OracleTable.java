@@ -431,7 +431,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         Collection<OracleTableForeignKey> foreignKeys = getAssociations(monitor);
         if (foreignKeys == null || foreignKeys.isEmpty()) {
             return;
@@ -461,7 +461,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     @NotNull
     @Override
-    public String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) {
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
         return "Oracle tables: all foreign key constraints will be either enabled or disabled";
     }
 }

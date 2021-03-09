@@ -709,21 +709,21 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         DBSObject dbsObject = checkTargetContainer(monitor);
         if (!(dbsObject instanceof DBPReferentialIntegrityController)) {
             throw new DBException("Changing referential integrity is unsupported!");
         }
         DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) dbsObject;
-        controller.setReferentialIntegrity(monitor, enable);
+        controller.enableReferentialIntegrity(monitor, enable);
     }
 
     @NotNull
     @Override
-    public String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBSObject dbsObject = checkTargetContainer(monitor);
         if (dbsObject instanceof DBPReferentialIntegrityController) {
-            return ((DBPReferentialIntegrityController) dbsObject).getCaveatsDescription(monitor);
+            return ((DBPReferentialIntegrityController) dbsObject).getReferentialIntegrityDisableWarning(monitor);
         }
         return "";
     }
