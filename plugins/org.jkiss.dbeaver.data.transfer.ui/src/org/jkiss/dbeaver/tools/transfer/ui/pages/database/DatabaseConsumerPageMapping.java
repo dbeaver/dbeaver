@@ -71,8 +71,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
+    private final List<DatabaseMappingContainer> model = new ArrayList<>();
     private TreeViewer mappingViewer;
     private Button autoAssignButton;
+    private Button upButton;
+    private Button downButton;
     private ObjectContainerSelectorPanel containerPanel;
     private boolean firstInit = true;
 
@@ -258,30 +261,38 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
-            Button upButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_up_label, UIIcon.ARROW_UP, DTMessages.data_transfer_db_consumer_up_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
+            upButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_up_label, UIIcon.ARROW_UP, DTMessages.data_transfer_db_consumer_up_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DataTransferPipe pipe = getPipeFromCurrentSelection();
-                    if (pipe == null) {
+                    DatabaseMappingContainer mappingContainer = getMappingContainerFromCurrentSelection();
+                    if (pipe == null || mappingContainer == null) {
                         return;
                     }
                     getWizard().getSettings().processPipeEarlier(pipe);
-                    loadAndUpdateColumnsModel();
-                    selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(false);
+                    CommonUtils.shiftLeft(model, mappingContainer);
+                    mappingViewer.refresh();
+                    mappingViewer.getTree().setVisible(true);
+                    updateUpAndDownButtons(pipe);
                 }
             });
             upButton.setEnabled(false);
 
-            Button downButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_down_label, UIIcon.ARROW_DOWN, DTMessages.data_transfer_db_consumer_down_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
+            downButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_db_consumer_down_label, UIIcon.ARROW_DOWN, DTMessages.data_transfer_db_consumer_down_tooltip, new SelectionAdapter() { //FIXME i18ze + tooltip
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     DataTransferPipe pipe = getPipeFromCurrentSelection();
-                    if (pipe == null) {
+                    DatabaseMappingContainer mappingContainer = getMappingContainerFromCurrentSelection();
+                    if (pipe == null || mappingContainer == null) {
                         return;
                     }
                     getWizard().getSettings().processPipeLater(pipe);
-                    loadAndUpdateColumnsModel();
-                    selectPipe(pipe);
+                    mappingViewer.getTree().setVisible(false);
+                    CommonUtils.shiftRight(model, mappingContainer);
+                    mappingViewer.refresh();
+                    mappingViewer.getTree().setVisible(true);
+                    updateUpAndDownButtons(pipe);
                 }
             });
             downButton.setEnabled(false);
@@ -352,11 +363,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 columnsButton.setEnabled(hasMappings);
                 ddlButton.setEnabled(hasMappings);
                 previewButton.setEnabled(hasMappings);
-                DataTransferPipe pipe = getPipeFromCurrentSelection();
-                List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
-                int idx = pipes.indexOf(pipe);
-                upButton.setEnabled(idx > 0);
-                downButton.setEnabled(idx > -1 && idx < pipes.size() - 1);
+                updateUpAndDownButtons();
             });
             mappingViewer.addDoubleClickListener(event -> {
                 DatabaseMappingObject selectedMapping = getSelectedMapping();
@@ -384,16 +391,21 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         setControl(composite);
     }
 
-    private void selectPipe(@NotNull DataTransferPipe pipe) {
-        if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
+    private void updateUpAndDownButtons() {
+        DataTransferPipe pipe = getPipeFromCurrentSelection();
+        if (pipe != null) {
+            updateUpAndDownButtons(pipe);
             return;
         }
-        DBSDataContainer sourceDataContainer = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-        DatabaseMappingContainer mapping = getDatabaseConsumerSettings().getDataMapping(sourceDataContainer);
-        if (mapping == null) {
-            return;
-        }
-        mappingViewer.setSelection(new StructuredSelection(mapping), true);
+        upButton.setEnabled(false);
+        downButton.setEnabled(false);
+    }
+
+    private void updateUpAndDownButtons(@NotNull DataTransferPipe pipeFromCurrentSelection) {
+        List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+        int idx = pipes.indexOf(pipeFromCurrentSelection);
+        upButton.setEnabled(idx > 0);
+        downButton.setEnabled(idx > -1 && idx < pipes.size() - 1);
     }
 
     private void selectNextColumn(TreeItem item) {
@@ -699,10 +711,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void autoAssignMappings() {
         try {
-            getWizard().getRunnableContext().run(true, true, (monitor ->  {
-                monitor.beginTask("Sorting data pipes", getWizard().getSettings().getDataPipes().size());
-                getWizard().getSettings().sortDataPipes(monitor);
-            }));
+            getWizard().getRunnableContext().run(true, true, (monitor -> getWizard().getSettings().sortDataPipes(monitor)));
         } catch (InvocationTargetException | InterruptedException e) {
             //ignored
         }
@@ -921,17 +930,22 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     @Nullable
-    private DataTransferPipe getPipeFromCurrentSelection() {
+    private DatabaseMappingContainer getMappingContainerFromCurrentSelection() {
         for (Object o: mappingViewer.getStructuredSelection()) {
-            if (!(o instanceof DatabaseMappingContainer)) {
-                continue;
-            }
-            DataTransferPipe pipe = getPipe((DatabaseMappingContainer) o);
-            if (pipe != null) {
-                return pipe;
+            if (o instanceof DatabaseMappingContainer) {
+                return (DatabaseMappingContainer) o;
             }
         }
         return null;
+    }
+
+    @Nullable
+    private DataTransferPipe getPipeFromCurrentSelection() {
+        DatabaseMappingContainer mappingContainer = getMappingContainerFromCurrentSelection();
+        if (mappingContainer == null) {
+            return null;
+        }
+        return getPipe(mappingContainer);
     }
 
     @Nullable
@@ -1003,7 +1017,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         // Load columns model. Update it only if mapping have different set of source columns
         // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        List<DatabaseMappingContainer> model = new ArrayList<>();
+        model.clear();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer)) {
                 continue;
@@ -1035,7 +1049,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             model.add(mapping);
         }
 
+        mappingViewer.getTree().setVisible(false);
+        Object[] expandedElements = mappingViewer.getExpandedElements();
         mappingViewer.setInput(model);
+        mappingViewer.setExpandedElements(expandedElements);
+        mappingViewer.getTree().setVisible(true);
+
         if (!model.isEmpty()) {
             // Select first element
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));

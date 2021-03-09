@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
 import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -40,7 +40,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * SpannerConnectionPage
  */
-public class SpannerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
+public class SpannerConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider
 {
     private static final Log log = Log.getLog(SpannerConnectionPage.class);
 
@@ -147,7 +147,7 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements ICo
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             driverPropsPage

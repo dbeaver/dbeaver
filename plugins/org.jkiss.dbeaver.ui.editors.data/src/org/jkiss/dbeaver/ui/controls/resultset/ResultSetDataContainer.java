@@ -92,7 +92,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             long resultCount = 0;
             try {
                 dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
-                while (resultSet.nextRow()) {
+                while (!session.getProgressMonitor().isCanceled() && resultSet.nextRow()) {
                     if (!proceedSelectedRowsOnly(flags) || options.getSelectedRows().contains(resultCount)) {
                         dataReceiver.fetchRow(session, resultSet);
                     }

@@ -21,11 +21,11 @@ import org.eclipse.jface.dialogs.IDialogPage;
 import org.jkiss.code.Nullable;
 
 /**
- * ICompositeDialogPage
+ * IDialogPageProvider
  */
-public interface ICompositeDialogPage extends IDialogPage {
+public interface IDialogPageProvider {
 
     @Nullable
-    IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate);
+    IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate);
 
 }

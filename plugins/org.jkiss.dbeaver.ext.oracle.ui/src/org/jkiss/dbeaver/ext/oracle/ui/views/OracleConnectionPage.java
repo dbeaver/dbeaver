@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -33,7 +34,7 @@ import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -49,7 +50,7 @@ import java.util.Locale;
 /**
  * OracleConnectionPage
  */
-public class OracleConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage {
+public class OracleConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text hostText;
     private Text portText;
@@ -388,7 +389,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
         if (CommonUtils.toBoolean(dataSource.getConnectionConfiguration().getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             return OracleAuthOS.ID;
         }
-        return super.getDefaultAuthModelId(dataSource);
+        return OracleAuthModelDatabaseNative.ID;
     }
 
     @Override
@@ -440,7 +441,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements ICom
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new OracleConnectionExtraPage(),

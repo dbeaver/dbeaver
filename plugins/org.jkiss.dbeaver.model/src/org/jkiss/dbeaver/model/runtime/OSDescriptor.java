@@ -18,50 +18,21 @@
 package org.jkiss.dbeaver.model.runtime;
 
 /**
- * OS (Operational System) descriptor
+ * Operating system descriptor
  */
 public class OSDescriptor {
+    private final String family;
+    private final String arch;
 
-    private String code;
-    private String arch;
-
-    public OSDescriptor(String code, String arch) {
-        this.code = code;
+    public OSDescriptor(String family, String arch) {
+        this.family = family;
         this.arch = arch;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getArch() {
-        return arch;
-    }
-
-    public boolean matches(OSDescriptor os)
-    {
-        if (!code.equals(os.code)) {
+    public boolean matches(OSDescriptor os) {
+        if (!family.equals(os.family)) {
             return false;
         }
-        if (arch != null && (os.arch == null || !arch.equals(os.arch))) {
-            return false;
-        }
-        // The same OS
-        return true;
-    }
-
-    public boolean isWindows()
-    {
-        return "win32".equals(code);
-    }
-
-    @Override
-    public String toString() {
-        return code + (arch == null ? "" : " (" + arch + ")");
-    }
-
-    public boolean is64()
-    {
-        return "x86_64".equals(arch);
+        return arch == null || (os.arch != null && arch.equals(os.arch));
     }
 }

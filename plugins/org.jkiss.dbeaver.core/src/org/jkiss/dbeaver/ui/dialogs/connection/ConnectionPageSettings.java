@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -56,7 +57,7 @@ import java.util.*;
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
-class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, ICompositeDialogPageContainer, IDataSourceConnectionTester {
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, IDialogPageProvider, ICompositeDialogPageContainer, IDataSourceConnectionTester {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
@@ -205,7 +206,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 this.connectionEditor.setSite(this);
             }
             // init sub pages (if any)
-            IDialogPage[] allSubPages = getSubPages(false, true);
+            IDialogPage[] allSubPages = getDialogPages(false, true);
 
             {
                 // Create tab folder
@@ -354,7 +355,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Nullable
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         if (extrasOnly) {
             return extraPages;
         }
@@ -369,15 +370,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             this.connectionEditor.setSite(this);
         }
 
-        if (connectionEditor instanceof ICompositeDialogPage) {
-            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages(extrasOnly, true);
-            if (!ArrayUtils.isEmpty(subPages)) {
-                for (IDialogPage page : subPages) {
-                    if (page instanceof IDataSourceConnectionEditor) {
-                        ((IDataSourceConnectionEditor) page).setSite(this);
-                    }
-                }
-            }
+        if (connectionEditor instanceof IDialogPageProvider) {
+
+            subPages = ((IDialogPageProvider) connectionEditor).getDialogPages(extrasOnly, true);
+
             if (isNew() || !getDriver().isEmbedded()) {
                 // Add network tabs (for new connections or non-embedded drivers)
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
@@ -387,6 +383,34 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (extraPages != null) {
                 subPages = ArrayUtils.concatArrays(subPages, extraPages);
+            }
+
+            try {
+                // Externally provided sub-pages
+                IDialogPageProvider externalPagesProvider = GeneralUtils.adapt(
+                    getActiveDataSource(),
+                    IDialogPageProvider.class);
+                if (externalPagesProvider != null) {
+                    IDialogPage[] dialogPages = externalPagesProvider.getDialogPages(false, true);
+                    if (dialogPages != null) {
+                        for (IDialogPage page : dialogPages) {
+                            if (page != null) {
+                                subPages = ArrayUtils.add(IDialogPage.class, subPages, page);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+
+
+            if (!ArrayUtils.isEmpty(subPages)) {
+                for (IDialogPage page : subPages) {
+                    if (page instanceof IDataSourceConnectionEditor) {
+                        ((IDataSourceConnectionEditor) page).setSite(this);
+                    }
+                }
             }
 
             return subPages;
@@ -420,8 +444,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void showSubPage(IDialogPage subPage) {
+        TabItem[] selection = tabFolder.getSelection();
         for (TabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
+                if (selection.length == 1 && selection[0].getData() != subPage && selection[0].getData() instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) selection[0].getData()).deactivatePage();
+                }
+                if (subPage instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) subPage).activatePage();
+                }
                 tabFolder.setSelection(pageTab);
                 break;
             }

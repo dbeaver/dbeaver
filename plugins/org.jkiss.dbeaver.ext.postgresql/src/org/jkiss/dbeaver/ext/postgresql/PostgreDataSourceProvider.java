@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +44,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
-
     private static Map<String, String> connectionsProps;
 
     static {
@@ -148,8 +145,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         localServers = new LinkedHashMap<>();
 
         // find homes in Windows registry
-        OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
-        if (localSystem.isWindows()) {
+        if (RuntimeUtils.isWindows()) {
             try {
                 if (Advapi32Util.registryKeyExists(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY)) {
                     String[] homeKeys = Advapi32Util.registryGetKeys(WinReg.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
@@ -170,7 +166,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             } catch (Throwable e) {
                 log.warn("Error reading Windows registry", e);
             }
-        } else if (GeneralUtils.isMacOS()) {
+        } else if (RuntimeUtils.isMacOS()) {
             Collection<File> postgresDirs = new ArrayList<>();
             Collections.addAll(
                 postgresDirs,

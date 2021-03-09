@@ -22,7 +22,7 @@ import org.eclipse.jface.dialogs.IDialogPage;
 /**
  * ICompositeDialogPageContainer
  */
-public interface ICompositeDialogPageContainer extends ICompositeDialogPage {
+public interface ICompositeDialogPageContainer extends IDialogPageProvider {
 
     void showSubPage(IDialogPage subPage);
 

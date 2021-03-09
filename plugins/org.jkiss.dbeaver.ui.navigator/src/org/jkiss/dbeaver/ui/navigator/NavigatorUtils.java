@@ -29,6 +29,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -139,7 +141,11 @@ public class NavigatorUtils {
         addContextMenu(workbenchSite, viewer, viewer);
     }
 
-    public static void addContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, ISelectionProvider selectionProvider) {
+    public static void addContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull ISelectionProvider selectionProvider)
+    {
         MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
             ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
@@ -148,11 +154,19 @@ public class NavigatorUtils {
         }
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final IMenuListener menuListener) {
+    public static MenuManager createContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final IMenuListener menuListener)
+    {
         return createContextMenu(workbenchSite, viewer, viewer, menuListener);
     }
 
-    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final Viewer viewer, final ISelectionProvider selectionProvider, final IMenuListener menuListener)
+    public static MenuManager createContextMenu(
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final ISelectionProvider selectionProvider,
+        @Nullable final IMenuListener menuListener)
     {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
@@ -212,7 +226,7 @@ public class NavigatorUtils {
         return menuMgr;
     }
 
-    public static void addStandardMenuItem(IWorkbenchSite workbenchSite, IMenuManager manager, ISelectionProvider selectionProvider) {
+    public static void addStandardMenuItem(@Nullable IWorkbenchSite workbenchSite, @NotNull IMenuManager manager, @NotNull ISelectionProvider selectionProvider) {
         final ISelection selection = selectionProvider.getSelection();
         final DBNNode selectedNode = getSelectedNode(selectionProvider);
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
@@ -300,199 +314,206 @@ public class NavigatorUtils {
         return defCommand;
     }
 
-    public static void addDragAndDropSupport(final Viewer viewer)
+    public static void addDragAndDropSupport(final Viewer viewer) {
+        addDragAndDropSupport(viewer, true, true);
+    }
+
+    public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop)
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance(), DatabaseObjectTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-        final DragSource source = new DragSource(viewer.getControl(), operations);
-        source.setTransfer(types);
-        source.addDragListener (new DragSourceListener() {
+        if (enableDrag) {
+            final DragSource source = new DragSource(viewer.getControl(), operations);
+            source.setTransfer(types);
+            source.addDragListener(new DragSourceListener() {
 
-            private IStructuredSelection selection;
+                private IStructuredSelection selection;
 
-            @Override
-            public void dragStart(DragSourceEvent event) {
-                selection = (IStructuredSelection) viewer.getSelection();
-            }
+                @Override
+                public void dragStart(DragSourceEvent event) {
+                    selection = (IStructuredSelection) viewer.getSelection();
+                }
 
-            @Override
-            public void dragSetData (DragSourceEvent event) {
-                if (!selection.isEmpty()) {
-                    List<DBNNode> nodes = new ArrayList<>();
-                    List<DBPNamedObject> objects = new ArrayList<>();
-                    String lineSeparator = CommonUtils.getLineSeparator();
-                    StringBuilder buf = new StringBuilder();
-                    for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
-                        Object nextSelected = i.next();
-                        if (!(nextSelected instanceof DBNNode)) {
-                            continue;
-                        }
-                        nodes.add((DBNNode)nextSelected);
-                        String nodeName;
-                        if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
-                            DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
-                            if (object == null) {
+                @Override
+                public void dragSetData(DragSourceEvent event) {
+                    if (!selection.isEmpty()) {
+                        List<DBNNode> nodes = new ArrayList<>();
+                        List<DBPNamedObject> objects = new ArrayList<>();
+                        String lineSeparator = CommonUtils.getLineSeparator();
+                        StringBuilder buf = new StringBuilder();
+                        for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
+                            Object nextSelected = i.next();
+                            if (!(nextSelected instanceof DBNNode)) {
                                 continue;
                             }
-                            nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
-                            objects.add(object);
-                        } else if (nextSelected instanceof DBNDataSource) {
-                            DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
-                            nodeName = object.getName();
-                            objects.add(object);
-                        } else {
-                            nodeName = ((DBNNode)nextSelected).getNodeTargetName();
-                        }
-                        if (buf.length() > 0) {
-                            buf.append(lineSeparator);
-                        }
-                        buf.append(nodeName);
-                    }
-                    if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = nodes;
-                    } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = objects;
-                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = buf.toString();
-                    }
-                } else {
-                    if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = Collections.emptyList();
-                    } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = Collections.emptyList();
-                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = "";
-                    }
-                }
-            }
-            @Override
-            public void dragFinished(DragSourceEvent event) {
-            }
-        });
-
-        DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
-        dropTarget.setTransfer(TreeNodeTransfer.getInstance());
-        dropTarget.addDropListener(new DropTargetListener() {
-            @Override
-            public void dragEnter(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-            }
-
-            @Override
-            public void dragLeave(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-            }
-
-            @Override
-            public void dragOperationChanged(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-            }
-
-            @Override
-            public void dragOver(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-            }
-
-            @Override
-            public void drop(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-                if (event.detail == DND.DROP_MOVE) {
-                    moveNodes(event);
-                }
-            }
-
-            @Override
-            public void dropAccept(DropTargetEvent event)
-            {
-                handleDragEvent(event);
-            }
-
-            private void handleDragEvent(DropTargetEvent event)
-            {
-                event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
-                event.feedback = DND.FEEDBACK_SELECT;
-            }
-
-            private boolean isDropSupported(DropTargetEvent event)
-            {
-                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
-                    @SuppressWarnings("unchecked")
-                    Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
-                    if (curObject instanceof DBNNode) {
-                        if (!CommonUtils.isEmpty(nodesToDrop)) {
-                            for (DBNNode node : nodesToDrop) {
-                                if (!((DBNNode)curObject).supportsDrop(node)) {
-                                    return false;
+                            nodes.add((DBNNode) nextSelected);
+                            String nodeName;
+                            if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
+                                DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
+                                if (object == null) {
+                                    continue;
                                 }
-                            }
-                            return true;
-                        } else {
-                            return ((DBNNode)curObject).supportsDrop(null);
-                        }
-                    } else if (curObject == null) {
-                        // Drop to empty area
-                        if (!CommonUtils.isEmpty(nodesToDrop)) {
-                            for (DBNNode node : nodesToDrop) {
-                                if (!(node instanceof DBNDataSource)) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        } else {
-                            Widget widget = event.widget;
-                            if (widget instanceof DropTarget) {
-                                widget = ((DropTarget) widget).getControl();
-                            }
-                            return widget == viewer.getControl();
-                        }
-                    }
-                }
-                return false;
-            }
-
-            private void moveNodes(DropTargetEvent event)
-            {
-                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
-                    if (curObject instanceof DBNNode) {
-                        Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
-                        try {
-                            ((DBNNode)curObject).dropNodes(nodesToDrop);
-                        } catch (DBException e) {
-                            DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
-                        }
-                    } else if (curObject == null) {
-                        for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
-                            if (node instanceof DBNDataSource) {
-                                ((DBNDataSource) node).setFolder(null);
-                            } else if (node instanceof DBNLocalFolder) {
-                                ((DBNLocalFolder) node).getFolder().setParent(null);
+                                nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
+                                objects.add(object);
+                            } else if (nextSelected instanceof DBNDataSource) {
+                                DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
+                                nodeName = object.getName();
+                                objects.add(object);
                             } else {
-                                continue;
+                                nodeName = ((DBNNode) nextSelected).getNodeTargetName();
                             }
-                            DBNModel.updateConfigAndRefreshDatabases(node);
+                            if (buf.length() > 0) {
+                                buf.append(lineSeparator);
+                            }
+                            buf.append(nodeName);
+                        }
+                        if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = nodes;
+                        } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = objects;
+                        } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = buf.toString();
+                        }
+                    } else {
+                        if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = Collections.emptyList();
+                        } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = Collections.emptyList();
+                        } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                            event.data = "";
                         }
                     }
                 }
-            }
-        });
+
+                @Override
+                public void dragFinished(DragSourceEvent event) {
+                }
+            });
+        }
+
+        if (enableDrop) {
+            DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
+            dropTarget.setTransfer(TreeNodeTransfer.getInstance());
+            dropTarget.addDropListener(new DropTargetListener() {
+                @Override
+                public void dragEnter(DropTargetEvent event) {
+                    handleDragEvent(event);
+                }
+
+                @Override
+                public void dragLeave(DropTargetEvent event) {
+                    handleDragEvent(event);
+                }
+
+                @Override
+                public void dragOperationChanged(DropTargetEvent event) {
+                    handleDragEvent(event);
+                }
+
+                @Override
+                public void dragOver(DropTargetEvent event) {
+                    handleDragEvent(event);
+                }
+
+                @Override
+                public void drop(DropTargetEvent event) {
+                    handleDragEvent(event);
+                    if (event.detail == DND.DROP_MOVE) {
+                        moveNodes(event);
+                    }
+                }
+
+                @Override
+                public void dropAccept(DropTargetEvent event) {
+                    handleDragEvent(event);
+                }
+
+                private void handleDragEvent(DropTargetEvent event) {
+                    event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
+                    event.feedback = DND.FEEDBACK_SELECT;
+                }
+
+                private boolean isDropSupported(DropTargetEvent event) {
+                    if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                        Object curObject;
+                        if (event.item instanceof Item) {
+                            curObject = event.item.getData();
+                        } else {
+                            curObject = null;
+                        }
+                        @SuppressWarnings("unchecked")
+                        Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
+                        if (curObject instanceof DBNNode) {
+                            if (!CommonUtils.isEmpty(nodesToDrop)) {
+                                for (DBNNode node : nodesToDrop) {
+                                    if (!((DBNNode) curObject).supportsDrop(node)) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            } else {
+                                return ((DBNNode) curObject).supportsDrop(null);
+                            }
+                        } else if (curObject == null) {
+                            // Drop to empty area
+                            if (!CommonUtils.isEmpty(nodesToDrop)) {
+                                for (DBNNode node : nodesToDrop) {
+                                    if (!(node instanceof DBNDataSource)) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            } else {
+                                Widget widget = event.widget;
+                                if (widget instanceof DropTarget) {
+                                    widget = ((DropTarget) widget).getControl();
+                                }
+                                return widget == viewer.getControl();
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                private void moveNodes(DropTargetEvent event) {
+                    if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                        Object curObject;
+                        if (event.item instanceof Item) {
+                            curObject = event.item.getData();
+                        } else {
+                            curObject = null;
+                        }
+                        if (curObject instanceof DBNNode) {
+                            Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
+                            try {
+                                ((DBNNode) curObject).dropNodes(nodesToDrop);
+                            } catch (DBException e) {
+                                DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
+                            }
+                        } else if (curObject == null) {
+                            for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
+                                if (node instanceof DBNDataSource) {
+                                    // Drop datasource on a view
+                                    // We need target project
+                                    if (viewer.getInput() instanceof DatabaseNavigatorContent) {
+                                        DBNNode rootNode = ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
+                                        if (rootNode != null && rootNode.getOwnerProject() != null) {
+                                            ((DBNDataSource) node).moveToFolder(rootNode.getOwnerProject(), null);
+                                        }
+                                    }
+                                } else if (node instanceof DBNLocalFolder) {
+                                    ((DBNLocalFolder) node).getFolder().setParent(null);
+                                } else {
+                                    continue;
+                                }
+                                DBNModel.updateConfigAndRefreshDatabases(node);
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     public static NavigatorViewBase getActiveNavigatorView(ExecutionEvent event) {

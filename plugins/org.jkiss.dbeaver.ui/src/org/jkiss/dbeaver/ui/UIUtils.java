@@ -1489,7 +1489,23 @@ public class UIUtils {
     }
 
     public static void fillDefaultTreeContextMenu(IContributionManager menu, final Tree tree) {
-        menu.add(new Action("Copy selection") {
+        if (tree.getColumnCount() > 1) {
+            menu.add(new Action("Copy " + tree.getColumn(0).getText()) {
+                @Override
+                public void run() {
+                    StringBuilder text = new StringBuilder();
+                    for (TreeItem item : tree.getSelection()) {
+                        if (text.length() > 0) text.append("\n");
+                        text.append(item.getText(0));
+                    }
+                    if (text.length() == 0) {
+                        return;
+                    }
+                    UIUtils.setClipboardContents(tree.getDisplay(), TextTransfer.getInstance(), text.toString());
+                }
+            });
+        }
+        menu.add(new Action("Copy All") {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1880,7 +1896,7 @@ public class UIUtils {
     public static void fixReadonlyTextBackground(Text textField) {
         // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
         if (false) {
-            if (GeneralUtils.isWindows()) {
+            if (RuntimeUtils.isWindows()) {
                 // On Windows everything is fine
                 return;
             }

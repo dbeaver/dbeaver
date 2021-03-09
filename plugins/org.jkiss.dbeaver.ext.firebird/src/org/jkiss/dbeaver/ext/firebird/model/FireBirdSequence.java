@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -32,10 +33,13 @@ import java.sql.SQLException;
 /**
  * FireBirdDataSource
  */
-public class FireBirdSequence extends GenericSequence {
+public class FireBirdSequence extends GenericSequence implements DBPSystemObject {
 
-    public FireBirdSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
+    private boolean isSystem;
+
+    public FireBirdSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy, boolean isSystem) {
         super(container, name, description, lastValue, minValue, maxValue, incrementBy);
+        this.isSystem = isSystem;
     }
 
     @Override
@@ -58,5 +62,10 @@ public class FireBirdSequence extends GenericSequence {
             }
         }
         return super.getLastValue();
+    }
+
+    @Override
+    public boolean isSystem() {
+        return isSystem;
     }
 }

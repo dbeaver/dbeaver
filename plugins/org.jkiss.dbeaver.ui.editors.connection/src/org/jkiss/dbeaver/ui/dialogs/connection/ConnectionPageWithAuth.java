@@ -65,6 +65,14 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         if (dsModelId != null) {
             selectedAuthModel = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(dsModelId);
         }
+        if (selectedAuthModel != null) {
+            DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(activeDataSource.getDriver());
+            if (amReplace != null) {
+                log.debug("Auth model '" + selectedAuthModel.getId() + "' was replaced by '" + amReplace.getId() + "'");
+                selectedAuthModel = amReplace;
+                configuration.setAuthModelId(selectedAuthModel.getId());
+            }
+        }
 
         authModelSelector.loadSettings(getSite().getActiveDataSource(), selectedAuthModel, getDefaultAuthModelId(activeDataSource));
     }

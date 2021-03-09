@@ -26,16 +26,19 @@ import org.jkiss.utils.CommonUtils;
 public class ApplicationDescriptor extends AbstractDescriptor {
 
     private final String id;
+    private final String productFamily;
     private final String name;
     private final String description;
     private final String parentId;
     private final String[] umbrellaProductIds;
+    private boolean serverApplication;
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
+        this.productFamily = CommonUtils.toString(config.getAttribute("family"), "DB");
         this.name = config.getAttribute("name");
         this.description = config.getAttribute("description");
         this.parentId = config.getAttribute("parent");
@@ -45,10 +48,15 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         } else {
             this.umbrellaProductIds = new String[0];
         }
+        this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getProductFamily() {
+        return productFamily;
     }
 
     public String getName() {
@@ -70,6 +78,10 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     public String[] getUmbrellaProductIds() {
         return umbrellaProductIds;
+    }
+
+    public boolean isServerApplication() {
+        return serverApplication;
     }
 
     boolean isFinalApplication() {

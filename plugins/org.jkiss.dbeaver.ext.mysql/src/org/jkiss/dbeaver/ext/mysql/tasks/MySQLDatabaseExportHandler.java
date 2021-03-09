@@ -5,6 +5,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -24,6 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExportSettings, DBSObject, MySQLDatabaseExportInfo> {
+    private static final String DISTRIB = "Distrib ";
+    private static final String VER = "Ver ";
 
     @Override
     public Collection<MySQLDatabaseExportInfo> getRunInfo(MySQLExportSettings settings) {
@@ -69,6 +72,10 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
     @Override
     public void fillProcessParameters(MySQLExportSettings settings, MySQLDatabaseExportInfo arg, List<String> cmd) throws IOException {
+        DBPNativeClientLocation nativeClientLocation = settings.getClientHome();
+        if (nativeClientLocation == null) {
+            throw new IllegalArgumentException("Client home can not be null!");
+        }
         File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
@@ -80,7 +87,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 cmd.add("--single-transaction"); //$NON-NLS-1$
                 break;
         }
-        if (settings.isDisableColumnStatistics()) {
+        if (supportsColumnStatistics(dumpPath) && !arg.getDatabase().getDataSource().supportsColumnStatistics()) {
             cmd.add("--column-statistics=0");
         }
         if (settings.isNoCreateStatements()) {
@@ -209,4 +216,28 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         }
     }
 
+    private static boolean supportsColumnStatistics(@NotNull String mysqldumpPath) {
+        String fullVersion;
+        try {
+            fullVersion = RuntimeUtils.executeProcess(mysqldumpPath, MySQLConstants.FLAG_VERSION);
+        } catch (DBException e) {
+            return false;
+        }
+        if (fullVersion == null || fullVersion.contains("MariaDB")) {
+            return false;
+        }
+        int fromIdx = fullVersion.indexOf(DISTRIB);
+        if (fromIdx == -1) {
+            fromIdx = fullVersion.indexOf(VER);
+            if (fromIdx == -1) {
+                return false;
+            }
+            fromIdx += VER.length();
+        } else {
+            fromIdx += DISTRIB.length();
+        }
+        int toIdx = fullVersion.indexOf(".", fromIdx);
+        int majorVersion = CommonUtils.toInt(fullVersion.substring(fromIdx, toIdx));
+        return majorVersion >= 8;
+    }
 }

@@ -87,7 +87,7 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
         final DBPDataSourceRegistry dsRegistry = databases.getDataSourceRegistry();
         DBPDataSourceFolder folder = dsRegistry.addFolder(parentFolder == null ? null : parentFolder.getFolder(), newName);
         for (DBNDataSource node : nodes) {
-            node.setFolder(folder);
+            node.moveToFolder(node.getOwnerProject(), folder);
         }
         if (parentFolder != null && activePart instanceof NavigatorViewBase) {
             final TreeViewer viewer = ((NavigatorViewBase) activePart).getNavigatorViewer();

@@ -100,6 +100,7 @@ import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
@@ -113,7 +114,6 @@ import java.util.*;
  * Visualizes results as grid.
  */
 public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
-
     public static final String PRESENTATION_ID = "spreadsheet";
 
     public static final String ATTR_OPTION_PINNED = "pinned";
@@ -1183,7 +1183,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         boolean newWindow;
-                        if (GeneralUtils.isMacOS()) {
+                        if (RuntimeUtils.isMacOS()) {
                             newWindow = (state & SWT.COMMAND) == SWT.COMMAND;
                         } else {
                             newWindow = (state & SWT.CTRL) == SWT.CTRL;
@@ -2322,5 +2322,4 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
     }
-
 }

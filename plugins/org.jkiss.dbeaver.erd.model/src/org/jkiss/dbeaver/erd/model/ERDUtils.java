@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -158,6 +159,10 @@ public class ERDUtils
 
                         final DBSEntity entity1 = (DBSEntity) entity;
 
+                        if (skipSystemEntity(entity1)) {
+                            continue;
+                        }
+
                         if (entity1.getEntityType() == DBSEntityType.TABLE ||
                             entity1.getEntityType() == DBSEntityType.CLASS ||
                             entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY ||
@@ -239,5 +244,10 @@ public class ERDUtils
         }
 
         return result;
+    }
+
+    public static boolean skipSystemEntity(DBSEntity entity) {
+        boolean showSystemObjects = entity.getDataSource().getContainer().getNavigatorSettings().isShowSystemObjects();
+        return !showSystemObjects && entity instanceof DBPSystemObject && ((DBPSystemObject) entity).isSystem();
     }
 }

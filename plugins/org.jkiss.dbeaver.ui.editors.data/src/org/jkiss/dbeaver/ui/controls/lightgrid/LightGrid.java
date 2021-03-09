@@ -3568,7 +3568,7 @@ public abstract class LightGrid extends Canvas {
         hoveringItem = -1;
         hoveringDetail = null;
         hoveringColumn = null;
-        redraw();
+        //redraw();
     }
 
     public void scrollHorizontally(int count) {

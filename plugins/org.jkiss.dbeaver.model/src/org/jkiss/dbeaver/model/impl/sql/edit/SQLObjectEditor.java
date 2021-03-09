@@ -87,7 +87,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         try {
             newObject = createDatabaseObject(monitor, commandContext, container, copyFrom, options);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
+            throw new DBException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
         }
         if (!CommonUtils.getOption(options, OPTION_SKIP_CONFIGURATION)) {
             newObject = configureObject(monitor, container, newObject);

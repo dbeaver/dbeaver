@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.firebird;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedureParameter;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -32,8 +33,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -55,9 +58,25 @@ public class FireBirdUtils {
         throws DBException
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure, "Load procedure source code")) {
-            DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
-            String source = (String) fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
-            if (CommonUtils.isEmpty(source)) {
+            String source = "";
+            if (procedure.getProcedureType() == DBSProcedureType.PROCEDURE) {
+                DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
+                source = (String) fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
+                if (CommonUtils.isEmpty(source)) {
+                    return null;
+                }
+            } else if (procedure.getDataSource().isServerVersionAtLeast(3, 0)) {
+                String sql = "SELECT RDB$FUNCTION_SOURCE FROM RDB$FUNCTIONS WHERE RDB$FUNCTION_NAME =?";
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql))
+                {
+                    dbStat.setString(1, procedure.getName());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.nextRow()) {
+                            source =  JDBCUtils.safeGetString(dbResult, 1);
+                        }
+                    }
+                }
+            } else {
                 return null;
             }
 
@@ -108,9 +127,16 @@ public class FireBirdUtils {
         }
     }
 
-    public static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
+    private static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE OR ALTER PROCEDURE ").append(procedure.getName()).append(" ");
+        boolean isFunction = procedure.getProcedureType() == DBSProcedureType.FUNCTION;
+        sql.append("CREATE OR ALTER ");
+        if (isFunction) {
+            sql.append(SQLConstants.KEYWORD_FUNCTION);
+        } else {
+            sql.append(SQLConstants.KEYWORD_PROCEDURE);
+        }
+        sql.append(" ").append(procedure.getName()).append(" ");
         Collection<GenericProcedureParameter> parameters = procedure.getParameters(monitor);
         if (parameters != null && !parameters.isEmpty()) {
             List<GenericProcedureParameter> args = new ArrayList<>();
@@ -148,21 +174,35 @@ public class FireBirdUtils {
                 sql.append("(");
                 for (int i = 0; i < args.size(); i++) {
                     GenericProcedureParameter param = args.get(i);
+                    if (param.getParameterKind() == DBSProcedureParameterKind.RETURN) {
+                        continue;
+                    }
                     if (i > 0) sql.append(", ");
                     printParam(sql, param, domainNames);
                 }
                 sql.append(")\n");
             }
             if (!results.isEmpty()) {
-                sql.append("RETURNS (\n");
-                for (int i = 0; i < results.size(); i++) {
-                    sql.append('\t');
-                    GenericProcedureParameter param = results.get(i);
-                    printParam(sql, param, domainNames);
-                    if (i < results.size() - 1) sql.append(",");
-                    sql.append('\n');
+                sql.append("RETURNS ");
+                if (isFunction) {
+                    GenericProcedureParameter param = results.get(0); // According Firebird documentation, functions return just one data type without parameter name
+                    sql.append(param.getTypeName());
+                    String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
+                    if (typeModifiers != null) {
+                        sql.append(typeModifiers);
+                    }
+                    sql.append("\n");
+                } else {
+                    sql.append("(\n");
+                    for (int i = 0; i < results.size(); i++) {
+                        sql.append('\t');
+                        GenericProcedureParameter param = results.get(i);
+                        printParam(sql, param, domainNames);
+                        if (i < results.size() - 1) sql.append(",");
+                        sql.append('\n');
+                    }
+                    sql.append(")\n");
                 }
-                sql.append(")\n");
             }
         }
 
@@ -183,6 +223,16 @@ public class FireBirdUtils {
         String typeModifiers = SQLUtils.getColumnTypeModifiers(param.getDataSource(), param, param.getTypeName(), param.getDataKind());
         if (typeModifiers != null) {
             sql.append(typeModifiers);
+        }
+        boolean notNull = param.isRequired();
+        if (notNull) {
+            sql.append(" NOT NULL");
+        }
+        if (param instanceof FireBirdProcedureParameter && param.getParameterKind() == DBSProcedureParameterKind.IN) {
+            String defaultValue = ((FireBirdProcedureParameter) param).getDefaultValue();
+            if (!CommonUtils.isEmpty(defaultValue)) {
+                sql.append(" ").append(defaultValue);
+            }
         }
     }
 

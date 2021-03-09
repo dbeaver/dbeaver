@@ -204,6 +204,38 @@ public class CommonUtils {
         }
     }
 
+    /**
+     * Swaps the element with its neighbor to the left in the specified list.
+     * If the element is not present in the list or it is the leftmost element in the list,
+     * the list remains unchanged.
+     *
+     * @param list list
+     * @param element element
+     * @param <T> type of the list
+     */
+    public static <T> void shiftLeft(@NotNull List<? super T> list, @NotNull T element) {
+        int idx = list.indexOf(element);
+        if (idx > 0) {
+            Collections.swap(list, idx - 1, idx);
+        }
+    }
+
+    /**
+     * Swaps the element with its neighbor to the right in the specified list.
+     * If the element is not present in the list or it is the rightmost element in the list,
+     * the list remains unchanged.
+     *
+     * @param list list
+     * @param element element
+     * @param <T> type of the list
+     */
+    public static <T> void shiftRight(@NotNull List<? super T> list, @NotNull T element) {
+        int idx = list.indexOf(element);
+        if (idx != -1 && idx != list.size() - 1) {
+            Collections.swap(list, idx, idx + 1);
+        }
+    }
+
     @NotNull
     public static String notEmpty(@Nullable String value) {
         return value == null ? "" : value;
@@ -811,5 +843,26 @@ public class CommonUtils {
             return s;
         }
         return s.substring(1, s.length() - 1).replace("'\\''", "'");
+    }
+
+    /**
+     * Checks whether the supplied <code>ch</code> is within
+     * the range of the specified <code>radix</code> value.
+     *
+     * @param ch    character codepoint to be checked
+     * @param radix desired radix
+     * @return <code>true</code> if the character fits
+     * into the radix, <code>false</code> otherwise
+     */
+    public static boolean isDigit(int ch, int radix) {
+        if (radix <= 0 || radix > 36)
+            return false;
+        if (ch >= '0' && ch <= '9')
+            return radix > ch - '0';
+        if (ch >= 'a' && ch <= 'z')
+            return radix > ch - 'a' + 10;
+        if (ch >= 'A' && ch <= 'Z')
+            return radix > ch - 'A' + 10;
+        return false;
     }
 }

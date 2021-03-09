@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -47,7 +48,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final String description;
     private DBPImage icon;
     private boolean defaultModel;
-    private List<String> replaces = new ArrayList<>();
+    private final List<String> replaces = new ArrayList<>();
 
     private DBAAuthModel instance;
 
@@ -105,6 +106,17 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Override
     public boolean isApplicableTo(DBPDriver driver) {
         return appliesTo(driver);
+    }
+
+    @Nullable
+    @Override
+    public DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver) {
+        for (DataSourceAuthModelDescriptor amd : DataSourceProviderRegistry.getInstance().getAllAuthModels()) {
+            if (amd.getReplaces().contains(id) && amd.isDriverApplicable(driver)) {
+                return amd;
+            }
+        }
+        return null;
     }
 
     @NotNull

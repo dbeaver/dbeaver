@@ -30,23 +30,22 @@ import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * AthenaConnectionPage
  */
-public class AthenaConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage {
+public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Combo awsRegionCombo;
     private Text s3LocationText;
-    private Text accessKeyText;
 
-    private static ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
-    private DriverPropertiesDialogPage driverPropsPage;
+    private static final ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
+    private final DriverPropertiesDialogPage driverPropsPage;
 
     public AthenaConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
@@ -78,20 +77,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             s3LocationText.addModifyListener(textListener);
         }
 
-        {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, AthenaMessages.label_security, 2, 0, 0);
-            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            accessKeyText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_aws_access_key, ""); //$NON-NLS-1$
-            accessKeyText.setToolTipText(AthenaMessages.label_access_key);
-            accessKeyText.addModifyListener(textListener);
-
-            Text secretAccessKeyText = createPasswordText(addrGroup, AthenaMessages.label_secret_key);
-            secretAccessKeyText.setToolTipText(AthenaMessages.label_access_key_id);
-            secretAccessKeyText.addModifyListener(textListener);
-
-            createPasswordControls(addrGroup, 2);
-        }
+        createAuthPanel(settingsGroup, 1);
 
 
         createDriverPanel(settingsGroup);
@@ -102,8 +88,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
     public boolean isComplete() {
         return awsRegionCombo != null && !CommonUtils.isEmpty(awsRegionCombo.getText()) &&
             s3LocationText != null && !CommonUtils.isEmpty(s3LocationText.getText()) &&
-            accessKeyText != null && !CommonUtils.isEmpty(accessKeyText.getText()) &&
-            passwordText != null && !CommonUtils.isEmpty(passwordText.getText());
+            super.isComplete();
     }
 
     @Override
@@ -129,16 +114,9 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         if (s3LocationText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = "s3://"; //$NON-NLS-1$
+                databaseName = "s3://aws-athena-query-results-"; //$NON-NLS-1$
             }
             s3LocationText.setText(databaseName);
-        }
-
-        if (accessKeyText != null) {
-            accessKeyText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
-        if (passwordText != null) {
-            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
     }
 
@@ -151,17 +129,11 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         if (s3LocationText != null) {
             connectionInfo.setDatabaseName(s3LocationText.getText().trim());
         }
-        if (accessKeyText != null) {
-            connectionInfo.setUserName(accessKeyText.getText().trim());
-        }
-        if (passwordText != null && savePasswordCheck.getSelection()) {
-            connectionInfo.setUserPassword(passwordText.getText().trim());
-        }
         super.saveSettings(dataSource);
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate) {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{
             driverPropsPage
         };

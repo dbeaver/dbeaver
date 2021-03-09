@@ -107,7 +107,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return columns;
     }
 
-    private void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException
+    public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException
     {
         Collection<? extends GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
         if (procedures == null || !procedures.contains(this)) {
@@ -235,7 +235,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     }
 
-    private void addColumn(GenericProcedureParameter column)
+    public void addColumn(GenericProcedureParameter column)
     {
         if (this.columns == null) {
             this.columns = new ArrayList<>();

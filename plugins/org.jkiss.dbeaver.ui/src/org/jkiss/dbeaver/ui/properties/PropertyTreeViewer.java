@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -198,6 +199,11 @@ public class PropertyTreeViewer extends TreeViewer {
     public void loadProperties(DBPPropertySource propertySource)
     {
         loadProperties(null, null, propertySource);
+    }
+
+    public void loadProperties(DBRProgressMonitor monitor, DBPPropertySource propertySource)
+    {
+        loadProperties(monitor, null, propertySource);
     }
 
     protected void loadProperties(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
@@ -403,7 +409,7 @@ public class PropertyTreeViewer extends TreeViewer {
             public void widgetSelected(final SelectionEvent e)
             {
                 TreeItem item = (TreeItem) e.item;
-                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                if (RuntimeUtils.isMacOS()) { // [#10279] [#10366] [#10361]
                     showEditor(item, isMouseEventOnMacos);
                     isMouseEventOnMacos = false;
                     return;
@@ -416,7 +422,7 @@ public class PropertyTreeViewer extends TreeViewer {
             public void mouseDown(MouseEvent e)
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
-                if (GeneralUtils.isMacOS()) { // [#10279] [#10366] [#10361]
+                if (RuntimeUtils.isMacOS()) { // [#10279] [#10366] [#10361]
                     isMouseEventOnMacos = true;
                 }
                 if (item != null) {
@@ -787,7 +793,7 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     public void saveEditorValues() {
-        if (GeneralUtils.isMacOS() && curCellEditor != null && curCellEditor.isActivated()) {
+        if (RuntimeUtils.isMacOS() && curCellEditor != null && curCellEditor.isActivated()) {
             try {
                 // This is a hack. On MacOS buttons don't get focus so when user closes dialog
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
@@ -1217,5 +1223,4 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
     }
-
 }

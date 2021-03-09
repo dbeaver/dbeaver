@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -78,6 +79,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public GenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+        return new FireBirdProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
+    }
+
+    @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
@@ -95,6 +101,7 @@ public class FireBirdMetaModel extends GenericMetaModel
                             continue;
                         }
                         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
+                        boolean isSystem = JDBCUtils.safeGetBoolean(dbResult, "RDB$SYSTEM_FLAG");
                         FireBirdSequence sequence = new FireBirdSequence(
                             container,
                             name,
@@ -102,7 +109,8 @@ public class FireBirdMetaModel extends GenericMetaModel
                             null,
                             0,
                             -1,
-                            1
+                            1,
+                            isSystem
                         );
                         result.add(sequence);
                     }
@@ -145,13 +153,19 @@ public class FireBirdMetaModel extends GenericMetaModel
                         int sequence = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_SEQUENCE");
                         int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
                         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
+                        int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
+                        boolean isSystem = true;
+                        if (systemFlag == 0) { // System flag value 0 - if user-defined and 1 or more if system
+                            isSystem = false;
+                        }
                         FireBirdTrigger trigger = new FireBirdTrigger(
                             container,
                             table,
                             name,
                             description,
                             FireBirdTriggerType.getByType(type),
-                            sequence);
+                            sequence,
+                            isSystem);
                         result.add(trigger);
                     }
                 }
@@ -226,13 +240,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
         String relationName = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$RELATION_NAME");
         boolean isSystem = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG") != 0;
-        int relType;
-        try {
-            relType = dbResult.getInt("RDB$RELATION_TYPE");
-        } catch (SQLException e) {
-            relType = JDBCUtils.safeGetBytes(dbResult, "RDB$VIEW_BLR") == null ? 0 : 1;
-
-        }
+        int relType = getRelationType(dbResult);
         GenericTableBase table;
         if (relType == 1) {
             table = new FireBirdView(owner, relationName, isSystem ? "SYSTEM VIEW" : "VIEW", dbResult);
@@ -261,6 +269,23 @@ public class FireBirdMetaModel extends GenericMetaModel
         table.setSystem(isSystem);
         table.setDescription(JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION"));
         return table;
+    }
+
+    // [dbeaver/issues/10492]
+    private static int getRelationType(@NotNull JDBCResultSet dbResult) {
+        try {
+            Integer i = dbResult.getObject("RDB$RELATION_TYPE", Integer.class);
+            if (i == null) {
+                return getRelTypeFromViewBLR(dbResult);
+            }
+            return i;
+        } catch (SQLException e) {
+            return getRelTypeFromViewBLR(dbResult);
+        }
+    }
+
+    private static int getRelTypeFromViewBLR(@NotNull JDBCResultSet dbResult) {
+        return JDBCUtils.safeGetBytes(dbResult, "RDB$VIEW_BLR") == null ? 0 : 1;
     }
 
 /*

@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -54,7 +54,7 @@ import java.util.*;
 /**
  * GenericConnectionPage
  */
-public class GenericConnectionPage extends ConnectionPageWithAuth implements ICompositeDialogPage
+public class GenericConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
 {
     private static final Log log = Log.getLog(GenericConnectionPage.class);
 
@@ -568,7 +568,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements ICo
     }
 
     @Override
-    public IDialogPage[] getSubPages(boolean extrasOnly, boolean forceCreate)
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)

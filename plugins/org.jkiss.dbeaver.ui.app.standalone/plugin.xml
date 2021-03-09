@@ -87,6 +87,7 @@
 
     <extension point="org.jkiss.dbeaver.application">
         <application id="dbeaver-ce"
+            family="DB"
             name="%productName"
             description="%productSubTitle"/>
     </extension>

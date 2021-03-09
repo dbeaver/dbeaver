@@ -133,4 +133,5 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public boolean supportsPartitions() {
         return true;
     }
+
 }

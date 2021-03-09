@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -531,7 +532,7 @@ public class PostgreSchema implements
                         allTables.add(tableOrView);
                     }
                 }
-                DBStructUtils.generateTableListDDL(monitor, sql, allTables, options, false);
+                DBStructUtils.generateTableListDDL(new SubTaskProgressMonitor(monitor), sql, allTables, options, false);
                 monitor.done();
             }
             if (!monitor.isCanceled()) {

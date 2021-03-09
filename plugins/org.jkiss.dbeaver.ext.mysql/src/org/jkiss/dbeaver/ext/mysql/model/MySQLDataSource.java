@@ -812,4 +812,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
         return false;
     }
+
+    /**
+     * Checks if column statistics is supported.
+     *
+     * @return {@code true} if column statistics is supported
+     */
+    public boolean supportsColumnStatistics() {
+        return !isMariaDB() && isServerVersionAtLeast(8, 0);
+    }
 }

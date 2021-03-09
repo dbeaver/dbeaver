@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<PostgreDatabaseBackupSettings, DBSObject, PostgreDatabaseBackupInfo> {
-
     @Override
     public Collection<PostgreDatabaseBackupInfo> getRunInfo(PostgreDatabaseBackupSettings settings) {
         return settings.getExportObjects();
@@ -120,7 +119,7 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     private static String escapeCLIIdentifier(String name) {
-        if (RuntimeUtils.isPlatformWindows()) {
+        if (RuntimeUtils.isWindows()) {
             // On Windows it is simple
             return "\"" + name.replace("\"", "\\\"") + "\"";
         } else {
@@ -180,5 +179,4 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
                 return null;
             });
     }
-
 }

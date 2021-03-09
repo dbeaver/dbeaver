@@ -62,21 +62,24 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
      */
     @NotNull
     @Override
-    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
-    {
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
         if (value == null) {
             return DBValueFormatting.getDefaultValueDisplayString(null, format);
-        } else if (value instanceof String) {
+        }
+        if (value instanceof String) {
             // Binary string
             return (String)value;
-        } else if (value instanceof Double) {
-            double dbl = ((Double) value).doubleValue();
-            if (dbl != dbl) {
-                return "NaN";
-            } else if (dbl == Double.POSITIVE_INFINITY) {
-                return "+Infinity";
-            } else if (dbl == Double.NEGATIVE_INFINITY) {
-                return "-Infinity";
+        }
+        if (value instanceof Double) {
+            Double d = (Double) value;
+            if (d.isNaN() || d.isInfinite()) {
+                return d.toString();
+            }
+        }
+        if (value instanceof Float) {
+            Float f = (Float) value;
+            if (f.isNaN() || f.isInfinite()) {
+                return f.toString();
             }
         }
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {

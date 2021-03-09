@@ -19,9 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.RelativeBendpoint;
@@ -53,7 +51,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -61,47 +59,8 @@ import java.util.*;
  * Entity diagram loader/saver
  * @author Serge Rider
  */
-public class DiagramLoader
-{
+public class DiagramLoader extends ERDPersistedState {
     private static final Log log = Log.getLog(DiagramLoader.class);
-
-    private static final String TAG_DIAGRAM = "diagram";
-    private static final String TAG_ENTITIES = "entities";
-    private static final String TAG_DATA_SOURCE = "data-source";
-    private static final String TAG_ENTITY = "entity";
-    private static final String TAG_PATH = "path";
-    private static final String TAG_RELATIONS = "relations";
-    private static final String TAG_RELATION = "relation";
-    private static final String TAG_BEND = "bend";
-
-    private static final String ATTR_VERSION = "version";
-    private static final String ATTR_NAME = "name";
-    private static final String ATTR_TIME = "time";
-    private static final String ATTR_ALIAS = "alias";
-    private static final String ATTR_ID = "id";
-    private static final String ATTR_ORDER = "order";
-    private static final String ATTR_TRANSPARENT = "transparent";
-    private static final String ATTR_COLOR_BG = "color-bg";
-    private static final String ATTR_COLOR_FG = "color-fg";
-    private static final String ATTR_FONT = "font";
-    private static final String ATTR_BORDER_WIDTH = "border-width";
-    private static final String ATTR_FQ_NAME = "fq-name";
-    private static final String ATTR_REF_NAME = "ref-name";
-    private static final String ATTR_TYPE = "type";
-    private static final String ATTR_PK_REF = "pk-ref";
-    private static final String ATTR_FK_REF = "fk-ref";
-    private static final String ATTR_ATTRIBUTE_VISIBILITY = "showAttrs";
-    private static final String TAG_COLUMN = "column";
-    private static final String ATTR_X = "x";
-    private static final String ATTR_Y = "y";
-    private static final String ATTR_W = "w";
-    private static final String ATTR_H = "h";
-
-    private static final int ERD_VERSION_1 = 1;
-    private static final String BEND_ABSOLUTE = "abs";
-    private static final String BEND_RELATIVE = "rel";
-    private static final String TAG_NOTES = "notes";
-    private static final String TAG_NOTE = "note";
 
     private static class ElementSaveInfo {
         final ERDElement element;
@@ -152,40 +111,7 @@ public class DiagramLoader
         List<ERDEntity> entities = new ArrayList<>();
     }
 
-    public static List<DBPDataSourceContainer> extractContainers(IFile resource)
-        throws IOException, XMLException, DBException
-    {
-        List<DBPDataSourceContainer> containers = new ArrayList<>();
-
-        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject());
-        if (projectMeta == null) {
-            return containers;
-        }
-        try (InputStream is = resource.getContents()) {
-            final Document document = XMLUtils.parseDocument(is);
-            final Element diagramElem = document.getDocumentElement();
-
-            final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
-            if (entitiesElem != null) {
-                // Parse data source
-                for (Element dsElem : XMLUtils.getChildElementList(entitiesElem, TAG_DATA_SOURCE)) {
-                    String dsId = dsElem.getAttribute(ATTR_ID);
-                    if (!CommonUtils.isEmpty(dsId)) {
-                        // Get connected datasource
-                        final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
-                        if (dataSourceContainer != null) {
-                            containers.add(dataSourceContainer);
-                        }
-                    }
-                }
-            }
-        } catch (CoreException e) {
-            throw new DBException("Error reading resource contents", e);
-        }
-        return containers;
-    }
-
-    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
+    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, Reader reader)
         throws XMLException, DBException
     {
         monitor.beginTask("Parse diagram", 1);
@@ -196,7 +122,7 @@ public class DiagramLoader
             throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
         }
 
-        final Document document = XMLUtils.parseDocument(in);
+        final Document document = XMLUtils.parseDocument(reader);
         monitor.done();
 
         loadDiagram(monitor, document, projectMeta, diagram);
