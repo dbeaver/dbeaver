@@ -24,10 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -47,8 +44,7 @@ import java.util.List;
 /**
  * GreenplumTable
  */
-public class GreenplumTable extends PostgreTableRegular {
-
+public class GreenplumTable extends PostgreForkTable {
     private static final Log log = Log.getLog(GreenplumTable.class);
 
     private int[] distributionColumns;
@@ -207,5 +203,4 @@ public class GreenplumTable extends PostgreTableRegular {
             }
         }
     }
-
 }

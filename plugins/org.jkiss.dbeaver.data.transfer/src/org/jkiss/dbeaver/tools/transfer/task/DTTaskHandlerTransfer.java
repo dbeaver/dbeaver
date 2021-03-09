@@ -17,21 +17,21 @@
 package org.jkiss.dbeaver.tools.transfer.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
+import java.util.*;
 
 /**
  * DTTaskHandlerTransfer
@@ -60,54 +60,80 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         executeWithSettings(runnableContext, task, locale, log, listener, settings[0]);
     }
 
-    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, @NotNull DBTTaskExecutionListener listener, DataTransferSettings settings) throws DBException {
-        // Start consumers
+    public void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
+                                    @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
+                                    DataTransferSettings settings) throws DBException {
         listener.taskStarted(settings);
-
-        List<DataTransferPipe> dataPipes = settings.getDataPipes();
-        int[] lastPreTransferredPipeIndex = new int[1];
+        int indexOfLastPipeWithDisabledReferentialIntegrity = -1;
         try {
-            runnableContext.run(true, false, monitor -> {
-                monitor.beginTask("Initialize pipes", dataPipes.size());
-                try {
-                    for (int i = 0; i < dataPipes.size(); i++) {
-                        DataTransferPipe pipe = dataPipes.get(i);
-                        pipe.initPipe(settings, i, dataPipes.size());
-                        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
-                        consumer.startTransfer(monitor);
-                        if (consumer instanceof IDataTransferConsumerExtension) {
-                            ((IDataTransferConsumerExtension) consumer).preTransfer(monitor);
-                            lastPreTransferredPipeIndex[0] = i;
-                        }
-                        monitor.worked(1);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
-                }
-            });
+            indexOfLastPipeWithDisabledReferentialIntegrity = initializePipes(runnableContext, settings);
+            Throwable error = runDataTransferJobs(runnableContext, task, locale, log, listener, settings);
+            listener.taskFinished(settings, null, error);
         } catch (InvocationTargetException e) {
-            try {
-                executePostTransfer(runnableContext, dataPipes.subList(0, lastPreTransferredPipeIndex[0] + 1));
-            } catch (DBException postTransferException) {
-                throw new DBException("Error starting data transfer and cleaning up after unsuccessful start!");
-            }
-            throw new DBException("Error starting data transfer", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                DTMessages.data_transfer_task_handler_unexpected_error_title,
+                DTMessages.data_transfer_task_handler_unexpected_error_message,
+                e
+            );
+            throw new DBException("Error starting data transfer", e);
         } catch (InterruptedException e) {
-            executePostTransfer(runnableContext, dataPipes);
-            return;
+            //ignore
+        } finally {
+            restoreReferentialIntegrity(
+                runnableContext,
+                settings.getDataPipes(),
+                indexOfLastPipeWithDisabledReferentialIntegrity
+            );
+        }
+    }
+
+    private int initializePipes(@NotNull DBRRunnableContext runnableContext, @NotNull DataTransferSettings settings)
+            throws InvocationTargetException, InterruptedException, DBException {
+        int[] indexOfLastPipeWithDisabledReferentialIntegrity = new int[]{-1};
+        DBException[] dbException = {null};
+        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+
+        runnableContext.run(true, false, monitor -> {
+            monitor.beginTask("Initialize pipes", dataPipes.size());
+            try {
+                for (int i = 0; i < dataPipes.size(); i++) {
+                    DataTransferPipe pipe = dataPipes.get(i);
+                    pipe.initPipe(settings, i, dataPipes.size());
+                    IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+                    consumer.startTransfer(monitor);
+                    if (consumer instanceof DBPReferentialIntegrityController) {
+                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
+                        if (controller.supportsChangingReferentialIntegrity(monitor)) {
+                            controller.setReferentialIntegrity(monitor, false);
+                            indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
+                        }
+                    }
+                    monitor.worked(1);
+                }
+            } catch (DBException e) {
+                dbException[0] = e;
+            } finally {
+                monitor.done();
+            }
+        });
+        if (dbException[0] != null) {
+            throw dbException[0];
         }
 
-        // Schedule jobs for data providers
+        return indexOfLastPipeWithDisabledReferentialIntegrity[0];
+    }
+
+    @Nullable
+    private Throwable runDataTransferJobs(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale,
+                                     @NotNull Log log, @NotNull DBTTaskExecutionListener listener,
+                                     @NotNull DataTransferSettings settings) {
         int totalJobs = settings.getDataPipes().size();
         if (totalJobs > settings.getMaxJobCount()) {
             totalJobs = settings.getMaxJobCount();
         }
-        CountDownLatch countDownLatch = new CountDownLatch(totalJobs);
         Throwable error = null;
         for (int i = 0; i < totalJobs; i++) {
-            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener, countDownLatch);
+            DataTransferJob job = new DataTransferJob(settings, task, locale, log, listener);
             try {
                 runnableContext.run(true, true, job);
             } catch (InvocationTargetException e) {
@@ -117,46 +143,47 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             }
             listener.subTaskFinished(error);
         }
-        listener.taskFinished(settings, null, error);
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            //ignore
-        } finally {
-            executePostTransfer(runnableContext, dataPipes);
-        }
+        return error;
     }
 
-    private void executePostTransfer(@NotNull DBRRunnableContext runnableContext, @NotNull Collection<DataTransferPipe> pipes) throws DBException {
+    private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext, @NotNull List<DataTransferPipe> pipes,
+                                             int toIndexInclusive) throws DBException {
+        List<DataTransferPipe> affectedPipes = pipes.subList(0, toIndexInclusive + 1);
+        boolean[] dbExceptionWasThrown = new boolean[]{false};
         try {
             runnableContext.run(true, false, monitor -> {
-                StringBuilder errorMessages = new StringBuilder();
-                monitor.beginTask("Post transfer work", pipes.size());
                 try {
-                    for (DataTransferPipe pipe: pipes) {
-                        if (pipe.getConsumer() instanceof IDataTransferConsumerExtension) {
-                            try {
-                                ((IDataTransferConsumerExtension) pipe.getConsumer()).postTransfer(monitor);
-                            } catch (DBException e) {
-                                if (errorMessages.length() != 0) {
-                                    errorMessages.append("\n\n");
-                                }
-                                errorMessages.append(e.getMessage());
+                    monitor.beginTask("Post transfer work", affectedPipes.size());
+                    for (DataTransferPipe pipe: affectedPipes) {
+                        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+                        if (!(consumer instanceof DBPReferentialIntegrityController)) {
+                            continue;
+                        }
+                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
+                        try {
+                            if (controller.supportsChangingReferentialIntegrity(monitor)) {
+                                controller.setReferentialIntegrity(monitor, true);
                             }
+                        } catch (DBException e) {
+                            dbExceptionWasThrown[0] = true;
                         }
                         monitor.worked(1);
                     }
                 } finally {
                     monitor.done();
                 }
-                if (errorMessages.length() != 0) {
-                    throw new InvocationTargetException(new DBException("Possible data integrity problems! Unable to execute post transfer due to the following errors: \n" + errorMessages.toString()));
-                }
             });
         } catch (InterruptedException e) {
-            throw new DBException("Unable to finish post transfer properly. It means possible data integrity problems!");
+            //ignore
         } catch (InvocationTargetException e) {
-            throw (DBException) e.getCause();
+            DBWorkbench.getPlatformUI().showError(
+                DTMessages.data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title,
+                DTMessages.data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message,
+                e
+            );
+        }
+        if (dbExceptionWasThrown[0]) {
+            throw new DBException("Unable to restore referential integrity properly");
         }
     }
 }

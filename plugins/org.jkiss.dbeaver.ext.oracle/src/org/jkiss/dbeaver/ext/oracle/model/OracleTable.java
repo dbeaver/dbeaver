@@ -46,7 +46,8 @@ import java.util.*;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController {
+public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
+        DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(OracleTable.class);
 
     private OracleDataType tableType;
@@ -451,5 +452,16 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                 throw new DBException("Unable to change referential integrity", e);
             }
         }
+    }
+
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) {
+        return "Oracle tables: all foreign key constraints will be either enabled or disabled";
     }
 }

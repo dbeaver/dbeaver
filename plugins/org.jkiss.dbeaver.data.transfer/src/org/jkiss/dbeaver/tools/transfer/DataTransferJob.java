@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -28,13 +27,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Data transfer job
  */
 public class DataTransferJob implements DBRRunnableWithProgress {
-    private final CountDownLatch countDownLatch;
     private DataTransferSettings settings;
     private DBTTask task;
     private long elapsedTime;
@@ -44,13 +41,12 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     private Log log;
     private DBTTaskExecutionListener listener;
 
-    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener, @NotNull CountDownLatch countDownLatch) {
+    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener) {
         this.settings = settings;
         this.task = task;
         this.locale = locale;
         this.log = log;
         this.listener = listener;
-        this.countDownLatch = countDownLatch;
     }
 
     public DataTransferSettings getSettings() {
@@ -67,14 +63,6 @@ public class DataTransferJob implements DBRRunnableWithProgress {
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        try {
-            runJob(monitor);
-        } finally {
-            countDownLatch.countDown();
-        }
-    }
-
-    private void runJob(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Perform data transfer", 1);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
@@ -132,7 +120,5 @@ public class DataTransferJob implements DBRRunnableWithProgress {
         } finally {
             monitor.done();
         }
-
     }
-
 }
