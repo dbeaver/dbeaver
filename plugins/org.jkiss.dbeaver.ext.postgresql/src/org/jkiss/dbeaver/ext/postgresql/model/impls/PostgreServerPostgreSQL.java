@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting;
  * PostgreServerPostgreSQL
  */
 public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
-
     public static final String TYPE_ID = "postgresql";
 
     public PostgreServerPostgreSQL(PostgreDataSource dataSource) {
@@ -60,5 +59,10 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsBackslashStringEscape() {
         final PostgreSetting setting = dataSource.getSetting(PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         return setting != null && "off".equals(setting.getValue());
+    }
+
+    @Override
+    public boolean supportsDisablingAllTriggers() {
+        return true;
     }
 }

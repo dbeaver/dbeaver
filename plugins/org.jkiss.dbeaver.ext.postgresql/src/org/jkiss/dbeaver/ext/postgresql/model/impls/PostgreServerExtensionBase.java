@@ -38,7 +38,6 @@ import java.util.Map;
  * PostgreServerExtensionBase
  */
 public abstract class PostgreServerExtensionBase implements PostgreServerExtension {
-
     private static final Log log = Log.getLog(PostgreServerExtensionBase.class);
 
     protected final PostgreDataSource dataSource;
@@ -469,4 +468,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(8, 4);
     }
 
+    @Override
+    public boolean supportsDisablingAllTriggers() {
+        return false;
+    }
 }
