@@ -85,6 +85,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long tablespaceId;
     private String description;
     private long dbTotalSize;
+    private Boolean supportTypColumn;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -593,21 +594,23 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
             PostgreDataSource postgreDataSource = getDataSource();
             boolean readAllTypes = postgreDataSource.supportReadingAllDataTypes();
-            boolean supportsTypeCategory = postgreDataSource.getServerType().supportsTypeCategory();
-            StringBuilder sql = new StringBuilder(256);
-            sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
-                    "\nFROM pg_catalog.pg_type t" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-                    "\nWHERE t.typname IS NOT null");
-            if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-                if (supportsTypeCategory) {
-                    sql.append("\nAND t.typcategory <> 'A'");
-                }
-                sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
-            }
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
+                if (supportTypColumn == null) {
+                    supportTypColumn = PostgreUtils.supportsSysTypCategoryColumn(session);
+                }
+                StringBuilder sql = new StringBuilder(256);
+                sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
+                        "\nFROM pg_catalog.pg_type t" +
+                        "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                        "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                        "\nWHERE t.typname IS NOT null");
+                if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+                    if (supportTypColumn) {
+                        sql.append("\nAND t.typcategory <> 'A'");
+                    }
+                    sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         Set<PostgreSchema> schemaList = new HashSet<>();

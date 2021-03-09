@@ -698,4 +698,18 @@ public class PostgreUtils {
         return name.replace("$user", database.getMetaContext().getActiveUser());
     }
 
+    // Column "typcategory" appeared only in PG version 8.4 and before we relied on DB version to verify the conditions, but it was not the most universal solution.
+    // So make a separate request to the database for checking.
+    public static boolean supportsSysTypCategoryColumn(JDBCSession session) {
+        try {
+            String resultSet = JDBCUtils.queryString(session, "SELECT * FROM pg_attribute\n" +
+                    "WHERE attrelid = (SELECT oid FROM pg_class WHERE relname = 'pg_type')\n" +
+                    "AND attname = 'typcategory'");
+            return resultSet != null;
+        } catch (SQLException e) {
+            log.debug("Error reading system information from pg_class", e);
+        }
+        return false;
+    }
+
 }

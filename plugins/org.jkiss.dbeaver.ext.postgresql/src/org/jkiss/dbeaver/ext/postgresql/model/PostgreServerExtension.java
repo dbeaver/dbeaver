@@ -142,5 +142,4 @@ public interface PostgreServerExtension
 
     boolean supportsBackslashStringEscape();
 
-    boolean supportsTypeCategory();
 }

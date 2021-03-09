@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -45,6 +46,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     private static final Log log = Log.getLog(PostgreDataTypeCache.class);
 
     private final LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
+    private Boolean supportTypColumn;
 
     PostgreDataTypeCache() {
         setListOrderComparator(DBUtils.nameComparator());
@@ -179,7 +181,9 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         // Initially cache only base types (everything but composite and arrays)
         PostgreDataSource dataSource = owner.getDataSource();
         boolean readAllTypes = dataSource.supportReadingAllDataTypes();
-        boolean supportsTypeCategory = dataSource.getServerType().supportsTypeCategory();
+        if (supportTypColumn == null) {
+            supportTypColumn = PostgreUtils.supportsSysTypCategoryColumn(session);
+        }
         StringBuilder sql = new StringBuilder(256);
         sql.append("SELECT t.oid,t.*,c.relkind,").append(getBaseTypeNameClause(dataSource)).append(", d.description" +
             "\nFROM pg_catalog.pg_type t" +
@@ -187,7 +191,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
             "\nWHERE t.typname IS NOT null");
         if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-             if (supportsTypeCategory) {
+             if (supportTypColumn) {
                  sql.append("\nAND t.typcategory <> 'A'");
              }
              sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
