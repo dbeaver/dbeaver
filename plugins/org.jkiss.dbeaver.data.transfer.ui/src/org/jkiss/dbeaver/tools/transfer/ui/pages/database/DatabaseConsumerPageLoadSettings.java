@@ -205,7 +205,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                         DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
                         try {
                             if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                                caveats.add(controller.getCaveatsDescription(monitor));
+                                caveats.add(controller.getReferentialIntegrityDisableWarning(monitor));
                             }
                         } catch (DBException e) {
                             log.warn("Unexpected DBException when calculating tooltip for disableReferentialIntegrity checkbox");

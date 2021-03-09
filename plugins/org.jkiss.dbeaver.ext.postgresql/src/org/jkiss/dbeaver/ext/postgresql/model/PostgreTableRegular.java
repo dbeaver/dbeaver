@@ -51,7 +51,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
     }
 
     @Override
-    public void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
         if (!supportsChangingReferentialIntegrity(monitor)) {
             throw new DBException("Changing referential integrity is not supported");
         }
@@ -75,7 +75,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
 
     @NotNull
     @Override
-    public String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) {
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
         if (supportsChangingReferentialIntegrity(monitor)) {
             return "PostgreSQL tables: all triggers will be either enabled or disabled";
         }

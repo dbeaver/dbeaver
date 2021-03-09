@@ -186,7 +186,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         DatabaseTransferConsumer databaseTransferConsumer = (DatabaseTransferConsumer) consumer;
         DatabaseConsumerSettings settings = databaseTransferConsumer.getSettings();
         if (settings.isDisableReferentialIntegrity() && databaseTransferConsumer.supportsChangingReferentialIntegrity(monitor)) {
-            databaseTransferConsumer.setReferentialIntegrity(monitor, enable);
+            databaseTransferConsumer.enableReferentialIntegrity(monitor, enable);
             return true;
         }
         return false;

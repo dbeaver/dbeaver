@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBPReferentialIntegrityController {
     boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void setReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
+    void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException;
 
     /**
      * Returns description of things that may go wrong when changing referential integrity setting back and forth.
@@ -36,5 +36,5 @@ public interface DBPReferentialIntegrityController {
      * @throws DBException if unable to retrieve caveats for any reason
      */
     @NotNull
-    String getCaveatsDescription(@NotNull DBRProgressMonitor monitor) throws DBException;
+    String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException;
 }
