@@ -139,7 +139,10 @@ public class DTMessages extends NLS {
 	public static String stream_transfer_consumer_title_run_process;
 	public static String stream_transfer_consumer_message_error_running_process;
 
-
+	public static String data_transfer_task_handler_unexpected_error_title;
+	public static String data_transfer_task_handler_unexpected_error_message;
+	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
+	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
 
 	static {
 		// initialize resource bundle
