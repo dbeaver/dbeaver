@@ -16,18 +16,21 @@
  */
 package org.jkiss.dbeaver.runtime;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.*;
-import java.text.NumberFormat;
 import java.util.Base64;
 
 /**
@@ -115,48 +118,56 @@ public class WebUtils {
         return connection;
     }
 
-    public static void downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, File localFile, DBPAuthInfo authInfo) throws IOException, InterruptedException {
-        final URLConnection connection = openConnection(externalURL, authInfo, null);
-
-        int contentLength = connection.getContentLength();
-        if (contentLength < 0) {
-            contentLength = 0;
-        }
-        int bufferLength = contentLength / 10;
-        if (bufferLength > 1000000) {
-            bufferLength = 1000000;
-        }
-        if (bufferLength < 50000) {
-            bufferLength = 50000;
-        }
-        monitor.beginTask(taskName + " - " + externalURL, contentLength);
-        boolean success = false;
+    public static long downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, File localFile, DBPAuthInfo authInfo) throws IOException, InterruptedException {
         try (final OutputStream outputStream = new FileOutputStream(localFile)) {
-            try (final InputStream inputStream = connection.getInputStream()) {
-                final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                byte[] buffer = new byte[bufferLength];
-                int totalRead = 0;
-                for (;;) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException();
-                    }
-                    //monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
-                    final int count = inputStream.read(buffer);
-                    if (count <= 0) {
-                        success = true;
-                        break;
-                    }
-                    outputStream.write(buffer, 0, count);
-                    monitor.worked(count);
-                    totalRead += count;
+            return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo);
+        }
+    }
+
+    public static long downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, OutputStream outputStream, DBPAuthInfo authInfo) throws IOException, InterruptedException {
+        final URLConnection connection = openConnection(externalURL, authInfo, null);
+        final int contentLength = connection.getContentLength();
+        final byte[] buffer = new byte[8192];
+        final ByteNumberFormat numberFormat = new ByteNumberFormat();
+        numberFormat.setUseLongUnitNames(true);
+
+        // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN
+        monitor.beginTask(taskName + " - " + externalURL, contentLength);
+        try (final InputStream inputStream = connection.getInputStream()) {
+            final long startTime = System.currentTimeMillis();
+            long updateTime = 0;
+            long totalRead = 0;
+
+            while (true) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
                 }
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - updateTime > 1000) {
+                    if (contentLength >= 0) {
+                        long elapsedTime = currentTime - startTime;
+                        long totalDownloadTime = (long) (elapsedTime * contentLength / (double) totalRead);
+                        long remainingDownloadTime = totalDownloadTime - elapsedTime;
+                        updateTime = currentTime;
+                        monitor.subTask(NLS.bind(ModelMessages.dialog_web_download_text_known, new Object[]{
+                            numberFormat.format(totalRead),
+                            numberFormat.format(contentLength),
+                            String.format("%.2f%%", totalRead / (double) contentLength * 100),
+                            remainingDownloadTime > 0 ? RuntimeUtils.formatExecutionTime(remainingDownloadTime) : "-"
+                        }));
+                    } else {
+                        monitor.subTask(NLS.bind(ModelMessages.dialog_web_download_text_unknown, numberFormat.format(totalRead)));
+                    }
+                }
+                final int count = inputStream.read(buffer);
+                if (count <= 0) {
+                    return totalRead;
+                }
+                outputStream.write(buffer, 0, count);
+                monitor.worked(count);
+                totalRead += count;
             }
         } finally {
-            if (!success) {
-                if (!localFile.delete()) {
-                    log.warn("Can't delete local file '" + localFile.getAbsolutePath() + "'");
-                }
-            }
             monitor.done();
         }
     }

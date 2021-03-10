@@ -27,18 +27,11 @@ import java.text.ParsePosition;
 public class ByteNumberFormat extends NumberFormat {
     private static final long serialVersionUID = 1;
 
-    private static final String B = "B";
-    private static final String KB = "K";
-    private static final String MB = "M";
-    private static final String GB = "G";
-    private static final String TB = "T";
-    private static final String PB = "P";
-
-    public static final String[] BYTES = {
-        B, KB, MB, GB, TB, PB
-    };
+    public static final Unit[] UNITS = Unit.values();
 
     private static final DecimalFormat fpFormat = new DecimalFormat("#.#");
+
+    private boolean useLongUnitNames = false;
 
     /**
      * Creates a new formatter.
@@ -50,7 +43,7 @@ public class ByteNumberFormat extends NumberFormat {
     public static int computeIndex(double bytes) {
         int index = 0;
 
-        for (int i = 0; i < BYTES.length; i++) {
+        for (int i = 0; i < UNITS.length; i++) {
             int result = (int)(bytes / 1024);
             if (result == 0) {
                 break;
@@ -62,7 +55,7 @@ public class ByteNumberFormat extends NumberFormat {
                 index++;
             }
         }
-        
+
         return index;
     }
 
@@ -76,6 +69,9 @@ public class ByteNumberFormat extends NumberFormat {
     public String getBytes(double bytes) {
 
         int index = computeIndex(bytes);
+        if (index >= UNITS.length) {
+            index = UNITS.length - 1;
+        }
 
         double intBytes = bytes;
         if (intBytes == 0) {
@@ -93,7 +89,8 @@ public class ByteNumberFormat extends NumberFormat {
         } else {
             str = fpFormat.format(intBytes);
         }
-        return str + BYTES[index];
+        final Unit unit = UNITS[index];
+        return str + (useLongUnitNames ? unit.fullName : unit.shortName);
     }
 
     /**
@@ -140,14 +137,30 @@ public class ByteNumberFormat extends NumberFormat {
         return null;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new ByteNumberFormat().format(100));
-        System.out.println(new ByteNumberFormat().format(1000));
-        System.out.println(new ByteNumberFormat().format(10000));
-        System.out.println(new ByteNumberFormat().format(11000));
-        System.out.println(new ByteNumberFormat().format(100000));
-        System.out.println(new ByteNumberFormat().format(1000000));
-        System.out.println(new ByteNumberFormat().format(10000000));
+    /**
+     * Sets whether this formatter should use long names for units.
+     * Note that this formatter uses ISO 80000 compliant names
+     *
+     * @param useLongUnitNames <code>true</code> if formatter should use long names for units, <code>false</code> otherwise
+     */
+    public void setUseLongUnitNames(boolean useLongUnitNames) {
+        this.useLongUnitNames = useLongUnitNames;
     }
 
+    private enum Unit {
+        BYTE("B", "B"),
+        KILOBYTE("K", "KiB"),
+        MEGABYTE("M", "MiB"),
+        GIGABYTE("G", "GiB"),
+        TERABYTE("T", "TiB"),
+        PETABYTE("P", "PiB");
+
+        private final String shortName;
+        private final String fullName;
+
+        Unit(String shortName, String fullName) {
+            this.shortName = shortName;
+            this.fullName = fullName;
+        }
+    }
 }

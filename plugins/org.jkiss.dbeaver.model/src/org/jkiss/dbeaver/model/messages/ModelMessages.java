@@ -26,6 +26,8 @@ public class ModelMessages extends NLS {
 
 	public static String error_can_create_temp_dir;
 	public static String error_can_create_temp_file;
+	public static String dialog_web_download_text_known;
+	public static String dialog_web_download_text_unknown;
 
 	public static String common_error_sql;
 
