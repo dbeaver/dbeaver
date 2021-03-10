@@ -75,7 +75,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             DBWorkbench.getPlatformUI().showError(
                 DTMessages.data_transfer_task_handler_unexpected_error_title,
                 DTMessages.data_transfer_task_handler_unexpected_error_message,
-                e
+                e.getCause()
             );
             throw new DBException("Error starting data transfer", e);
         } catch (InterruptedException e) {
@@ -170,7 +170,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
             DBWorkbench.getPlatformUI().showError(
                 DTMessages.data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title,
                 DTMessages.data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message,
-                e
+                e.getCause()
             );
         }
         if (dbExceptionWasThrown[0]) {
