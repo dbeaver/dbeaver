@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.update;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
@@ -27,19 +31,33 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
+import java.io.File;
+import java.io.IOException;
+
 public class VersionUpdateDialog extends Dialog {
+
+    private static final Log log = Log.getLog(VersionUpdateDialog.class);
 
     private static final int INFO_ID = 1000;
     private static final int UPGRADE_ID = 1001;
@@ -131,7 +149,7 @@ public class VersionUpdateDialog extends Dialog {
             final Text notesText = new Text(propGroup, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             String releaseNotes = CommonUtils.notEmpty(newVersion.getReleaseNotes());
             if (releaseNotes.isEmpty()) {
-                releaseNotes = "No release notes";
+                releaseNotes = CoreMessages.dialog_version_update_no_notes;
             }
             releaseNotes = formatReleaseNotes(releaseNotes);
 
@@ -143,7 +161,7 @@ public class VersionUpdateDialog extends Dialog {
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
             hintLabel.setText(NLS.bind(
-                CoreMessages.dialog_version_update_press_more_info_,
+                CoreMessages.dialog_version_update_press_more_info,
                 CoreMessages.dialog_version_update_button_more_info,
                 newVersion.getPlainVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -201,21 +219,21 @@ public class VersionUpdateDialog extends Dialog {
     {
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
-            dontShowAgainCheck = UIUtils.createCheckbox(parent, "Don't show for the version " + newVersion.getPlainVersion(), false);
+            dontShowAgainCheck = UIUtils.createCheckbox(parent, NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getPlainVersion()), false);
         }
 
         if (isNewVersionAvailable()) {
             createButton(
                 parent,
                 UPGRADE_ID,
-                "Upgrade ...",
+                CoreMessages.dialog_version_update_button_upgrade,
                 true);
         } else {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
                 createButton(
                     parent,
                     CHECK_EA_ID,
-                    "Early Access",
+                    CoreMessages.dialog_version_update_button_early_access,
                     false);
             }
         }
@@ -246,7 +264,54 @@ public class VersionUpdateDialog extends Dialog {
             }
         } else if (buttonId == UPGRADE_ID) {
             if (newVersion != null) {
-                UIUtils.launchProgram(makeDownloadURL(newVersion.getBaseURL()));
+                final PlatformInstaller installer = getPlatformInstaller();
+                if (installer != null) {
+                    final AbstractJob job = new AbstractJob("Downloading installation file") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
+                            final File folder;
+                            final File file;
+
+                            try {
+                                folder = ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform());
+                                file = ContentUtils.makeTempFile(monitor, folder, installer.getExecutableName(app), installer.getExecutableExtension());
+                                log.debug("Downloading installation file to " + file);
+                                WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
+                            } catch (IOException e) {
+                                return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
+                            } catch (InterruptedException e) {
+                                log.debug("Canceled by user", e);
+                                return Status.OK_STATUS;
+                            }
+
+                            if (UIUtils.confirmAction(CoreMessages.dialog_version_update_downloader_title, NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName()))) {
+                                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                                    try {
+                                        installer.run(file, log);
+                                    } catch (Exception e) {
+                                        log.error("Failed to run the installer script", e);
+                                    }
+                                }));
+
+                                addJobChangeListener(new JobChangeAdapter() {
+                                    @Override
+                                    public void done(IJobChangeEvent event) {
+                                        Runtime.getRuntime().exit(0);
+                                    }
+                                });
+                            } else {
+                                UIUtils.launchProgram(folder.getAbsolutePath());
+                            }
+
+                            return Status.OK_STATUS;
+                        }
+                    };
+                    job.setUser(true);
+                    job.schedule();
+                } else {
+                    UIUtils.launchProgram(getDownloadPageURL(newVersion));
+                }
             }
         } else if (buttonId == CHECK_EA_ID) {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
@@ -264,8 +329,27 @@ public class VersionUpdateDialog extends Dialog {
         close();
     }
 
-    private String makeDownloadURL(String baseURL) {
-        while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length() - 1);
+    @Nullable
+    private PlatformInstaller getPlatformInstaller() {
+        switch (Platform.getOS()) {
+            case Platform.OS_WIN32:
+                return new WindowsInstaller();
+            case Platform.OS_MACOSX:
+                return new MacintoshInstaller();
+            default:
+                return null;
+        }
+    }
+
+    @NotNull
+    private String getDownloadURL(@NotNull ApplicationDescriptor application, @NotNull PlatformInstaller installer, @NotNull VersionDescriptor version) {
+        final String name = installer.getExecutableName(application);
+        final String extension = installer.getExecutableExtension();
+        return CommonUtils.removeTrailingSlash(version.getDownloadURL()) + '/' + name + '.' + extension;
+    }
+
+    @NotNull
+    private String getDownloadPageURL(@NotNull VersionDescriptor version) {
         String os = Platform.getOS();
         switch (os) {
             case "win32": os = "win"; break;
@@ -283,7 +367,7 @@ public class VersionUpdateDialog extends Dialog {
                 dist = "rpm";
             }
         }
-        return baseURL + "?start" +
+        return CommonUtils.removeTrailingSlash(version.getBaseURL()) + "?start" +
             "&os=" + os +
             "&arch=" + arch +
             (dist == null ? "" : "&dist=" + dist);
@@ -294,4 +378,59 @@ public class VersionUpdateDialog extends Dialog {
         return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
     }
 
+    private interface PlatformInstaller {
+        void run(@NotNull File file, @NotNull Log log) throws Exception;
+
+        @NotNull
+        String getExecutableName(@NotNull ApplicationDescriptor application);
+
+        @NotNull
+        String getExecutableExtension();
+    }
+
+    private static final class WindowsInstaller implements PlatformInstaller {
+        @Override
+        public void run(@NotNull File file, @NotNull Log log) throws Exception {
+            Runtime.getRuntime().exec(new String[]{
+                "cmd.exe", "/C",
+                "start", "/W", file.getAbsolutePath(),
+                "&&",
+                "del", file.getAbsolutePath(),
+            });
+        }
+
+        @NotNull
+        @Override
+        public String getExecutableName(@NotNull ApplicationDescriptor application) {
+            return application.getId() + "-latest-x86_64-setup";
+        }
+
+        @NotNull
+        @Override
+        public String getExecutableExtension() {
+            return "exe";
+        }
+    }
+
+    private static final class MacintoshInstaller implements PlatformInstaller {
+        @Override
+        public void run(@NotNull File file, @NotNull Log log) throws Exception {
+            Runtime.getRuntime().exec(new String[]{
+                "/bin/sh", "-c",
+                "open -F -W " + file.getAbsolutePath() + " && rm " + file.getAbsolutePath()
+            });
+        }
+
+        @NotNull
+        @Override
+        public String getExecutableName(@NotNull ApplicationDescriptor application) {
+            return application.getId() + "-latest-macos";
+        }
+
+        @NotNull
+        @Override
+        public String getExecutableExtension() {
+            return "dmg";
+        }
+    }
 }
