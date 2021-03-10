@@ -19,7 +19,7 @@ In the root folder run
 	mvn clean install
 
 It will build binaries for DBeaver standalone version and for Eclipse repository.
-Binaries (zip archives) are located in "product/standalone/target/products/" folder.
+Binaries (zip archives) are located in "product/community/target/products/" folder.
 
 Notes
 =================================
