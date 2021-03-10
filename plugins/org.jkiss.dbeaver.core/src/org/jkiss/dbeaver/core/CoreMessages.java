@@ -224,14 +224,21 @@ public class CoreMessages extends NLS {
 	public static String dialog_tunnel_title;
 
 	public static String dialog_version_update_available_new_version;
+	public static String dialog_version_update_ignore_version;
 	public static String dialog_version_update_button_more_info;
+	public static String dialog_version_update_button_upgrade;
+	public static String dialog_version_update_button_early_access;
 	public static String dialog_version_update_current_version;
 	public static String dialog_version_update_n_a;
 	public static String dialog_version_update_new_version;
 	public static String dialog_version_update_no_new_version;
 	public static String dialog_version_update_notes;
-	public static String dialog_version_update_press_more_info_;
+	public static String dialog_version_update_no_notes;
+	public static String dialog_version_update_press_more_info;
 	public static String dialog_version_update_title;
+	public static String dialog_version_update_downloader_title;
+	public static String dialog_version_update_downloader_confirm_install;
+	public static String dialog_version_update_downloader_error_cannot_download;
 
 	public static String model_html_read_database_meta_data;
 
