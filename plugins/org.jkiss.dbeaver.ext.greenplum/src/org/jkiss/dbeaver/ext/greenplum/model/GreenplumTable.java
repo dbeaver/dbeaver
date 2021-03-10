@@ -45,6 +45,7 @@ import java.util.List;
  * GreenplumTable
  */
 public class GreenplumTable extends PostgreTableRegular {
+
     private static final Log log = Log.getLog(GreenplumTable.class);
 
     private int[] distributionColumns;
@@ -203,4 +204,5 @@ public class GreenplumTable extends PostgreTableRegular {
             }
         }
     }
+
 }

@@ -32,6 +32,7 @@ import java.util.Locale;
  * Data transfer job
  */
 public class DataTransferJob implements DBRRunnableWithProgress {
+
     private DataTransferSettings settings;
     private DBTTask task;
     private long elapsedTime;
@@ -41,7 +42,8 @@ public class DataTransferJob implements DBRRunnableWithProgress {
     private Log log;
     private DBTTaskExecutionListener listener;
 
-    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener) {
+    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
+    {
         this.settings = settings;
         this.task = task;
         this.locale = locale;
@@ -120,5 +122,7 @@ public class DataTransferJob implements DBRRunnableWithProgress {
         } finally {
             monitor.done();
         }
+
     }
+
 }

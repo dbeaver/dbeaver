@@ -29,7 +29,8 @@ import java.sql.SQLException;
 /**
  * RedshiftTable base
  */
-public class RedshiftTable extends PostgreTableRegular {
+public class RedshiftTable extends PostgreTableRegular
+{
     private static final Log log = Log.getLog(RedshiftTable.class);
 
     public RedshiftTable(PostgreSchema catalog) {
@@ -58,4 +59,5 @@ public class RedshiftTable extends PostgreTableRegular {
         diskSpace = dbResult.getLong("size") * 1024 * 1024;
         rowCountEstimate = rowCount = dbResult.getLong("tbl_rows");
     }
+
 }
