@@ -129,6 +129,7 @@ public class WebUtils {
         final int contentLength = connection.getContentLength();
         final byte[] buffer = new byte[8192];
         final ByteNumberFormat numberFormat = new ByteNumberFormat();
+        numberFormat.setUseLongUnitNames(true);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN
         monitor.beginTask(taskName + " - " + externalURL, contentLength);
