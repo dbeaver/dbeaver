@@ -95,14 +95,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot) {
-        this(parent, rootNode, style, showRoot, null);
+        this(parent, rootNode, style, showRoot, null, null);
     }
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter)
-    {
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter) {
+        this(parent, rootNode, style, showRoot, navigatorFilter, null);
+    }
+
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter, String filterPlaceholderText) {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
+        if (filterPlaceholderText != null) {
+            this.filterPlaceholderText = filterPlaceholderText;
+        }
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
@@ -124,14 +130,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
 
-        DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
+        DatabaseNavigatorLabelProvider labelProvider = createLabelProvider(this);
         treeViewer.setLabelProvider(labelProvider);
-        treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
-
-        if (false) {
-            // We don't need it
-            tree.addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
-        }
+        treeViewer.setContentProvider(createContentProvider(showRoot));
 
         if (rootNode != null) {
             setInput(rootNode);
@@ -162,10 +163,35 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 tree.addListener(SWT.MouseEnter, mouseListener);
                 tree.addListener(SWT.MouseExit, mouseListener);
             }
+            {
+                Listener mouseListener = e -> {
+                    TreeItem item = tree.getItem(new Point(e.x, e.y));
+                    if (item != null) {
+                        Object element = item.getData();
+                        if (element instanceof DBNNode) {
+                            itemRenderer.handleHover((DBNNode) element, tree, item, e);
+                        }
+                    }
+                };
+                tree.addListener(SWT.MouseHover, mouseListener);
+                tree.addListener(SWT.MouseMove, mouseListener);
+                tree.addListener(SWT.MouseEnter, mouseListener);
+                tree.addListener(SWT.MouseExit, mouseListener);
+            }
             tree.addListener(SWT.MouseDown, event -> onItemMouseDown(tree, event, false));
             tree.addListener(SWT.MouseDoubleClick, event -> onItemMouseDown(tree, event, true));
             LinuxKeyboardArrowsListener.installOn(tree);
         }
+    }
+
+    @NotNull
+    protected DatabaseNavigatorContentProvider createContentProvider(boolean showRoot) {
+        return new DatabaseNavigatorContentProvider(this, showRoot);
+    }
+
+    @NotNull
+    protected DatabaseNavigatorLabelProvider createLabelProvider(DatabaseNavigatorTree tree) {
+        return new DatabaseNavigatorLabelProvider(tree.treeViewer);
     }
 
     public boolean isFilterShowConnected() {
@@ -852,10 +878,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     protected String getFilterPlaceholderText() {
         return filterPlaceholderText;
-    }
-
-    public void setFilterPlaceholderText(String filterPlaceholderText) {
-        this.filterPlaceholderText = filterPlaceholderText;
     }
 
     // Called by filtering job

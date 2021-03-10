@@ -157,7 +157,7 @@ public final class RuntimeUtils {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-            log.warn("Sleep interrupted", e);
+            log.debug("Sleep interrupted", e);
         }
     }
 

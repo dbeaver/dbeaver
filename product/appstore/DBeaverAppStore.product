@@ -1,64 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore" application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="21.0.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore"
+    application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="21.0.0.qualifier" useFeatures="true"
+    includeLaunchers="true">
 
-   <configIni use="default">
-   </configIni>
+    <configIni use="default">
+    </configIni>
 
-   <launcherArgs>
-      <programArgs></programArgs>
-      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
-   </launcherArgs>
+    <launcherArgs>
+        <programArgs></programArgs>
 
-   <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
+        <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
+        <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
+    </launcherArgs>
 
-   <launcher name="dbeaver">
-       <macosx icon="/../standalone/icons/dbeaver.icns"/>
-       <win useIco="true">
-           <ico path="/../standalone/icons/dbeaver.ico"/>
-       </win>
-   </launcher>
+    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
 
-   <vm>
-   </vm>
+    <launcher name="dbeaver">
+        <macosx icon="/../standalone/icons/dbeaver.icns"/>
+        <win useIco="true">
+            <ico path="/../standalone/icons/dbeaver.ico"/>
+        </win>
+    </launcher>
 
-   <license>
+    <vm>
+    </vm>
+
+    <license>
         <url>https://dbeaver.io/about/</url>
         <text>
-    DBeaver - Universal Database Manager
-    Copyright (C) 2010-2021 DBeaver Corp and others
+            DBeaver - Universal Database Manager
+            Copyright (C) 2010-2021 DBeaver Corp and others
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+            Licensed under the Apache License, Version 2.0 (the "License");
+            you may not use this file except in compliance with the License.
+            You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-         </text>
-   </license>
+            Unless required by applicable law or agreed to in writing, software
+            distributed under the License is distributed on an "AS IS" BASIS,
+            WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+            See the License for the specific language governing permissions and
+            limitations under the License.
+        </text>
+    </license>
 
-   <plugins>
-   </plugins>
+    <plugins>
+    </plugins>
 
-   <features>
-      <feature id="org.jkiss.dbeaver.appstore.feature"/>
-   </features>
+    <features>
+        <feature id="org.jkiss.dbeaver.appstore.feature"/>
+    </features>
 
-   <configurations>
-      <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1" />
-      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
-      <!-- This is important because simpleconfigurator conflicts with update.configurator -->
-      <plugin id="org.eclipse.update.configurator" autoStart="false"  startLevel="10" />
-   </configurations>
+    <configurations>
+        <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
+        <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
+        <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4"/>
+        <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
+        <!-- This is important because simpleconfigurator conflicts with update.configurator -->
+        <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
+    </configurations>
 
 </product>

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -163,9 +164,14 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources.isEmpty();
     }
 
-    public boolean supportsDataSource(DBPDataSource dataSource)
-    {
-        return supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderId()) || supportedDataSources.contains(dataSource.getClass().getName());
+    public boolean supportsDataSource(DBPDataSource dataSource) {
+        for (DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor(); provider != null; provider = provider.getParentProvider()) {
+            if (supportedDataSources.contains(provider.getId())) {
+                return true;
+            }
+
+        }
+        return supportedDataSources.contains(dataSource.getClass().getName());
     }
 
     @Override

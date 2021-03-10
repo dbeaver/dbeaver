@@ -51,7 +51,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -111,7 +111,7 @@ public class DiagramLoader extends ERDPersistedState {
         List<ERDEntity> entities = new ArrayList<>();
     }
 
-    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
+    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, Reader reader)
         throws XMLException, DBException
     {
         monitor.beginTask("Parse diagram", 1);
@@ -122,7 +122,7 @@ public class DiagramLoader extends ERDPersistedState {
             throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
         }
 
-        final Document document = XMLUtils.parseDocument(in);
+        final Document document = XMLUtils.parseDocument(reader);
         monitor.done();
 
         loadDiagram(monitor, document, projectMeta, diagram);

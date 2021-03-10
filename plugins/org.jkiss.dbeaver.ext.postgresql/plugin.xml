@@ -24,7 +24,7 @@
     <extension-point id="org.jkiss.dbeaver.postgresql.fdw.config" name="PostgreSQL Foreign Data Wrappers Config" schema="schema/org.jkiss.dbeaver.postgresql.fdw.config.exsd"/>
 
     <extension point="org.jkiss.dbeaver.postgresql.serverType">
-        <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png" customURL="true"/>
+        <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png" customURL="true" turnOffPreparedStatements="true"/>
         <serverType id="edb" name="EnterpriseDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerEdb" logo="icons/edb_logo.png" customURL="true"/>
         <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" customURL="true"/>
         <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png" customURL="true"/>
@@ -447,7 +447,7 @@
                         description="AWS Redshift JDBC driver"
                         webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                         propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
-                        categories="sql,analytic,bigdata">
+                        categories="sql,analytic,bigdata,aws">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
                     <!-- Drivers after 1.2.45 seems to be broken -->

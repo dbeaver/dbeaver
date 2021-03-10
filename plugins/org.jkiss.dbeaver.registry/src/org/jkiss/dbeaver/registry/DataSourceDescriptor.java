@@ -621,7 +621,7 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isExternallyProvided() {
-        return origin.isDynamic();
+        return getOrigin().isDynamic();
     }
 
     @Override
@@ -770,8 +770,9 @@ public class DataSourceDescriptor
         // Update auth properties if possible
 
         // 1. Get credentials from origin
-        if (origin instanceof DBAAuthCredentialsProvider) {
-            ((DBAAuthCredentialsProvider) origin).provideAuthParameters(this, resolvedConnectionInfo);
+        DBPDataSourceOrigin dsOrigin = getOrigin();
+        if (dsOrigin instanceof DBAAuthCredentialsProvider) {
+            ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(this, resolvedConnectionInfo);
         }
 
         // 2. Get credentials from global provider
@@ -918,7 +919,7 @@ public class DataSourceDescriptor
             }
             return true;
         } catch (Exception e) {
-            log.debug("Connection failed (" + getId() + ")");
+            log.debug("Connection failed (" + getId() + ")", e);
             if (tunnelHandler != null) {
                 try {
                     tunnelHandler.closeTunnel(monitor);

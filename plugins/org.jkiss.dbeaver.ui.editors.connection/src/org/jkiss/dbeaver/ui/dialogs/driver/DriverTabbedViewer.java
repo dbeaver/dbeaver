@@ -94,20 +94,31 @@ public class DriverTabbedViewer extends StructuredViewer {
         folders.add(
             new TabbedFolderInfo(
                 "all", "All", DBIcon.TREE_DATABASE, "All drivers", false,
-                new DriverListFolder(ratedDrivers)));
+                new DriverListFolder(null, ratedDrivers)));
         folders.add(
             new TabbedFolderInfo(
                 "popular", "Popular", DBIcon.TREE_DATABASE, "Popular and recently used drivers", false,
-                new DriverListFolder(recentDrivers)));
+                new DriverListFolder(null, recentDrivers)));
 
+        List<TabbedFolderInfo> extFolders = new ArrayList<>();
         for (DriverCategoryDescriptor category : DriverManagerRegistry.getInstance().getCategories()) {
             if (category.isPromoted()) {
-                folders.add(
+                extFolders.add(
                     new TabbedFolderInfo(
                         category.getId(), category.getName(), category.getIcon(), category.getDescription(), false,
-                        new DriverListFolder(getCategoryDrivers(category, allDrivers))));
+                        new DriverListFolder(category, getCategoryDrivers(category, allDrivers))));
             }
         }
+        extFolders.sort((o1, o2) -> {
+            DriverCategoryDescriptor cat1 = ((DriverListFolder) o1.getContents()).category;
+            DriverCategoryDescriptor cat2 = ((DriverListFolder) o2.getContents()).category;
+            int cmp = cat1.getRank() - cat2.getRank();
+            if (cmp == 0) {
+                cmp = cat1.getName().compareTo(cat2.getName());
+            }
+            return cmp;
+        });
+        folders.addAll(extFolders);
 
         String folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
         if (CommonUtils.isEmpty(folderId)) {
@@ -268,11 +279,13 @@ public class DriverTabbedViewer extends StructuredViewer {
 
     private class DriverListFolder implements ITabbedFolder {
 
+        private final DriverCategoryDescriptor category;
         private AdvancedListViewer viewer;
-        private List<DBPDriver> drivers;
+        private final List<DBPDriver> drivers;
         private boolean activated;
 
-        DriverListFolder(List<DBPDriver> drivers) {
+        DriverListFolder(DriverCategoryDescriptor category, List<DBPDriver> drivers) {
+            this.category = category;
             this.drivers = new ArrayList<>(drivers);
         }
 

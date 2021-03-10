@@ -197,17 +197,23 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     @Override
-    public synchronized DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
+    public DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
         throws DBException {
-        if (childNodes == null && hasChildren(false)) {
+        boolean needsLoad;
+        synchronized (this) {
+            needsLoad = childNodes == null && hasChildren(false);
+        }
+        if (needsLoad) {
             if (this.initializeNode(monitor, null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList, this, true);
                 if (!monitor.isCanceled()) {
-                    if (tmpList.isEmpty()) {
-                        this.childNodes = EMPTY_NODES;
-                    } else {
-                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[0]);
+                    synchronized (this) {
+                        if (tmpList.isEmpty()) {
+                            this.childNodes = EMPTY_NODES;
+                        } else {
+                            this.childNodes = tmpList.toArray(new DBNDatabaseNode[0]);
+                        }
                     }
                     this.afterChildRead();
                 }

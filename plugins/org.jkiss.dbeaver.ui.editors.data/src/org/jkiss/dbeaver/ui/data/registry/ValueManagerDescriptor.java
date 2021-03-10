@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -127,8 +127,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
         final DBPDataKind dataKind = typedObject.getDataKind();
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
-                DBPDriver driver = dataSource.getContainer().getDriver();
-                if (!info.dataSource.equals(driver.getProviderId()) && !info.dataSource.equals(dataSource.getClass().getName())) {
+                if (!supportsAnyProvider(dataSource, info)) {
                     continue;
                 }
             } else if (checkDataSource) {
@@ -157,6 +156,18 @@ public class ValueManagerDescriptor extends AbstractDescriptor
                 }
             }
             if (!checkType && info.valueType == null && info.dataKind == null && info.typeName == null && info.extension == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean supportsAnyProvider(@NotNull DBPDataSource dataSource, SupportInfo info) {
+        for (DBPDataSourceProviderDescriptor provider = dataSource.getContainer().getDriver().getProviderDescriptor();
+            provider != null;
+            provider = provider.getParentProvider())
+        {
+            if (info.dataSource.equals(provider.getId()) || info.dataSource.equals(dataSource.getClass().getName())) {
                 return true;
             }
         }

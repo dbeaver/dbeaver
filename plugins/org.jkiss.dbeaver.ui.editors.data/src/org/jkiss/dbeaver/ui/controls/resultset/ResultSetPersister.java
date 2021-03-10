@@ -139,6 +139,10 @@ class ResultSetPersister {
         return new ArrayList<>(attrs);
     }
 
+    private static boolean isVirtualColumn(DBDAttributeBinding column) {
+        return column instanceof DBDAttributeBindingCustom;
+    }
+
     /**
      * Applies changes.
      *
@@ -369,7 +373,9 @@ class ResultSetPersister {
             } else {
                 for (int i = 0; i < columns.length; i++) {
                     DBDAttributeBinding column = columns[i];
-                    statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
+                    if (!isVirtualColumn(column)) {
+                        statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
+                    }
                 }
             }
             insertStatements.add(statement);
@@ -398,10 +404,12 @@ class ResultSetPersister {
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
                 // Updated columns
                 for (DBDAttributeBinding changedAttr : row.changes.keySet()) {
-                    statement.updateAttributes.add(
-                        new DBDAttributeValue(
-                            changedAttr,
-                            model.getCellValue(changedAttr, row)));
+                    if (!isVirtualColumn(changedAttr)) {
+                        statement.updateAttributes.add(
+                            new DBDAttributeValue(
+                                changedAttr,
+                                model.getCellValue(changedAttr, row)));
+                    }
                 }
                 if (rowIdentifier != null) {
                     // Key columns

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -28,23 +27,36 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 
 /**
  * PostgreDateTimeValueHandler.
  */
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
-
+    private static final String POSITIVE_INFINITY_STRING_REPRESENTATION = "+Infinity";
+    private static final String NEGATIVE_INFINITY_STRING_REPRESENTATION = "-Infinity";
+    private static final long POSITIVE_INFINITY = 9223372036825200000L;
+    private static final long NEGATIVE_INFINITY = -9223372036832400000L;
 
     public PostgreDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
     }
 
     @Override
-    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
-        Object value = super.fetchValueObject(session, resultSet, type, index);
-        //if (value instanceof )
-        return value;
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+        if (!(object instanceof Timestamp)) {
+            return super.getValueFromObject(session, type, object, copy, validateValue);
+        }
+        Timestamp timestamp = (Timestamp) object;
+        long time = timestamp.getTime();
+        if (time == POSITIVE_INFINITY) {
+            return POSITIVE_INFINITY_STRING_REPRESENTATION;
+        }
+        if (time == NEGATIVE_INFINITY) {
+            return NEGATIVE_INFINITY_STRING_REPRESENTATION;
+        }
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @Override
@@ -60,5 +72,4 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         super.bindValueObject(session, statement, type, index, value);
     }
-
 }

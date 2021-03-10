@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.athena;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
@@ -25,13 +26,15 @@ import org.jkiss.dbeaver.ext.athena.model.AthenaMetaModel;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class AthenaDataSourceProvider extends GenericDataSourceProvider {
+public class AthenaDataSourceProvider extends GenericDataSourceProvider implements DBPInformationProvider {
 
     private static final Log log = Log.getLog(AthenaDataSourceProvider.class);
 
@@ -65,5 +68,14 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider {
             .replace("{region}", connectionInfo.getServerName())
             .replace("=region;", "=" + connectionInfo.getServerName() + ";"); // Left for backward compatibility
         return urlTemplate;
+    }
+
+    @Nullable
+    @Override
+    public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
+        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
+            return ((DBPDataSourceContainer) object).getConnectionConfiguration().getServerName();
+        }
+        return null;
     }
 }

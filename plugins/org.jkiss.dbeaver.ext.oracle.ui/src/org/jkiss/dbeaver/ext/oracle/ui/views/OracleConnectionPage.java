@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -388,7 +389,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         if (CommonUtils.toBoolean(dataSource.getConnectionConfiguration().getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             return OracleAuthOS.ID;
         }
-        return super.getDefaultAuthModelId(dataSource);
+        return OracleAuthModelDatabaseNative.ID;
     }
 
     @Override
