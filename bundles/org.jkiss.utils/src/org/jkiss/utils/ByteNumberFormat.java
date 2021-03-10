@@ -69,6 +69,9 @@ public class ByteNumberFormat extends NumberFormat {
     public String getBytes(double bytes) {
 
         int index = computeIndex(bytes);
+        if (index >= UNITS.length) {
+            index = UNITS.length - 1;
+        }
 
         double intBytes = bytes;
         if (intBytes == 0) {
