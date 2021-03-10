@@ -55,7 +55,7 @@ git clone https://github.com/dbeaver/dbeaver.git dbeaver
 cd dbeaver
 mvn package
 ```
-Binaries are in `product/standalone/target/products`
+Binaries are in `product/community/target/products`
 
 ## Notes
 
