@@ -51,10 +51,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -512,6 +509,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         public boolean select(Object element) {
             if (!(element instanceof DBNDatabaseItem)) {
                 return true;
+            } else {
+                if (((DBNDatabaseItem)element).getObject() instanceof DBSSchema) {
+                    return true;
+                }
             }
             return isLeafObject(element);
         }
