@@ -610,6 +610,10 @@ public class GenericMetaModel {
         return true;
     }
 
+    public boolean supportNotNestedForeignKeys() {
+        return false;
+    }
+
     public boolean isSystemTable(GenericTableBase table) {
         final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
         return tableType.contains("SYSTEM");

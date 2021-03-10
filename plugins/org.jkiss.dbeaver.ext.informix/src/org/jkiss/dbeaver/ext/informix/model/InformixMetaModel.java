@@ -105,6 +105,11 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportNotNestedForeignKeys() {
+        return true;
+    }
+
+    @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         GenericTableBase table = trigger.getTable();
         assert table != null;

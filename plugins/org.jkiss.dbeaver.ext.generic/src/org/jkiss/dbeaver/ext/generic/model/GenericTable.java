@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -78,9 +79,13 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
 
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
+        GenericMetaModel metaModel = getDataSource().getMetaModel();
         if (OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)) {
             // DDL split supported only by base meta model
-            return !isPersisted() || getDataSource().getMetaModel().supportsTableDDLSplit(this);
+            return !isPersisted() || metaModel.supportsTableDDLSplit(this);
+        }
+        if (metaModel.supportNotNestedForeignKeys()) {
+            return OPTION_DDL_NOT_NESTED_FOREIGN_KEYS.equals(option);
         }
         return false;
     }

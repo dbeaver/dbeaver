@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -61,7 +59,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclarationScript(table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
@@ -78,7 +76,16 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options) {
+        if (owner instanceof DBPScriptObjectExt2) {
+            if (((DBPScriptObjectExt2) owner).supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_NOT_NESTED_FOREIGN_KEYS)) {
+                return null;
+            }
+        }
+        return getNestedDeclarationScript(owner, command, options);
+    }
+
+    private StringBuilder getNestedDeclarationScript(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         OBJECT_TYPE foreignKey = command.getObject();
         boolean legacySyntax = isLegacyForeignKeySyntax(owner);
