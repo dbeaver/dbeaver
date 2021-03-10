@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -77,7 +78,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
     @Override
     public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
         if (supportsChangingReferentialIntegrity(monitor)) {
-            return "PostgreSQL tables: all triggers will be either enabled or disabled";
+            return PostgreMessages.postgre_referential_integrity_disable_warning;
         }
         return "";
     }

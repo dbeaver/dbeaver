@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -462,6 +463,6 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     @NotNull
     @Override
     public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
-        return "Oracle tables: all foreign key constraints will be either enabled or disabled";
+        return OracleMessages.oracle_referential_integrity_disable_warning;
     }
 }
