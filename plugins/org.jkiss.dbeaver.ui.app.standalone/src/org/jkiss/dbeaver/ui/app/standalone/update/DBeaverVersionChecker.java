@@ -127,7 +127,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         } catch (IOException e) {
             if (showAlways) {
                 // Show error dialog only if fired by user
-                DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_version_update_title, "Cannot obtain version information", e);
+                DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_version_update_title, CoreMessages.dialog_version_update_error_cannot_check_version, e);
             }
             return Status.CANCEL_STATUS;
         }
