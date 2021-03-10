@@ -510,10 +510,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         @Override
         public boolean select(Object element) {
-            if (!(element instanceof DBNDatabaseItem)) {
-                return true;
-            }
-            return isLeafObject(element);
+            return true;
         }
     }
 
