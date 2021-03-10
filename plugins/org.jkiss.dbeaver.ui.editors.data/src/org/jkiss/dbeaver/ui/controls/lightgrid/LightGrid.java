@@ -2680,6 +2680,17 @@ public abstract class LightGrid extends Canvas {
 
         List<GridPos> oldSelection = null;
         if (RuntimeUtils.isMacOS() && (stateMask & SWT.CTRL) == SWT.CTRL) {
+            /*
+            * On macOS, Ctrl + Click is a system shortcut that opens a context menu.
+            * The native behavior when processing such event on the aforementioned platform would be:
+            *    a) If mouse points to a new cell, clear the previous selection and add a new cell
+            *    b) If mouse points to an already selected cell, do nothing.
+            *
+            * We process this situation in a separate if branch and not in a branch with the condition
+            * (*shift is not pressed but mod1 is*) because Cmd + Click is like a Ctrl + Click on every other platform.
+            *
+            * [dbeaver/dbeaver/issues/10725]
+            */
             if (selectedCells.containsAll(newCells)) {
                 return null;
             }
