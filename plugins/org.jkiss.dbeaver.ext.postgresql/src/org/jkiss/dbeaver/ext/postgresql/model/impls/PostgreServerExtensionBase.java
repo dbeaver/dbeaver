@@ -464,9 +464,4 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return false;
     }
 
-    @Override
-    public boolean supportsTypeCategory() {
-        return dataSource.isServerVersionAtLeast(8, 4);
-    }
-
 }
