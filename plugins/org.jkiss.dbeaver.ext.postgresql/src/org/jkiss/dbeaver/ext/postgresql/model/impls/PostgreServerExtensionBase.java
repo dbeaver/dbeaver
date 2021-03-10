@@ -464,11 +464,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportsTypeCategory() {
-        return dataSource.isServerVersionAtLeast(8, 4);
-    }
-
-    @Override
     public boolean supportsDisablingAllTriggers() {
         return false;
     }
