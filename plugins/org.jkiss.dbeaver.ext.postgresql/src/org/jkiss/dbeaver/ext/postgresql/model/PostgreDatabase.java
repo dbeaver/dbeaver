@@ -642,9 +642,11 @@ public class PostgreDatabase extends JDBCRemoteInstance
     boolean supportsSysTypCategoryColumn(JDBCSession session) {
         if (supportTypColumn == null) {
             try {
-                String resultSet = JDBCUtils.queryString(session, "SELECT 1 FROM pg_attribute s\n" +
-                        "JOIN pg_class p ON s.attrelid = p.oid\n" +
+                String resultSet = JDBCUtils.queryString(session, "SELECT 1 FROM pg_catalog.pg_attribute s\n" +
+                        "JOIN pg_catalog.pg_class p ON s.attrelid = p.oid\n" +
+                        "JOIN pg_catalog.pg_namespace n ON p.relnamespace = n.oid\n" +
                         "WHERE p.relname = 'pg_type'\n" +
+                        "AND n.nspname = 'pg_catalog'\n" +
                         "AND s.attname = 'typcategory'");
                 supportTypColumn = resultSet != null;
             } catch (SQLException e) {
