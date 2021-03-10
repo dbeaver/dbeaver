@@ -39,6 +39,7 @@ import java.util.*;
  * DTTaskHandlerTransfer
  */
 public class DTTaskHandlerTransfer implements DBTTaskHandler {
+    private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     @Override
     public void executeTask(
@@ -145,7 +146,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
 
     private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext,
                                              @NotNull List<DataTransferPipe> pipes) throws DBException {
-        boolean[] dbExceptionWasThrown = new boolean[]{false};
+        DBException[] firstDBException = {null};
         try {
             runnableContext.run(true, false, monitor -> {
                 try {
@@ -154,7 +155,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                         try {
                             enableReferentialIntegrity(pipe.getConsumer(), monitor, true);
                         } catch (DBException e) {
-                            dbExceptionWasThrown[0] = true;
+                            log.debug("enabling referential integrity unexpectedly failed", e);
+                            if (firstDBException[0] == null) {
+                                firstDBException[0] = e;
+                            }
                         }
                         monitor.worked(1);
                     }
@@ -171,8 +175,8 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
                 e.getCause()
             );
         }
-        if (dbExceptionWasThrown[0]) {
-            throw new DBException("Unable to restore referential integrity properly");
+        if (firstDBException[0] != null) {
+            throw new DBException("Unable to restore referential integrity properly", firstDBException[0]);
         }
     }
 
