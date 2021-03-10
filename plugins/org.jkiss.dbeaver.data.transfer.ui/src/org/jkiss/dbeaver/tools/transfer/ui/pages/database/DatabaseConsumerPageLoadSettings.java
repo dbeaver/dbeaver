@@ -22,7 +22,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,10 +42,7 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
@@ -59,6 +55,8 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
     private Button disableReferentialIntegrity;
     private Combo onDuplicateKeyInsertMethods;
     private Group loadSettings;
+    private String disableReferentialIntegrityCheckboxTooltip = "";
+    private boolean isDisablingReferentialIntegritySupported;
 
     public DatabaseConsumerPageLoadSettings() {
     	super(DTUIMessages.database_consumer_wizard_name);
@@ -102,10 +100,11 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                 }
             });
 
+            loadUISettingsForDisableReferentialIntegrityCheckbox();
             disableReferentialIntegrity = UIUtils.createCheckbox(
                     loadSettings,
                     DTUIMessages.database_consumer_wizard_disable_referential_integrity_label,
-                    getDisableReferentialIntegrityCheckboxTooltip(),
+                    disableReferentialIntegrityCheckboxTooltip,
                     settings.isDisableReferentialIntegrity(),
                     2
             );
@@ -115,7 +114,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     settings.setDisableReferentialIntegrity(disableReferentialIntegrity.getSelection());
                 }
             });
-            disableReferentialIntegrity.setEnabled(isDisablingReferentialIntegritySupported());
+            disableReferentialIntegrity.setEnabled(isDisablingReferentialIntegritySupported);
 
             UIUtils.createControlLabel(loadSettings, DTUIMessages.database_consumer_wizard_on_duplicate_key_insert_method_text);
             onDuplicateKeyInsertMethods = new Combo(loadSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -194,9 +193,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         setControl(composite);
     }
 
-    @NotNull
-    private String getDisableReferentialIntegrityCheckboxTooltip() {
-        Collection<String> caveats = new HashSet<>();
+    private void loadUISettingsForDisableReferentialIntegrityCheckbox() {
         try {
             getWizard().getRunnableContext().run(false, false, monitor -> {
                 for (DataTransferPipe pipe: getWizard().getSettings().getDataPipes()) {
@@ -205,45 +202,15 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                         DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
                         try {
                             if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                                caveats.add(controller.getReferentialIntegrityDisableWarning(monitor));
-                            }
-                        } catch (DBException e) {
-                            log.warn("Unexpected DBException when calculating tooltip for disableReferentialIntegrity checkbox");
-                        }
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.warn("Unexpected InvocationTargetException when calculating tooltip for disableReferentialIntegrity checkbox");
-            return "";
-        } catch (InterruptedException e) {
-            //ignore
-        }
-        if (caveats.isEmpty() || caveats.size() == 1 && caveats.contains("")) {
-            return DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
-        }
-        StringJoiner tooltip = new StringJoiner(
-            "\n",
-            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n\n",
-            ""
-        );
-        for (String caveat: caveats) {
-            tooltip.add(caveat);
-        }
-        return tooltip.toString();
-    }
-
-    private boolean isDisablingReferentialIntegritySupported() {
-        boolean[] answer = new boolean[]{false};
-        try {
-            getWizard().getRunnableContext().run(false, false, monitor -> {
-                for (DataTransferPipe pipe: getWizard().getSettings().getDataPipes()) {
-                    IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
-                    if (consumer instanceof DBPReferentialIntegrityController) {
-                        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) consumer;
-                        try {
-                            if (controller.supportsChangingReferentialIntegrity(monitor)) {
-                                answer[0] = true;
+                                isDisablingReferentialIntegritySupported = true;
+                                String caveat = controller.getReferentialIntegrityDisableWarning(monitor);
+                                if (caveat.isEmpty()) {
+                                    disableReferentialIntegrityCheckboxTooltip =
+                                            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_no_caveats;
+                                } else {
+                                    disableReferentialIntegrityCheckboxTooltip =
+                                            DTUIMessages.database_consumer_wizard_disable_referential_integrity_tip_with_caveats + "\n" + caveat;
+                                }
                                 return;
                             }
                         } catch (DBException e) {
@@ -257,7 +224,6 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         } catch (InterruptedException e) {
             //ignore
         }
-        return answer[0];
     }
 
     private DatabaseConsumerSettings getSettings() {
