@@ -391,11 +391,10 @@ public class VersionUpdateDialog extends Dialog {
     private static final class WindowsInstaller implements PlatformInstaller {
         @Override
         public void run(@NotNull File file, @NotNull Log log) throws Exception {
+            final String path = file.getAbsolutePath();
             Runtime.getRuntime().exec(new String[]{
                 "cmd.exe", "/C",
-                "start", "/W", file.getAbsolutePath(),
-                "&&",
-                "del", file.getAbsolutePath(),
+                "start", "/W", path, "&&", "del", path,
             });
         }
 
@@ -415,9 +414,10 @@ public class VersionUpdateDialog extends Dialog {
     private static final class MacintoshInstaller implements PlatformInstaller {
         @Override
         public void run(@NotNull File file, @NotNull Log log) throws Exception {
+            final String path = CommonUtils.escapeBourneShellString(file.getAbsolutePath());
             Runtime.getRuntime().exec(new String[]{
                 "/bin/sh", "-c",
-                "open -F -W " + file.getAbsolutePath() + " && rm " + file.getAbsolutePath()
+                "open -F -W " + path + " && rm " + path
             });
         }
 
