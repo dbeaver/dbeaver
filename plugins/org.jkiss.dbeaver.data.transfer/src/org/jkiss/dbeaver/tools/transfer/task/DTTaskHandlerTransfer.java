@@ -83,8 +83,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         } finally {
             restoreReferentialIntegrity(
                 runnableContext,
-                settings.getDataPipes(),
-                indexOfLastPipeWithDisabledReferentialIntegrity
+                settings.getDataPipes().subList(0, indexOfLastPipeWithDisabledReferentialIntegrity + 1)
             );
         }
     }
@@ -144,15 +143,14 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         return error;
     }
 
-    private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext, @NotNull List<DataTransferPipe> pipes,
-                                             int toIndexInclusive) throws DBException {
-        List<DataTransferPipe> affectedPipes = pipes.subList(0, toIndexInclusive + 1);
+    private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext,
+                                             @NotNull List<DataTransferPipe> pipes) throws DBException {
         boolean[] dbExceptionWasThrown = new boolean[]{false};
         try {
             runnableContext.run(true, false, monitor -> {
                 try {
-                    monitor.beginTask("Post transfer work", affectedPipes.size());
-                    for (DataTransferPipe pipe: affectedPipes) {
+                    monitor.beginTask("Post transfer work", pipes.size());
+                    for (DataTransferPipe pipe: pipes) {
                         try {
                             enableReferentialIntegrity(pipe.getConsumer(), monitor, true);
                         } catch (DBException e) {
