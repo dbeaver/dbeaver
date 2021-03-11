@@ -14,8 +14,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.DeviceResourceException;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -23,8 +25,10 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -54,8 +58,6 @@ public abstract class AbstractNotificationPopup extends Window {
     private long delayClose = DEFAULT_DELAY_CLOSE;
 
     protected LocalResourceManager resources;
-
-    private GradientColors color;
 
     private final Display display;
 
@@ -103,6 +105,13 @@ public abstract class AbstractNotificationPopup extends Window {
 
     private boolean fadingEnabled;
 
+    @NotNull
+    private final Color titleForegroundColor;
+    @NotNull
+    private final Color borderColor;
+    @NotNull
+    private final Color backgroundColor;
+
     public AbstractNotificationPopup(Display display) {
         this(display, SWT.NO_TRIM | SWT.ON_TOP | SWT.NO_FOCUS | SWT.TOOL);
     }
@@ -113,9 +122,21 @@ public abstract class AbstractNotificationPopup extends Window {
 
         this.display = display;
         resources = new LocalResourceManager(JFaceResources.getResources());
-        initResources();
+
+        titleForegroundColor = getColor(resources, display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW).getRGB());
+        //FIXME: on dark theme, the borders aren't distinguishable from the background for whatever reason
+        borderColor = UIStyles.isDarkTheme() ? display.getSystemColor(SWT.COLOR_GRAY) : display.getSystemColor(SWT.COLOR_DARK_GRAY);
+        backgroundColor = UIStyles.getDefaultWidgetBackground();
 
         closeJob.setSystem(true);
+    }
+
+    private static Color getColor(@NotNull ResourceManager manager, RGB rgb) {
+        try {
+            return manager.createColor(rgb);
+        } catch (DeviceResourceException e) {
+            return manager.getDevice().getSystemColor(SWT.COLOR_BLACK);
+        }
     }
 
     public boolean isFadingEnabled() {
@@ -196,11 +217,7 @@ public abstract class AbstractNotificationPopup extends Window {
     }
 
     protected Color getTitleForeground() {
-        return color.getTitleText();
-    }
-
-    private void initResources() {
-        color = new GradientColors(display, resources);
+        return titleForegroundColor;
     }
 
     @Override
@@ -208,7 +225,7 @@ public abstract class AbstractNotificationPopup extends Window {
         super.configureShell(newShell);
 
         shell = newShell;
-        newShell.setBackground(color.getBorder());
+        newShell.setBackground(borderColor);
     }
 
     @Override
@@ -322,8 +339,8 @@ public abstract class AbstractNotificationPopup extends Window {
                 lastUsedBgImage = new Image(outerCircle.getDisplay(), clArea.width, clArea.height);
                 GC gc = new GC(lastUsedBgImage);
 
-				/* Gradient */
-                drawGradient(gc, clArea);
+                gc.setBackground(backgroundColor);
+                gc.fillRectangle(clArea);
 
 				/* Fix Region Shape */
                 fixRegion(gc, clArea);
@@ -338,14 +355,16 @@ public abstract class AbstractNotificationPopup extends Window {
                 }
             }
 
-            private void drawGradient(GC gc, Rectangle clArea) {
-                gc.setForeground(color.getGradientBegin());
-                gc.setBackground(color.getGradientEnd());
-                gc.fillGradientRectangle(clArea.x, clArea.y, clArea.width, clArea.height, true);
-            }
-
             private void fixRegion(GC gc, Rectangle clArea) {
-                gc.setForeground(color.getBorder());
+                // FIXME:
+                // Notification borders are currently black on dark theme (which is a bug).
+                // If we proceed to fix the region, popup's corners are colored with border color
+                // (and the rest of the border is not). This needs to be deleted when the borders are fixed.
+                if (UIStyles.isDarkTheme()) {
+                    return;
+                }
+
+                gc.setForeground(borderColor);
 
 				/* Fill Top Left */
                 gc.drawPoint(2, 0);
@@ -423,7 +442,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
         middleContentCircle.setLayout(layout);
         middleContentCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        middleContentCircle.setBackground(color.getBorder());
+        middleContentCircle.setBackground(borderColor);
 
 		/* Inner composite containing the content controls */
         Composite innerContent = new Composite(middleContentCircle, SWT.NO_FOCUS);
