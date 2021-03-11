@@ -150,6 +150,17 @@ public class ResultSetMessages extends NLS {
     public static String dialog_value_view_job_selector_name;
     public static String dialog_value_view_label_dictionary;
 
+    public static String dialog_filter_value_edit_title;
+    public static String dialog_filter_value_edit_label_choose_values;
+    public static String dialog_filter_value_edit_label_define_description;
+    public static String dialog_filter_value_edit_text_hint;
+    public static String dialog_filter_value_edit_table_value_label;
+    public static String dialog_filter_value_edit_table_value_description;
+    public static String dialog_filter_value_edit_table_description_label;
+    public static String dialog_filter_value_edit_table_description_description;
+    public static String dialog_filter_value_edit_table_count_label;
+    public static String dialog_filter_value_edit_table_count_description;
+
     public static String dialog_control_label_massage;
     public static String dialog_cursor_view_monitor_rows_fetched;
 

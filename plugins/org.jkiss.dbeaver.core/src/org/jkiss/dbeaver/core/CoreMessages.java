@@ -236,6 +236,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_version_update_no_notes;
 	public static String dialog_version_update_press_more_info;
 	public static String dialog_version_update_title;
+	public static String dialog_version_update_error_cannot_check_version;
 	public static String dialog_version_update_downloader_title;
 	public static String dialog_version_update_downloader_confirm_install;
 	public static String dialog_version_update_downloader_error_cannot_download;

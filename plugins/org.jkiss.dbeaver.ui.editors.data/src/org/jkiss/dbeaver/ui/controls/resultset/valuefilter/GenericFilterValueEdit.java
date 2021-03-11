@@ -172,7 +172,7 @@ class GenericFilterValueEdit {
                     updateToggleButton(toggleButton);
                 }
             });
-            toggleButton.setData(true);
+            updateToggleButton(toggleButton);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 120;
             toggleButton.setLayoutData(gd);
@@ -296,9 +296,6 @@ class GenericFilterValueEdit {
     }
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable, Runnable onFinish) {
-
-        if (tableViewer.getTable().getColumns().length > 1)
-            tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attribute.getName() + "' values", onFinish) {
 
             private List<DBDLabelValuePair> result;
@@ -447,6 +444,7 @@ class GenericFilterValueEdit {
                 tableViewer.getTable().showItem((TableItem) item);
             }
         }
+        updateToggleButton(toggleButton);
     }
 
     private boolean keyPresents(Map<Object, DBDLabelValuePair> rowData, Object cellValue) {
