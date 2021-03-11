@@ -18,9 +18,9 @@
     <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
 
     <launcher name="dbeaver">
-        <macosx icon="/../standalone/icons/dbeaver.icns"/>
+        <macosx icon="/../community/icons/dbeaver.icns"/>
         <win useIco="true">
-            <ico path="/../standalone/icons/dbeaver.ico"/>
+            <ico path="/../community/icons/dbeaver.ico"/>
         </win>
     </launcher>
 

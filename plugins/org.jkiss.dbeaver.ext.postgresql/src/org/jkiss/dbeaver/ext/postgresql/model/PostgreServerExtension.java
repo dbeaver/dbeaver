@@ -28,8 +28,7 @@ import java.util.Map;
 /**
  * PostgreServerExtension
  */
-public interface PostgreServerExtension
-{
+public interface PostgreServerExtension {
     String getServerTypeName();
 
     boolean supportsTransactions();
@@ -142,5 +141,5 @@ public interface PostgreServerExtension
 
     boolean supportsBackslashStringEscape();
 
-    boolean supportsTypeCategory();
+    boolean supportsDisablingAllTriggers();
 }

@@ -51,8 +51,8 @@ import java.util.*;
  * Stream transfer consumer
  */
 @DBSerializable("databaseTransferConsumer")
-public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>, IDataTransferNodePrimary {
-
+public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor>,
+        IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
     private DatabaseConsumerSettings settings;
@@ -701,6 +701,35 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public boolean equals(Object obj) {
         return obj instanceof DatabaseTransferConsumer &&
             CommonUtils.equalObjects(getTargetObject(), ((DatabaseTransferConsumer) obj).getTargetObject());
+    }
+
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return checkTargetContainer(monitor) instanceof DBPReferentialIntegrityController;
+    }
+
+    @Override
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        DBSObject dbsObject = checkTargetContainer(monitor);
+        if (!(dbsObject instanceof DBPReferentialIntegrityController)) {
+            throw new DBException("Changing referential integrity is unsupported!");
+        }
+        DBPReferentialIntegrityController controller = (DBPReferentialIntegrityController) dbsObject;
+        controller.enableReferentialIntegrity(monitor, enable);
+    }
+
+    @NotNull
+    @Override
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBSObject dbsObject = checkTargetContainer(monitor);
+        if (dbsObject instanceof DBPReferentialIntegrityController) {
+            return ((DBPReferentialIntegrityController) dbsObject).getReferentialIntegrityDisableWarning(monitor);
+        }
+        return "";
+    }
+
+    public DatabaseConsumerSettings getSettings() {
+        return settings;
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {

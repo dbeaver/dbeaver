@@ -141,7 +141,7 @@
 
                 <!-- Products -->
                 <module>product/appstore</module>
-                <module>product/standalone</module>
+                <module>product/community</module>
                 <module>product/repositories</module>
             </modules>
         </profile>
