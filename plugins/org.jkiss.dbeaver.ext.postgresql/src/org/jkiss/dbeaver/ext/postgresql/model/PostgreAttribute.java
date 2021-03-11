@@ -67,6 +67,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private int typeMod;
     @Nullable
     private String[] foreignTableColumnOptions;
+    private String generatedValue;
 
     protected PostgreAttribute(
         OWNER table)
@@ -137,6 +138,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         throws DBException
     {
         PostgreDataSource dataSource = getDataSource();
+        PostgreServerExtension serverType = dataSource.getServerType();
 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
@@ -154,6 +156,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             } else if (typeId == PostgreOid.INT8) {
                 typeId = PostgreOid.BIGSERIAL;
             }
+        }
+        if (!CommonUtils.isEmpty(defValue) && serverType.supportsGeneratedColumns()) {
+            String generatedColumn = JDBCUtils.safeGetString(dbResult, "attgenerated");
+            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored. (Other values might be added in the future)"
+            if (!CommonUtils.isEmpty(generatedColumn)) {
+                generatedValue = "GENERATED ALWAYS AS (" + defValue + ") STORED";
+            }
+            defValue = null;
         }
         setDefaultValue(defValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
@@ -196,7 +206,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
         this.isLocal =
-            !dataSource.getServerType().supportsInheritance() ||
+            !serverType.supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
 
         if (dataSource.isServerVersionAtLeast(10, 0)) {
@@ -207,7 +217,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
 
         // Collation
-        if (dataSource.getServerType().supportsCollations()) {
+        if (serverType.supportsCollations()) {
             this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
@@ -381,6 +391,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     public String[] getForeignTableColumnOptions() {
         return foreignTableColumnOptions;
+    }
+
+    public String getGeneratedValue() {
+        return generatedValue;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {
