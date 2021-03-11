@@ -84,7 +84,7 @@ public class GenericTable extends GenericTableBase implements DBPScriptObjectExt
             // DDL split supported only by base meta model
             return !isPersisted() || metaModel.supportsTableDDLSplit(this);
         }
-        if (metaModel.supportNotNestedForeignKeys()) {
+        if (!metaModel.supportNestedForeignKeys()) {
             return OPTION_DDL_NOT_NESTED_FOREIGN_KEYS.equals(option);
         }
         return false;

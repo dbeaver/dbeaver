@@ -105,8 +105,8 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportNotNestedForeignKeys() {
-        return true;
+    public boolean supportNestedForeignKeys() {
+        return false;
     }
 
     @Override
