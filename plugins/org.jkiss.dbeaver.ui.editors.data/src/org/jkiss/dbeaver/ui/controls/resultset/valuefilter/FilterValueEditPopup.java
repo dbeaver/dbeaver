@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,10 +29,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePairExt;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -128,29 +129,38 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL |
                 (filter.getOperator() == DBCLogicalOperator.IN ? SWT.CHECK : SWT.NONE),
             true,
-            descReferrer != null,
+            true,
             new GridData(GridData.FILL_BOTH));
 
         Table table = filter.getTableViewer().getTable();
 
-        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Value"));
-        resultsetColumn.setLabelProvider(new ColumnLabelProvider() {
+        ViewerColumnController<?, ?> columnController = new ViewerColumnController<>("sqlFilterValueEditPopup", filter.getTableViewer());
+        columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
             }
         });
-
-        TableViewerColumn descColumn;
         if (descReferrer != null) {
-            descColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Description"));
-            descColumn.setLabelProvider(new ColumnLabelProvider() {
+            columnController.addColumn("Description", "Row description composed of dictionary columns", SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     return ((DBDLabelValuePair) element).getLabel();
                 }
             });
         }
+        if (descReferrer == null) {
+            columnController.addColumn("Count", "Amount of rows associated with this value", SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    if (element instanceof DBDLabelValuePairExt) {
+                        return String.valueOf(((DBDLabelValuePairExt) element).getCount());
+                    }
+                    return "";
+                }
+            });
+        }
+        columnController.createColumns(true);
 
         filter.getTableViewer().addSelectionChangedListener(event -> {
             value = filter.getFilterValue();
