@@ -43,6 +43,7 @@ public class VersionDescriptor {
     private Version programVersion;
     private String updateTime;
     private String baseURL;
+    private String downloadURL;
     private String releaseNotes;
 
     private final List<DistributionDescriptor> distributions = new ArrayList<>();
@@ -93,6 +94,10 @@ public class VersionDescriptor {
         return baseURL;
     }
 
+    public String getDownloadURL() {
+        return downloadURL;
+    }
+
     public String getReleaseNotes() {
         return releaseNotes;
     }
@@ -137,6 +142,9 @@ public class VersionDescriptor {
                         break;
                     case "base-url":
                         baseURL = text;
+                        break;
+                    case "download-url":
+                        downloadURL = text;
                         break;
                     case "release-notes":
                         releaseNotes = text;

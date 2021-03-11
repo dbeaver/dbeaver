@@ -37,4 +37,5 @@ public class OracleMessages extends NLS {
 	public static String edit_oracle_dependencies_dependency_description;
 	public static String edit_oracle_dependencies_dependent_name;
 	public static String edit_oracle_dependencies_dependent_description;
+	public static String oracle_referential_integrity_disable_warning;
 }

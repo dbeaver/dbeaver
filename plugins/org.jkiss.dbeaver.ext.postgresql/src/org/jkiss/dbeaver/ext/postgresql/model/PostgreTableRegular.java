@@ -16,16 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreMessages;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * PostgreTableRegular
  */
-public class PostgreTableRegular extends PostgreTable
-{
+public class PostgreTableRegular extends PostgreTable implements DBPReferentialIntegrityController {
     public PostgreTableRegular(PostgreSchema catalog)
     {
         super(catalog);
@@ -35,11 +42,44 @@ public class PostgreTableRegular extends PostgreTable
         super(monitor, catalog, source, false);
     }
 
-    public PostgreTableRegular(
-        PostgreSchema catalog,
-        ResultSet dbResult)
-    {
+    public PostgreTableRegular(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
     }
 
+    @Override
+    public boolean supportsChangingReferentialIntegrity(@NotNull DBRProgressMonitor monitor) {
+        return getDataSource().getServerType().supportsDisablingAllTriggers();
+    }
+
+    @Override
+    public void enableReferentialIntegrity(@NotNull DBRProgressMonitor monitor, boolean enable) throws DBException {
+        if (!supportsChangingReferentialIntegrity(monitor)) {
+            throw new DBException("Changing referential integrity is not supported");
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Disabling referential integrity")) {
+            try (JDBCStatement statement = session.createStatement()) {
+                StringBuilder sql = new StringBuilder("ALTER TABLE ");
+                sql.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
+                if (enable) {
+                    sql.append("ENABLE ");
+                } else {
+                    sql.append("DISABLE ");
+                }
+                sql.append("TRIGGER ALL");
+                statement.execute(sql.toString());
+            } catch (SQLException e) {
+                throw new DBException("Unable to change referential integrity", e);
+            }
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getReferentialIntegrityDisableWarning(@NotNull DBRProgressMonitor monitor) {
+        if (supportsChangingReferentialIntegrity(monitor)) {
+            return PostgreMessages.postgre_referential_integrity_disable_warning;
+        }
+        return "";
+    }
 }

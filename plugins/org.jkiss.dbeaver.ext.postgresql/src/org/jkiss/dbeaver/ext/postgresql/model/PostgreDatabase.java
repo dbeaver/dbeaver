@@ -85,6 +85,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long tablespaceId;
     private String description;
     private long dbTotalSize;
+    private Boolean supportTypColumn;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -593,21 +594,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
             PostgreDataSource postgreDataSource = getDataSource();
             boolean readAllTypes = postgreDataSource.supportReadingAllDataTypes();
-            boolean supportsTypeCategory = postgreDataSource.getServerType().supportsTypeCategory();
-            StringBuilder sql = new StringBuilder(256);
-            sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
-                    "\nFROM pg_catalog.pg_type t" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
-                    "\nWHERE t.typname IS NOT null");
-            if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-                if (supportsTypeCategory) {
-                    sql.append("\nAND t.typcategory <> 'A'");
-                }
-                sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
-            }
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read data types")) {
+                StringBuilder sql = new StringBuilder(256);
+                sql.append("SELECT t.oid,t.*,c.relkind,").append(PostgreDataTypeCache.getBaseTypeNameClause(postgreDataSource)).append(", d.description" +
+                        "\nFROM pg_catalog.pg_type t" +
+                        "\nLEFT OUTER JOIN pg_catalog.pg_class c ON c.oid=t.typrelid" +
+                        "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
+                        "\nWHERE t.typname IS NOT null");
+                if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
+                    if (supportsSysTypCategoryColumn(session)) {
+                        sql.append("\nAND t.typcategory <> 'A'");
+                    }
+                    sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
+                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         Set<PostgreSchema> schemaList = new HashSet<>();
@@ -635,6 +635,25 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 throw new DBException(e, postgreDataSource);
             }
         }
+    }
+
+    // Column "typcategory" appeared only in PG version 8.4 and before we relied on DB version to verify the conditions, but it was not the most universal solution.
+    // So make a separate request to the database for checking.
+    boolean supportsSysTypCategoryColumn(JDBCSession session) {
+        if (supportTypColumn == null) {
+            try {
+                String resultSet = JDBCUtils.queryString(session, "SELECT 1 FROM pg_catalog.pg_attribute s\n" +
+                        "JOIN pg_catalog.pg_class p ON s.attrelid = p.oid\n" +
+                        "JOIN pg_catalog.pg_namespace n ON p.relnamespace = n.oid\n" +
+                        "WHERE p.relname = 'pg_type'\n" +
+                        "AND n.nspname = 'pg_catalog'\n" +
+                        "AND s.attname = 'typcategory'");
+                supportTypColumn = resultSet != null;
+            } catch (SQLException e) {
+                log.debug("Error reading system information from pg_attribute", e);
+            }
+        }
+        return supportTypColumn;
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {

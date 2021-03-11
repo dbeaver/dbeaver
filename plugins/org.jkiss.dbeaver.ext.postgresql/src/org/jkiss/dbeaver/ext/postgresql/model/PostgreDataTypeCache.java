@@ -179,7 +179,6 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         // Initially cache only base types (everything but composite and arrays)
         PostgreDataSource dataSource = owner.getDataSource();
         boolean readAllTypes = dataSource.supportReadingAllDataTypes();
-        boolean supportsTypeCategory = dataSource.getServerType().supportsTypeCategory();
         StringBuilder sql = new StringBuilder(256);
         sql.append("SELECT t.oid,t.*,c.relkind,").append(getBaseTypeNameClause(dataSource)).append(", d.description" +
             "\nFROM pg_catalog.pg_type t" +
@@ -187,7 +186,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "\nLEFT OUTER JOIN pg_catalog.pg_description d ON t.oid=d.objoid" +
             "\nWHERE t.typname IS NOT null");
         if (!readAllTypes) { // Do not read array types, unless the user has decided otherwise
-             if (supportsTypeCategory) {
+             if (owner.getDatabase().supportsSysTypCategoryColumn(session)) {
                  sql.append("\nAND t.typcategory <> 'A'");
              }
              sql.append("\nAND (c.relkind is null or c.relkind = 'c')");
