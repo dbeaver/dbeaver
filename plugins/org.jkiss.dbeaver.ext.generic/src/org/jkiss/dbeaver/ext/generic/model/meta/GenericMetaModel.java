@@ -610,6 +610,12 @@ public class GenericMetaModel {
         return true;
     }
 
+    // Some database (like Informix) do not support foreign key declaration as nested.
+    // DDL for these tables must contain definition of FK outside main brackets (ALTER TABLE ... ADD CONSTRAINT FOREIGN KEY)
+    public boolean supportNestedForeignKeys() {
+        return true;
+    }
+
     public boolean isSystemTable(GenericTableBase table) {
         final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
         return tableType.contains("SYSTEM");
