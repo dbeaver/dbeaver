@@ -67,6 +67,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private int typeMod;
     @Nullable
     private String[] foreignTableColumnOptions;
+    @Nullable
     private String generatedValue;
 
     protected PostgreAttribute(
@@ -393,6 +394,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return foreignTableColumnOptions;
     }
 
+    @Nullable
     public String getGeneratedValue() {
         return generatedValue;
     }
