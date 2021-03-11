@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityConstants;
-import org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityUIActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
