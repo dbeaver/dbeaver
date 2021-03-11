@@ -85,8 +85,6 @@ public class DataVirtualityMetaModel extends GenericMetaModel
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
 
-        boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
-
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DataVirtuality object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT definition FROM SYSADMIN.ProcDefinitions WHERE name ='" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'"))

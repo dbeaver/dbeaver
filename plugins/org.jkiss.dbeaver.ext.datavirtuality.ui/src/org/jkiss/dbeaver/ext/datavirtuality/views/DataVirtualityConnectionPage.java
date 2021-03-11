@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,10 +59,6 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     private Text portText;
     private Button sslCheckbox;
     private Combo dbText;
-    private Combo warehouseText;
-    private Combo schemaText;
-    private Combo roleText;
-    private Combo authTypeCombo;
     private Text usernameText;
 
     private static ImageDescriptor logoImage = DataVirtualityUIActivator.getImageDescriptor("icons/datavirtuality_logo.png"); //$NON-NLS-1$
@@ -120,22 +115,6 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
             sslCheckbox.setLayoutData(gd);
 //            sslCheckbox.addModifyListener(textListener);
 
-        }
-
-        {
-            Composite ph = UIUtils.createPlaceholder(control, 2);
-            CLabel infoLabel = UIUtils.createInfoLabel(ph, ""); //$NON-NLS-1$
-            Link testLink = new Link(ph, SWT.NONE);
-            testLink.setText(DataVirtualityMessages.label_click_on_test_connection);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.grabExcessHorizontalSpace = true;
-            testLink.setLayoutData(gd);
-            testLink.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    site.testConnection();
-                }
-            });
         }
 
         {
@@ -198,7 +177,6 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
             }
             dbText.setText(databaseName);
         }
-        // TODO: need to fix for checkbox
         if (sslCheckbox != null) {
             sslCheckbox.setSelection(CommonUtils.notEmpty(connectionInfo.getProviderProperty(DataVirtualityConstants.PROP_SSL)).equals("mms") ? true : false);
         }
@@ -222,13 +200,10 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
-        if (warehouseText != null) {
-            connectionInfo.setServerName(warehouseText.getText().trim());
-        }
         if (usernameText != null) {
             connectionInfo.setUserName(usernameText.getText().trim());
         }
-        // TODO: need to fix for checkbox
+
         if (sslCheckbox != null) {
             connectionInfo.setProviderProperty(DataVirtualityConstants.PROP_SSL, sslCheckbox.getSelection() == true ? "mms" : "mm");
         }
@@ -240,38 +215,19 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
 
     @Override
     public void testConnection(DBCSession session) {
+
         try {
-            loadDictList(session, dbText, "SHOW DATABASES"); //$NON-NLS-1$
-            loadDictList(session, warehouseText, "SHOW WAREHOUSES"); //$NON-NLS-1$
-            loadDictList(session, schemaText, "SHOW SCHEMAS"); //$NON-NLS-1$
-            loadDictList(session, roleText, "SHOW ROLES"); //$NON-NLS-1$
+            session.getProgressMonitor().subTask("Execute 'SELECT 1'"); //$NON-NLS-1$
+            try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, "SELECT 1", false, false, false)) {
+                dbStat.executeStatement();
+                try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                    while (dbResult.nextRow()) {
+                    }
+                }
+            }
         } catch (Exception e) {
             log.error(e);
         }
-    }
-
-    private static void loadDictList(DBCSession session, Combo combo, String query) throws DBCException {
-        List<String> result = new ArrayList<>();
-        session.getProgressMonitor().subTask("Exec " + query); //$NON-NLS-1$
-        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {
-            dbStat.executeStatement();
-            try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                while (dbResult.nextRow()) {
-                    result.add(CommonUtils.toString(dbResult.getAttributeValue("name"))); //$NON-NLS-1$
-                }
-            }
-        }
-        UIUtils.asyncExec(() -> {
-            String oldText = combo.getText();
-            if (!result.contains(oldText)) {
-                result.add(0, oldText);
-            }
-            if (!result.contains("")) { //$NON-NLS-1$
-                result.add(0, ""); //$NON-NLS-1$
-            }
-            combo.setItems(result.toArray(new String[0]));
-            combo.setText(oldText);
-        });
     }
 
     @Override
