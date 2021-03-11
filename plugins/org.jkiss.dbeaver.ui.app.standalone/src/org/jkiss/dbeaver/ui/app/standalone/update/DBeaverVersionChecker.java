@@ -20,16 +20,20 @@ import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -41,7 +45,24 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private static final Log log = Log.getLog(DBeaverVersionChecker.class);
 
-    private static boolean SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty("dbeaver.debug.skip-version-check"));
+    private static final boolean SKIP_VERSION_CHECK;
+    private static final Version OVERRIDE_PRODUCT_VERSION;
+
+    static {
+        String versionProperty = CommonUtils.toString(System.getProperty("dbeaver.debug.override-product-version"));
+        Version version = null;
+
+        if (CommonUtils.isNotEmpty(versionProperty)) {
+            try {
+                version = new Version(versionProperty);
+            } catch (Exception e) {
+                log.debug("Cannot parse override version '" + versionProperty + "'", e);
+            }
+        }
+
+        OVERRIDE_PRODUCT_VERSION = version;
+        SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty("dbeaver.debug.skip-version-check"));
+    }
 
     private final boolean showAlways;
 
@@ -97,27 +118,41 @@ public class DBeaverVersionChecker extends AbstractJob {
         if (updateURL == null) {
             return Status.OK_STATUS;
         }
-        VersionDescriptor versionDescriptor = null;
+
+        final Version currentVersion = getProductVersion();
+        final VersionDescriptor newVersion;
+
         try {
-            versionDescriptor = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
+            newVersion = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
         } catch (IOException e) {
-            log.debug(e);
+            if (showAlways) {
+                // Show error dialog only if fired by user
+                DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_version_update_title, CoreMessages.dialog_version_update_error_cannot_check_version, e);
+            }
+            return Status.CANCEL_STATUS;
         }
 
-        if (showAlways || (versionDescriptor != null &&
-            (SKIP_VERSION_CHECK || versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) &&
-            !VersionUpdateDialog.isSuppressed(versionDescriptor)))
-        {
-            showUpdaterDialog(versionDescriptor, versionDescriptor);
+        if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
+            showUpdaterDialog(currentVersion, newVersion);
         }
 
         return Status.OK_STATUS;
     }
 
-    private void showUpdaterDialog(VersionDescriptor currentVersion, final VersionDescriptor newVersion)
+    private void showUpdaterDialog(@NotNull Version currentVersion, @NotNull VersionDescriptor newVersion)
     {
         UIUtils.asyncExec(() -> {
             DBeaverApplication.getInstance().notifyVersionUpgrade(currentVersion, newVersion, !showAlways);
         });
+    }
+
+    private static boolean isSuppressed(@NotNull VersionDescriptor version) {
+        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
+        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+    }
+
+    @NotNull
+    private static Version getProductVersion() {
+        return OVERRIDE_PRODUCT_VERSION == null ? GeneralUtils.getProductVersion() : OVERRIDE_PRODUCT_VERSION;
     }
 }

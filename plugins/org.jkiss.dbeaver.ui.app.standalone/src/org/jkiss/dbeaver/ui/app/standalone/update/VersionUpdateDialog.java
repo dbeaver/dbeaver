@@ -63,16 +63,15 @@ public class VersionUpdateDialog extends Dialog {
     private static final int UPGRADE_ID = 1001;
     private static final int CHECK_EA_ID = 1002;
 
-    private VersionDescriptor currentVersion;
-    @Nullable
-    private VersionDescriptor newVersion;
+    private final Version currentVersion;
+    private final VersionDescriptor newVersion;
 
     private Font boldFont;
     private boolean showConfig;
     private Button dontShowAgainCheck;
     private final String earlyAccessURL;
 
-    public VersionUpdateDialog(Shell parentShell, VersionDescriptor currentVersion, @Nullable VersionDescriptor newVersion, boolean showConfig)
+    public VersionUpdateDialog(Shell parentShell, @NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showConfig)
     {
         super(parentShell);
         this.currentVersion = currentVersion;
@@ -82,11 +81,7 @@ public class VersionUpdateDialog extends Dialog {
         earlyAccessURL = Platform.getProduct().getProperty("earlyAccessURL");
     }
 
-    public Version getCurrentVersion() {
-        return GeneralUtils.getProductVersion();
-    }
-
-    @Nullable
+    @NotNull
     public VersionDescriptor getNewVersion() {
         return newVersion;
     }
@@ -105,7 +100,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     private boolean isNewVersionAvailable() {
-        return newVersion != null && newVersion.getProgramVersion().compareTo(getCurrentVersion()) > 0;
+        return newVersion.getProgramVersion().compareTo(currentVersion) > 0;
     }
 
     @Override
@@ -130,15 +125,13 @@ public class VersionUpdateDialog extends Dialog {
         titleLabel.setLayoutData(gd);
         titleLabel.setFont(boldFont);
 
-        final String versionStr = getCurrentVersion().toString();
-
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
-            .setText(versionStr);
+            .setText(currentVersion.toString());
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
-            .setText(newVersion == null ? versionStr : newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
+            .setText(newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
 
         if (isNewVersionAvailable()) {
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);
@@ -253,65 +246,59 @@ public class VersionUpdateDialog extends Dialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection() && newVersion != null) {
+        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
             CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
         }
         if (buttonId == INFO_ID) {
-            if (newVersion != null) {
-                UIUtils.launchProgram(newVersion.getBaseURL());
-            } else if (currentVersion != null) {
-                UIUtils.launchProgram(currentVersion.getBaseURL());
-            }
+            UIUtils.launchProgram(newVersion.getBaseURL());
         } else if (buttonId == UPGRADE_ID) {
-            if (newVersion != null) {
-                final PlatformInstaller installer = getPlatformInstaller();
-                if (installer != null) {
-                    final AbstractJob job = new AbstractJob("Downloading installation file") {
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
-                            final File folder;
-                            final File file;
+            final PlatformInstaller installer = getPlatformInstaller();
+            if (installer != null) {
+                final AbstractJob job = new AbstractJob("Downloading installation file") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
+                        final File folder;
+                        final File file;
 
-                            try {
-                                folder = ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform());
-                                file = ContentUtils.makeTempFile(monitor, folder, installer.getExecutableName(app), installer.getExecutableExtension());
-                                log.debug("Downloading installation file to " + file);
-                                WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
-                            } catch (IOException e) {
-                                return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
-                            } catch (InterruptedException e) {
-                                log.debug("Canceled by user", e);
-                                return Status.OK_STATUS;
-                            }
-
-                            if (UIUtils.confirmAction(CoreMessages.dialog_version_update_downloader_title, NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName()))) {
-                                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                                    try {
-                                        installer.run(file, log);
-                                    } catch (Exception e) {
-                                        log.error("Failed to run the installer script", e);
-                                    }
-                                }));
-
-                                addJobChangeListener(new JobChangeAdapter() {
-                                    @Override
-                                    public void done(IJobChangeEvent event) {
-                                        Runtime.getRuntime().exit(0);
-                                    }
-                                });
-                            } else {
-                                UIUtils.launchProgram(folder.getAbsolutePath());
-                            }
-
+                        try {
+                            folder = ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform());
+                            file = ContentUtils.makeTempFile(monitor, folder, installer.getExecutableName(app), installer.getExecutableExtension());
+                            log.debug("Downloading installation file to " + file);
+                            WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
+                        } catch (IOException e) {
+                            return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
+                        } catch (InterruptedException e) {
+                            log.debug("Canceled by user", e);
                             return Status.OK_STATUS;
                         }
-                    };
-                    job.setUser(true);
-                    job.schedule();
-                } else {
-                    UIUtils.launchProgram(getDownloadPageURL(newVersion));
-                }
+
+                        if (UIUtils.confirmAction(CoreMessages.dialog_version_update_downloader_title, NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName()))) {
+                            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                                try {
+                                    installer.run(file, log);
+                                } catch (Exception e) {
+                                    log.error("Failed to run the installer script", e);
+                                }
+                            }));
+
+                            addJobChangeListener(new JobChangeAdapter() {
+                                @Override
+                                public void done(IJobChangeEvent event) {
+                                    Runtime.getRuntime().exit(0);
+                                }
+                            });
+                        } else {
+                            UIUtils.launchProgram(folder.getAbsolutePath());
+                        }
+
+                        return Status.OK_STATUS;
+                    }
+                };
+                job.setUser(true);
+                job.schedule();
+            } else {
+                UIUtils.launchProgram(getDownloadPageURL(newVersion));
             }
         } else if (buttonId == CHECK_EA_ID) {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
@@ -371,11 +358,6 @@ public class VersionUpdateDialog extends Dialog {
             "&os=" + os +
             "&arch=" + arch +
             (dist == null ? "" : "&dist=" + dist);
-    }
-
-    public static boolean isSuppressed(VersionDescriptor version) {
-        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
-        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
     }
 
     private interface PlatformInstaller {
