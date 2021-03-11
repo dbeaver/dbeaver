@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp and others
+ * Copyright (C) 2010-2021 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.awt.*;
 import java.util.Locale;
 
 /**
@@ -56,16 +56,25 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
     private Combo dbText;
     private Text usernameText;
 
-    private static ImageDescriptor logoImage = DataVirtualityUIActivator.getImageDescriptor("icons/datavirtuality_logo.png"); //$NON-NLS-1$
+    private final Image logoImage;
+
+    public DataVirtualityConnectionPage() {
+        logoImage = createImage("icons/datavirtuality_logo.png"); //$NON-NLS-1$
+    }
+
 
     @Override
     public void dispose() {
         super.dispose();
+        UIUtils.dispose(logoImage);
+    }
+    @Override
+    public Image getImage() {
+        return logoImage;
     }
 
     @Override
     public void createControl(Composite composite) {
-        setImageDescriptor(logoImage);
 
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));

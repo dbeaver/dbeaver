@@ -2,14 +2,6 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>org.jkiss.dbeaver</groupId>
-            <artifactId>org.jkiss.dbeaver.model</artifactId>
-            <version>1.0.140-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
     <parent>
     <groupId>org.jkiss.dbeaver</groupId>
     <artifactId>plugins</artifactId>

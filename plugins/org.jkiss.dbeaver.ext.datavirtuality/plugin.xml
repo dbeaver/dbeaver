@@ -35,7 +35,7 @@
                         description="Data Virtuality JDBC driver"
                         webURL="https://https://datavirtuality.com/docs/"
                         categories="sql,analytic">
-                    <file type="jar" path="C:\Users\admin\Downloads\datavirtuality-jdbc.jar"/>
+                    <file type="jar" path="http://{host}:8080/jdbc/datavirtuality-jdbc.jar"/>
                 </driver>
 
             </drivers>
