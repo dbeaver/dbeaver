@@ -124,7 +124,8 @@ public abstract class AbstractNotificationPopup extends Window {
         resources = new LocalResourceManager(JFaceResources.getResources());
 
         titleForegroundColor = getColor(resources, display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW).getRGB());
-        borderColor = display.getSystemColor(SWT.COLOR_DARK_GRAY);
+        //FIXME: on dark theme, the borders aren't distinguishable from the background for whatever reason
+        borderColor = UIStyles.isDarkTheme() ? display.getSystemColor(SWT.COLOR_GRAY) : display.getSystemColor(SWT.COLOR_DARK_GRAY);
         backgroundColor = UIStyles.getDefaultWidgetBackground();
 
         closeJob.setSystem(true);
@@ -355,9 +356,14 @@ public abstract class AbstractNotificationPopup extends Window {
             }
 
             private void fixRegion(GC gc, Rectangle clArea) {
-                if (!UIStyles.isDarkTheme()) {
+                // FIXME:
+                // Notification borders are currently black on dark theme (which is a bug).
+                // If we proceed to fix the region, popup's corners are colored with border color
+                // (and the rest of the border is not). This needs to be deleted when the borders are fixed.
+                if (UIStyles.isDarkTheme()) {
                     return;
                 }
+
                 gc.setForeground(borderColor);
 
 				/* Fill Top Left */
