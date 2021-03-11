@@ -338,13 +338,11 @@ public abstract class AbstractNotificationPopup extends Window {
                 lastUsedBgImage = new Image(outerCircle.getDisplay(), clArea.width, clArea.height);
                 GC gc = new GC(lastUsedBgImage);
 
-				/* Gradient */
-                drawGradient(gc, clArea);
+                gc.setBackground(backgroundColor);
+                gc.fillRectangle(clArea);
 
 				/* Fix Region Shape */
-                if (!UIStyles.isDarkTheme()) {
-                    fixRegion(gc, clArea);
-                }
+                fixRegion(gc, clArea);
 
                 gc.dispose();
 
@@ -356,13 +354,10 @@ public abstract class AbstractNotificationPopup extends Window {
                 }
             }
 
-            private void drawGradient(GC gc, Rectangle clArea) {
-                gc.setForeground(backgroundColor);
-                gc.setBackground(backgroundColor);
-                gc.fillGradientRectangle(clArea.x, clArea.y, clArea.width, clArea.height, true);
-            }
-
             private void fixRegion(GC gc, Rectangle clArea) {
+                if (!UIStyles.isDarkTheme()) {
+                    return;
+                }
                 gc.setForeground(borderColor);
 
 				/* Fill Top Left */
