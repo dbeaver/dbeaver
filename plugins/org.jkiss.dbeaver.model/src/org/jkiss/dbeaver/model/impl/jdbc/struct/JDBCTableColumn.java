@@ -208,7 +208,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues);
+                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues, true);
                 }
             } else {
                 return Collections.emptyList();

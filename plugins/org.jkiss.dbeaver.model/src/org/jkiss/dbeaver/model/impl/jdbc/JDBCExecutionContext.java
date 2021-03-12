@@ -154,7 +154,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 // Commit transaction. We can perform init SQL which potentially may lock some resources
                 // Let's free them.
                 if (!this.autoCommit) {
-                    try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "End transaction")) {
+                    try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Start transaction")) {
+                        session.enableLogging(false); // Disable logging to avoid smart commit recovery activation
                         session.commit();
                     }
                 }
