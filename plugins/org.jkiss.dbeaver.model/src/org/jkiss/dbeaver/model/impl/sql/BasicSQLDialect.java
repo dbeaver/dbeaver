@@ -241,6 +241,11 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     }
 
     @Override
+    public boolean supportsAlterTableInUpdateAndDelete() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTableDropCascade() {
         return false;
     }

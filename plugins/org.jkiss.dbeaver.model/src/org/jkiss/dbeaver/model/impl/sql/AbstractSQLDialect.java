@@ -389,6 +389,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsAlterTableInUpdateAndDelete() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTableDropCascade() {
         return false;
     }

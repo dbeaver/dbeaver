@@ -46,6 +46,11 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean supportsAlterTableInUpdateAndDelete() {
+        return true;
+    }
+
+    @Override
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (typeName.equals("String")) {
             return null;

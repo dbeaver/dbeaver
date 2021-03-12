@@ -254,6 +254,8 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    boolean supportsAlterTableInUpdateAndDelete();
+
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
