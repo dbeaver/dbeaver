@@ -34,15 +34,6 @@ public class DataVirtualityDataSourceProvider extends JDBCDataSourceProvider {
 
     private static final Log log = Log.getLog(DataVirtualityDataSourceProvider.class);
 
-    public DataVirtualityDataSourceProvider()
-    {
-    }
-
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
-    }
-
     @Override
     public long getFeatures()
     {
