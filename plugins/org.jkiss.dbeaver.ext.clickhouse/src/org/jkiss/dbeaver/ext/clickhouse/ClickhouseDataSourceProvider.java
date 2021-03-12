@@ -20,6 +20,9 @@ import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
 public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
 
+    public ClickhouseDataSourceProvider() {
+    }
+
     @Override
     public long getFeatures() {
         return FEATURE_SCHEMAS;
