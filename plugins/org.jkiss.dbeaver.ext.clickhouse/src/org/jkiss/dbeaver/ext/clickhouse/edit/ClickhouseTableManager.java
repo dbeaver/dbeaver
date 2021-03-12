@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.edit;
 
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Clickhouse table manager
@@ -30,4 +32,10 @@ public class ClickhouseTableManager extends GenericTableManager {
         return "TABLE";
     }
 
+    @Override
+    protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+        if (table instanceof ClickhouseTable) {
+            ddl.append(" ENGINE = Log");
+        }
+    }
 }
