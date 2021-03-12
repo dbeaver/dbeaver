@@ -334,7 +334,6 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Nullable
-    @Property(viewable = true, order = 80)
     public String getGeneratedValue()
     {
         if (isGeneratedColumn) {
