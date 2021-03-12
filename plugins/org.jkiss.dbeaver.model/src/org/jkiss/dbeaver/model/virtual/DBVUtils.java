@@ -205,7 +205,8 @@ public abstract class DBVUtils {
         @NotNull DBSEntityAttribute valueAttribute,
         @NotNull DBDValueHandler valueHandler,
         @NotNull DBCResultSet dbResult,
-        boolean formatValues) throws DBCException
+        boolean formatValues,
+        boolean containsCount) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
         List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
@@ -236,10 +237,16 @@ public abstract class DBVUtils {
                 keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
             String keyLabel;
+            long keyCount = 0;
             if (metaColumns.size() > 1) {
                 StringBuilder keyLabel2 = new StringBuilder();
                 for (int i = 1; i < colHandlers.size(); i++) {
                     Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
+                    if (containsCount && i == colHandlers.size() - 1) {
+                        // The last one column is the `count(*)`
+                        keyCount = CommonUtils.toLong(descValue);
+                        break;
+                    }
                     if (keyLabel2.length() > 0) {
                         keyLabel2.append(columnDivider);
                     }
@@ -249,7 +256,11 @@ public abstract class DBVUtils {
             } else {
                 keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
-            values.add(new DBDLabelValuePair(keyLabel, keyValue));
+            if (keyCount > 0) {
+                values.add(new DBDLabelValuePairExt(keyLabel, keyValue, keyCount));
+            } else {
+                values.add(new DBDLabelValuePair(keyLabel, keyValue));
+            }
         }
         return values;
     }

@@ -90,7 +90,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
      * Executes bootstrap queries and other init functions.
      * This function must be called by all implementations.
      */
-    protected void initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
+    protected boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
     {
         // Notify QM
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
@@ -118,7 +118,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                     }
                 }
             }
+            return true;
         }
+        return false;
     }
 
     protected void closeContext()

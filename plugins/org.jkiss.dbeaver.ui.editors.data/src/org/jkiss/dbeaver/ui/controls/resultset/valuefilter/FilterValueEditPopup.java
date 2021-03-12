@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,10 +30,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePairExt;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -50,7 +52,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private Point location;
 
     public FilterValueEditPopup(Shell parentShell, @NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows) {
-        super(parentShell, "Filter by '" + attr.getFullyQualifiedName(DBPEvaluationContext.UI) + "'");
+        super(parentShell, NLS.bind(ResultSetMessages.dialog_filter_value_edit_title, attr.getFullyQualifiedName(DBPEvaluationContext.UI)));
         setShellStyle(SWT.SHELL_TRIM);
         filter = new GenericFilterValueEdit(viewer, attr, rows, DBCLogicalOperator.IN);
     }
@@ -84,10 +86,10 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         {
             Composite labelComposite = UIUtils.createComposite(group, 2);
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Label controlLabel = UIUtils.createControlLabel(labelComposite, "Choose value(s) to filter by");
+            Label controlLabel = UIUtils.createControlLabel(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_choose_values);
             controlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (descReferrer instanceof DBSEntityAssociation) {
-                Link hintLabel = UIUtils.createLink(labelComposite, "(<a>Define Description</a>)", new SelectionAdapter() {
+                Link hintLabel = UIUtils.createLink(labelComposite, ResultSetMessages.dialog_filter_value_edit_label_define_description, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage(((DBSEntityAssociation) descReferrer).getAssociatedEntity());
@@ -115,7 +117,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                 applyFilterValue();
             }
         });
-        UIUtils.addEmptyTextHint(filterTextbox, text -> "Type partial value to search");
+        UIUtils.addEmptyTextHint(filterTextbox, text -> ResultSetMessages.dialog_filter_value_edit_text_hint);
 
         Composite tableComposite = UIUtils.createComposite(group, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -128,29 +130,38 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL |
                 (filter.getOperator() == DBCLogicalOperator.IN ? SWT.CHECK : SWT.NONE),
             true,
-            descReferrer != null,
+            true,
             new GridData(GridData.FILL_BOTH));
 
         Table table = filter.getTableViewer().getTable();
 
-        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Value"));
-        resultsetColumn.setLabelProvider(new ColumnLabelProvider() {
+        ViewerColumnController<?, ?> columnController = new ViewerColumnController<>("sqlFilterValueEditPopup", filter.getTableViewer());
+        columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_value_label, ResultSetMessages.dialog_filter_value_edit_table_value_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
             }
         });
-
-        TableViewerColumn descColumn;
         if (descReferrer != null) {
-            descColumn = new TableViewerColumn(filter.getTableViewer(), UIUtils.createTableColumn(table, SWT.NONE, "Description"));
-            descColumn.setLabelProvider(new ColumnLabelProvider() {
+            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_description_label, ResultSetMessages.dialog_filter_value_edit_table_description_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
                     return ((DBDLabelValuePair) element).getLabel();
                 }
             });
         }
+        if (descReferrer == null) {
+            columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    if (element instanceof DBDLabelValuePairExt) {
+                        return String.valueOf(((DBDLabelValuePairExt) element).getCount());
+                    }
+                    return "";
+                }
+            });
+        }
+        columnController.createColumns(true);
 
         filter.getTableViewer().addSelectionChangedListener(event -> {
             value = filter.getFilterValue();

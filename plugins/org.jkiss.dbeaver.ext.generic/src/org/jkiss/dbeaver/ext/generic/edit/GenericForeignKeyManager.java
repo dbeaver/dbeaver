@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -69,6 +70,14 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
             false);
         foreignKey.setName(getNewConstraintName(monitor, foreignKey));
         return foreignKey;
+    }
+
+    @Override
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableForeignKey> command, Map<String, Object> options) {
+        if (!owner.getDataSource().getMetaModel().supportNestedForeignKeys()) {
+            return null;
+        }
+        return super.getNestedDeclaration(monitor, owner, command, options);
     }
 
     @Override
