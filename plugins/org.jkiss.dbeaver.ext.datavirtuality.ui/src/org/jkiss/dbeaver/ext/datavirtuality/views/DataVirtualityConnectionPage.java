@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.ext.datavirtuality.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -208,7 +206,7 @@ public class DataVirtualityConnectionPage extends ConnectionPageAbstract impleme
         }
 
         if (sslCheckbox != null) {
-            connectionInfo.setProviderProperty(DataVirtualityConstants.PROP_SSL, sslCheckbox.getSelection() == true ? "mms" : "mm");
+            connectionInfo.setProviderProperty(DataVirtualityConstants.PROP_SSL, sslCheckbox.getSelection()  ? "mms" : "mm");
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
