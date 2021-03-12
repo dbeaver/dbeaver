@@ -142,4 +142,6 @@ public interface PostgreServerExtension {
     boolean supportsBackslashStringEscape();
 
     boolean supportsDisablingAllTriggers();
+
+    boolean supportsGeneratedColumns();
 }

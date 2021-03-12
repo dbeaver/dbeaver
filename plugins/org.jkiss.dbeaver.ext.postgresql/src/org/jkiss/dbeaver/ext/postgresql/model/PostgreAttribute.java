@@ -67,6 +67,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private int typeMod;
     @Nullable
     private String[] foreignTableColumnOptions;
+    @Nullable
+    private String defaultValue;
+    @Nullable
+    private boolean isGeneratedColumn;
 
     protected PostgreAttribute(
         OWNER table)
@@ -137,16 +141,17 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         throws DBException
     {
         PostgreDataSource dataSource = getDataSource();
+        PostgreServerExtension serverType = dataSource.getServerType();
 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
-        String defValue = JDBCUtils.safeGetString(dbResult, "def_value");
+        defaultValue = JDBCUtils.safeGetString(dbResult, "def_value");
         String serialValuePattern = getParentObject().getName() + "_" + getName() + "_seq";
         //set serial types manually
         if ((typeId == PostgreOid.INT2 || typeId == PostgreOid.INT4 || typeId == PostgreOid.INT8) &&
-                (CommonUtils.isNotEmpty(defValue) && defValue.startsWith("nextval(") && defValue.contains(serialValuePattern))) {
+                (CommonUtils.isNotEmpty(defaultValue) && defaultValue.startsWith("nextval(") && defaultValue.contains(serialValuePattern))) {
             if (typeId == PostgreOid.INT4) {
                 typeId = PostgreOid.SERIAL;
             } else if (typeId == PostgreOid.INT2) {
@@ -155,7 +160,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 typeId = PostgreOid.BIGSERIAL;
             }
         }
-        setDefaultValue(defValue);
+        if (!CommonUtils.isEmpty(defaultValue) && serverType.supportsGeneratedColumns()) {
+            String generatedColumn = JDBCUtils.safeGetString(dbResult, "attgenerated");
+            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored. (Other values might be added in the future)"
+            if (!CommonUtils.isEmpty(generatedColumn)) {
+                isGeneratedColumn = true;
+            }
+        }
+        //setDefaultValue(defaultValue);
         dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
@@ -196,7 +208,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
         this.isLocal =
-            !dataSource.getServerType().supportsInheritance() ||
+            !serverType.supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
 
         if (dataSource.isServerVersionAtLeast(10, 0)) {
@@ -207,7 +219,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
 
         // Collation
-        if (dataSource.getServerType().supportsCollations()) {
+        if (serverType.supportsCollations()) {
             this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
@@ -310,11 +322,25 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return def != null && def.contains("nextval(");
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
-        return super.getDefaultValue();
+        if (isGeneratedColumn) {
+            return null;
+        }
+        return defaultValue;
+    }
+
+    @Nullable
+    @Property(order = 80)
+    public String getGeneratedValue()
+    {
+        if (isGeneratedColumn) {
+            return defaultValue;
+        }
+        return null;
     }
 
     @Property(viewable = true, order = 31, visibleIf = PostgreTableHasIntervalTypeValidator.class)
