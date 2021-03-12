@@ -467,4 +467,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsDisablingAllTriggers() {
         return false;
     }
+
+    @Override
+    public boolean supportsGeneratedColumns() {
+        return false;
+    }
 }
