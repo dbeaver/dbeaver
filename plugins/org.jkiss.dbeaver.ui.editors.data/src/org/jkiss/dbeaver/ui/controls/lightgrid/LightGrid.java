@@ -1837,7 +1837,9 @@ public abstract class LightGrid extends Canvas {
             newTopIndex = range.startIndex;        // note: use startIndex because of inverse==true
         }
 
-        setTopIndex(newTopIndex);
+        if (newTopIndex != topIndex) {
+            setTopIndex(newTopIndex);
+        }
     }
 
     /**
@@ -3828,8 +3830,8 @@ public abstract class LightGrid extends Canvas {
                 selEvent.data = newPos;
                 notifyListeners(SWT.Selection, selEvent);
             }
-
-            redraw();
+            // No need to redraw - it is done in showItem
+            //redraw();
         }
     }
 
