@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -519,7 +520,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private void dispose() {
-        this.site.getWorkbenchWindow().getWorkbench().getThemeManager().removePropertyChangeListener(themePropertiesListener);
+        IWorkbenchWindow workbenchWindow = this.site.getWorkbenchWindow();
+        if (workbenchWindow != null) {
+            workbenchWindow.getWorkbench().getThemeManager().removePropertyChangeListener(themePropertiesListener);
+        }
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
