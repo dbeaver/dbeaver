@@ -4076,8 +4076,6 @@ public class ResultSetViewer extends Viewer
         } else {
             activePresentation.scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
         }
-
-        updateEditControls();
     }
 
     //////////////////////////////////
