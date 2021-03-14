@@ -683,6 +683,9 @@ public final class SQLUtils {
                 return dataSource.getSQLDialect().escapeString(strValue);
             } else {
                 byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
+                if (binValue == null) {
+                    return SQLConstants.NULL_VALUE;
+                }
                 return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
             }
         }

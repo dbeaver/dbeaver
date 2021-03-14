@@ -432,7 +432,7 @@ public class ContentUtils {
         return object.toString();
     }
 
-    @NotNull
+    @Nullable
     public static byte[] getContentBinaryValue(@NotNull DBRProgressMonitor monitor, @NotNull DBDContent object) throws DBCException {
         DBDContentStorage data = object.getContents(monitor);
         if (data != null) {
