@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateColumnIndex;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 
 import java.util.List;
@@ -56,6 +57,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
+    public static final String PROP_SUPPORTS_CREATING_INDEX_OR_PRIMARY_KEY = "supportsCreatingOfIndexOrPrimaryKey";
 
     public ObjectPropertyTester() {
         super();
@@ -212,6 +214,8 @@ public class ObjectPropertyTester extends PropertyTester
                 }
                 break;
             }
+            case PROP_SUPPORTS_CREATING_INDEX_OR_PRIMARY_KEY:
+                return !NavigatorHandlerCreateColumnIndex.extractConstraintTypes(node).isEmpty();
         }
         return false;
     }
