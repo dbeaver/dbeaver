@@ -433,7 +433,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append(dialect.generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                String updateSet = dialect.generateTableUpdateSet();
+                if (!CommonUtils.isEmpty(updateSet)) {
+                    query.append("\n\t").append(dialect.generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                }
 
                 boolean hasKey = false;
                 for (int i = 0; i < updateAttributes.length; i++) {
