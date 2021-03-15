@@ -160,7 +160,8 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         return instance;
     }
 
-    public long getUserActivityTime() {
+    @Override
+    public long getLastUserActivityTime() {
         return lastUserActivityTime;
     }
 
