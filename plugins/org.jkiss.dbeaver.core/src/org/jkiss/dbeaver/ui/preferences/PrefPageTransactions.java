@@ -17,17 +17,19 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+
+import java.util.Locale;
 
 /**
  * PrefPageTransactions
@@ -38,6 +40,8 @@ public class PrefPageTransactions extends TargetPrefPage
 
     private Button smartCommitCheck;
     private Button smartCommitRecoverCheck;
+    private Button autoCloseTransactionsCheck;
+    private Text autoCloseTransactionsTtlText;
     private Button showTransactionNotificationsCheck;
 
     public PrefPageTransactions()
@@ -52,6 +56,8 @@ public class PrefPageTransactions extends TargetPrefPage
         return
             store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT) ||
             store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) ||
+            store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) ||
+            store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) ||
             store.contains(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)
             ;
     }
@@ -70,6 +76,22 @@ public class PrefPageTransactions extends TargetPrefPage
             Group txnNameGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_connection_edit_wizard_transactions, 2, GridData.FILL_HORIZONTAL, 0);
             smartCommitCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit, CoreMessages.action_menu_transaction_smart_auto_commit_tip, false, 2);
             smartCommitRecoverCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_smart_auto_commit_recover, CoreMessages.action_menu_transaction_smart_auto_commit_recover_tip, false, 2);
+
+            autoCloseTransactionsCheck = UIUtils.createCheckbox(txnNameGroup, CoreMessages.action_menu_transaction_auto_close_enabled, CoreMessages.action_menu_transaction_auto_close_enabled_tip, false, 1);
+            autoCloseTransactionsTtlText = new Text(txnNameGroup, SWT.BORDER);
+            autoCloseTransactionsTtlText.setToolTipText(CoreMessages.action_menu_transaction_auto_close_ttl_tip);
+            autoCloseTransactionsTtlText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            autoCloseTransactionsTtlText.setEnabled(false);
+            GridData gd = new GridData();
+            gd.widthHint = UIUtils.getFontHeight(autoCloseTransactionsTtlText) * 6;
+            autoCloseTransactionsTtlText.setLayoutData(gd);
+
+            autoCloseTransactionsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
+                }
+            });
         }
 
         {
@@ -85,6 +107,9 @@ public class PrefPageTransactions extends TargetPrefPage
         try {
             smartCommitCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT));
             smartCommitRecoverCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER));
+            autoCloseTransactionsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED));
+            autoCloseTransactionsTtlText.setText(store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL));
+            autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
 
             showTransactionNotificationsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
         } catch (Exception e) {
@@ -98,6 +123,8 @@ public class PrefPageTransactions extends TargetPrefPage
         try {
             store.setValue(ModelPreferences.TRANSACTIONS_SMART_COMMIT, smartCommitCheck.getSelection());
             store.setValue(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER, smartCommitRecoverCheck.getSelection());
+            store.setValue(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED, autoCloseTransactionsCheck.getSelection());
+            store.setValue(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL, autoCloseTransactionsTtlText.getText());
 
             store.setValue(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, showTransactionNotificationsCheck.getSelection());
         } catch (Exception e) {
@@ -111,6 +138,8 @@ public class PrefPageTransactions extends TargetPrefPage
     {
         store.setToDefault(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
         store.setToDefault(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER);
+        store.setToDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED);
+        store.setToDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
 
         store.setToDefault(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS);
     }
