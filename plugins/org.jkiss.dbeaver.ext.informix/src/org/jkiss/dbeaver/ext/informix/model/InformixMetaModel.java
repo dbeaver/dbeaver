@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -107,6 +108,24 @@ public class InformixMetaModel extends GenericMetaModel
     @Override
     public boolean supportNestedForeignKeys() {
         return false;
+    }
+
+    @Override
+    public boolean isFKConstraintWordDuplicated() {
+        return true;
+    }
+
+    @Override
+    public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
+        if (deleteRule != null && deleteRule.getId().equals("CASCADE")) {
+            return " ON DELETE CASCADE";
+        }
+        return null;
+    }
+
+    @Override
+    public String generateOnUpdateFK(DBSForeignKeyModifyRule updateRule) {
+        return null;
     }
 
     @Override
