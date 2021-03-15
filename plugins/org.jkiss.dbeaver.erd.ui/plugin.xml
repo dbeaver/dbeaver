@@ -62,6 +62,9 @@
         <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorAdapter">
            <adapter type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
         </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorAdapter">
+            <adapter type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -149,8 +152,8 @@
         </handler>
         <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerPrint">
             <activeWhen>
-                <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
                 </with>
             </activeWhen>
         </handler>

@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.erd.ui.editor;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -27,7 +30,7 @@ import java.util.Map;
  */
 public class ERDEditorAdapter implements IAdapterFactory {
 
-    private static Map<Control, ERDEditorPart> editorsMap = new IdentityHashMap<>();
+    private static final Map<Control, ERDEditorPart> editorsMap = new IdentityHashMap<>();
 
     static synchronized void mapControl(Control control, ERDEditorPart editor)
     {
@@ -49,13 +52,18 @@ public class ERDEditorAdapter implements IAdapterFactory {
         if (adapterType == ERDEditorPart.class) {
             if (adaptableObject instanceof Control) {
                 return adapterType.cast(getEditor((Control) adaptableObject));
+            } else if (adaptableObject instanceof MultiPageAbstractEditor) {
+                IEditorPart activeEditor = ((EntityEditor) adaptableObject).getActiveEditor();
+                if (activeEditor instanceof ERDEditorPart) {
+                    return adapterType.cast(activeEditor);
+                }
             }
         }
         return null;
     }
 
     @Override
-    public Class[] getAdapterList() {
+    public Class<?>[] getAdapterList() {
         return new Class[] { ERDEditorPart.class };
     }
 }
