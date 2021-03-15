@@ -39,6 +39,8 @@ public class NavigatorCommands {
     public static final String CMD_CREATE_FOLDER_LINK = "org.jkiss.dbeaver.core.resource.link.folder";
     public static final String CMD_CREATE_PROJECT = "org.jkiss.dbeaver.core.project.create";
 
+    public static final String CMD_CREATE_COLUMN_INDEX_OR_CONSTRAINT = "org.jkiss.dbeaver.navigator.create.column.constraint";
+
     public static final String CMD_FILTER_CONNECTIONS = "org.jkiss.dbeaver.navigator.filter.connected";
 
     public static final String GROUP_CONNECTION_TOOLS = "connection-tools";
