@@ -46,6 +46,9 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transaction_smart_auto_commit_tip;
 	public static String action_menu_transaction_smart_auto_commit_recover;
 	public static String action_menu_transaction_smart_auto_commit_recover_tip;
+	public static String action_menu_transaction_auto_close_enabled;
+	public static String action_menu_transaction_auto_close_enabled_tip;
+	public static String action_menu_transaction_auto_close_ttl_tip;
 	public static String action_menu_tools_find_in_navigator;
 
 	public static String action_menu_transactionMonitor_totalStatement;
