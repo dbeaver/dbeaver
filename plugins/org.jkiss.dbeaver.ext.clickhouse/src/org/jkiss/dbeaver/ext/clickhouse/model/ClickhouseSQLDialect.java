@@ -52,4 +52,19 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
+
+    @Override
+    public String generateTableUpdateBegin(String tableName) {
+        return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+
+    @Override
+    public String generateTableUpdateSet() {
+        return "";
+    }
+
+    @Override
+    public String generateTableDeleteFrom(String tableName) {
+        return "ALTER TABLE " + tableName + " DELETE ";
+    }
 }
