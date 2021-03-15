@@ -700,7 +700,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public String generateTableUpdateSet() {
-        return "\n\tSET ";
+        return "SET ";
     }
 
     @Override
