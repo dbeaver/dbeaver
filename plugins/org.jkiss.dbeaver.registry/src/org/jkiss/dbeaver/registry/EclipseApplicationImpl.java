@@ -16,18 +16,16 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 
 /**
  * EclipseApplicationImpl
  */
-class EclipseApplicationImpl implements IApplication, DBPApplication {
+class EclipseApplicationImpl extends BaseApplicationImpl {
 
     @Override
     public boolean isStandalone() {

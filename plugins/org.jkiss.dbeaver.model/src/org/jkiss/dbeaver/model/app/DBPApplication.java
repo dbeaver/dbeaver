@@ -51,6 +51,12 @@ public interface DBPApplication
     String getInfoDetails();
 
     /**
+     * Returns last user activity time
+     * @return -1 by default
+     */
+    long getLastUserActivityTime();
+
+    /**
      * Default project name, e.g. 'General'.
      */
     String getDefaultProjectName();
