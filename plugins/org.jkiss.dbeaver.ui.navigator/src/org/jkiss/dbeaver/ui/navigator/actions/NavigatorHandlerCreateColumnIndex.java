@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -36,8 +37,11 @@ import java.util.*;
 
 //todo log and show errors instead of silent nulls
 //todo rename class and everything added alongside
+//todo maybe we shouldn't extend any class
 public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerObjectCreateBase {
     private static final Log log = Log.getLog(NavigatorHandlerCreateColumnIndex.class);
+
+    //((PostgreTableColumn)((DBNDatabaseItem)((StructuredSelection) HandlerUtil.getCurrentSelection(event)).getFirstElement()).getObject()). это вроде как будет DBSEntityAttribute
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -49,11 +53,18 @@ public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerObjectCre
         if (constraintTypes.isEmpty()) {
             return null;
         }
+        Collection<DBSEntityAttribute> entityAttributes = new HashSet<>();
+        IStructuredSelection structuredSelection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
+        for (Object selectedObject: structuredSelection) {
+            DBSEntityAttribute entityAttribute = (DBSEntityAttribute) ((DBNDatabaseItem) selectedObject).getObject(); //todo check casts and all that stuff
+            entityAttributes.add(entityAttribute);
+        }
         EditConstraintPage constraintPage = new EditConstraintPage(
-            "Create constraint or index",
-            (DBSEntity) ((DBNDatabaseItem) node).getObject().getParentObject(), //FIXME
-            constraintTypes.toArray(new DBSEntityConstraintType[0]),
-            false
+                "Create constraint or index",
+                (DBSEntity) ((DBNDatabaseItem) node).getObject().getParentObject(), //FIXME
+                constraintTypes.toArray(new DBSEntityConstraintType[0]),
+                false,
+                entityAttributes
         );
         boolean ok = constraintPage.edit();
         if (!ok) {
@@ -80,7 +91,7 @@ public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerObjectCre
         if (entityEditor == null) {
             return Collections.emptyList();
         }
-        Collection<DBSEntityConstraintType> constraintTypes = new LinkedHashSet<>();
+        Collection<DBSEntityConstraintType> constraintTypes = new LinkedHashSet<>(3, 1f);
         for (Class<?> clazz: entityEditor.getChildTypes()) {
             DBEObjectMaker<?, ?> entityChildMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(clazz, DBEObjectMaker.class);
             if (entityChildMaker == null || !entityChildMaker.canCreateObject(entityObject)) {
