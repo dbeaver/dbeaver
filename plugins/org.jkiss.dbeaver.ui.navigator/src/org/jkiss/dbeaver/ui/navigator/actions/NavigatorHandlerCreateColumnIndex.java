@@ -18,30 +18,25 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.*;
 
 //todo log and show errors instead of silent nulls
-//todo rename class and everything added alongside
-//todo maybe we shouldn't extend any class
 public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerObjectCreateBase {
     private static final Log log = Log.getLog(NavigatorHandlerCreateColumnIndex.class);
-
-    //((PostgreTableColumn)((DBNDatabaseItem)((StructuredSelection) HandlerUtil.getCurrentSelection(event)).getFirstElement()).getObject()). это вроде как будет DBSEntityAttribute
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -49,61 +44,50 @@ public class NavigatorHandlerCreateColumnIndex extends NavigatorHandlerObjectCre
         if (node == null) {
             return null;
         }
-        Collection<DBSEntityConstraintType> constraintTypes = extractConstraintTypes(node);
-        if (constraintTypes.isEmpty()) {
-            return null;
-        }
-        Collection<DBSEntityAttribute> entityAttributes = new HashSet<>();
-        IStructuredSelection structuredSelection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
-        for (Object selectedObject: structuredSelection) {
-            DBSEntityAttribute entityAttribute = (DBSEntityAttribute) ((DBNDatabaseItem) selectedObject).getObject(); //todo check casts and all that stuff
-            entityAttributes.add(entityAttribute);
-        }
-        EditConstraintPage constraintPage = new EditConstraintPage(
-                "Create constraint or index",
-                (DBSEntity) ((DBNDatabaseItem) node).getObject().getParentObject(), //FIXME
-                constraintTypes.toArray(new DBSEntityConstraintType[0]),
-                false,
-                entityAttributes
-        );
-        boolean ok = constraintPage.edit();
-        if (!ok) {
-            return null;
-        }
-        return null;
-    }
-
-    @NotNull
-    public static Collection<DBSEntityConstraintType> extractConstraintTypes(@NotNull DBNNode node) {
         if (!(node instanceof DBNDatabaseItem)) {
-            return Collections.emptyList();
+            return null;
         }
         DBNDatabaseItem databaseItem = (DBNDatabaseItem) node;
         DBSObject attributeObject = databaseItem.getObject();
         if (!(attributeObject instanceof DBSEntityAttribute)) {
-            return Collections.emptyList();
+            return null;
         }
         DBSObject entityObject = attributeObject.getParentObject();
         if (!(entityObject instanceof DBSEntity)) {
-            return Collections.emptyList();
+            return null;
         }
-        DBEStructEditor<?> entityEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
-        if (entityEditor == null) {
-            return Collections.emptyList();
+        DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
+        if (structEditor == null) {
+            return null;
         }
-        Collection<DBSEntityConstraintType> constraintTypes = new LinkedHashSet<>(3, 1f);
-        for (Class<?> clazz: entityEditor.getChildTypes()) {
-            DBEObjectMaker<?, ?> entityChildMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(clazz, DBEObjectMaker.class);
-            if (entityChildMaker == null || !entityChildMaker.canCreateObject(entityObject)) {
-                continue;
-            }
-            if (DBSTableIndex.class.isAssignableFrom(clazz)) {
-                constraintTypes.add(DBSEntityConstraintType.INDEX);
-            } else if (DBSTableConstraint.class.isAssignableFrom(clazz)) {
-                constraintTypes.add(DBSEntityConstraintType.PRIMARY_KEY);
-                constraintTypes.add(DBSEntityConstraintType.UNIQUE_KEY);
+        DBEObjectMaker<?, ?> maker = null;
+        Class<?> indexClass = null;
+        for (Class<?> childType: structEditor.getChildTypes()) {
+            maker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectMaker.class);
+            if (maker != null && maker.canCreateObject(entityObject) && DBSTableIndex.class.isAssignableFrom(childType)) {
+                indexClass = childType;
+                break;
             }
         }
-        return constraintTypes;
+        if (indexClass == null) {
+            return null;
+        }
+        DBNNode containerNode = node.getParentNode();
+        if (containerNode == null) {
+            return null;
+        }
+        DBECommandContext commandContext;
+        try {
+            commandContext = getCommandTarget(HandlerUtil.getActiveWorkbenchWindow(event), containerNode, indexClass, false).getContext();
+        } catch (DBException e) {
+            throw new ExecutionException("msg", e);
+        }
+        //UIUtils.getDefaultRunnableContext().run(); //TODO
+        try {
+            maker.createNewObject(new VoidProgressMonitor(), commandContext, entityObject, null, Collections.emptyMap());
+        } catch (DBException e) {
+            throw new ExecutionException("msg", e);
+        }
+        return null;
     }
 }
