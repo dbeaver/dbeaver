@@ -178,6 +178,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreGeneratedModifier = (monitor, column, sql, command) -> {
+        String generatedValue = column.getGeneratedValue();
+        if (!CommonUtils.isEmpty(generatedValue)) {
+            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") STORED");
+        }
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableColumn> getObjectsCache(PostgreTableColumn object)
@@ -187,7 +194,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier};
+        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier, PostgreGeneratedModifier};
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }

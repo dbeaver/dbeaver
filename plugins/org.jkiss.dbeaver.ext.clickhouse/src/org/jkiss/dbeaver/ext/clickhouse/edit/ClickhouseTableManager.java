@@ -16,13 +16,24 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.edit;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * Clickhouse table manager
  */
 public class ClickhouseTableManager extends GenericTableManager {
+
+    private static final Log log = Log.getLog(ClickhouseTableManager.class);
 
     @Override
     protected String getDropTableType(GenericTableBase table) {
@@ -30,4 +41,20 @@ public class ClickhouseTableManager extends GenericTableManager {
         return "TABLE";
     }
 
+    @Override
+    protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+        if (table instanceof ClickhouseTable) {
+            try {
+                List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
+                if (!CommonUtils.isEmpty(attributes)) {
+                    ddl.append(" ENGINE = MergeTree()\n" +
+                            "ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
+                } else {
+                    ddl.append(" ENGINE = Log");
+                }
+            } catch (DBException e) {
+                log.debug("Can't read " + table.getName() + " columns");
+            }
+        }
+    }
 }

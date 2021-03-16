@@ -80,6 +80,15 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return "N/A";
     }
 
+    /**
+     * Returns last user activity time
+     * @return -1 by default
+     */
+    @Override
+    public long getLastUserActivityTime() {
+        return -1;
+    }
+
     /////////////////////////////////////////
     // IApplication
 

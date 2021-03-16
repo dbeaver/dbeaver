@@ -230,7 +230,10 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
             case CMD_ROW_DELETE:
             case IWorkbenchCommandConstants.EDIT_DELETE:
-                rsv.deleteSelectedRows();
+                // Execute in async mode. Otherwise if user holds DEL button pressed then all keyboard
+                // events are processed in sync mode and first pain event after all keyboard events.
+                // Bad UIX.
+                UIUtils.asyncExec(rsv::deleteSelectedRows);
                 break;
             case CMD_CELL_SET_NULL:
             case CMD_CELL_SET_DEFAULT:

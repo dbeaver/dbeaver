@@ -429,11 +429,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // Make query
                 StringBuilder query = new StringBuilder();
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                query.append("UPDATE ").append(tableName);
+                query.append(dialect.generateTableUpdateBegin(tableName));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append("\n\tSET "); //$NON-NLS-1$ //$NON-NLS-2$
+                String updateSet = dialect.generateTableUpdateSet();
+                if (!CommonUtils.isEmpty(updateSet)) {
+                    query.append("\n\t").append(dialect.generateTableUpdateSet()); //$NON-NLS-1$ //$NON-NLS-2$
+                }
 
                 boolean hasKey = false;
                 for (int i = 0; i < updateAttributes.length; i++) {
@@ -507,7 +510,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 // Make query
                 StringBuilder query = new StringBuilder();
                 String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                query.append("DELETE FROM ").append(tableName);
+                query.append(dialect.generateTableDeleteFrom(tableName));
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }

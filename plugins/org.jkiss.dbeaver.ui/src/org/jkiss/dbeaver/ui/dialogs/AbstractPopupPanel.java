@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -52,7 +53,7 @@ public abstract class AbstractPopupPanel extends Dialog {
     @Override
     protected Point getInitialSize() {
         Point initialSize = super.getInitialSize();
-        Rectangle maxBounds = getParentShell().getDisplay().getBounds();
+        Rectangle maxBounds = Display.getCurrent().getBounds();
         initialSize.x = Math.min(initialSize.x, maxBounds.width - maxBounds.width / 50);
         return initialSize;
     }

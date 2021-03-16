@@ -65,4 +65,9 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsDisablingAllTriggers() {
         return true;
     }
+
+    @Override
+    public boolean supportsGeneratedColumns() {
+        return dataSource.isServerVersionAtLeast(12, 0);
+    }
 }

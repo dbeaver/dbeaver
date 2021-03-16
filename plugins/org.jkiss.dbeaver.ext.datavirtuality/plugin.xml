@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="datavirtuality" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualityMetaModel" driverClass="com.datavirtuality.dv.jdbc.Driver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Data Virtuality -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.datavirtuality.DataVirtualityDataSourceProvider"
+                description="%datasource.datavirtuality.description"
+                id="datavirtuality"
+                parent="generic"
+                label="Data Virtuality"
+                icon="icons/datavirtuality_icon.png"
+                dialect="basic">
+            <drivers managable="true">
+
+                <driver
+                        id="datavirtuality_jdbc"
+                        label="Data Virtuality"
+                        class="com.datavirtuality.dv.jdbc.Driver"
+                        icon="icons/datavirtuality_icon.png"
+                        iconBig="icons/datavirtuality_icon_big.png"
+                        sampleURL="jdbc:datavirtuality:{database}@mm://{host}:{port}"
+                        defaultPort="31000"
+                        defaultDatabase="datavirtuality"
+                        defaultUser="admin"
+                        defaultPassword="admin"
+                        description="Data Virtuality JDBC driver"
+                        webURL="https://https://datavirtuality.com/docs/"
+                        categories="sql,analytic">
+                    <file type="jar" path="https://datavirtuality.com/wp-content/uploads/sites/2/2020/03/datavirtuality-jdbc_2.3.8.jar"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="datavirtuality" parent="generic" class="org.jkiss.dbeaver.ext.datavirtuality.model.DataVirtualitySQLDialect" label="Data Virtuality" description="Data Virtuality SQL dialect." icon="icons/datavirtuality_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

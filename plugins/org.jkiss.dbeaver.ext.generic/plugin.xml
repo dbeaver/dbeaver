@@ -103,11 +103,11 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.metaModel.supportsSynonyms(object.dataSource)">
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
+                        <folder id="databaseTrigger" type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
-                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
+                        <folder id="tableTrigger" type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="%tree.tableTriggers.node.tip" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="tableTrigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
@@ -299,11 +299,11 @@
                     promoted="1"
                     categories="sql">
                     <os name="win32"/>
-                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
+                    <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc1"/>
+                    <file type="lib" os="win32" arch="x86_64" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/x64/JdbcOdbc.dll" bundle="!drivers.odbc1"/>
 
-                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
+                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc1"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc1"/>
                 </driver>
                 <driver
                     id="derby"
@@ -1385,7 +1385,6 @@
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
-
             </drivers>
 
         </datasource>

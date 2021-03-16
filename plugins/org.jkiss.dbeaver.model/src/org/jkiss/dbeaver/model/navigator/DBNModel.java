@@ -388,8 +388,11 @@ public class DBNModel implements IResourceChangeListener {
                     } else {
                         if (child instanceof DBNDatabaseFolder) {
                             DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                            if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
-                                nextChild = child;
+                            if (meta != null) {
+                                String idOrType = meta.getIdOrType();
+                                if (!CommonUtils.isEmpty(idOrType) && idOrType.equals(item)) {
+                                    nextChild = child;
+                                }
                             }
                         }
                         if (child.getNodeName().equals(item)) {

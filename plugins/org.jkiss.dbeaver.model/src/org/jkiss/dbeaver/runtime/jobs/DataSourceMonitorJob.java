@@ -21,34 +21,41 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.qm.QMTransactionState;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.*;
 
 /**
- * KeepAliveListenerJob
+ * DataSourceMonitorJob.
+ *
+ * Performs connection keep-alive ping.
+ * Ends idle transactions.
  */
-public class KeepAliveListenerJob extends AbstractJob
-{
+public class DataSourceMonitorJob extends AbstractJob {
     private static final int MONITOR_INTERVAL = 3000; // once per 3 seconds
     private static final long SYSTEM_SUSPEND_INTERVAL = 30000; // 30 seconds of inactivity - most likely a system suspend
 
-    private static final Log log = Log.getLog(KeepAliveListenerJob.class);
+    private static final Log log = Log.getLog(DataSourceMonitorJob.class);
 
     private final DBPPlatform platform;
-    private Map<String, Long> checkCache = new HashMap<>();
+    private final Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();
     private long lastPingTime = -1;
 
-    public KeepAliveListenerJob(DBPPlatform platform)
-    {
+    public DataSourceMonitorJob(DBPPlatform platform) {
         super("Keep-Alive monitor");
         setUser(false);
         setSystem(true);
@@ -56,8 +63,7 @@ public class KeepAliveListenerJob extends AbstractJob
     }
 
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
-    {
+    protected IStatus run(DBRProgressMonitor monitor) {
         if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
@@ -85,10 +91,7 @@ public class KeepAliveListenerJob extends AbstractJob
         if (!dataSourceDescriptor.isConnected()) {
             return;
         }
-        final int keepAliveInterval = dataSourceDescriptor.getConnectionConfiguration().getKeepAliveInterval();
-        if (keepAliveInterval <= 0) {
-            return;
-        }
+
         final String dsId = dataSourceDescriptor.getId();
         synchronized (this) {
             if (pingCache.contains(dsId)) {
@@ -97,6 +100,18 @@ public class KeepAliveListenerJob extends AbstractJob
                 return;
             }
         }
+
+        // End long transactions
+        if (dataSourceDescriptor.getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED)) {
+            endIdleTransactions(dataSourceDescriptor);
+        }
+
+        // Perform keep alive request
+        final int keepAliveInterval = dataSourceDescriptor.getConnectionConfiguration().getKeepAliveInterval();
+        if (keepAliveInterval <= 0) {
+            return;
+        }
+
         final DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
         if (dataSource == null) {
             return;
@@ -121,7 +136,7 @@ public class KeepAliveListenerJob extends AbstractJob
             pingJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
-                    synchronized (KeepAliveListenerJob.this) {
+                    synchronized (DataSourceMonitorJob.this) {
                         checkCache.put(dsId, System.currentTimeMillis());
                         pingCache.remove(dsId);
                     }
@@ -131,6 +146,43 @@ public class KeepAliveListenerJob extends AbstractJob
                 pingCache.add(dsId);
             }
             pingJob.schedule();
+        }
+    }
+
+    private void endIdleTransactions(DBPDataSourceContainer dsDescriptor) {
+        if (EndIdleTransactionsJob.isInProcess(dsDescriptor)) {
+            return;
+        }
+        int ttlSeconds = dsDescriptor.getPreferenceStore().getInt(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        long lastUserActivityTime = application.getLastUserActivityTime();
+        if (lastUserActivityTime <= 0 || (System.currentTimeMillis() - lastUserActivityTime) / 1000 < ttlSeconds) {
+            return;
+        }
+        DBPDataSource dataSource = dsDescriptor.getDataSource();
+        if (dataSource != null) {
+            try {
+                Map<DBCExecutionContext, DBCTransactionManager> txnToEnd = new IdentityHashMap<>();
+                for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                    for (DBCExecutionContext ec : instance.getAllContexts()) {
+                        if (ec.isConnected()) {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(ec);
+                            if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {
+                                QMTransactionState txnState = QMUtils.getTransactionState(ec);
+                                if (txnState.getUpdateCount() > 0 && txnState.getTransactionStartTime() <= lastUserActivityTime) {
+                                    txnToEnd.put(ec, txnManager);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!txnToEnd.isEmpty()) {
+                    new EndIdleTransactionsJob(dataSource, txnToEnd).schedule();
+                }
+            } catch (DBCException e) {
+                log.error(e);
+            }
         }
     }
 

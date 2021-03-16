@@ -32,12 +32,19 @@ public class ERDHandlerPrint extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        ERDEditorPart editor = null;
         Control control = (Control) HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control != null) {
-            ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
-            if (editor != null) {
-                editor.printDiagram();
+            editor = ERDEditorAdapter.getEditor(control);
+        }
+        if (editor == null) {
+            Object activeEditor = HandlerUtil.getVariable(event, ISources.ACTIVE_EDITOR_NAME);
+            if (activeEditor != null) {
+                editor = new ERDEditorAdapter().getAdapter(activeEditor, ERDEditorPart.class);
             }
+        }
+        if (editor != null) {
+            editor.printDiagram();
         }
         return null;
     }
