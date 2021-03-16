@@ -1042,9 +1042,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         @NotNull Map<String, Object> params)
     {
         String alias = null;
+        SQLTableAliasInsertMode aliasMode = SQLTableAliasInsertMode.NONE;
         String prevWord = request.getWordDetector().getPrevKeyWord();
         if (SQLConstants.KEYWORD_FROM.equals(prevWord) || SQLConstants.KEYWORD_JOIN.equals(prevWord)) {
-            if (object instanceof DBSEntity && ((DBSEntity) object).getDataSource().getContainer().getPreferenceStore().getBoolean(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS)) {
+            if (object instanceof DBSEntity) {
+                aliasMode = SQLTableAliasInsertMode.fromPreferences(((DBSEntity) object).getDataSource().getContainer().getPreferenceStore());
+            }
+            if (aliasMode != SQLTableAliasInsertMode.NONE) {
                 SQLDialect dialect = SQLUtils.getDialectFromObject(object);
                 if (dialect.supportsAliasInSelect()) {
                     String firstKeyword = SQLUtils.getFirstKeyword(dialect, request.getActiveQuery().getText());
@@ -1110,7 +1114,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             replaceString = DBUtils.getObjectShortName(object);
         }
         if (!CommonUtils.isEmpty(alias)) {
-            replaceString += " " + /*convertKeywordCase(request, "as", false) + " " + */alias;
+            if (aliasMode == SQLTableAliasInsertMode.EXTENDED) {
+                replaceString += " " + convertKeywordCase(request, "as", false);
+            }
+            replaceString += " " + alias;
         }
         return createCompletionProposal(
             request,
