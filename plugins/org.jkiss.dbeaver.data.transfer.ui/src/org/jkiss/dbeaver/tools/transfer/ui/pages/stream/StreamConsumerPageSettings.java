@@ -283,7 +283,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         return true;
     }
 
-    private final class ConfigureColumnsPopup extends AbstractPopupPanel {
+    private final class ConfigureColumnsPopup extends Dialog {
         final List<StreamMappingContainer> mappings = new ArrayList<>();
 
         private TreeViewer viewer;
@@ -291,9 +291,9 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         private Button applyButton;
 
         public ConfigureColumnsPopup(@NotNull Shell shell) {
-            super(shell, "Manage exported columns");
-            setShellStyle(SWT.SHELL_TRIM);
-            setModeless(true);
+            super(shell);
+            setTitle("Manage exported columns");
+            setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }
 
         @Override

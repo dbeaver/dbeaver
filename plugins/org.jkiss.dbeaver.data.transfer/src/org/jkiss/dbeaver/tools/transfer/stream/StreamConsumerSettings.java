@@ -259,25 +259,31 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             this.formatterProfile = DBWorkbench.getPlatform().getDataFormatterRegistry().getCustomProfile(formatterProfile);
         }
 
-        final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-
         for (Map.Entry<String, Map<String, Object>> mapping : JSONUtils.getNestedObjects(settings, "mappings")) {
             try {
                 runnableContext.run(true, true, monitor -> {
                     try {
                         monitor.beginTask("Load object '" + mapping.getKey() + "'", 1);
 
-                        final DBSObject object = DBUtils.findObjectById(monitor, activeProject, mapping.getKey());
+                        final String projectName = CommonUtils.toString(mapping.getValue().get("project"));
+                        final DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+
+                        if (project == null) {
+                            log.error("Project '" + projectName + "' not found");
+                            return;
+                        }
+
+                        final DBSObject object = DBUtils.findObjectById(monitor, project, mapping.getKey());
 
                         if (!(object instanceof DBSDataContainer)) {
-                            log.error("Can't find object '" + mapping.getKey() + "' in project '" + activeProject.getName() + "'");
+                            log.error("Can't find object '" + mapping.getKey() + "' in project '" + project.getName() + "'");
                             return;
                         }
 
                         final StreamMappingContainer container = new StreamMappingContainer((DBSDataContainer) object);
 
                         for (StreamMappingAttribute attribute : container.getAttributes(monitor)) {
-                            for (Object attributeMapping : ((List<?>) mapping.getValue())) {
+                            for (Object attributeMapping : JSONUtils.getObjectList(mapping.getValue(), "attributes")) {
                                 final String name = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("name"));
                                 final String type = CommonUtils.toString(((Map<?, ?>) attributeMapping).get("type"));
 
@@ -334,6 +340,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             final Map<String, Object> mappings = new LinkedHashMap<>();
 
             for (StreamMappingContainer container : dataMappings.values()) {
+                final Map<String, Object> containerMappings = new LinkedHashMap<>();
                 final List<Map<String, Object>> attributes = new ArrayList<>();
 
                 for (StreamMappingAttribute containerAttribute : container.getAttributes(new VoidProgressMonitor())) {
@@ -343,7 +350,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                     attributes.add(attribute);
                 }
 
-                mappings.put(DBUtils.getObjectFullId(container.getSource()), attributes);
+                containerMappings.put("project", container.getSource().getDataSource().getContainer().getProject().getName());
+                containerMappings.put("attributes", attributes);
+                mappings.put(DBUtils.getObjectFullId(container.getSource()), containerMappings);
             }
 
             settings.put("mappings", mappings);
