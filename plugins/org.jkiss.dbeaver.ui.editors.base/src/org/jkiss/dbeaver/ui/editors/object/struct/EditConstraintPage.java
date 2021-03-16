@@ -25,7 +25,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -119,7 +118,6 @@ public class EditConstraintPage extends AttributesSelectorPage {
     protected Composite createPageContents(Composite parent) {
         final Composite pageContents = super.createPageContents(parent);
         toggleEditAreas();
-        UIUtils.asyncExec(this::preselectAttributes);
         return pageContents;
     }
 
@@ -130,26 +128,6 @@ public class EditConstraintPage extends AttributesSelectorPage {
         expressionGroup.setVisible(custom);
         ((GridData)expressionGroup.getLayoutData()).exclude = !custom;
         columnsGroup.getParent().layout();
-    }
-
-    private void preselectAttributes() {
-        if (preselectedAttributes == null) {
-            return;
-        }
-        for (DBSEntityAttribute entityAttribute: preselectedAttributes) { //FIXME O(n^2)
-            for (TableItem tableItem: columnsTable.getItems()) {
-                Object data = tableItem.getData();
-                if (!(data instanceof AttributesSelectorPage.AttributeInfo)) {
-                    continue;
-                }
-                AttributesSelectorPage.AttributeInfo attributeInfo = (AttributesSelectorPage.AttributeInfo) data;
-                if (entityAttribute.equals(attributeInfo.attribute)) {
-                    tableItem.setChecked(true);
-                    handleItemSelect(tableItem, true);
-                    break;
-                }
-            }
-        }
     }
 
     @Override
