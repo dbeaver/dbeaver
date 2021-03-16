@@ -292,12 +292,13 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         public ConfigureColumnsPopup(@NotNull Shell shell) {
             super(shell);
-            setTitle("Manage exported columns");
             setShellStyle(SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }
 
         @Override
         protected Control createDialogArea(Composite parent) {
+            getShell().setText("Manage exported columns");
+
             Composite group = (Composite) super.createDialogArea(parent);
 
             GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
