@@ -726,7 +726,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 if (pathName.length() > 0) {
                     pathName.insert(0, '/');
                 }
-                String type = ((DBNDatabaseFolder) node).getMeta().getType();
+                DBXTreeFolder folderMeta = ((DBNDatabaseFolder) node).getMeta();
+                String type = folderMeta.getIdOrType();
                 if (CommonUtils.isEmpty(type)) {
                     type = node.getName();
                 }
