@@ -25,7 +25,9 @@ import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -66,11 +68,15 @@ class EndIdleTransactionsJob extends AbstractJob {
             activeDataSources.add(dsId);
         }
         try {
-
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                if (!serviceConnections.confirmTransactionsClose(txnToEnd.keySet().toArray(new DBCExecutionContext[0]))) {
+                    return Status.CANCEL_STATUS;
+                }
+            }
             log.debug("End idle " + txnToEnd.size() + " transactions for " + dsId);
             for (Map.Entry<DBCExecutionContext, DBCTransactionManager> tee : txnToEnd.entrySet()) {
                 try (DBCSession session = tee.getKey().openSession(monitor, DBCExecutionPurpose.UTIL, "End idle transaction")) {
-                    session.enableLogging(false);
                     try {
                         tee.getValue().rollback(session, null);
                     } catch (DBCException e) {
